@@ -11,5 +11,4 @@ class Message(BaseModel):
 
 @router.get("/_mgmt/ping", response_model=Message)
 async def ping():
-    """Liveliness probe"""
     return Message(message="PONG")
