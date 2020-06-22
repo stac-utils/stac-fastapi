@@ -30,4 +30,4 @@ ENV RELOAD=true
 ENTRYPOINT ["pipenv", "run"]
 CMD uvicorn stac_api.app:app \
     --host=${APP_HOST} --port=${APP_PORT} \
-    ${RELOAD+--reload}
+    ${RELOAD:+--reload}
