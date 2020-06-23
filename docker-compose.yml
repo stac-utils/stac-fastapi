@@ -1,0 +1,57 @@
+version: '3'
+
+services:
+  app:
+    container_name: stac-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8081
+      - RELOAD=true
+      - ENVIRONMENT=local
+      - POSTGRES_USER=username
+      - POSTGRES_PASS=password
+      - POSTGRES_DBNAME=postgis
+      - POSTGRES_HOST_READER=host.docker.internal
+      - POSTGRES_HOST_WRITER=host.docker.internal
+      - POSTGRES_PORT=5432
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./:/app
+    depends_on:
+      - database
+
+  database:
+    container_name: stac-db
+    image: kartoza/postgis:latest
+    environment:
+      - POSTGRES_USER=username
+      - POSTGRES_PASS=password
+      - POSTGRES_DBNAME=postgis
+      - POSTGRES_HOST=localhost
+      - POSTGRES_PORT=5432
+      - ALLOW_IP_RANGE=0.0.0.0/0
+    ports:
+      - "5432:5432"
+
+  migration:
+#    image: stac-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ENVIRONMENT=development
+      - POSTGRES_USER=username
+      - POSTGRES_PASS=password
+      - POSTGRES_DBNAME=postgis
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_PORT=5432
+    command: >
+      bash -c "git clone https://github.com/vishnubob/wait-for-it.git &&
+               ./wait-for-it/wait-for-it.sh localhost:5432 -- alembic upgrade head &&
+               python scripts/ingest_joplin.py"
+    depends_on:
+      - database
