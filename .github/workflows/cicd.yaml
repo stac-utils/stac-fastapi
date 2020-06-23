@@ -15,7 +15,7 @@ jobs:
         image: kartoza/postgis:latest
         env:
           POSTGRES_USER: username
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASS: password
           POSTGRES_DBNAME: postgis
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
@@ -60,7 +60,7 @@ jobs:
           pipenv run alembic upgrade head
         env:
           POSTGRES_USER: username
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASS: password
           POSTGRES_DBNAME: postgis
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
@@ -70,7 +70,7 @@ jobs:
           pipenv run pytest -svvv
         env:
           POSTGRES_USER: username
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASS: password
           POSTGRES_DBNAME: postgis
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
