@@ -36,7 +36,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    env_file: .env.db.local
+    environment:
+      - POSTGRES_USER=username
+      - POSTGRES_PASS=password
+      - POSTGRES_DBNAME=postgis
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_PORT=5432
     command: ["./wait-for-it/wait-for-it.sh", "localhost:5432", "--", "alembic", "upgrade", "head"]
     depends_on:
       - database
