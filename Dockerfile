@@ -25,7 +25,7 @@ ENV APP_HOST=0.0.0.0
 ENV APP_PORT=80
 
 ENV ENVIRONMENT=development
-ENV RELOAD=true
+ENV RELOAD=''
 
 RUN git clone https://github.com/vishnubob/wait-for-it.git
 
