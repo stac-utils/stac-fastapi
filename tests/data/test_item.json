@@ -124,9 +124,8 @@
 "proj:epsg": 32756,
 "eo:sun_elevation": -37.30791534,
 "eo:off_nadir": 0,
-  "orientation": "nadir",
-  "height": 2500,
-  "width": 2500
+"height": 2500,
+"width": 2500
 },
 "bbox": [
 149.57574,

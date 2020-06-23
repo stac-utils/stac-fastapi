@@ -28,7 +28,7 @@ FORBIDDEN_FIELDS = {"type", "stac_version", "stac_extensions"}
 
 
 # Fields which are item properties but indexed as distinct fields in the database model
-INDEXED_FIELDS = {"datetime", "orientation", "eo:gsd"}
+INDEXED_FIELDS = {"datetime"}
 
 
 # Fields which are always included in the response (fields extension)

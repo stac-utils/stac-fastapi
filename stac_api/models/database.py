@@ -77,8 +77,6 @@ class Item(BaseModel):
     )
     parent_collection = sa.orm.relationship("Collection", back_populates="children")
     datetime = sa.Column(sa.TIMESTAMP, nullable=False)
-    orientation = sa.Column(sa.VARCHAR, nullable=False)
-    gsd = sa.Column(sa.REAL, nullable=False)
     links = sa.Column(JSONB)
 
     @classmethod

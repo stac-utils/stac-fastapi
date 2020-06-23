@@ -50,8 +50,6 @@ def upgrade():
         sa.Column("collection_id", sa.VARCHAR(1024), nullable=False, index=True),
         # These are usually in properties but defined as their own fields for indexing
         sa.Column("datetime", sa.TIMESTAMP, nullable=False, index=True),
-        sa.Column("orientation", sa.VARCHAR(), nullable=False, index=True),
-        sa.Column("gsd", sa.REAL(), nullable=False, index=True),
         sa.Column("links", JSONB, nullable=True),
         sa.ForeignKeyConstraint(["collection_id"], ["data.collections.id"]),
         schema="data"
