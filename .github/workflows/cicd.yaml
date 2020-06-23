@@ -69,6 +69,7 @@ jobs:
         run: |
           pipenv run pytest -svvv
         env:
+          ENVIRONMENT: testing
           POSTGRES_USER: username
           POSTGRES_PASS: password
           POSTGRES_DBNAME: postgis
