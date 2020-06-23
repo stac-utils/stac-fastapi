@@ -1,4 +1,4 @@
-# arturo-stac-api
+# arturo-stac-api ![arturo-stac-api](https://github.com/arturo-ai/arturo-stac-api/workflows/arturo-stac-api/badge.svg)
 FastAPI/postgres implementation of the [STAC API specification](https://github.com/radiantearth/stac-api-spec).
 
 ## Project Structure
