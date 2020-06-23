@@ -49,6 +49,8 @@ services:
       - POSTGRES_DBNAME=postgis
       - POSTGRES_HOST=host.docker.internal
       - POSTGRES_PORT=5432
-    command: ["./wait-for-it/wait-for-it.sh", "localhost:5432", "--", "alembic", "upgrade", "head"]
+    command: >
+      bash -c "git clone https://github.com/vishnubob/wait-for-it.git &&
+               ./wait-for-it/wait-for-it.sh localhost:5432 -- alembic upgrade head"
     depends_on:
       - database

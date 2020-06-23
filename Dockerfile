@@ -26,7 +26,6 @@ ENV APP_PORT=80
 
 ENV RELOAD=''
 
-RUN git clone https://github.com/vishnubob/wait-for-it.git
 
 ENTRYPOINT ["pipenv", "run"]
 CMD uvicorn stac_api.app:app --host=${APP_HOST} --port=${APP_PORT} ${RELOAD:+--reload}
