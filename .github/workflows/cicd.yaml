@@ -57,7 +57,7 @@ jobs:
 
       - name: Run migration
         run: |
-          alembic upgrade head
+          pipenv run alembic upgrade head
         env:
           POSTGRES_USER: username
           POSTGRES_PASSWORD: password
