@@ -442,15 +442,11 @@ def test_item_search_properties_jsonb(app_client, load_test_data):
     assert resp.status_code == 200
 
     # EPSG is a JSONB key
-    params = {"query": {"proj:epsg": {"lt": test_item["properties"]["proj:epsg"] + 1}}}
+    params = {"query": {"proj:epsg": {"gt": test_item["properties"]["proj:epsg"] + 1}}}
     resp = app_client.post("/search", json=params)
     assert resp.status_code == 200
     resp_json = resp.json()
-    assert len(resp_json["features"]) == 1
-    assert (
-        resp_json["features"][0]["properties"]["proj:epsg"]
-        == test_item["properties"]["proj:epsg"]
-    )
+    assert len(resp_json["features"]) == 0
 
 
 def test_item_search_properties_field(app_client, load_test_data):

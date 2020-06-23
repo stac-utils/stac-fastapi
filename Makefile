@@ -5,9 +5,15 @@ EXTERNAL_APP_PORT ?= ${APP_PORT}
 run_docker = docker run -it --rm \
 				-p ${EXTERNAL_APP_PORT}:${APP_PORT} \
 				-v $(shell pwd):/app \
-				--env-file .env \
 				--env APP_HOST=${APP_HOST} \
 				--env APP_PORT=${APP_PORT} \
+				--env POSTGRES_USER=username \
+				--env POSTGRES_PASS=password \
+				--env POSTGRES_DBNAME=postgis \
+				--env POSTGRES_HOST_READER=host.docker.internal \
+				--env POSTGRES_HOST_WRITER=host.docker.internal \
+				--env POSTGRES_PORT=5432 \
+				--env ENVIRONMENT=development \
 				arturo-stac-api_app
 
 .PHONY: docker-shell

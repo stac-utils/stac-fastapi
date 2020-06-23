@@ -38,7 +38,7 @@ services:
       - "5432:5432"
 
   migration:
-    image: stac-api:latest
+#    image: stac-api:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -51,6 +51,7 @@ services:
       - POSTGRES_PORT=5432
     command: >
       bash -c "git clone https://github.com/vishnubob/wait-for-it.git &&
-               ./wait-for-it/wait-for-it.sh localhost:5432 -- alembic upgrade head"
+               ./wait-for-it/wait-for-it.sh localhost:5432 -- alembic upgrade head &&
+               python scripts/ingest_joplin.py"
     depends_on:
       - database
