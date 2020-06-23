@@ -51,15 +51,8 @@ class CollectionLinks(BaseLinks):
             href=urljoin(self.base_url, f"/collections/{self.collection_id}/items"),
         )
 
-    def tiles(self) -> Link:
-        return Link(
-            rel=Relations.tiles,
-            type=MimeTypes.json,
-            href=urljoin(self.base_url, f"/collections/{self.collection_id}/tiles"),
-        )
-
     def create_links(self) -> List[Link]:
-        return [self.self(), self.parent(), self.item(), self.root(), self.tiles()]
+        return [self.self(), self.parent(), self.item(), self.root()]
 
 
 @dataclass
@@ -91,21 +84,10 @@ class ItemLinks(BaseLinks):
             href=urljoin(self.base_url, f"/collections/{self.collection_id}"),
         )
 
-    def tiles(self) -> Link:
-        return Link(
-            rel=Relations.tiles,
-            type=MimeTypes.json,
-            href=urljoin(
-                self.base_url,
-                f"/collections/{self.collection_id}/items/{self.item_id}/tiles",
-            ),
-        )
-
     def create_links(self) -> List[Link]:
         return [
             self.self(),
             self.parent(),
             self.collection(),
             self.root(),
-            self.tiles(),
         ]
