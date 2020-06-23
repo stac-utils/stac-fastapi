@@ -18,7 +18,7 @@ FastAPI/postgres implementation of the [STAC API specification](https://github.c
 ```
 
 ## Local Development
-Deploy the database and application locally with docker compose:
+Use docker-compose to deploy the application, migrate the database, and ingest an example collection:
 ```
 docker-compose build
 docker-compose up
