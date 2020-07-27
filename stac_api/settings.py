@@ -1,6 +1,5 @@
 from starlette.config import Config
 
-
 config = Config(".env")
 
 
@@ -24,7 +23,7 @@ SQLALCHEMY_DATABASE_WRITER = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASS}@{POS
 
 
 # Fields which are defined by STAC but not included in the database model
-FORBIDDEN_FIELDS = {"type", "stac_version", "stac_extensions"}
+FORBIDDEN_FIELDS = {"type", "stac_version"}
 
 
 # Fields which are item properties but indexed as distinct fields in the database model

@@ -6,7 +6,7 @@ from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 
 from geojson_pydantic.geometries import Polygon
-from pydantic import root_validator, Field
+from pydantic import root_validator, BaseModel, Field
 from shapely.geometry import Polygon as ShapelyPolygon, shape
 import sqlalchemy as sa
 from stac_pydantic import (
@@ -16,6 +16,8 @@ from stac_pydantic import (
 from stac_pydantic.shared import Link
 from stac_pydantic.utils import AutoValueEnum
 from stac_pydantic.api import Search
+from stac_pydantic.extensions import Extensions
+from stac_pydantic.item import ItemProperties
 from stac_pydantic.api.search import DATETIME_RFC339
 from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
 
@@ -136,6 +138,7 @@ class FieldsExtension(FieldsBase):
 
 
 class Collection(CollectionBase):
+    stac_extensions: Optional[List[str]]
     links: Optional[List[Link]]
 
     class Config:
@@ -143,10 +146,27 @@ class Collection(CollectionBase):
         use_enum_values = True
         getter_dict = CollectionGetter
 
+# Create a model for the extension
+class NAIP_Extension(BaseModel):
+    statename: str
+    cell_id: int
+    quadrant: str
+
+    # Setup extension namespace in model config
+    class Config:
+        allow_population_by_fieldname = True
+        alias_generator = lambda field_name: f"naip:{field_name}"
+
+
+class NAIP_Properties(Extensions.eo, ItemProperties):
+    epsg: int = Field(..., alias="proj:epsg")
+
 
 class Item(ItemBase):
     geometry: Polygon
     links: Optional[List[Link]]
+    properties: NAIP_Properties
+
 
     class Config:
         json_encoders = {datetime: lambda v: v.strftime(DATETIME_RFC339)}

@@ -43,6 +43,7 @@ class Collection(BaseModel):
     __table_args__ = {"schema": "data"}
 
     id = sa.Column(sa.VARCHAR(1024), nullable=False, primary_key=True)
+    stac_extensions = sa.Column(sa.ARRAY(sa.VARCHAR))
     stac_version = sa.Column(sa.VARCHAR(300))
     title = sa.Column(sa.VARCHAR(1024))
     description = sa.Column(sa.VARCHAR(1024), nullable=False)
@@ -68,6 +69,7 @@ class Item(BaseModel):
     __table_args__ = {"schema": "data"}
 
     id = sa.Column(sa.VARCHAR(1024), nullable=False, primary_key=True)
+    stac_extensions = sa.Column(sa.ARRAY(sa.VARCHAR))
     geometry = sa.Column(GeojsonGeometry("POLYGON", srid=4326, spatial_index=True))
     bbox = sa.Column(sa.ARRAY(sa.NUMERIC), nullable=False)
     properties = sa.Column(JSONB)
