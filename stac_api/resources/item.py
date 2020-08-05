@@ -296,9 +296,7 @@ def search_items_get(
     datetime: Optional[Union[str, datetime]] = Query(None),
     limit: Optional[int] = Query(10),
     query: Optional[str] = Query(None),
-    token: Optional[str] = None,
     fields: Optional[List[str]] = Depends(parse_list_factory("fields")),
-    cloudfront_ttl: Optional[int] = 2628000,
     sortby: Optional[str] = Depends(parse_list_factory("sortby")),
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
     base_url: str = Depends(discover_base_url),
@@ -309,8 +307,6 @@ def search_items_get(
         "ids": ids,
         "bbox": bbox,
         "limit": limit,
-        "token": token,
-        "cloudfront_ttl": cloudfront_ttl,
         "query": json.loads(query) if query else query,
     }
     if datetime:
