@@ -19,7 +19,7 @@ def landing_page(
 ):
     resp = LandingPage(
         title="Arturo STAC API",
-        description="Arturo raster datastore",
+        description="Arturo STAC API",
         links=[
             Link(rel=Relations.self, type=MimeTypes.json, href=base_url),
             Link(
