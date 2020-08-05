@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -8,11 +8,14 @@ from .resources import mgmt, collection, conformance, item
 
 app = FastAPI()
 app.debug = settings.DEBUG
-app.include_router(mgmt.router)
-app.include_router(conformance.router)
-app.include_router(collection.router)
-app.include_router(item.router)
 
+stac_router = APIRouter()
+stac_router.include_router(conformance.router)
+stac_router.include_router(collection.router)
+stac_router.include_router(item.router)
+
+app.include_router(mgmt.router)
+app.include_router(stac_router)
 
 @app.on_event("startup")
 async def on_startup():
