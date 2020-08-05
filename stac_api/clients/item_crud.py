@@ -6,6 +6,7 @@ from fastapi import Depends
 import geoalchemy2 as ga
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 from sqlakeyset import get_page, Page
 
 from .base_crud import BaseCrudClient
@@ -110,7 +111,8 @@ class ItemCrudClient(BaseCrudClient):
                     query = query.filter(op.operator(field, value))
 
         try:
-            count = query.count()
+            count_query = query.statement.with_only_columns([func.count()]).order_by(None)
+            count = query.session.execute(count_query).scalar()
             page = get_page(query, per_page=search_request.limit, page=token)
             # Create dynamic attributes for each page
             page.next = (
