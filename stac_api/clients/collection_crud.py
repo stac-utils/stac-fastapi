@@ -4,6 +4,7 @@ from typing import List, Tuple
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 from sqlakeyset import get_page, Page
 
 from .base_crud import BaseCrudClient
@@ -34,14 +35,15 @@ class CollectionCrudClient(BaseCrudClient):
     ) -> Tuple[Page, int]:
         """Read an item collection from the database"""
         try:
-            collection_children = (
+            query = (
                 self.lookup_id(collection_id)
                 .first()
                 .children.order_by(database.Item.datetime.desc(), database.Item.id)
             )
-            count = collection_children.count()
+            count_query = query.statement.with_only_columns([func.count()]).order_by(None)
+            count = query.session.execute(count_query).scalar()
             token = self.pagination_client.get(token) if token else token
-            page = get_page(collection_children, per_page=limit, page=(token or False))
+            page = get_page(query, per_page=limit, page=(token or False))
             # Create dynamic attributes for each page
             page.next = (
                 self.pagination_client.insert(keyset=page.paging.bookmark_next)
