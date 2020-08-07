@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter
+from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -16,6 +17,14 @@ stac_router.include_router(item.router)
 
 app.include_router(mgmt.router)
 app.include_router(stac_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers="*",
+    allow_origins="*"
+)
 
 @app.on_event("startup")
 async def on_startup():
