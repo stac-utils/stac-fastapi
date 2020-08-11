@@ -1,15 +1,8 @@
 from dataclasses import dataclass
-from typing import Callable, List, Optional
+from typing import Callable, List
 
-from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from starlette.requests import Request
-
-
-ENGINE_READER: Optional[Engine] = None
-ENGINE_WRITER: Optional[Engine] = None
-DB_READER: Optional[Session] = None
-DB_WRITER: Optional[Session] = None
 
 
 @dataclass
@@ -32,27 +25,27 @@ def parse_list_factory(varname) -> Callable[[Request], List[str]]:
     return _parse
 
 
-def database_reader_factory() -> Session:
+def database_reader_factory(request: Request) -> Session:
     """Instantiate the database reader session"""
     try:
-        if not DB_READER:
+        if not request.app.state.DB_READER:
             raise DatabaseConnectionError(
                 message="Database engine has not been created"
             )
-        db = DB_READER()
+        db = request.app.state.DB_READER()
         yield db
     finally:
         db.close()
 
 
-def database_writer_factory() -> Session:
+def database_writer_factory(request: Request) -> Session:
     """Instantiate the database writer session"""
     try:
-        if not DB_WRITER:
+        if not request.app.state.DB_WRITER:
             raise DatabaseConnectionError(
                 message="Database engine has not been created"
             )
-        db = DB_WRITER()
+        db = request.app.state.DB_WRITER()
         yield db
     finally:
         db.close()
