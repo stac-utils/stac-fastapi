@@ -28,10 +28,6 @@ def parse_list_factory(varname) -> Callable[[Request], List[str]]:
 def database_reader_factory(request: Request) -> Session:
     """Instantiate the database reader session"""
     try:
-        if not request.app.state.DB_READER:
-            raise DatabaseConnectionError(
-                message="Database engine has not been created"
-            )
         db = request.app.state.DB_READER()
         yield db
     finally:
@@ -41,10 +37,6 @@ def database_reader_factory(request: Request) -> Session:
 def database_writer_factory(request: Request) -> Session:
     """Instantiate the database writer session"""
     try:
-        if not request.app.state.DB_WRITER:
-            raise DatabaseConnectionError(
-                message="Database engine has not been created"
-            )
         db = request.app.state.DB_WRITER()
         yield db
     finally:
