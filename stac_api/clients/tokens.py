@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 from .base_crud import BaseCrudClient
 from ..models import database
 
-from ..errors import DatabaseError
 from ..utils.dependencies import database_reader_factory, database_writer_factory
 
 
@@ -23,7 +22,7 @@ class PaginationTokenClient(BaseCrudClient):
             self.writer_session.add(token)
             self.commit()
             return token.id
-        except DatabaseError:
+        except:
             # Try again if uid already exists in the database
             # TODO: Explicitely check for ConflictError (if insert fails for other reasons it should be raised)
             self.insert(keyset, tries=tries + 1)
