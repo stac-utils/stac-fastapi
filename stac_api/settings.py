@@ -39,4 +39,12 @@ DEFAULT_INCLUDES = {
     "links",
     "assets",
     "properties.datetime",
+    "properties.updated",
+    "properties.created",
+    "properties.eo:gsd",
+    "properties.eo:bands",
+    "properties.proj:epsg",
+    "properties.naip:quadrant",
+    "properties.naip:cell_id",
+    "properties.naip:statename",
 }
