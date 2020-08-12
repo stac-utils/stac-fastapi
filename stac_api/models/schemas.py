@@ -104,6 +104,10 @@ class FieldsExtension(FieldsBase):
         for field in fields:
             if "." in field:
                 parent, key = field.split(".")
+
+                if parent == "properties" and ":" in key:
+                    key = key.split(":")[-1]
+
                 if parent not in field_dict:
                     field_dict[parent] = {key}
                 else:
@@ -146,27 +150,18 @@ class Collection(CollectionBase):
         use_enum_values = True
         getter_dict = CollectionGetter
 
-# Create a model for the extension
-class NAIP_Extension(BaseModel):
-    statename: str
-    cell_id: int
-    quadrant: str
 
-    # Setup extension namespace in model config
-    class Config:
-        allow_population_by_fieldname = True
-        alias_generator = lambda field_name: f"naip:{field_name}"
-
-
-class NAIP_Properties(Extensions.eo, ItemProperties):
+class NAIPProperties(Extensions.eo, ItemProperties):
     epsg: int = Field(..., alias="proj:epsg")
+    statename: str = Field(..., alias="naip:statename")
+    cell_id: int = Field(..., alias="naip:cell_id")
+    quadrant: str = Field(..., alias="naip:quadrant")
 
 
 class Item(ItemBase):
     geometry: Polygon
     links: Optional[List[Link]]
-    properties: NAIP_Properties
-
+    properties: NAIPProperties
 
     class Config:
         json_encoders = {datetime: lambda v: v.strftime(DATETIME_RFC339)}
