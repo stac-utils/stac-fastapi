@@ -2,12 +2,14 @@ from base64 import urlsafe_b64encode
 from dataclasses import dataclass
 import os
 
-from starlette.requests import Request
+from fastapi import Depends
+from sqlalchemy.orm import Session
 
 from .base_crud import BaseCrudClient
 from ..models import database
 
 from ..errors import DatabaseError
+from ..utils.dependencies import database_reader_factory, database_writer_factory
 
 
 @dataclass
@@ -34,9 +36,12 @@ class PaginationTokenClient(BaseCrudClient):
         return row.keyset
 
 
-def pagination_token_client_factory(request: Request) -> PaginationTokenClient:
+def pagination_token_client_factory(
+    reader_session: Session = Depends(database_reader_factory),
+    writer_session: Session = Depends(database_writer_factory),
+) -> PaginationTokenClient:
     return PaginationTokenClient(
-        reader_session=request.app.state.DB_READER,
-        writer_session=request.app.state.DB_WRITER,
+        reader_session=reader_session,
+        writer_session=writer_session,
         table=database.PaginationToken,
     )

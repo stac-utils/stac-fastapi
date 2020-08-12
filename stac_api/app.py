@@ -21,10 +21,10 @@ async def on_startup():
     app.state.ENGINE_WRITER = create_engine(settings.SQLALCHEMY_DATABASE_WRITER)
     app.state.DB_READER = sessionmaker(
         autocommit=False, autoflush=False, bind=app.state.ENGINE_READER
-    )()
+    )
     app.state.DB_WRITER = sessionmaker(
         autocommit=False, autoflush=False, bind=app.state.ENGINE_WRITER
-    )()
+    )
 
 
 @app.on_event("shutdown")
@@ -32,5 +32,3 @@ async def on_shutdown():
     """Dispose of database engines and sessions on app shutdown"""
     app.state.ENGINE_READER.dispose()
     app.state.ENGINE_WRITER.dispose()
-    app.state.DB_READER.close()
-    app.state.DB_WRITER.close()

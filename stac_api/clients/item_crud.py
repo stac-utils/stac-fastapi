@@ -5,14 +5,15 @@ from typing import List, Tuple, Union
 from fastapi import Depends
 import geoalchemy2 as ga
 import sqlalchemy as sa
+from sqlalchemy.orm import Session
 from sqlakeyset import get_page, Page
-from starlette.requests import Request
 
 from .base_crud import BaseCrudClient
 from .collection_crud import CollectionCrudClient, collection_crud_client_factory
 from .tokens import PaginationTokenClient, pagination_token_client_factory
 from ..errors import DatabaseError
 from ..models import database, schemas
+from ..utils.dependencies import database_writer_factory, database_reader_factory
 
 logger = logging.getLogger(__name__)
 
@@ -130,13 +131,14 @@ class ItemCrudClient(BaseCrudClient):
 
 
 def item_crud_client_factory(
-    request: Request,
+    reader_session: Session = Depends(database_reader_factory),
+    writer_session: Session = Depends(database_writer_factory),
     collection_crud: CollectionCrudClient = Depends(collection_crud_client_factory),
     pagination_client: PaginationTokenClient = Depends(pagination_token_client_factory),
 ) -> ItemCrudClient:
     return ItemCrudClient(
-        reader_session=request.app.state.DB_READER,
-        writer_session=request.app.state.DB_WRITER,
+        reader_session=reader_session,
+        writer_session=writer_session,
         collection_crud=collection_crud,
         table=database.Item,
         pagination_client=pagination_client,
