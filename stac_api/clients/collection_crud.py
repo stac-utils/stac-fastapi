@@ -3,14 +3,14 @@ import logging
 from typing import List, Tuple
 
 from fastapi import Depends
-from sqlalchemy.orm import Session
 from sqlakeyset import get_page, Page
+from starlette.requests import Request
 
 from .base_crud import BaseCrudClient
 from .tokens import PaginationTokenClient, pagination_token_client_factory
 from .. import errors
 from ..models import database
-from ..utils.dependencies import database_reader_factory, database_writer_factory
+
 
 logger = logging.getLogger(__name__)
 
@@ -63,13 +63,12 @@ class CollectionCrudClient(BaseCrudClient):
 
 
 def collection_crud_client_factory(
-    reader_session: Session = Depends(database_reader_factory),
-    writer_session: Session = Depends(database_writer_factory),
+    request: Request,
     pagination_client: PaginationTokenClient = Depends(pagination_token_client_factory),
 ) -> CollectionCrudClient:
     return CollectionCrudClient(
-        reader_session=reader_session,
-        writer_session=writer_session,
+        reader_session=request.app.state.DB_READER,
+        writer_session=request.app.state.DB_WRITER,
         table=database.Collection,
         pagination_client=pagination_client,
     )
