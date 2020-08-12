@@ -9,16 +9,28 @@ run_docker = docker run -it --rm \
 				--env APP_PORT=${APP_PORT} \
 				--env POSTGRES_USER=username \
 				--env POSTGRES_PASS=password \
-				--env POSTGRES_DBNAME=postgis \
+				--env POSTGRES_DBNAME=postgres \
 				--env POSTGRES_HOST_READER=host.docker.internal \
 				--env POSTGRES_HOST_WRITER=host.docker.internal \
 				--env POSTGRES_PORT=5432 \
 				--env ENVIRONMENT=development \
-				arturo-stac-api_app
+				arturo-ai/stac-api:latest
+
+
+.PHONY: image
+image:
+	docker build -t arturo-ai/stac-api:latest .
+
 
 .PHONY: docker-shell
-docker-shell:
+docker-shell: image
 	$(run_docker) /bin/bash
+
+
+.PHONY: docker-run
+docker-run: image
+	$(run_docker)
+
 
 .PHONY: test
 test:
