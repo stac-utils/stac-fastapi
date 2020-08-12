@@ -4,7 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = "true"
 
 [packages]
-uvicorn = "*"
+uvicorn = ">=0.11.7"
 fastapi = {extras = ["all"],version = "*"}
 alembic = "*"
 psycopg2-binary = "*"
