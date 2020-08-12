@@ -3,7 +3,6 @@ from typing import List
 from fastapi import APIRouter, Depends
 from starlette import status
 from starlette.exceptions import HTTPException
-from stac_pydantic.extensions import Extensions
 
 
 from .. import errors
@@ -12,9 +11,6 @@ from ..clients.collection_crud import CollectionCrudClient
 from ..models import schemas
 from ..utils.dependencies import discover_base_url
 
-
-
-Extensions.register("naip", schemas.NAIP_Extension)
 
 router = APIRouter()
 
