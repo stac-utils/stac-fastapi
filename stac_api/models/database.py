@@ -123,7 +123,8 @@ class Item(BaseModel):
             return getattr(cls, field_name)
         except AttributeError:
             # Use a JSONB field
-            return cls.properties[(field_name)].cast(
+            # TODO: This might be incorrect, might need to change in the future
+            return cls.properties[(field_name.name)].cast(
                 getattr(schemas.QueryableTypes, field_name.name)
             )
 

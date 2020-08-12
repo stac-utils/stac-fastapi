@@ -61,14 +61,8 @@ class Queryables(str, AutoValueEnum):
     # TODO: Let the user define these in a config file
     """
 
-    orientation = auto()
-    gsd = auto()
+    gsd = "eo:gsd"
     epsg = "proj:epsg"
-    height = auto()
-    width = auto()
-    minzoom = "cog:minzoom"
-    maxzoom = "cog:maxzoom"
-    dtype = "cog:dtype"
 
 
 @dataclass
@@ -179,23 +173,23 @@ class STACSearch(Search):
     query: Optional[Dict[Queryables, Dict[Operator, Any]]]
     token: Optional[str] = None
 
-    @root_validator
-    def include_query_fields(cls, values: Dict) -> Dict:
-        """
-        Root validator to ensure query fields are included in the API response
-        """
-        if values["query"]:
-            query_include = set(
-                [
-                    k.value if k in settings.INDEXED_FIELDS else f"properties.{k.value}"
-                    for k in values["query"]
-                ]
-            )
-            if not values["field"].include:
-                values["field"].include = query_include
-            else:
-                values["field"].include.union(query_include)
-        return values
+    # @root_validator(pre=True)
+    # def include_query_fields(cls, values: Dict) -> Dict:
+    #     """
+    #     Root validator to ensure query fields are included in the API response
+    #     """
+    #     if values["query"]:
+    #         query_include = set(
+    #             [
+    #                 k if k in settings.INDEXED_FIELDS else f"properties.{k}"
+    #                 for k in values["query"]
+    #             ]
+    #         )
+    #         if not values["field"].include:
+    #             values["field"].include = query_include
+    #         else:
+    #             values["field"].include.union(query_include)
+    #     return values
 
     def polygon(self) -> Optional[ShapelyPolygon]:
         """
