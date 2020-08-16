@@ -9,7 +9,7 @@ from stac_pydantic.shared import DATETIME_RFC339
 
 from .links import CollectionLinks, ItemLinks, filter_links
 from ..errors import DatabaseError
-from ..settings import INDEXED_FIELDS
+from ..settings import settings
 
 
 def resolve_links(links: list, base_url: str) -> List[Dict]:
@@ -44,7 +44,7 @@ class ItemGetter(GetterDict):
 
     def __init__(self, obj: Any):
         properties = {}
-        for field in INDEXED_FIELDS:
+        for field in settings.indexed_fields:
             # Use getattr to accommodate extension namespaces
             field_value = getattr(obj, field.split(":")[-1])
             if field == "datetime":

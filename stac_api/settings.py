@@ -1,43 +1,45 @@
-from starlette.config import Config
+from typing import Set
+
+from pydantic import BaseSettings
 
 
-config = Config(".env")
+class ApiSettings(BaseSettings):
+    environment: str
+    debug: bool = False
+    postgres_user: str
+    postgres_pass: str
+    postgres_host_reader: str
+    postgres_host_writer: str
+    postgres_port: str
+    postgres_dbname: str
+
+    # Fields which are defined by STAC but not included in the database model
+    forbidden_fields: Set[str] = {"type", "stac_version"}
+
+    # Fields which are item properties but indexed as distinct fields in the database model
+    indexed_fields: Set[str] = {"datetime"}
+
+    # Fields which are always included in the response (fields extension)
+    default_includes: Set[str] = {
+        "id",
+        "type",
+        "geometry",
+        "bbox",
+        "links",
+        "assets",
+        "properties.datetime",
+    }
+
+    class Config:
+        env_file = ".env"
+
+    @property
+    def reader_connection_string(self):
+        return f"postgresql://{self.postgres_user}:{self.postgres_pass}@{self.postgres_host_reader}:{self.postgres_port}/{self.postgres_dbname}"
+
+    @property
+    def writer_connection_string(self):
+        return f"postgresql://{self.postgres_user}:{self.postgres_pass}@{self.postgres_host_writer}:{self.postgres_port}/{self.postgres_dbname}"
 
 
-ENVIRONMENT = config("ENVIRONMENT", cast=str)
-DEBUG = config("DEBUG", cast=bool, default=False)
-TESTING = config("TESTING", cast=bool, default=False)
-
-
-# Database config
-POSTGRES_USER = config("POSTGRES_USER", cast=str)
-POSTGRES_PASS = config("POSTGRES_PASS", cast=str)
-POSTGRES_DBNAME = config("POSTGRES_DBNAME", cast=str)
-POSTGRES_PORT = config("POSTGRES_PORT", cast=str)
-POSTGRES_HOST_READER = config("POSTGRES_HOST_READER", cast=str)
-POSTGRES_HOST_WRITER = config("POSTGRES_HOST_WRITER", cast=str)
-
-
-# Database connection strings
-SQLALCHEMY_DATABASE_READER = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST_READER}:{POSTGRES_PORT}/{POSTGRES_DBNAME}"
-SQLALCHEMY_DATABASE_WRITER = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST_WRITER}:{POSTGRES_PORT}/{POSTGRES_DBNAME}"
-
-
-# Fields which are defined by STAC but not included in the database model
-FORBIDDEN_FIELDS = {"type", "stac_version"}
-
-
-# Fields which are item properties but indexed as distinct fields in the database model
-INDEXED_FIELDS = {"datetime"}
-
-
-# Fields which are always included in the response (fields extension)
-DEFAULT_INCLUDES = {
-    "id",
-    "type",
-    "geometry",
-    "bbox",
-    "links",
-    "assets",
-    "properties.datetime",
-}
+settings = ApiSettings()
