@@ -36,12 +36,12 @@ class BaseCrudClient:
             logger.error(e.orig.pgerror, exc_info=True)
             # Explicitly catch foreign key errors to be reraised by the API as validation errors
             if isinstance(e.orig, psycopg2.errors.ForeignKeyViolation):
-                raise errors.ForeignKeyError(message=e.orig.pgerror)
-            raise errors.DatabaseError(message=e.orig.pgerror) from e
+                raise errors.ForeignKeyError(e.orig.pgerror)
+            raise errors.DatabaseError(e.orig.pgerror) from e
         except:
             error_message = "Unhandled database exception during commit"
             logger.error(error_message, exc_info=True)
-            raise errors.DatabaseError(message=error_message)
+            raise errors.DatabaseError(error_message)
 
     def lookup_id(self, item_id: str) -> Query:
         """Create a query to access a single record from the table"""
@@ -52,11 +52,11 @@ class BaseCrudClient:
         except:
             error_message = f"Unhandled database during ID lookup"
             logger.error(error_message, exc_info=True)
-            raise errors.DatabaseError(message=error_message)
+            raise errors.DatabaseError(error_message)
         if not self.row_exists(query):
             error_message = f"Row {item_id} does not exist"
             logger.warning(error_message)
-            raise errors.NotFoundError(message=error_message)
+            raise errors.NotFoundError(error_message)
         return query
 
     def create(
@@ -67,7 +67,7 @@ class BaseCrudClient:
             self.lookup_id(item.id)
             error_message = f"Row {item.id} already exists"
             logger.error(error_message, exc_info=True)
-            raise errors.ConflictError(message=error_message)
+            raise errors.ConflictError(error_message)
         except errors.NotFoundError:
             row_data = self.table.from_schema(item)
             self.writer_session.add(row_data)

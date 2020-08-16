@@ -711,7 +711,7 @@ def test_create_item_database_error(load_test_data):
         client=ItemCrudClient,
         mocked_method="create",
         dependency=item_crud_client_factory,
-        error=DatabaseError(message="error"),
+        error=DatabaseError(),
     ) as test_client:
         resp = test_client.post(
             f"/collections/{test_item['collection']}/items", json=test_item
@@ -726,7 +726,7 @@ def test_read_item_database_error(load_test_data):
         client=ItemCrudClient,
         mocked_method="read",
         dependency=item_crud_client_factory,
-        error=DatabaseError(message="error"),
+        error=DatabaseError(),
     ) as test_client:
         resp = test_client.get(
             f"/collections/{test_item['collection']}/items/{test_item['id']}"
@@ -741,7 +741,7 @@ def test_update_item_database_error(load_test_data):
         client=ItemCrudClient,
         mocked_method="update",
         dependency=item_crud_client_factory,
-        error=DatabaseError(message="error"),
+        error=DatabaseError(),
     ) as test_client:
         resp = test_client.put(
             f"/collections/{test_item['collection']}/items", json=test_item
@@ -756,7 +756,7 @@ def test_delete_item_database_error(load_test_data):
         client=ItemCrudClient,
         mocked_method="delete",
         dependency=item_crud_client_factory,
-        error=DatabaseError(message="error"),
+        error=DatabaseError(),
     ) as test_client:
         resp = test_client.delete(
             f"/collections/{test_item['collection']}/items/{test_item['id']}"
@@ -771,7 +771,7 @@ def test_get_item_collection_database_error(load_test_data):
         client=CollectionCrudClient,
         mocked_method="get_item_collection",
         dependency=collection_crud_client_factory,
-        error=DatabaseError(message="error"),
+        error=DatabaseError(),
     ) as test_client:
         resp = test_client.get(f"/collections/{test_collection['id']}/items")
         assert resp.status_code == 424
@@ -790,7 +790,7 @@ def test_item_search_database_error(load_test_data):
         client=ItemCrudClient,
         mocked_method="stac_search",
         dependency=item_crud_client_factory,
-        error=DatabaseError(message="error"),
+        error=DatabaseError(),
     ) as test_client:
         resp = test_client.post(f"/search", json=params)
         assert resp.status_code == 424

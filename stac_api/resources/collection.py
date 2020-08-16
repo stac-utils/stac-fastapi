@@ -26,18 +26,7 @@ def create_collection(
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
-    try:
-        row_data = crud_client.create(collection)
-    except errors.ConflictError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
-    except errors.DatabaseError as e:
-        raise HTTPException(
-            status_code=status.HTTP_424_FAILED_DEPENDENCY, detail=e.message
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    row_data = crud_client.create(collection)
     row_data.base_url = base_url
     return row_data
 
@@ -54,16 +43,7 @@ def update_collection_by_id(
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
-    try:
-        row_data = crud_client.update(collection)
-    except errors.DatabaseError as e:
-        raise HTTPException(
-            status_code=status.HTTP_424_FAILED_DEPENDENCY, detail=e.message
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    row_data = crud_client.update(collection)
     row_data.base_url = base_url
     return row_data
 
@@ -79,16 +59,7 @@ def get_all_collections(
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
-    try:
-        row_data = crud_client.get_all_collections()
-    except errors.DatabaseError as e:
-        raise HTTPException(
-            status_code=status.HTTP_424_FAILED_DEPENDENCY, detail=e.message
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    row_data = crud_client.get_all_collections()
     response_data = []
     for row in row_data:
         row.base_url = base_url
@@ -108,18 +79,7 @@ def get_collection_by_id(
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
-    try:
-        row_data = crud_client.read(collectionId)
-    except errors.NotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
-    except errors.DatabaseError as e:
-        raise HTTPException(
-            status_code=status.HTTP_424_FAILED_DEPENDENCY, detail=e.message
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    row_data = crud_client.read(collectionId)
     row_data.base_url = base_url
     return row_data
 
@@ -136,17 +96,6 @@ def delete_collection_by_id(
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
-    try:
-        row_data = crud_client.delete(collectionId)
-    except errors.NotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
-    except errors.DatabaseError as e:
-        raise HTTPException(
-            status_code=status.HTTP_424_FAILED_DEPENDENCY, detail=e.message
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    row_data = crud_client.delete(collectionId)
     row_data.base_url = base_url
     return row_data

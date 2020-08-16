@@ -86,7 +86,7 @@ def test_create_collection_database_error(load_test_data):
         client=CollectionCrudClient,
         mocked_method="create",
         dependency=collection_crud_client_factory,
-        error=DatabaseError(message="error"),
+        error=DatabaseError(),
     ) as test_client:
         resp = test_client.post("/collections", json=test_collection)
         assert resp.status_code == 424
@@ -99,7 +99,7 @@ def test_update_collection_database_error(load_test_data):
         client=CollectionCrudClient,
         mocked_method="update",
         dependency=collection_crud_client_factory,
-        error=DatabaseError(message="error"),
+        error=DatabaseError(),
     ) as test_client:
         resp = test_client.put("/collections", json=test_collection)
         assert resp.status_code == 424
@@ -111,7 +111,7 @@ def tet_get_all_collections_database_error():
         client=CollectionCrudClient,
         mocked_method="get_all_collections",
         dependency=collection_crud_client_factory,
-        error=DatabaseError(message="error"),
+        error=DatabaseError(),
     ) as test_client:
         resp = test_client.get("/collections")
         assert resp.status_code == 424
@@ -124,7 +124,7 @@ def test_get_collection_database_error(load_test_data):
         client=CollectionCrudClient,
         mocked_method="read",
         dependency=collection_crud_client_factory,
-        error=DatabaseError(message="error"),
+        error=DatabaseError(),
     ) as test_client:
         resp = test_client.get(f"/collections/{test_collection['id']}")
         assert resp.status_code == 424
@@ -137,7 +137,7 @@ def test_delete_collection_database_error(load_test_data):
         client=CollectionCrudClient,
         mocked_method="delete",
         dependency=collection_crud_client_factory,
-        error=DatabaseError(message="error"),
+        error=DatabaseError(),
     ) as test_client:
         resp = test_client.delete(f"/collections/{test_collection['id']}")
         assert resp.status_code == 424
