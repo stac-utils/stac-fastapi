@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from . import settings
+from .errors import add_exception_handlers, DEFAULT_STATUS_CODES
 from .resources import mgmt, collection, conformance, item
 
 
@@ -12,6 +13,8 @@ app.include_router(mgmt.router)
 app.include_router(conformance.router)
 app.include_router(collection.router)
 app.include_router(item.router)
+
+add_exception_handlers(app, DEFAULT_STATUS_CODES)
 
 
 @app.on_event("startup")

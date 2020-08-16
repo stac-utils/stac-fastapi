@@ -34,22 +34,7 @@ def create_item_by_id(
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
-    try:
-        row_data = crud_client.create(item)
-    except errors.ConflictError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=e.message)
-    except errors.ForeignKeyError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message
-        )
-    except errors.DatabaseError as e:
-        raise HTTPException(
-            status_code=status.HTTP_424_FAILED_DEPENDENCY, detail=e.message
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    row_data = crud_client.create(item)
     row_data.base_url = base_url
     return row_data
 
@@ -65,20 +50,7 @@ def update_item_by_id(
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
-    try:
-        row_data = crud_client.update(item)
-    except errors.ForeignKeyError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.message
-        )
-    except errors.DatabaseError as e:
-        raise HTTPException(
-            status_code=status.HTTP_424_FAILED_DEPENDENCY, detail=e.message
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    row_data = crud_client.update(item)
     row_data.base_url = base_url
     return row_data
 
@@ -94,18 +66,7 @@ def delete_item_by_id(
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
-    try:
-        row_data = crud_client.delete(itemId)
-    except errors.NotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
-    except errors.DatabaseError as e:
-        raise HTTPException(
-            status_code=status.HTTP_424_FAILED_DEPENDENCY, detail=e.message
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    row_data = crud_client.delete(itemId)
     row_data.base_url = base_url
     return row_data
 
@@ -123,18 +84,7 @@ def get_item_collection(
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
-    try:
-        page, count = crud_client.get_item_collection(collectionId, limit, token=token)
-    except errors.NotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
-    except errors.DatabaseError as e:
-        raise HTTPException(
-            status_code=status.HTTP_424_FAILED_DEPENDENCY, detail=e.message
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    page, count = crud_client.get_item_collection(collectionId, limit, token=token)
 
     links = []
     if page.next:
@@ -180,18 +130,7 @@ def get_item_by_id(
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
-    try:
-        row_data = crud_client.read(itemId)
-    except errors.NotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
-    except errors.DatabaseError as e:
-        raise HTTPException(
-            status_code=status.HTTP_424_FAILED_DEPENDENCY, detail=e.message
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    row_data = crud_client.read(itemId)
     row_data.base_url = base_url
     return row_data
 
@@ -207,16 +146,7 @@ def search_items_post(
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
-    try:
-        page, count = crud_client.stac_search(search_request)
-    except errors.DatabaseError as e:
-        raise HTTPException(
-            status_code=status.HTTP_424_FAILED_DEPENDENCY, detail=e.message
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    page, count = crud_client.stac_search(search_request)
 
     links = []
     if page.next:
@@ -337,16 +267,7 @@ def search_items_get(
     # Do the request
     search_request = schemas.STACSearch(**base_args)
     filter_kwargs = search_request.field.filter_fields
-    try:
-        page, count = crud_client.stac_search(search_request)
-    except errors.DatabaseError as e:
-        raise HTTPException(
-            status_code=status.HTTP_424_FAILED_DEPENDENCY, detail=e.message
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+    page, count = crud_client.stac_search(search_request)
 
     # Pagination
     links = []

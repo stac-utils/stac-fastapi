@@ -26,7 +26,7 @@ class CollectionCrudClient(BaseCrudClient):
         except:
             error_message = "Unhandled database error when getting item collection"
             logger.error(error_message, exc_info=True)
-            raise errors.DatabaseError(message=error_message)
+            raise errors.DatabaseError(error_message)
         return items
 
     def get_item_collection(
@@ -58,7 +58,7 @@ class CollectionCrudClient(BaseCrudClient):
         except:
             error_message = "Unhandled database error when getting collection children"
             logger.error(error_message, exc_info=True)
-            raise errors.DatabaseError(message=error_message)
+            raise errors.DatabaseError(error_message)
         return page, count
 
 

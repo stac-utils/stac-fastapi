@@ -77,7 +77,7 @@ class ItemCrudClient(BaseCrudClient):
                     "Unhandled database error when searching for items by id"
                 )
                 logger.error(error_message, exc_info=True)
-                raise DatabaseError(message=error_message)
+                raise DatabaseError(error_message)
             return page, len(search_request.ids)
 
         # Spatial query
@@ -126,7 +126,7 @@ class ItemCrudClient(BaseCrudClient):
         except:
             error_message = "Unhandled database error during spatial/temporal query"
             logger.error(error_message, exc_info=True)
-            raise DatabaseError(message=error_message)
+            raise DatabaseError(error_message)
         return page, count
 
 
