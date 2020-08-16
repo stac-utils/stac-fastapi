@@ -29,7 +29,7 @@ def upgrade():
         sa.Column("id", sa.VARCHAR(1024), nullable=False, primary_key=True),
         sa.Column("stac_version", sa.VARCHAR(300)),
         sa.Column("title", sa.VARCHAR(1024)),
-        sa.Column("stac_extensions", sa.ARRAY(sa.VARCHAR(300))),
+        sa.Column("stac_extensions", sa.ARRAY(sa.VARCHAR(300)), nullable=True),
         sa.Column("description", sa.VARCHAR(1024), nullable=False),
         sa.Column("keywords", sa.ARRAY(sa.VARCHAR(300))),
         sa.Column("version", sa.VARCHAR(300)),
@@ -44,7 +44,7 @@ def upgrade():
     op.create_table(
         "items",
         sa.Column("id", sa.VARCHAR(1024), nullable=False, primary_key=True),
-        sa.Column("stac_extensions", sa.ARRAY(sa.VARCHAR(300))),
+        sa.Column("stac_extensions", sa.ARRAY(sa.VARCHAR(300)), nullable=True),
         sa.Column("geometry", Geometry("POLYGON", srid=4326, spatial_index=True)),
         sa.Column("bbox", sa.ARRAY(sa.NUMERIC), nullable=False),
         sa.Column("properties", JSONB),
