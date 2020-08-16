@@ -15,7 +15,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker, Session
 from starlette.testclient import TestClient
 
-from stac_api import settings
+from stac_api.settings import settings
 from stac_api.app import app
 from stac_api.models import database, schemas
 from stac_api.clients.collection_crud import CollectionCrudClient
@@ -95,7 +95,7 @@ def load_all_test_data(filter: str) -> List[Dict]:
 @pytest.fixture
 def reader_connection() -> Session:
     """Create a reader connection"""
-    engine = create_engine(settings.SQLALCHEMY_DATABASE_READER)
+    engine = create_engine(settings.reader_connection_string)
     db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
     yield db_session
     db_session.close()
@@ -105,7 +105,7 @@ def reader_connection() -> Session:
 @pytest.fixture
 def writer_connection() -> Session:
     """Create a writer connection"""
-    engine = create_engine(settings.SQLALCHEMY_DATABASE_WRITER)
+    engine = create_engine(settings.writer_connection_string)
     db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
     yield db_session
     db_session.close()

@@ -10,7 +10,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from stac_pydantic.shared import DATETIME_RFC339
 
 from . import schemas
-from .. import settings
+from ..settings import settings
 
 
 BaseModel = declarative_base()
@@ -83,7 +83,7 @@ class Item(BaseModel):
     def get_database_model(cls, schema: schemas.Item) -> dict:
         """Decompose pydantic model to data model"""
         indexed_fields = {}
-        for field in settings.INDEXED_FIELDS:
+        for field in settings.indexed_fields:
             # Use getattr to accommodate extension namespaces
             field_value = getattr(schema.properties, field)
             if field == "datetime":
@@ -91,7 +91,7 @@ class Item(BaseModel):
             indexed_fields[field.split(":")[-1]] = field_value
 
         # Exclude indexed fields from the properties jsonb field
-        properties = schema.properties.dict(exclude=set(settings.INDEXED_FIELDS))
+        properties = schema.properties.dict(exclude=set(settings.indexed_fields))
         now = datetime.utcnow().strftime(DATETIME_RFC339)
         if "created" not in properties:
             properties["created"] = now
@@ -105,7 +105,7 @@ class Item(BaseModel):
             **schema.dict(
                 exclude_none=True,
                 exclude=set(
-                    settings.FORBIDDEN_FIELDS | {"geometry", "properties", "collection"}
+                    settings.forbidden_fields | {"geometry", "properties", "collection"}
                 ),
             )
         )
