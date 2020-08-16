@@ -28,11 +28,11 @@ class BaseCrudClient:
     def commit(self) -> None:
         """Commit both reader and writer sessions to keep them in sync, rolling back on psycopg2 errors"""
         try:
-            self.reader_session.commit()
             self.writer_session.commit()
+            self.reader_session.commit()
         except sa.exc.IntegrityError as e:
-            self.reader_session.rollback()
             self.writer_session.rollback()
+            self.reader_session.rollback()
             logger.error(e.orig.pgerror, exc_info=True)
             # Explicitly catch foreign key errors to be reraised by the API as validation errors
             if isinstance(e.orig, psycopg2.errors.ForeignKeyViolation):
