@@ -14,7 +14,15 @@ run_docker = docker run -it --rm \
 				--env POSTGRES_HOST_WRITER=host.docker.internal \
 				--env POSTGRES_PORT=5432 \
 				--env ENVIRONMENT=development \
-				arturo-stac-api_app
+				arturo-ai/stac-api:latest
+
+.PHONY: image
+image:
+	docker build -t arturo-ai/stac-api:latest .
+
+.PHONY: docker-run
+docker-run: image
+	$(run_docker)
 
 .PHONY: docker-shell
 docker-shell:
