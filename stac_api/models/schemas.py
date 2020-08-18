@@ -21,7 +21,7 @@ from stac_pydantic.api.search import DATETIME_RFC339
 from stac_pydantic.shared import Link
 from stac_pydantic.utils import AutoValueEnum
 
-from ..settings import settings
+from .. import config
 from .decompose import CollectionGetter, ItemGetter
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
@@ -123,7 +123,7 @@ class FieldsExtension(FieldsBase):
         Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
         """
         # Include default set of fields
-        include = settings.default_includes
+        include = config.settings.default_includes
         # If only include is specified, add fields to default set
         if self.include and not self.exclude:
             include = include.union(self.include)
@@ -131,11 +131,13 @@ class FieldsExtension(FieldsBase):
         # If we remove default fields we will get a validation error
         elif self.include and self.exclude:
             include = include.union(self.include) - (
-                self.exclude - settings.default_includes
+                self.exclude - config.settings.default_includes
             )
         return {
             "include": self._get_field_dict(include),
-            "exclude": self._get_field_dict(self.exclude - settings.default_includes),
+            "exclude": self._get_field_dict(
+                self.exclude - config.settings.default_includes
+            ),
         }
 
 
@@ -186,7 +188,9 @@ class STACSearch(Search):
         if values["query"]:
             query_include = set(
                 [
-                    k.value if k in settings.indexed_fields else f"properties.{k.value}"
+                    k.value
+                    if k in config.settings.indexed_fields
+                    else f"properties.{k.value}"
                     for k in values["query"]
                 ]
             )

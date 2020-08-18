@@ -1,6 +1,6 @@
 """Application settings."""
 
-from typing import Set
+from typing import Optional, Set
 
 from pydantic import BaseSettings
 
@@ -50,4 +50,10 @@ class ApiSettings(BaseSettings):
         return f"postgresql://{self.postgres_user}:{self.postgres_pass}@{self.postgres_host_writer}:{self.postgres_port}/{self.postgres_dbname}"
 
 
-settings = ApiSettings()
+settings: Optional[ApiSettings] = None
+
+
+def inject_settings(base_settings: ApiSettings):
+    """Inject settings to global scope"""
+    global settings
+    settings = base_settings

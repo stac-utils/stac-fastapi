@@ -4,11 +4,14 @@ from fastapi import FastAPI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from .config import ApiSettings, inject_settings
 from .errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from .resources import collection, conformance, item, mgmt
-from .settings import settings
 
 app = FastAPI()
+settings = ApiSettings()
+inject_settings(settings)
+
 app.debug = settings.debug
 app.include_router(mgmt.router)
 app.include_router(conformance.router)
