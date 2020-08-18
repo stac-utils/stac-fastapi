@@ -19,6 +19,7 @@ pytest = "*"
 pytest-cov = "*"
 pytest-asyncio = "*"
 requests = "*"
+pre-commit = "*"
 
 [requires]
 python_version = "3.8"
