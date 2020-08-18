@@ -10,10 +10,9 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 
 import geoalchemy2 as ga
+from stac_api import config
+from stac_api.models import schemas
 from stac_pydantic.shared import DATETIME_RFC339
-
-from .. import config
-from . import schemas
 
 BaseModel = declarative_base()
 

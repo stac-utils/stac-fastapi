@@ -6,12 +6,11 @@ from urllib.parse import urljoin
 from pydantic.utils import GetterDict
 
 import geoalchemy2 as ga
+from stac_api import config
+from stac_api.errors import DatabaseError
+from stac_api.models.links import CollectionLinks, ItemLinks, filter_links
 from stac_pydantic.item import ItemProperties
 from stac_pydantic.shared import DATETIME_RFC339
-
-from .. import config
-from ..errors import DatabaseError
-from .links import CollectionLinks, ItemLinks, filter_links
 
 
 def resolve_links(links: list, base_url: str) -> List[Dict]:

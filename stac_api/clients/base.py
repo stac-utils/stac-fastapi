@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any, List, Tuple
 
-from ..models import schemas
+from stac_api.models import schemas
 
 logger = logging.getLogger(__name__)
 

@@ -8,17 +8,16 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, Query
 from starlette.requests import Request
 
-from stac_pydantic.api.extensions.paging import PaginationLink
-from stac_pydantic.item import ItemCollection
-from stac_pydantic.shared import Link, Relations
-
-from ..clients.postgres.collection import (
+from stac_api.clients.postgres.collection import (
     CollectionCrudClient,
     collection_crud_client_factory,
 )
-from ..clients.postgres.item import ItemCrudClient, item_crud_client_factory
-from ..models import schemas
-from ..utils.dependencies import discover_base_url, parse_list_factory
+from stac_api.clients.postgres.item import ItemCrudClient, item_crud_client_factory
+from stac_api.models import schemas
+from stac_api.utils.dependencies import discover_base_url, parse_list_factory
+from stac_pydantic.api.extensions.paging import PaginationLink
+from stac_pydantic.item import ItemCollection
+from stac_pydantic.shared import Link, Relations
 
 router = APIRouter()
 

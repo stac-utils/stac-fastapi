@@ -13,6 +13,8 @@ from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import shape
 
 from geojson_pydantic.geometries import Polygon
+from stac_api import config
+from stac_api.models.decompose import CollectionGetter, ItemGetter
 from stac_pydantic import Collection as CollectionBase
 from stac_pydantic import Item as ItemBase
 from stac_pydantic.api import Search
@@ -20,9 +22,6 @@ from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
 from stac_pydantic.api.search import DATETIME_RFC339
 from stac_pydantic.shared import Link
 from stac_pydantic.utils import AutoValueEnum
-
-from .. import config
-from .decompose import CollectionGetter, ItemGetter
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]

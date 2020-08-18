@@ -3,15 +3,14 @@ from urllib.parse import urljoin
 
 from fastapi import APIRouter, Depends
 
-from stac_pydantic.api import ConformanceClasses, LandingPage
-from stac_pydantic.shared import Link, MimeTypes, Relations
-
-from ..clients.postgres.collection import (
+from stac_api.clients.postgres.collection import (
     CollectionCrudClient,
     collection_crud_client_factory,
 )
-from ..models.links import CollectionLinks
-from ..utils.dependencies import discover_base_url
+from stac_api.models.links import CollectionLinks
+from stac_api.utils.dependencies import discover_base_url
+from stac_pydantic.api import ConformanceClasses, LandingPage
+from stac_pydantic.shared import Link, MimeTypes, Relations
 
 router = APIRouter()
 

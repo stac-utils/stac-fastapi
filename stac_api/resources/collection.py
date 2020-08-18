@@ -3,12 +3,12 @@ from typing import List
 
 from fastapi import APIRouter, Depends
 
-from ..clients.postgres.collection import (
+from stac_api.clients.postgres.collection import (
     CollectionCrudClient,
     collection_crud_client_factory,
 )
-from ..models import schemas
-from ..utils.dependencies import discover_base_url
+from stac_api.models import schemas
+from stac_api.utils.dependencies import discover_base_url
 
 router = APIRouter()
 

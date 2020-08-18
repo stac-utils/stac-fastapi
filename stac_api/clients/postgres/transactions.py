@@ -8,11 +8,11 @@ import sqlalchemy as sa
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from ... import errors
-from ...models import database, schemas
-from ...utils.dependencies import database_reader_factory, database_writer_factory
-from ..base import BaseTransactionsClient
-from .base import PostgresClient
+from stac_api import errors
+from stac_api.clients.base import BaseTransactionsClient
+from stac_api.clients.postgres.base import PostgresClient
+from stac_api.models import database, schemas
+from stac_api.utils.dependencies import database_reader_factory, database_writer_factory
 
 logger = logging.getLogger(__name__)
 

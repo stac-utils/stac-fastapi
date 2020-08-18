@@ -8,9 +8,8 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Query
 
 import psycopg2
-
-from ... import errors
-from ...models import database
+from stac_api import errors
+from stac_api.models import database
 
 logger = logging.getLogger(__name__)
 
