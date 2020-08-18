@@ -1,19 +1,18 @@
+import json
+import time
+import uuid
 from copy import deepcopy
 from datetime import datetime, timedelta
-import json
 from random import randint
+from urllib.parse import parse_qs, urlparse, urlsplit
+
 from shapely.geometry import Polygon
-from stac_pydantic.shared import Asset, MimeTypes
-from stac_pydantic.api.search import DATETIME_RFC339
-import time
-from urllib.parse import urlsplit, urlparse, parse_qs
-import uuid
 
-
-from stac_api.errors import DatabaseError
 from stac_api.clients import collection_crud_client_factory, item_crud_client_factory
 from stac_api.clients.collection_crud import CollectionCrudClient
 from stac_api.clients.item_crud import ItemCrudClient
+from stac_api.errors import DatabaseError
+from stac_pydantic.api.search import DATETIME_RFC339
 
 from ..conftest import create_test_client_with_error
 
@@ -681,7 +680,7 @@ def test_field_extension_exclude_default_includes(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    body = {"fields": {"exclude": ["geometry"],}}
+    body = {"fields": {"exclude": ["geometry"]}}
 
     resp = app_client.post("/search", json=body)
     resp_json = resp.json()
@@ -792,5 +791,5 @@ def test_item_search_database_error(load_test_data):
         dependency=item_crud_client_factory,
         error=DatabaseError(),
     ) as test_client:
-        resp = test_client.post(f"/search", json=params)
+        resp = test_client.post("/search", json=params)
         assert resp.status_code == 424

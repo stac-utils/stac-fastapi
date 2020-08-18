@@ -1,10 +1,12 @@
-from dataclasses import dataclass
+"""Base crud client."""
 import logging
+from dataclasses import dataclass
 from typing import Union
 
-import psycopg2
 import sqlalchemy as sa
 from sqlalchemy.orm import Query
+
+import psycopg2
 
 from .. import errors
 from ..models import database, schemas
@@ -38,10 +40,9 @@ class BaseCrudClient:
             if isinstance(e.orig, psycopg2.errors.ForeignKeyViolation):
                 raise errors.ForeignKeyError(e.orig.pgerror)
             raise errors.DatabaseError(e.orig.pgerror) from e
-        except:
-            error_message = "Unhandled database exception during commit"
-            logger.error(error_message, exc_info=True)
-            raise errors.DatabaseError(error_message)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            raise errors.DatabaseError("Unhandled database exception during commit")
 
     def lookup_id(self, item_id: str) -> Query:
         """Create a query to access a single record from the table"""
@@ -49,10 +50,9 @@ class BaseCrudClient:
             query = self.reader_session.query(self.table).filter(
                 self.table.id == item_id
             )
-        except:
-            error_message = f"Unhandled database during ID lookup"
-            logger.error(error_message, exc_info=True)
-            raise errors.DatabaseError(error_message)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            raise errors.DatabaseError("Unhandled database during ID lookup")
         if not self.row_exists(query):
             error_message = f"Row {item_id} does not exist"
             logger.warning(error_message)

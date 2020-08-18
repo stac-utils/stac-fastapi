@@ -1,13 +1,15 @@
+"""Conformance endpoints"""
 from urllib.parse import urljoin
 
 from fastapi import APIRouter, Depends
+
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
 from ..clients import collection_crud_client_factory
+from ..clients.collection_crud import CollectionCrudClient
 from ..models.links import CollectionLinks
 from ..utils.dependencies import discover_base_url
-from ..clients.collection_crud import CollectionCrudClient
 
 router = APIRouter()
 
@@ -17,6 +19,7 @@ def landing_page(
     base_url: str = Depends(discover_base_url),
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
 ):
+    """Get landing page"""
     resp = LandingPage(
         title="Arturo STAC API",
         description="Arturo raster datastore",
@@ -55,6 +58,7 @@ def landing_page(
     "/conformance", response_model=ConformanceClasses, response_model_exclude_unset=True
 )
 def coformance_classes():
+    """Get conformance classes"""
     return ConformanceClasses(
         conformsTo=[
             "https://stacspec.org/STAC-api.html",

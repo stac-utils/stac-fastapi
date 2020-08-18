@@ -1,32 +1,35 @@
-from contextlib import contextmanager
 import json
 import os
+from contextlib import contextmanager
+from typing import Callable, Dict, Generator, List, Type
+from unittest.mock import MagicMock, Mock
+
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
 from starlette.config import environ
-from typing import Callable, ContextManager, Dict, List, Union
-from unittest.mock import Mock, MagicMock
+from starlette.testclient import TestClient
+
+from stac_api.app import app
+from stac_api.clients.base_crud import BaseCrudClient
+from stac_api.clients.collection_crud import CollectionCrudClient
+from stac_api.clients.item_crud import ItemCrudClient
+from stac_api.clients.tokens import PaginationTokenClient
+from stac_api.errors import NotFoundError
+from stac_api.models import database, schemas
+from stac_api.settings import settings
 
 # This line would raise an error if we use it after 'settings' has been imported.
 environ["TESTING"] = "true"
 environ["DEBUG"] = "true"
 
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import sessionmaker, Session
-from starlette.testclient import TestClient
-
-from stac_api.settings import settings
-from stac_api.app import app
-from stac_api.models import database, schemas
-from stac_api.clients.collection_crud import CollectionCrudClient
-from stac_api.clients.item_crud import ItemCrudClient
-from stac_api.clients.tokens import PaginationTokenClient
-from stac_api.errors import NotFoundError
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
-def create_mock(client: Callable, mocked_method: str, error: Exception) -> MagicMock:
+def create_mock(
+    client: Type[BaseCrudClient], mocked_method: str, error: Exception
+) -> MagicMock:
     """Create a mock client which raises an exception"""
     mock_client = MagicMock(client)
     setattr(mock_client, mocked_method, Mock(side_effect=error))
@@ -35,11 +38,11 @@ def create_mock(client: Callable, mocked_method: str, error: Exception) -> Magic
 
 @contextmanager
 def create_test_client_with_error(
-    client: Union[ItemCrudClient, CollectionCrudClient],
+    client: Type[BaseCrudClient],
     mocked_method: str,
     dependency: Callable,
     error: Exception,
-) -> ContextManager[TestClient]:
+) -> Generator[TestClient, None, None]:
     """Inject a mock client into the test app"""
     app.dependency_overrides[dependency] = lambda: create_mock(
         client, mocked_method, error
@@ -93,7 +96,7 @@ def load_all_test_data(filter: str) -> List[Dict]:
 
 
 @pytest.fixture
-def reader_connection() -> Session:
+def reader_connection() -> Generator[Session, None, None]:
     """Create a reader connection"""
     engine = create_engine(settings.reader_connection_string)
     db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
@@ -103,7 +106,7 @@ def reader_connection() -> Session:
 
 
 @pytest.fixture
-def writer_connection() -> Session:
+def writer_connection() -> Generator[Session, None, None]:
     """Create a writer connection"""
     engine = create_engine(settings.writer_connection_string)
     db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
@@ -129,7 +132,7 @@ def collection_crud_client(
     reader_connection: Session,
     writer_connection: Session,
     pagination_client: PaginationTokenClient,
-) -> CollectionCrudClient:
+) -> Generator[CollectionCrudClient, None, None]:
     """Create a collection client.  Clean up data after each test. """
     client = CollectionCrudClient(
         reader_session=reader_connection,
@@ -153,7 +156,7 @@ def item_crud_client(
     writer_connection: Session,
     collection_crud_client: CollectionCrudClient,
     load_test_data,
-) -> ItemCrudClient:
+) -> Generator[ItemCrudClient, None, None]:
     """Create an item client.  Create a collection used for testing and clean up data after each test."""
     # Create a test collection (foreignkey)
     test_collection = schemas.Collection(**load_test_data("test_collection.json"))

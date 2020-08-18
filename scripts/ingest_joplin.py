@@ -1,13 +1,15 @@
+"""Ingest sample data during docker-compose"""
+
 from urllib.parse import urljoin
 
 import requests
-
 
 bucket = "arturo-stac-api-test-data"
 app_host = "http://host.docker.internal:8081"
 
 
 def ingest_joplin_data():
+    """ingest data"""
     r = requests.get(f"https://{bucket}.s3.amazonaws.com/joplin/collection.json")
     collection = r.json()
 

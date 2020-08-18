@@ -1,19 +1,14 @@
 from random import randint
 
 import pytest
-from psycopg2._psycopg import sqlstate_errors
 from sqlalchemy.orm import Session
 
-from stac_api.errors import (
-    ConflictError,
-    DatabaseError,
-    NotFoundError,
-    ForeignKeyError,
-)
-from stac_api.models import database
-from stac_api.models.schemas import Collection, Item
+from psycopg2._psycopg import sqlstate_errors
 from stac_api.clients.base_crud import BaseCrudClient
 from stac_api.clients.collection_crud import CollectionCrudClient
+from stac_api.errors import ConflictError, DatabaseError, ForeignKeyError, NotFoundError
+from stac_api.models import database
+from stac_api.models.schemas import Collection, Item
 
 from ..conftest import create_mock
 
@@ -108,7 +103,7 @@ def test_delete_missing_collection(collection_crud_client):
 def test_update_collection_already_exists(collection_crud_client, load_test_data):
     """Test updating a collection which already exists"""
     test_collection = Collection(**load_test_data("test_collection.json"))
-    row_data = collection_crud_client.create(test_collection)
+    collection_crud_client.create(test_collection)
 
     test_collection = Collection(**load_test_data("test_collection.json"))
     test_collection.keywords.append("new keyword")

@@ -4,13 +4,12 @@ Revision ID: 131aab4d9e49
 Revises: 
 Create Date: 2020-02-09 13:03:09.336631
 
-"""
-from alembic import op
+"""  # noqa
 import sqlalchemy as sa
-
 from sqlalchemy.dialects.postgresql import JSONB
-from geoalchemy2.types import Geometry
 
+from alembic import op
+from geoalchemy2.types import Geometry
 
 # revision identifiers, used by Alembic.
 revision = "131aab4d9e49"
@@ -20,6 +19,7 @@ depends_on = None
 
 
 def upgrade():
+    """upgrade to this revision"""
     op.execute("CREATE SCHEMA data")
     op.execute("CREATE EXTENSION IF NOT EXISTS postgis")
 
@@ -67,6 +67,7 @@ def upgrade():
 
 
 def downgrade():
+    """downgrade to previous revision"""
     op.execute("DROP TABLE data.items")
     op.execute("DROP TABLE data.collections")
     op.execute("DROP TABLE data.paging_tokens")
