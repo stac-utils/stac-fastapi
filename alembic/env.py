@@ -1,11 +1,10 @@
+"""Migration environment."""
 import os
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -26,15 +25,16 @@ target_metadata = None
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 def get_connection_url() -> str:
     """
     Get connection URL from environment variables (see `.env.example`)
     """
-    postgres_user = os.environ['POSTGRES_USER']
-    postgres_pass = os.environ['POSTGRES_PASS']
-    postgres_host = os.environ['POSTGRES_HOST']
-    postgres_port = os.environ['POSTGRES_PORT']
-    postgres_dbname = os.environ['POSTGRES_DBNAME']
+    postgres_user = os.environ["POSTGRES_USER"]
+    postgres_pass = os.environ["POSTGRES_PASS"]
+    postgres_host = os.environ["POSTGRES_HOST"]
+    postgres_port = os.environ["POSTGRES_PORT"]
+    postgres_dbname = os.environ["POSTGRES_DBNAME"]
     return f"postgresql://{postgres_user}:{postgres_pass}@{postgres_host}:{postgres_port}/{postgres_dbname}"
 
 
@@ -70,17 +70,13 @@ def run_migrations_online():
 
     """
     configuration = config.get_section(config.config_ini_section)
-    configuration['sqlalchemy.url'] = get_connection_url()
+    configuration["sqlalchemy.url"] = get_connection_url()
     connectable = engine_from_config(
-        configuration,
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
+        configuration, prefix="sqlalchemy.", poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

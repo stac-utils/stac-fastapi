@@ -1,15 +1,12 @@
+"""Collection endpoints"""
 from typing import List
 
 from fastapi import APIRouter, Depends
-from starlette import status
-from starlette.exceptions import HTTPException
 
-from .. import errors
 from ..clients import collection_crud_client_factory
 from ..clients.collection_crud import CollectionCrudClient
 from ..models import schemas
 from ..utils.dependencies import discover_base_url
-
 
 router = APIRouter()
 
@@ -26,6 +23,7 @@ def create_collection(
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
+    """Create a new collection (transactions extension)"""
     row_data = crud_client.create(collection)
     row_data.base_url = base_url
     return row_data
@@ -43,6 +41,7 @@ def update_collection_by_id(
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
+    """Update collection (transactions extension)"""
     row_data = crud_client.update(collection)
     row_data.base_url = base_url
     return row_data
@@ -59,6 +58,7 @@ def get_all_collections(
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
+    """Get all collections"""
     row_data = crud_client.get_all_collections()
     response_data = []
     for row in row_data:
@@ -79,6 +79,7 @@ def get_collection_by_id(
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
+    """Get a single collection"""
     row_data = crud_client.read(collectionId)
     row_data.base_url = base_url
     return row_data
@@ -96,6 +97,7 @@ def delete_collection_by_id(
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
+    """Delete a collection (transactions extension)"""
     row_data = crud_client.delete(collectionId)
     row_data.base_url = base_url
     return row_data

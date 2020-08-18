@@ -1,20 +1,23 @@
+"""Pagination token client."""
+
+import os
 from base64 import urlsafe_b64encode
 from dataclasses import dataclass
-import os
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from .base_crud import BaseCrudClient
-from ..models import database
-
 from ..errors import DatabaseError
+from ..models import database
 from ..utils.dependencies import database_reader_factory, database_writer_factory
+from .base_crud import BaseCrudClient
 
 
 @dataclass
 class PaginationTokenClient(BaseCrudClient):
-    def insert(self, keyset: str, tries: int = 0) -> str:
+    """Pagination token specific CRUD operations"""
+
+    def insert(self, keyset: str, tries: int = 0) -> str:  # type:ignore
         """Insert a keyset into the database"""
         # uid has collision chance of 1e-7 percent
         uid = urlsafe_b64encode(os.urandom(6)).decode()
@@ -40,6 +43,7 @@ def pagination_token_client_factory(
     reader_session: Session = Depends(database_reader_factory),
     writer_session: Session = Depends(database_writer_factory),
 ) -> PaginationTokenClient:
+    """FastAPI dependency"""
     return PaginationTokenClient(
         reader_session=reader_session,
         writer_session=writer_session,

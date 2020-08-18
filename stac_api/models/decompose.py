@@ -1,15 +1,17 @@
+"""Model serialization."""
 import json
 from typing import Any, Dict, List, Union
 from urllib.parse import urljoin
 
-import geoalchemy2 as ga
 from pydantic.utils import GetterDict
+
+import geoalchemy2 as ga
 from stac_pydantic.item import ItemProperties
 from stac_pydantic.shared import DATETIME_RFC339
 
-from .links import CollectionLinks, ItemLinks, filter_links
 from ..errors import DatabaseError
 from ..settings import settings
+from .links import CollectionLinks, ItemLinks, filter_links
 
 
 def resolve_links(links: list, base_url: str) -> List[Dict]:
@@ -34,6 +36,7 @@ class ItemGetter(GetterDict):
 
     @staticmethod
     def decode_geom(geom: Union[ga.elements.WKBElement, str, Dict]) -> Dict:
+        """Decode geoalchemy type to geojson"""
         if isinstance(geom, ga.elements.WKBElement):
             return json.loads(json.dumps(ga.shape.to_shape(geom).__geo_interface__))
         elif isinstance(geom, str):
@@ -43,6 +46,7 @@ class ItemGetter(GetterDict):
         raise DatabaseError("Received unexpected geometry format from database")
 
     def __init__(self, obj: Any):
+        """Decompose orm model to pydantic model"""
         properties = {}
         for field in settings.indexed_fields:
             # Use getattr to accommodate extension namespaces
@@ -71,6 +75,7 @@ class CollectionGetter(GetterDict):
     """
 
     def __init__(self, obj: Any):
+        """Decompose orm model to pydantic model"""
         # Create inferred links
         collection_links = CollectionLinks(
             collection_id=obj.id, base_url=obj.base_url

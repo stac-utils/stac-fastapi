@@ -1,32 +1,38 @@
-from dataclasses import dataclass
+"""Collection crud client."""
+
 import logging
+from dataclasses import dataclass
 from typing import List, Tuple
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from sqlakeyset import get_page, Page
 
-from .base_crud import BaseCrudClient
-from .tokens import PaginationTokenClient, pagination_token_client_factory
+from sqlakeyset import Page, get_page
+
 from .. import errors
 from ..models import database
 from ..utils.dependencies import database_reader_factory, database_writer_factory
+from .base_crud import BaseCrudClient
+from .tokens import PaginationTokenClient, pagination_token_client_factory
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class CollectionCrudClient(BaseCrudClient):
+    """Collection specific CRUD operations"""
+
     pagination_client: PaginationTokenClient
 
     def get_all_collections(self) -> List[database.Collection]:
         """Read all collections from the database"""
         try:
             items = self.reader_session.query(self.table).all()
-        except:
-            error_message = "Unhandled database error when getting item collection"
-            logger.error(error_message, exc_info=True)
-            raise errors.DatabaseError(error_message)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            raise errors.DatabaseError(
+                "Unhandled database error when getting item collection"
+            )
         return items
 
     def get_item_collection(
@@ -55,10 +61,11 @@ class CollectionCrudClient(BaseCrudClient):
             )
         except errors.NotFoundError:
             raise
-        except:
-            error_message = "Unhandled database error when getting collection children"
-            logger.error(error_message, exc_info=True)
-            raise errors.DatabaseError(error_message)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            raise errors.DatabaseError(
+                "Unhandled database error when getting collection children"
+            )
         return page, count
 
 
@@ -67,6 +74,7 @@ def collection_crud_client_factory(
     writer_session: Session = Depends(database_writer_factory),
     pagination_client: PaginationTokenClient = Depends(pagination_token_client_factory),
 ) -> CollectionCrudClient:
+    """FastAPI dependency"""
     return CollectionCrudClient(
         reader_session=reader_session,
         writer_session=writer_session,

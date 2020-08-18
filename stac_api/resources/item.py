@@ -1,22 +1,22 @@
-from datetime import datetime
+"""Item endpoints"""
+
 import json
-from typing import List, Union, Optional
+from datetime import datetime
+from typing import List, Optional, Union
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, Query
-from starlette import status
 from starlette.requests import Request
-from starlette.exceptions import HTTPException
+
+from stac_pydantic.api.extensions.paging import PaginationLink
 from stac_pydantic.item import ItemCollection
 from stac_pydantic.shared import Link, Relations
-from stac_pydantic.api.extensions.paging import PaginationLink
 
-from .. import errors
 from ..clients import collection_crud_client_factory, item_crud_client_factory
 from ..clients.collection_crud import CollectionCrudClient
 from ..clients.item_crud import ItemCrudClient
-from ..utils.dependencies import discover_base_url, parse_list_factory
 from ..models import schemas
+from ..utils.dependencies import discover_base_url, parse_list_factory
 
 router = APIRouter()
 
@@ -34,6 +34,7 @@ def create_item_by_id(
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
+    """Create item (transactions extension)"""
     row_data = crud_client.create(item)
     row_data.base_url = base_url
     return row_data
@@ -50,6 +51,7 @@ def update_item_by_id(
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
+    """Update item (transactions extension)"""
     row_data = crud_client.update(item)
     row_data.base_url = base_url
     return row_data
@@ -66,6 +68,7 @@ def delete_item_by_id(
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
+    """Delete item (transactions extension)"""
     row_data = crud_client.delete(itemId)
     row_data.base_url = base_url
     return row_data
@@ -84,6 +87,7 @@ def get_item_collection(
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
+    """Get collection items"""
     page, count = crud_client.get_item_collection(collectionId, limit, token=token)
 
     links = []
@@ -113,7 +117,7 @@ def get_item_collection(
 
     return ItemCollection(
         type="FeatureCollection",
-        context={"returned": len(page), "limit": limit, "matched": count,},
+        context={"returned": len(page), "limit": limit, "matched": count},
         features=response_features,
         links=links,
     )
@@ -130,6 +134,7 @@ def get_item_by_id(
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
+    """Get item"""
     row_data = crud_client.read(itemId)
     row_data.base_url = base_url
     return row_data
@@ -146,6 +151,7 @@ def search_items_post(
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
+    """POST search catalog"""
     page, count = crud_client.stac_search(search_request)
 
     links = []
@@ -232,6 +238,7 @@ def search_items_get(
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
+    """GET search catalog"""
     # Parse request parameters
     base_args = {
         "collections": collections,
@@ -295,7 +302,7 @@ def search_items_get(
 
     # Add OGC Tile links
     if not collections:
-        collections = {item.collection_id for item in page}
+        collections = {item.collection_id for item in page}  # type:ignore
 
     for coll in collections:
         links.append(
@@ -330,7 +337,7 @@ def search_items_get(
             ]
             for item in sublist
         ]
-        bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
+        bbox = (min(xvals), min(yvals), max(xvals), max(yvals))  # type:ignore
 
     return ItemCollection(
         type="FeatureCollection",

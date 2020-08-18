@@ -1,11 +1,12 @@
+"""FastAPI application."""
+
 from fastapi import FastAPI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from .errors import DEFAULT_STATUS_CODES, add_exception_handlers
+from .resources import collection, conformance, item, mgmt
 from .settings import settings
-from .errors import add_exception_handlers, DEFAULT_STATUS_CODES
-from .resources import mgmt, collection, conformance, item
-
 
 app = FastAPI()
 app.debug = settings.debug

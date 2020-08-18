@@ -1,13 +1,9 @@
-from dataclasses import dataclass
+"""FastAPI dependencies."""
+
 from typing import Callable, List
 
 from sqlalchemy.orm import Session
 from starlette.requests import Request
-
-
-@dataclass
-class DatabaseConnectionError(Exception):
-    message: str
 
 
 def discover_base_url(request: Request):

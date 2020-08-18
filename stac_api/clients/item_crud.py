@@ -1,19 +1,21 @@
-from dataclasses import dataclass
+"""Item crud client."""
 import logging
-from typing import List, Tuple, Union
+from dataclasses import dataclass
+from typing import Tuple, Union
 
-from fastapi import Depends
-import geoalchemy2 as ga
 import sqlalchemy as sa
+from fastapi import Depends
 from sqlalchemy.orm import Session
-from sqlakeyset import get_page, Page
 
+import geoalchemy2 as ga
+from sqlakeyset import Page, get_page
+
+from ..errors import DatabaseError
+from ..models import database, schemas
+from ..utils.dependencies import database_reader_factory, database_writer_factory
 from .base_crud import BaseCrudClient
 from .collection_crud import CollectionCrudClient, collection_crud_client_factory
 from .tokens import PaginationTokenClient, pagination_token_client_factory
-from ..errors import DatabaseError
-from ..models import database, schemas
-from ..utils.dependencies import database_writer_factory, database_reader_factory
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +24,13 @@ NumType = Union[float, int]
 
 @dataclass
 class ItemCrudClient(BaseCrudClient):
+    """Item specific CRUD operations"""
+
     collection_crud: CollectionCrudClient
     pagination_client: PaginationTokenClient
 
     def stac_search(self, search_request: schemas.STACSearch) -> Tuple[Page, int]:
+        """STAC search operation"""
         token = (
             self.pagination_client.get(search_request.token)
             if search_request.token
@@ -72,12 +77,11 @@ class ItemCrudClient(BaseCrudClient):
                     if page.paging.has_previous
                     else None
                 )
-            except:
-                error_message = (
+            except Exception as e:
+                logger.error(e, exc_info=True)
+                raise DatabaseError(
                     "Unhandled database error when searching for items by id"
                 )
-                logger.error(error_message, exc_info=True)
-                raise DatabaseError(error_message)
             return page, len(search_request.ids)
 
         # Spatial query
@@ -123,10 +127,11 @@ class ItemCrudClient(BaseCrudClient):
                 if page.paging.has_previous
                 else None
             )
-        except:
-            error_message = "Unhandled database error during spatial/temporal query"
-            logger.error(error_message, exc_info=True)
-            raise DatabaseError(error_message)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            raise DatabaseError(
+                "Unhandled database error during spatial/temporal query"
+            )
         return page, count
 
 
@@ -136,6 +141,7 @@ def item_crud_client_factory(
     collection_crud: CollectionCrudClient = Depends(collection_crud_client_factory),
     pagination_client: PaginationTokenClient = Depends(pagination_token_client_factory),
 ) -> ItemCrudClient:
+    """FastAPI dependency."""
     return ItemCrudClient(
         reader_session=reader_session,
         writer_session=writer_session,

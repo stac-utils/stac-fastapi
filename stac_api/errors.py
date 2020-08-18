@@ -1,33 +1,43 @@
-from dataclasses import dataclass
-from typing import Callable, Dict, Type
+"""Error handling"""
 
 import logging
+from typing import Callable, Dict, Type
 
 from fastapi import FastAPI
+from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from starlette import status
 
 logger = logging.getLogger(__name__)
 
 
 class StacApiError(Exception):
+    """Generic API error"""
+
     pass
 
 
 class ConflictError(StacApiError):
+    """Database conflict"""
+
     pass
 
 
 class NotFoundError(StacApiError):
+    """Resource not found"""
+
     pass
 
 
 class ForeignKeyError(StacApiError):
+    """Foreign key error (collection does not exist)"""
+
     pass
 
 
 class DatabaseError(StacApiError):
+    """Generic database errors"""
+
     pass
 
 
