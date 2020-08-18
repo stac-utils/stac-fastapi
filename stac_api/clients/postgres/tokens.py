@@ -7,14 +7,14 @@ from dataclasses import dataclass
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from ..errors import DatabaseError
-from ..models import database
-from ..utils.dependencies import database_reader_factory, database_writer_factory
-from .base_crud import BaseCrudClient
+from stac_api.clients.postgres.base import PostgresClient
+from stac_api.errors import DatabaseError
+from stac_api.models import database
+from stac_api.utils.dependencies import database_reader_factory, database_writer_factory
 
 
 @dataclass
-class PaginationTokenClient(BaseCrudClient):
+class PaginationTokenClient(PostgresClient):
     """Pagination token specific CRUD operations"""
 
     def insert(self, keyset: str, tries: int = 0) -> str:  # type:ignore

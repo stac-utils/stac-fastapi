@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_landing_page(app_client):
     """Test landing page"""
     resp = app_client.get("/")

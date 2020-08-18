@@ -6,8 +6,10 @@ from fastapi import APIRouter, Depends
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
-from ..clients import collection_crud_client_factory
-from ..clients.collection_crud import CollectionCrudClient
+from ..clients.postgres.collection import (
+    CollectionCrudClient,
+    collection_crud_client_factory,
+)
 from ..models.links import CollectionLinks
 from ..utils.dependencies import discover_base_url
 
@@ -45,7 +47,7 @@ def landing_page(
             ),
         ],
     )
-    collections = crud_client.get_all_collections()
+    collections = crud_client.all_collections()
     for coll in collections:
         coll_link = CollectionLinks(collection_id=coll.id, base_url=base_url).self()
         coll_link.rel = Relations.child

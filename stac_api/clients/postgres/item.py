@@ -9,13 +9,17 @@ from sqlalchemy.orm import Session
 
 import geoalchemy2 as ga
 from sqlakeyset import Page, get_page
+from stac_api.clients.postgres.tokens import (
+    PaginationTokenClient,
+    pagination_token_client_factory,
+)
 
-from ..errors import DatabaseError
-from ..models import database, schemas
-from ..utils.dependencies import database_reader_factory, database_writer_factory
-from .base_crud import BaseCrudClient
-from .collection_crud import CollectionCrudClient, collection_crud_client_factory
-from .tokens import PaginationTokenClient, pagination_token_client_factory
+from ...errors import DatabaseError
+from ...models import database, schemas
+from ...utils.dependencies import database_reader_factory, database_writer_factory
+from ..base import BaseItemClient
+from .base import PostgresClient
+from .collection import CollectionCrudClient, collection_crud_client_factory
 
 logger = logging.getLogger(__name__)
 
@@ -23,13 +27,13 @@ NumType = Union[float, int]
 
 
 @dataclass
-class ItemCrudClient(BaseCrudClient):
+class ItemCrudClient(PostgresClient, BaseItemClient):
     """Item specific CRUD operations"""
 
     collection_crud: CollectionCrudClient
     pagination_client: PaginationTokenClient
 
-    def stac_search(self, search_request: schemas.STACSearch) -> Tuple[Page, int]:
+    def search(self, search_request: schemas.STACSearch) -> Tuple[Page, int]:
         """STAC search operation"""
         token = (
             self.pagination_client.get(search_request.token)

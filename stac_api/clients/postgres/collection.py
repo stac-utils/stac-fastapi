@@ -8,23 +8,27 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from sqlakeyset import Page, get_page
+from stac_api.clients.postgres.tokens import (
+    PaginationTokenClient,
+    pagination_token_client_factory,
+)
 
-from .. import errors
-from ..models import database
-from ..utils.dependencies import database_reader_factory, database_writer_factory
-from .base_crud import BaseCrudClient
-from .tokens import PaginationTokenClient, pagination_token_client_factory
+from ... import errors
+from ...models import database
+from ...utils.dependencies import database_reader_factory, database_writer_factory
+from ..base import BaseCollectionClient
+from .base import PostgresClient
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class CollectionCrudClient(BaseCrudClient):
+class CollectionCrudClient(PostgresClient, BaseCollectionClient):
     """Collection specific CRUD operations"""
 
     pagination_client: PaginationTokenClient
 
-    def get_all_collections(self) -> List[database.Collection]:
+    def all_collections(self) -> List[database.Collection]:
         """Read all collections from the database"""
         try:
             items = self.reader_session.query(self.table).all()
@@ -35,8 +39,8 @@ class CollectionCrudClient(BaseCrudClient):
             )
         return items
 
-    def get_item_collection(
-        self, collection_id: str, limit: int, token: str = None
+    def item_collection(
+        self, collection_id: str, limit: int = 10, token: str = None
     ) -> Tuple[Page, int]:
         """Read an item collection from the database"""
         try:

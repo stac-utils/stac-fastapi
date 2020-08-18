@@ -3,8 +3,10 @@ from typing import List
 
 from fastapi import APIRouter, Depends
 
-from ..clients import collection_crud_client_factory
-from ..clients.collection_crud import CollectionCrudClient
+from ..clients.postgres.collection import (
+    CollectionCrudClient,
+    collection_crud_client_factory,
+)
 from ..models import schemas
 from ..utils.dependencies import discover_base_url
 
@@ -23,7 +25,7 @@ def get_all_collections(
     base_url: str = Depends(discover_base_url),
 ):
     """Get all collections"""
-    row_data = crud_client.get_all_collections()
+    row_data = crud_client.all_collections()
     response_data = []
     for row in row_data:
         row.base_url = base_url

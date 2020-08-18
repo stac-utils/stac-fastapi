@@ -1,5 +1,11 @@
-from stac_api.clients import collection_crud_client_factory
-from stac_api.clients.collection_crud import CollectionCrudClient
+from stac_api.clients.postgres.collection import (
+    CollectionCrudClient,
+    collection_crud_client_factory,
+)
+from stac_api.clients.postgres.transactions import (
+    TransactionsClient,
+    transactions_client_factory,
+)
 from stac_api.errors import DatabaseError
 
 from ..conftest import create_test_client_with_error
@@ -83,9 +89,9 @@ def test_create_collection_database_error(load_test_data):
     """Test 424 is raised on database error"""
     test_collection = load_test_data("test_collection.json")
     with create_test_client_with_error(
-        client=CollectionCrudClient,
-        mocked_method="create",
-        dependency=collection_crud_client_factory,
+        client=TransactionsClient,
+        mocked_method="create_collection",
+        dependency=transactions_client_factory,
         error=DatabaseError(),
     ) as test_client:
         resp = test_client.post("/collections", json=test_collection)
@@ -96,9 +102,9 @@ def test_update_collection_database_error(load_test_data):
     """Test 424 is raised on database error"""
     test_collection = load_test_data("test_collection.json")
     with create_test_client_with_error(
-        client=CollectionCrudClient,
-        mocked_method="update",
-        dependency=collection_crud_client_factory,
+        client=TransactionsClient,
+        mocked_method="update_collection",
+        dependency=transactions_client_factory,
         error=DatabaseError(),
     ) as test_client:
         resp = test_client.put("/collections", json=test_collection)
@@ -109,7 +115,7 @@ def tet_get_all_collections_database_error():
     """Test 424 is raised on database error"""
     with create_test_client_with_error(
         client=CollectionCrudClient,
-        mocked_method="get_all_collections",
+        mocked_method="all_collections",
         dependency=collection_crud_client_factory,
         error=DatabaseError(),
     ) as test_client:
@@ -134,9 +140,9 @@ def test_delete_collection_database_error(load_test_data):
     """Test 424 is raised on database error"""
     test_collection = load_test_data("test_collection.json")
     with create_test_client_with_error(
-        client=CollectionCrudClient,
-        mocked_method="delete",
-        dependency=collection_crud_client_factory,
+        client=TransactionsClient,
+        mocked_method="delete_collection",
+        dependency=transactions_client_factory,
         error=DatabaseError(),
     ) as test_client:
         resp = test_client.delete(f"/collections/{test_collection['id']}")
