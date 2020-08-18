@@ -12,7 +12,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import geoalchemy2 as ga
 from stac_pydantic.shared import DATETIME_RFC339
 
-from ..settings import settings
+from .. import config
 from . import schemas
 
 BaseModel = declarative_base()
@@ -95,7 +95,7 @@ class Item(BaseModel):  # type:ignore
     def get_database_model(cls, schema: schemas.Item) -> dict:
         """Decompose pydantic model to data model"""
         indexed_fields = {}
-        for field in settings.indexed_fields:
+        for field in config.settings.indexed_fields:
             # Use getattr to accommodate extension namespaces
             field_value = getattr(schema.properties, field)
             if field == "datetime":
@@ -103,7 +103,7 @@ class Item(BaseModel):  # type:ignore
             indexed_fields[field.split(":")[-1]] = field_value
 
         # Exclude indexed fields from the properties jsonb field
-        properties = schema.properties.dict(exclude=set(settings.indexed_fields))
+        properties = schema.properties.dict(exclude=set(config.settings.indexed_fields))
         now = datetime.utcnow().strftime(DATETIME_RFC339)
         if "created" not in properties:
             properties["created"] = now
@@ -117,7 +117,8 @@ class Item(BaseModel):  # type:ignore
             **schema.dict(
                 exclude_none=True,
                 exclude=set(
-                    settings.forbidden_fields | {"geometry", "properties", "collection"}
+                    config.settings.forbidden_fields
+                    | {"geometry", "properties", "collection"}
                 ),
             )
         )

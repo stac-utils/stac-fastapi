@@ -9,8 +9,8 @@ import geoalchemy2 as ga
 from stac_pydantic.item import ItemProperties
 from stac_pydantic.shared import DATETIME_RFC339
 
+from .. import config
 from ..errors import DatabaseError
-from ..settings import settings
 from .links import CollectionLinks, ItemLinks, filter_links
 
 
@@ -48,7 +48,7 @@ class ItemGetter(GetterDict):
     def __init__(self, obj: Any):
         """Decompose orm model to pydantic model"""
         properties = {}
-        for field in settings.indexed_fields:
+        for field in config.settings.indexed_fields:
             # Use getattr to accommodate extension namespaces
             field_value = getattr(obj, field.split(":")[-1])
             if field == "datetime":

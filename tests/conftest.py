@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from starlette.config import environ
 from starlette.testclient import TestClient
 
+from stac_api import config
 from stac_api.app import app
 from stac_api.clients.base_crud import BaseCrudClient
 from stac_api.clients.collection_crud import CollectionCrudClient
@@ -17,7 +18,6 @@ from stac_api.clients.item_crud import ItemCrudClient
 from stac_api.clients.tokens import PaginationTokenClient
 from stac_api.errors import NotFoundError
 from stac_api.models import database, schemas
-from stac_api.settings import settings
 
 # This line would raise an error if we use it after 'settings' has been imported.
 environ["TESTING"] = "true"
@@ -98,7 +98,7 @@ def load_all_test_data(filter: str) -> List[Dict]:
 @pytest.fixture
 def reader_connection() -> Generator[Session, None, None]:
     """Create a reader connection"""
-    engine = create_engine(settings.reader_connection_string)
+    engine = create_engine(config.settings.reader_connection_string)
     db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
     yield db_session
     db_session.close()
@@ -108,7 +108,7 @@ def reader_connection() -> Generator[Session, None, None]:
 @pytest.fixture
 def writer_connection() -> Generator[Session, None, None]:
     """Create a writer connection"""
-    engine = create_engine(settings.writer_connection_string)
+    engine = create_engine(config.settings.writer_connection_string)
     db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
     yield db_session
     db_session.close()

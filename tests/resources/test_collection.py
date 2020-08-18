@@ -38,7 +38,7 @@ def test_update_collection_already_exists(app_client, load_test_data):
     resp = app_client.put("/collections", json=test_collection)
     assert resp.status_code == 200
 
-    resp = app_client.get("/collections/{test_collection['id']}")
+    resp = app_client.get(f"/collections/{test_collection['id']}")
     assert resp.status_code == 200
     resp_json = resp.json()
     assert "test" in resp_json["keywords"]
@@ -52,7 +52,7 @@ def test_update_new_collection(app_client, load_test_data):
     resp = app_client.put("/collections", json=test_collection)
     assert resp.status_code == 200
 
-    resp = app_client.get("/collections/{test_collection['id']}")
+    resp = app_client.get(f"/collections/{test_collection['id']}")
     assert resp.status_code == 200
     resp_json = resp.json()
     assert resp_json["id"] == test_collection["id"]
