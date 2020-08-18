@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 from .config import ApiSettings, inject_settings
 from .errors import DEFAULT_STATUS_CODES, add_exception_handlers
-from .resources import collection, conformance, item, mgmt
+from .resources import collection, conformance, item, mgmt, transactions
 
 app = FastAPI()
 settings = ApiSettings()
@@ -17,6 +17,7 @@ app.include_router(mgmt.router)
 app.include_router(conformance.router)
 app.include_router(collection.router)
 app.include_router(item.router)
+app.include_router(transactions.router)
 
 add_exception_handlers(app, DEFAULT_STATUS_CODES)
 
