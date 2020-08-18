@@ -26,14 +26,11 @@ services:
 
   database:
     container_name: stac-db
-    image: kartoza/postgis:latest
+    image: postgis/postgis:12-3.0
     environment:
       - POSTGRES_USER=username
-      - POSTGRES_PASS=password
-      - POSTGRES_DBNAME=postgis
-      - POSTGRES_HOST=localhost
-      - POSTGRES_PORT=5432
-      - ALLOW_IP_RANGE=0.0.0.0/0
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgis
     ports:
       - "5432:5432"
 
@@ -50,8 +47,6 @@ services:
       - POSTGRES_HOST=host.docker.internal
       - POSTGRES_PORT=5432
     command: >
-      bash -c "git clone https://github.com/vishnubob/wait-for-it.git &&
-               ./wait-for-it/wait-for-it.sh localhost:5432 -- alembic upgrade head &&
-               python scripts/ingest_joplin.py"
+      bash -c "sleep 10 && alembic upgrade head && python scripts/ingest_joplin.py"
     depends_on:
       - database
