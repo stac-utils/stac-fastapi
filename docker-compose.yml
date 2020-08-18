@@ -35,7 +35,6 @@ services:
       - "5432:5432"
 
   migration:
-#    image: stac-api:latest
     build:
       context: .
       dockerfile: Dockerfile
