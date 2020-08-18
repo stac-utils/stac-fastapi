@@ -1,26 +1,26 @@
-"""Base crud client."""
+"""Postgresql base client"""
+import abc
 import logging
 from dataclasses import dataclass
-from typing import Union
+from typing import Optional, Type, Union
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Query
 
 import psycopg2
-
-from .. import errors
-from ..models import database, schemas
+from stac_api import errors
+from stac_api.models import database
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class BaseCrudClient:
+class PostgresClient(abc.ABC):
     """Database CRUD operations on the defined table"""
 
     reader_session: sa.orm.Session
     writer_session: sa.orm.Session
-    table: database.BaseModel
+    table: Type[database.BaseModel]
 
     @staticmethod
     def row_exists(query: Query) -> bool:
@@ -44,12 +44,13 @@ class BaseCrudClient:
             logger.error(e, exc_info=True)
             raise errors.DatabaseError("Unhandled database exception during commit")
 
-    def lookup_id(self, item_id: str) -> Query:
+    def lookup_id(
+        self, item_id: str, table: Optional[Type[database.BaseModel]] = None
+    ) -> Query:
         """Create a query to access a single record from the table"""
+        table = table or self.table
         try:
-            query = self.reader_session.query(self.table).filter(
-                self.table.id == item_id
-            )
+            query = self.reader_session.query(table).filter(table.id == item_id)
         except Exception as e:
             logger.error(e, exc_info=True)
             raise errors.DatabaseError("Unhandled database during ID lookup")
@@ -59,48 +60,7 @@ class BaseCrudClient:
             raise errors.NotFoundError(error_message)
         return query
 
-    def create(
-        self, item: Union[schemas.Collection, schemas.Item]
-    ) -> Union[database.Collection, database.Item]:
-        """Create a single record for the table"""
-        try:
-            self.lookup_id(item.id)
-            error_message = f"Row {item.id} already exists"
-            logger.error(error_message, exc_info=True)
-            raise errors.ConflictError(error_message)
-        except errors.NotFoundError:
-            row_data = self.table.from_schema(item)
-            self.writer_session.add(row_data)
-            self.commit()
-            return row_data
-
     def read(self, item_id: str) -> Union[database.Collection, database.Item]:
         """Read a single record from the table"""
         row_data = self.lookup_id(item_id).first()
-        return row_data
-
-    def update(
-        self, item: Union[schemas.Collection, schemas.Item]
-    ) -> Union[database.Collection, database.Item]:
-        """Create a single record if it does not exist or update an existing record"""
-        try:
-            query = self.lookup_id(item.id)
-            update_data = self.table.get_database_model(item)
-            # SQLAlchemy orm updates don't seem to like geoalchemy types
-            update_data.pop("geometry", None)
-            query.update(update_data)
-            self.commit()
-            return self.table.from_schema(item)
-        except errors.NotFoundError:
-            row_data = self.table.from_schema(item)
-            self.writer_session.add(row_data)
-            self.commit()
-            return row_data
-
-    def delete(self, item_id: str) -> Union[database.Collection, database.Item]:
-        """Delete a single record from the table"""
-        query = self.lookup_id(item_id)
-        row_data = query.first()
-        query.delete()
-        self.commit()
         return row_data

@@ -4,9 +4,9 @@ from fastapi import FastAPI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from .config import ApiSettings, inject_settings
-from .errors import DEFAULT_STATUS_CODES, add_exception_handlers
-from .resources import collection, conformance, item, mgmt, transactions
+from stac_api.config import ApiSettings, inject_settings
+from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
+from stac_api.resources import collection, conformance, item, mgmt, transactions
 
 app = FastAPI()
 settings = ApiSettings()

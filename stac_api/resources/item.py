@@ -8,15 +8,16 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, Query
 from starlette.requests import Request
 
+from stac_api.clients.postgres.collection import (
+    CollectionCrudClient,
+    collection_crud_client_factory,
+)
+from stac_api.clients.postgres.item import ItemCrudClient, item_crud_client_factory
+from stac_api.models import schemas
+from stac_api.utils.dependencies import discover_base_url, parse_list_factory
 from stac_pydantic.api.extensions.paging import PaginationLink
 from stac_pydantic.item import ItemCollection
 from stac_pydantic.shared import Link, Relations
-
-from ..clients import collection_crud_client_factory, item_crud_client_factory
-from ..clients.collection_crud import CollectionCrudClient
-from ..clients.item_crud import ItemCrudClient
-from ..models import schemas
-from ..utils.dependencies import discover_base_url, parse_list_factory
 
 router = APIRouter()
 
@@ -37,7 +38,7 @@ def get_item_collection(
     base_url: str = Depends(discover_base_url),
 ):
     """Get collection items"""
-    page, count = crud_client.get_item_collection(collectionId, limit, token=token)
+    page, count = crud_client.item_collection(collectionId, limit, token=token)
 
     links = []
     if page.next:
@@ -101,7 +102,7 @@ def search_items_post(
     base_url: str = Depends(discover_base_url),
 ):
     """POST search catalog"""
-    page, count = crud_client.stac_search(search_request)
+    page, count = crud_client.search(search_request)
 
     links = []
     if page.next:
@@ -223,7 +224,7 @@ def search_items_get(
     # Do the request
     search_request = schemas.STACSearch(**base_args)
     filter_kwargs = search_request.field.filter_fields
-    page, count = crud_client.stac_search(search_request)
+    page, count = crud_client.search(search_request)
 
     # Pagination
     links = []

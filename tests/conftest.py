@@ -12,11 +12,12 @@ from starlette.testclient import TestClient
 
 from stac_api import config
 from stac_api.app import app
-from stac_api.clients.base_crud import BaseCrudClient
-from stac_api.clients.collection_crud import CollectionCrudClient
-from stac_api.clients.item_crud import ItemCrudClient
-from stac_api.clients.tokens import PaginationTokenClient
-from stac_api.errors import NotFoundError
+from stac_api.clients.postgres.base import PostgresClient
+from stac_api.clients.postgres.collection import CollectionCrudClient
+from stac_api.clients.postgres.item import ItemCrudClient
+from stac_api.clients.postgres.tokens import PaginationTokenClient
+from stac_api.clients.postgres.transactions import TransactionsClient
+from stac_api.errors import ConflictError, NotFoundError
 from stac_api.models import database, schemas
 
 # This line would raise an error if we use it after 'settings' has been imported.
@@ -28,7 +29,7 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
 def create_mock(
-    client: Type[BaseCrudClient], mocked_method: str, error: Exception
+    client: Type[PostgresClient], mocked_method: str, error: Exception
 ) -> MagicMock:
     """Create a mock client which raises an exception"""
     mock_client = MagicMock(client)
@@ -38,7 +39,7 @@ def create_mock(
 
 @contextmanager
 def create_test_client_with_error(
-    client: Type[BaseCrudClient],
+    client: Type[PostgresClient],
     mocked_method: str,
     dependency: Callable,
     error: Exception,
@@ -132,6 +133,7 @@ def collection_crud_client(
     reader_connection: Session,
     writer_connection: Session,
     pagination_client: PaginationTokenClient,
+    transaction_client: TransactionsClient,
 ) -> Generator[CollectionCrudClient, None, None]:
     """Create a collection client.  Clean up data after each test. """
     client = CollectionCrudClient(
@@ -145,7 +147,7 @@ def collection_crud_client(
     # Cleanup collections
     for test_data in load_all_test_data("collection"):
         try:
-            client.delete(test_data["id"])
+            transaction_client.delete_collection(test_data["id"])
         except NotFoundError:
             pass
 
@@ -155,18 +157,19 @@ def item_crud_client(
     reader_connection: Session,
     writer_connection: Session,
     collection_crud_client: CollectionCrudClient,
+    transaction_client: TransactionsClient,
     load_test_data,
 ) -> Generator[ItemCrudClient, None, None]:
     """Create an item client.  Create a collection used for testing and clean up data after each test."""
     # Create a test collection (foreignkey)
     test_collection = schemas.Collection(**load_test_data("test_collection.json"))
-    collection_crud_client.create(test_collection)
+    transaction_client.create_collection(test_collection)
 
     client = ItemCrudClient(
         reader_session=reader_connection,
         writer_session=writer_connection,
         table=database.Item,
-        collection_crud=collection_crud_client,
+        collection_crud=CollectionCrudClient,  # type:ignore
         pagination_client=pagination_client,
     )
     yield client
@@ -174,12 +177,43 @@ def item_crud_client(
     # Cleanup test items
     for test_data in load_all_test_data("item"):
         try:
-            client.delete(test_data["id"])
+            transaction_client.delete_item(test_data["id"])
         except NotFoundError:
             pass
 
     # Cleanup collection
     try:
-        collection_crud_client.delete(test_collection.id)
+        transaction_client.delete_collection(test_collection.id)
+    except NotFoundError:
+        pass
+
+
+@pytest.fixture
+def transaction_client(
+    reader_connection: Session, writer_connection: Session, load_test_data,
+) -> Generator[TransactionsClient, None, None]:
+    client = TransactionsClient(
+        reader_session=reader_connection,
+        writer_session=writer_connection,
+        table=database.Collection,
+        item_table=database.Item,
+    )
+    test_collection = schemas.Collection(**load_test_data("test_collection.json"))
+    try:
+        client.create_collection(test_collection)
+    except ConflictError:
+        pass
+    yield client
+
+    # Cleanup test items
+    for test_data in load_all_test_data("item"):
+        try:
+            client.delete_item(test_data["id"])
+        except NotFoundError:
+            pass
+
+    # Cleanup collection
+    try:
+        client.delete_collection(test_collection.id)
     except NotFoundError:
         pass

@@ -1,9 +1,10 @@
 """Transaction extension endpoints"""
 from fastapi import APIRouter, Depends
 
-from stac_api.clients import collection_crud_client_factory, item_crud_client_factory
-from stac_api.clients.collection_crud import CollectionCrudClient
-from stac_api.clients.item_crud import ItemCrudClient
+from stac_api.clients.postgres.transactions import (
+    TransactionsClient,
+    transactions_client_factory,
+)
 from stac_api.models import schemas
 from stac_api.utils.dependencies import discover_base_url
 
@@ -18,11 +19,11 @@ router = APIRouter()
 )
 def create_item_by_id(
     item: schemas.Item,
-    crud_client: ItemCrudClient = Depends(item_crud_client_factory),
+    crud_client: TransactionsClient = Depends(transactions_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
     """Create item (transactions extension)"""
-    row_data = crud_client.create(item)
+    row_data = crud_client.create_item(item)
     row_data.base_url = base_url
     return row_data
 
@@ -35,11 +36,11 @@ def create_item_by_id(
 )
 def update_item_by_id(
     item: schemas.Item,
-    crud_client: ItemCrudClient = Depends(item_crud_client_factory),
+    crud_client: TransactionsClient = Depends(transactions_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
     """Update item (transactions extension)"""
-    row_data = crud_client.update(item)
+    row_data = crud_client.update_item(item)
     row_data.base_url = base_url
     return row_data
 
@@ -52,11 +53,11 @@ def update_item_by_id(
 )
 def delete_item_by_id(
     itemId: str,
-    crud_client: ItemCrudClient = Depends(item_crud_client_factory),
+    crud_client: TransactionsClient = Depends(transactions_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
     """Delete item (transactions extension)"""
-    row_data = crud_client.delete(itemId)
+    row_data = crud_client.delete_item(itemId)
     row_data.base_url = base_url
     return row_data
 
@@ -70,11 +71,11 @@ def delete_item_by_id(
 )
 def create_collection(
     collection: schemas.Collection,
-    crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
+    crud_client: TransactionsClient = Depends(transactions_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
     """Create a new collection (transactions extension)"""
-    row_data = crud_client.create(collection)
+    row_data = crud_client.create_collection(collection)
     row_data.base_url = base_url
     return row_data
 
@@ -88,11 +89,11 @@ def create_collection(
 )
 def update_collection_by_id(
     collection: schemas.Collection,
-    crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
+    crud_client: TransactionsClient = Depends(transactions_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
     """Update collection (transactions extension)"""
-    row_data = crud_client.update(collection)
+    row_data = crud_client.update_collection(collection)
     row_data.base_url = base_url
     return row_data
 
@@ -106,10 +107,10 @@ def update_collection_by_id(
 )
 def delete_collection_by_id(
     collectionId: str,
-    crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
+    crud_client: TransactionsClient = Depends(transactions_client_factory),
     base_url: str = Depends(discover_base_url),
 ):
     """Delete a collection (transactions extension)"""
-    row_data = crud_client.delete(collectionId)
+    row_data = crud_client.delete_collection(collectionId)
     row_data.base_url = base_url
     return row_data

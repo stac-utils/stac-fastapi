@@ -8,9 +8,12 @@ from urllib.parse import parse_qs, urlparse, urlsplit
 
 from shapely.geometry import Polygon
 
-from stac_api.clients import collection_crud_client_factory, item_crud_client_factory
-from stac_api.clients.collection_crud import CollectionCrudClient
-from stac_api.clients.item_crud import ItemCrudClient
+from stac_api.clients.postgres.collection import (
+    CollectionCrudClient,
+    collection_crud_client_factory,
+)
+from stac_api.clients.postgres.item import ItemCrudClient, item_crud_client_factory
+from stac_api.clients.postgres.transactions import transactions_client_factory
 from stac_api.errors import DatabaseError
 from stac_pydantic.api.search import DATETIME_RFC339
 
@@ -708,8 +711,8 @@ def test_create_item_database_error(load_test_data):
     test_item = load_test_data("test_item.json")
     with create_test_client_with_error(
         client=ItemCrudClient,
-        mocked_method="create",
-        dependency=item_crud_client_factory,
+        mocked_method="create_item",
+        dependency=transactions_client_factory,
         error=DatabaseError(),
     ) as test_client:
         resp = test_client.post(
@@ -738,8 +741,8 @@ def test_update_item_database_error(load_test_data):
     test_item = load_test_data("test_item.json")
     with create_test_client_with_error(
         client=ItemCrudClient,
-        mocked_method="update",
-        dependency=item_crud_client_factory,
+        mocked_method="update_item",
+        dependency=transactions_client_factory,
         error=DatabaseError(),
     ) as test_client:
         resp = test_client.put(
@@ -753,8 +756,8 @@ def test_delete_item_database_error(load_test_data):
     test_item = load_test_data("test_item.json")
     with create_test_client_with_error(
         client=ItemCrudClient,
-        mocked_method="delete",
-        dependency=item_crud_client_factory,
+        mocked_method="delete_item",
+        dependency=transactions_client_factory,
         error=DatabaseError(),
     ) as test_client:
         resp = test_client.delete(
@@ -768,7 +771,7 @@ def test_get_item_collection_database_error(load_test_data):
     test_collection = load_test_data("test_collection.json")
     with create_test_client_with_error(
         client=CollectionCrudClient,
-        mocked_method="get_item_collection",
+        mocked_method="item_collection",
         dependency=collection_crud_client_factory,
         error=DatabaseError(),
     ) as test_client:
@@ -787,7 +790,7 @@ def test_item_search_database_error(load_test_data):
     }
     with create_test_client_with_error(
         client=ItemCrudClient,
-        mocked_method="stac_search",
+        mocked_method="search",
         dependency=item_crud_client_factory,
         error=DatabaseError(),
     ) as test_client:
