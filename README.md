@@ -18,13 +18,26 @@ FastAPI/postgres implementation of the [STAC API specification](https://github.c
 ```
 
 ## Local Development
-Use docker-compose to deploy the application, migrate the database, and ingest an example collection:
-```
+Use docker-compose to deploy the application, migrate the database, and ingest some example data:
+```bash
 docker-compose build
 docker-compose up
 ```
 
-Run tests (the `docker-compose` stack must be running):
+For local development it is often more convenient to run the application outside of docker-compose:
+```bash
+make docker-run
 ```
+
+
+### Testing
+The database container provided by the docker-compose stack must be running.  Run all tests:
+```bash
 make test
+```
+
+Run individual tests by running pytest within the docker container:
+```bash
+make docker-shell
+$ pytest -v
 ```
