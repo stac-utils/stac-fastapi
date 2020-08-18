@@ -1,12 +1,9 @@
 """Base clients."""
 import abc
-import logging
 from dataclasses import dataclass
 from typing import Any, List, Tuple
 
 from stac_api.models import schemas
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass  # type:ignore

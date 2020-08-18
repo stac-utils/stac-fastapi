@@ -45,7 +45,7 @@ class PostgresClient(abc.ABC):
             raise errors.DatabaseError("Unhandled database exception during commit")
 
     def lookup_id(
-        self, item_id: str, table: Optional[database.BaseModel] = None
+        self, item_id: str, table: Optional[Type[database.BaseModel]] = None
     ) -> Query:
         """Create a query to access a single record from the table"""
         table = table or self.table
