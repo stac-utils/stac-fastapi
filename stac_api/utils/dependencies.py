@@ -1,9 +1,12 @@
 """FastAPI dependencies."""
 
+from contextvars import ContextVar
 from typing import Callable, List
 
-from sqlalchemy.orm import Session
 from starlette.requests import Request
+
+READER: ContextVar = ContextVar("reader")
+WRITER: ContextVar = ContextVar("writer")
 
 
 def discover_base_url(request: Request):
@@ -19,21 +22,3 @@ def parse_list_factory(varname) -> Callable[[Request], List[str]]:
         return param.split(",") if param else param
 
     return _parse
-
-
-def database_reader_factory(request: Request) -> Session:
-    """Instantiate the database reader session"""
-    try:
-        db = request.app.state.DB_READER()
-        yield db
-    finally:
-        db.close()
-
-
-def database_writer_factory(request: Request) -> Session:
-    """Instantiate the database writer session"""
-    try:
-        db = request.app.state.DB_WRITER()
-        yield db
-    finally:
-        db.close()

@@ -4,15 +4,10 @@ import logging
 from dataclasses import dataclass
 from typing import Type, Union
 
-import sqlalchemy as sa
-from fastapi import Depends
-from sqlalchemy.orm import Session
-
 from stac_api import errors
 from stac_api.clients.base import BaseTransactionsClient
 from stac_api.clients.postgres.base import PostgresClient
 from stac_api.models import database, schemas
-from stac_api.utils.dependencies import database_reader_factory, database_writer_factory
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +16,8 @@ logger = logging.getLogger(__name__)
 class TransactionsClient(PostgresClient, BaseTransactionsClient):
     """Transactions extension specific CRUD operations"""
 
-    reader_session: sa.orm.Session
-    writer_session: sa.orm.Session
-    table: Type[database.Collection]
-    item_table: Type[database.Item]
+    table: Type[database.Collection] = database.Collection
+    item_table: Type[database.Item] = database.Item
 
     @property
     def collection_table(self):
@@ -103,14 +96,6 @@ class TransactionsClient(PostgresClient, BaseTransactionsClient):
         return self._delete(id, table=self.collection_table)
 
 
-def transactions_client_factory(
-    reader_session: Session = Depends(database_reader_factory),
-    writer_session: Session = Depends(database_writer_factory),
-) -> TransactionsClient:
+def transactions_client_factory() -> TransactionsClient:
     """FastAPI dependency"""
-    return TransactionsClient(
-        reader_session=reader_session,
-        writer_session=writer_session,
-        table=database.Collection,
-        item_table=database.Item,
-    )
+    return TransactionsClient(table=database.Collection, item_table=database.Item,)

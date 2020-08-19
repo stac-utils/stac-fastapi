@@ -2,10 +2,9 @@
 
 import logging
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from fastapi import Depends
-from sqlalchemy.orm import Session
 
 from sqlakeyset import Page, get_page
 from stac_api import errors
@@ -16,7 +15,6 @@ from stac_api.clients.postgres.tokens import (
     pagination_token_client_factory,
 )
 from stac_api.models import database
-from stac_api.utils.dependencies import database_reader_factory, database_writer_factory
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +23,7 @@ logger = logging.getLogger(__name__)
 class CollectionCrudClient(PostgresClient, BaseCollectionClient):
     """Collection specific CRUD operations"""
 
-    pagination_client: PaginationTokenClient
+    pagination_client: Optional[PaginationTokenClient] = None
 
     def all_collections(self) -> List[database.Collection]:
         """Read all collections from the database"""
@@ -73,14 +71,9 @@ class CollectionCrudClient(PostgresClient, BaseCollectionClient):
 
 
 def collection_crud_client_factory(
-    reader_session: Session = Depends(database_reader_factory),
-    writer_session: Session = Depends(database_writer_factory),
     pagination_client: PaginationTokenClient = Depends(pagination_token_client_factory),
 ) -> CollectionCrudClient:
     """FastAPI dependency"""
     return CollectionCrudClient(
-        reader_session=reader_session,
-        writer_session=writer_session,
-        table=database.Collection,
-        pagination_client=pagination_client,
+        table=database.Collection, pagination_client=pagination_client,
     )

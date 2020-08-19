@@ -1,14 +1,13 @@
+from unittest.mock import patch
+
+from stac_api.clients.postgres.base import PostgresClient
 from stac_api.clients.postgres.collection import (
     CollectionCrudClient,
     collection_crud_client_factory,
 )
-from stac_api.clients.postgres.transactions import (
-    TransactionsClient,
-    transactions_client_factory,
-)
 from stac_api.errors import DatabaseError
 
-from ..conftest import create_test_client_with_error
+from ..conftest import _raise_exception, create_test_client_with_error
 
 
 def test_create_and_delete_collection(app_client, load_test_data):
@@ -85,33 +84,23 @@ def test_collection_not_found(app_client):
     assert resp.status_code == 404
 
 
-def test_create_collection_database_error(load_test_data):
+def test_create_collection_database_error(app_client, load_test_data):
     """Test 424 is raised on database error"""
     test_collection = load_test_data("test_collection.json")
-    with create_test_client_with_error(
-        client=TransactionsClient,
-        mocked_method="create_collection",
-        dependency=transactions_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.post("/collections", json=test_collection)
+    with patch.object(PostgresClient, "lookup_id", _raise_exception(DatabaseError())):
+        resp = app_client.post("/collections", json=test_collection)
         assert resp.status_code == 424
 
 
-def test_update_collection_database_error(load_test_data):
+def test_update_collection_database_error(app_client, load_test_data):
     """Test 424 is raised on database error"""
     test_collection = load_test_data("test_collection.json")
-    with create_test_client_with_error(
-        client=TransactionsClient,
-        mocked_method="update_collection",
-        dependency=transactions_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.put("/collections", json=test_collection)
+    with patch.object(PostgresClient, "lookup_id", _raise_exception(DatabaseError())):
+        resp = app_client.post("/collections", json=test_collection)
         assert resp.status_code == 424
 
 
-def tet_get_all_collections_database_error():
+def test_get_all_collections_database_error():
     """Test 424 is raised on database error"""
     with create_test_client_with_error(
         client=CollectionCrudClient,
@@ -136,14 +125,9 @@ def test_get_collection_database_error(load_test_data):
         assert resp.status_code == 424
 
 
-def test_delete_collection_database_error(load_test_data):
+def test_delete_collection_database_error(app_client, load_test_data):
     """Test 424 is raised on database error"""
     test_collection = load_test_data("test_collection.json")
-    with create_test_client_with_error(
-        client=TransactionsClient,
-        mocked_method="delete_collection",
-        dependency=transactions_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.delete(f"/collections/{test_collection['id']}")
+    with patch.object(PostgresClient, "commit", _raise_exception(DatabaseError())):
+        resp = app_client.delete(f"/collections/{test_collection['id']}")
         assert resp.status_code == 424

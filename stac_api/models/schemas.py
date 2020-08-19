@@ -14,6 +14,7 @@ from shapely.geometry import shape
 
 from geojson_pydantic.geometries import Polygon
 from stac_api import config
+from stac_api.models.api import APIResponse
 from stac_api.models.decompose import CollectionGetter, ItemGetter
 from stac_pydantic import Collection as CollectionBase
 from stac_pydantic import Item as ItemBase
@@ -140,7 +141,7 @@ class FieldsExtension(FieldsBase):
         }
 
 
-class Collection(CollectionBase):
+class Collection(CollectionBase, APIResponse):
     """Collection model"""
 
     links: Optional[List[Link]]
@@ -152,8 +153,15 @@ class Collection(CollectionBase):
         use_enum_values = True
         getter_dict = CollectionGetter
 
+    @classmethod
+    def create_api_response(cls, obj: Any, base_url: str):
+        """create api response"""
+        obj.base_url = base_url
+        model = cls.from_orm(obj)
+        return model
 
-class Item(ItemBase):
+
+class Item(ItemBase, APIResponse):
     """Item model"""
 
     geometry: Polygon
@@ -166,6 +174,13 @@ class Item(ItemBase):
         use_enum_values = True
         orm_mode = True
         getter_dict = ItemGetter
+
+    @classmethod
+    def create_api_response(cls, obj: Any, base_url: str):
+        """create api response"""
+        obj.base_url = base_url
+        model = cls.from_orm(obj)
+        return model
 
 
 class STACSearch(Search):

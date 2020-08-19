@@ -1,11 +1,10 @@
 """Item crud client."""
 import logging
 from dataclasses import dataclass
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 import sqlalchemy as sa
 from fastapi import Depends
-from sqlalchemy.orm import Session
 
 import geoalchemy2 as ga
 from sqlakeyset import Page, get_page
@@ -21,7 +20,6 @@ from stac_api.clients.postgres.tokens import (
 )
 from stac_api.errors import DatabaseError
 from stac_api.models import database, schemas
-from stac_api.utils.dependencies import database_reader_factory, database_writer_factory
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +30,8 @@ NumType = Union[float, int]
 class ItemCrudClient(PostgresClient, BaseItemClient):
     """Item specific CRUD operations"""
 
-    collection_crud: CollectionCrudClient
-    pagination_client: PaginationTokenClient
+    collection_crud: Optional[CollectionCrudClient] = None
+    pagination_client: Optional[PaginationTokenClient] = None
 
     def search(self, search_request: schemas.STACSearch) -> Tuple[Page, int]:
         """STAC search operation"""
@@ -142,15 +140,11 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
 
 
 def item_crud_client_factory(
-    reader_session: Session = Depends(database_reader_factory),
-    writer_session: Session = Depends(database_writer_factory),
     collection_crud: CollectionCrudClient = Depends(collection_crud_client_factory),
     pagination_client: PaginationTokenClient = Depends(pagination_token_client_factory),
 ) -> ItemCrudClient:
     """FastAPI dependency."""
     return ItemCrudClient(
-        reader_session=reader_session,
-        writer_session=writer_session,
         collection_crud=collection_crud,
         table=database.Item,
         pagination_client=pagination_client,

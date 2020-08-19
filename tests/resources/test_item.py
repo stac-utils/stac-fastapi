@@ -4,20 +4,21 @@ import uuid
 from copy import deepcopy
 from datetime import datetime, timedelta
 from random import randint
+from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse, urlsplit
 
 from shapely.geometry import Polygon
 
+from stac_api.clients.postgres.base import PostgresClient
 from stac_api.clients.postgres.collection import (
     CollectionCrudClient,
     collection_crud_client_factory,
 )
 from stac_api.clients.postgres.item import ItemCrudClient, item_crud_client_factory
-from stac_api.clients.postgres.transactions import transactions_client_factory
 from stac_api.errors import DatabaseError
 from stac_pydantic.api.search import DATETIME_RFC339
 
-from ..conftest import create_test_client_with_error
+from ..conftest import _raise_exception, create_test_client_with_error
 
 
 def test_create_and_delete_item(app_client, load_test_data):
@@ -706,16 +707,11 @@ def test_get_missing_item(app_client, load_test_data):
     assert resp.status_code == 404
 
 
-def test_create_item_database_error(load_test_data):
+def test_create_item_database_error(app_client, load_test_data):
     """Test 424 is raised on database error"""
     test_item = load_test_data("test_item.json")
-    with create_test_client_with_error(
-        client=ItemCrudClient,
-        mocked_method="create_item",
-        dependency=transactions_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.post(
+    with patch.object(PostgresClient, "lookup_id", _raise_exception(DatabaseError())):
+        resp = app_client.post(
             f"/collections/{test_item['collection']}/items", json=test_item
         )
         assert resp.status_code == 424
@@ -736,31 +732,21 @@ def test_read_item_database_error(load_test_data):
         assert resp.status_code == 424
 
 
-def test_update_item_database_error(load_test_data):
+def test_update_item_database_error(app_client, load_test_data):
     """Test 424 is raised on database error"""
     test_item = load_test_data("test_item.json")
-    with create_test_client_with_error(
-        client=ItemCrudClient,
-        mocked_method="update_item",
-        dependency=transactions_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.put(
+    with patch.object(PostgresClient, "commit", _raise_exception(DatabaseError())):
+        resp = app_client.put(
             f"/collections/{test_item['collection']}/items", json=test_item
         )
         assert resp.status_code == 424
 
 
-def test_delete_item_database_error(load_test_data):
+def test_delete_item_database_error(app_client, load_test_data):
     """Test 424 is raised on database error"""
     test_item = load_test_data("test_item.json")
-    with create_test_client_with_error(
-        client=ItemCrudClient,
-        mocked_method="delete_item",
-        dependency=transactions_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.delete(
+    with patch.object(PostgresClient, "lookup_id", _raise_exception(DatabaseError())):
+        resp = app_client.delete(
             f"/collections/{test_item['collection']}/items/{test_item['id']}"
         )
         assert resp.status_code == 424

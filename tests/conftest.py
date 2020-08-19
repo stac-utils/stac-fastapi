@@ -28,6 +28,13 @@ environ["DEBUG"] = "true"
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
+def _raise_exception(exc):
+    def _raise(*args, **kwargs):
+        raise exc
+
+    return _raise
+
+
 def create_mock(
     client: Type[PostgresClient], mocked_method: str, error: Exception
 ) -> MagicMock:
@@ -121,11 +128,7 @@ def pagination_client(
     reader_connection: Session, writer_connection: Session
 ) -> PaginationTokenClient:
     """Create a pagination client"""
-    return PaginationTokenClient(
-        reader_session=reader_connection,
-        writer_session=writer_connection,
-        table=database.PaginationToken,
-    )
+    return PaginationTokenClient(table=database.PaginationToken,)
 
 
 @pytest.fixture
@@ -137,10 +140,7 @@ def collection_crud_client(
 ) -> Generator[CollectionCrudClient, None, None]:
     """Create a collection client.  Clean up data after each test. """
     client = CollectionCrudClient(
-        reader_session=reader_connection,
-        writer_session=writer_connection,
-        table=database.Collection,
-        pagination_client=pagination_client,
+        table=database.Collection, pagination_client=pagination_client,
     )
     yield client
 
@@ -166,8 +166,6 @@ def item_crud_client(
     transaction_client.create_collection(test_collection)
 
     client = ItemCrudClient(
-        reader_session=reader_connection,
-        writer_session=writer_connection,
         table=database.Item,
         collection_crud=CollectionCrudClient,  # type:ignore
         pagination_client=pagination_client,
@@ -192,12 +190,7 @@ def item_crud_client(
 def transaction_client(
     reader_connection: Session, writer_connection: Session, load_test_data,
 ) -> Generator[TransactionsClient, None, None]:
-    client = TransactionsClient(
-        reader_session=reader_connection,
-        writer_session=writer_connection,
-        table=database.Collection,
-        item_table=database.Item,
-    )
+    client = TransactionsClient(table=database.Collection, item_table=database.Item,)
     test_collection = schemas.Collection(**load_test_data("test_collection.json"))
     try:
         client.create_collection(test_collection)
