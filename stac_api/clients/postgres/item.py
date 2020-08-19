@@ -1,7 +1,7 @@
 """Item crud client."""
 import logging
 from dataclasses import dataclass
-from typing import Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Union
 
 import sqlalchemy as sa
 from fastapi import Depends
@@ -32,6 +32,10 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
 
     collection_crud: Optional[CollectionCrudClient] = None
     pagination_client: Optional[PaginationTokenClient] = None
+
+    def get_item(self, id: str) -> Any:
+        """Get item by id"""
+        return self.lookup_id(id).first()
 
     def search(self, search_request: schemas.STACSearch) -> Tuple[Page, int]:
         """STAC search operation"""

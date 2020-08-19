@@ -3,6 +3,7 @@
 import os
 from base64 import urlsafe_b64encode
 from dataclasses import dataclass
+from typing import Type
 
 from stac_api.clients.postgres.base import PostgresClient
 from stac_api.errors import DatabaseError
@@ -12,6 +13,8 @@ from stac_api.models import database
 @dataclass
 class PaginationTokenClient(PostgresClient):
     """Pagination token specific CRUD operations"""
+
+    table: Type[database.PaginationToken] = database.PaginationToken
 
     def insert(self, keyset: str, tries: int = 0) -> str:  # type:ignore
         """Insert a keyset into the database"""
@@ -37,4 +40,4 @@ class PaginationTokenClient(PostgresClient):
 
 def pagination_token_client_factory() -> PaginationTokenClient:
     """FastAPI dependency"""
-    return PaginationTokenClient(table=database.PaginationToken,)
+    return PaginationTokenClient()

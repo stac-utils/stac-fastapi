@@ -7,16 +7,6 @@ from stac_api.models import schemas
 
 
 @dataclass  # type:ignore
-class BaseClient(abc.ABC):
-    """Base datastore client"""
-
-    @abc.abstractmethod
-    def read(self, id: str) -> Any:
-        """Read a record by id"""
-        ...
-
-
-@dataclass  # type:ignore
 class BaseTransactionsClient(abc.ABC):
     """Base transactions client"""
 
@@ -52,7 +42,7 @@ class BaseTransactionsClient(abc.ABC):
 
 
 @dataclass  # type:ignore
-class BaseItemClient(BaseClient):
+class BaseItemClient(abc.ABC):
     """Base item client"""
 
     @abc.abstractmethod
@@ -60,14 +50,24 @@ class BaseItemClient(BaseClient):
         """search for items"""
         ...
 
+    @abc.abstractmethod
+    def get_item(self, id: str) -> Any:
+        """get item by id"""
+        ...
+
 
 @dataclass  # type:ignore
-class BaseCollectionClient(BaseClient):
+class BaseCollectionClient(abc.ABC):
     """Base collections client"""
 
     @abc.abstractmethod
     def all_collections(self) -> List[Any]:
-        """Get all collections"""
+        """get all collections"""
+        ...
+
+    @abc.abstractmethod
+    def get_collection(self, id: str) -> Any:
+        """get collection by id"""
         ...
 
     @abc.abstractmethod

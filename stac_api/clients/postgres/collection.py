@@ -2,7 +2,7 @@
 
 import logging
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Type
 
 from fastapi import Depends
 
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 class CollectionCrudClient(PostgresClient, BaseCollectionClient):
     """Collection specific CRUD operations"""
 
+    table: Type[database.Collection] = database.Collection
     pagination_client: Optional[PaginationTokenClient] = None
 
     def all_collections(self) -> List[database.Collection]:
@@ -35,6 +36,10 @@ class CollectionCrudClient(PostgresClient, BaseCollectionClient):
                 "Unhandled database error when getting item collection"
             )
         return items
+
+    def get_collection(self, id: str) -> Any:
+        """Get collection by id"""
+        return self.lookup_id(id).first()
 
     def item_collection(
         self, collection_id: str, limit: int = 10, token: str = None
