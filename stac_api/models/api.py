@@ -18,7 +18,7 @@ class APIRequest(abc.ABC):
 
 
 @dataclass  # type:ignore
-class DeleteCollection(APIRequest):
+class CollectionUri(APIRequest):
     """Delete collection"""
 
     collectionId: str = Path(..., description="Collection ID")
@@ -29,7 +29,7 @@ class DeleteCollection(APIRequest):
 
 
 @dataclass
-class DeleteItem(DeleteCollection):
+class ItemUri(CollectionUri):
     """Delete item"""
 
     itemId: str = Path(..., description="Item ID")
