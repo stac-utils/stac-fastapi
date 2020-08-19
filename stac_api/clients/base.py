@@ -72,7 +72,7 @@ class BaseCollectionClient(abc.ABC):
 
     @abc.abstractmethod
     def item_collection(
-        self, collection_id: str, limit: int = 10, token: str = None
+        self, id: str, limit: int = 10, token: str = None
     ) -> Tuple[Any, int]:
         """Get item collection"""
         ...

@@ -18,10 +18,12 @@ from stac_api.models.api import APIResponse
 from stac_api.models.decompose import CollectionGetter, ItemGetter
 from stac_pydantic import Collection as CollectionBase
 from stac_pydantic import Item as ItemBase
+from stac_pydantic import ItemCollection as ItemCollectionBase
 from stac_pydantic.api import Search
 from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
+from stac_pydantic.api.extensions.paging import PaginationLink
 from stac_pydantic.api.search import DATETIME_RFC339
-from stac_pydantic.shared import Link
+from stac_pydantic.shared import Link, Relations
 from stac_pydantic.utils import AutoValueEnum
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
@@ -154,7 +156,7 @@ class Collection(CollectionBase, APIResponse):
         getter_dict = CollectionGetter
 
     @classmethod
-    def create_api_response(cls, obj: Any, base_url: str):
+    def create_api_response(cls, obj: Any, base_url: str, **kwargs):
         """create api response"""
         obj.base_url = base_url
         model = cls.from_orm(obj)
@@ -176,11 +178,54 @@ class Item(ItemBase, APIResponse):
         getter_dict = ItemGetter
 
     @classmethod
-    def create_api_response(cls, obj: Any, base_url: str):
+    def create_api_response(cls, obj: Any, base_url: str, **kwargs):
         """create api response"""
         obj.base_url = base_url
         model = cls.from_orm(obj)
         return model
+
+
+class ItemCollection(ItemCollectionBase, APIResponse):
+    """item collection"""
+
+    @classmethod
+    def create_api_response(self, obj: Any, base_url: str, **kwargs) -> Any:
+        """create api response"""
+        page, count = obj
+        collection_id = kwargs["id"]
+        limit = kwargs.get("limit", 10)
+
+        links = []
+        if page.next:
+            links.append(
+                PaginationLink(
+                    rel=Relations.next,
+                    type="application/geo+json",
+                    href=f"{base_url}/collections/{collection_id}/items?token={page.next}&limit={limit}",
+                    method="GET",
+                )
+            )
+        if page.previous:
+            links.append(
+                PaginationLink(
+                    rel=Relations.previous,
+                    type="application/geo+json",
+                    href=f"{base_url}/collections/{collection_id}/items?token={page.previous}&limit={limit}",
+                    method="GET",
+                )
+            )
+
+        response_features = []
+        for item in page:
+            item.base_url = base_url
+            response_features.append(Item.from_orm(item))
+
+        return ItemCollection(
+            type="FeatureCollection",
+            context={"returned": len(page), "limit": limit, "matched": count},
+            features=response_features,
+            links=links,
+        )
 
 
 class STACSearch(Search):

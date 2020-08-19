@@ -39,12 +39,24 @@ class ItemUri(CollectionUri):
         return {"id": self.itemId}
 
 
+@dataclass
+class ItemCollectionUri(CollectionUri):
+    """Get item collection"""
+
+    limit: int = 10
+    token: str = None
+
+    def kwargs(self) -> Dict:
+        """kwargs"""
+        return {"id": self.collectionId, "limit": self.limit, "token": self.token}
+
+
 @dataclass  # type:ignore
 class APIResponse(abc.ABC):
     """Generic API Response base class"""
 
     @classmethod
     @abc.abstractmethod
-    def create_api_response(self, obj: Any, base_url: str) -> Any:
+    def create_api_response(self, obj: Any, base_url: str, **kwargs) -> Any:
         """Transform endpoint response into something compatible with fastapi"""
         ...

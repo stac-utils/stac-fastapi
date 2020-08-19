@@ -12,7 +12,13 @@ from stac_api.clients.postgres.transactions import TransactionsClient
 from stac_api.config import ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_api.models import schemas
-from stac_api.models.api import APIRequest, APIResponse, CollectionUri, ItemUri
+from stac_api.models.api import (
+    APIRequest,
+    APIResponse,
+    CollectionUri,
+    ItemCollectionUri,
+    ItemUri,
+)
 from stac_api.resources import conformance, item, mgmt
 from stac_api.utils.dependencies import READER, WRITER, discover_base_url
 
@@ -51,17 +57,21 @@ def create_endpoint_with_depends(
         base_url: str = Depends(discover_base_url),
     ):
         """endpoint"""
+        kwargs = {}
         if not request_data:
             resp = func()
         else:
-            resp = func(**request_data.kwargs())  # type:ignore
+            kwargs = request_data.kwargs() # type: ignore
+            resp = func(**kwargs)
 
         # TODO: Improve handling of type and List[type]
         if isinstance(resp, list):
             inner_type = response_model.__args__[0]  # type:ignore
-            resp = [inner_type.create_api_response(r, base_url) for r in resp]
+            resp = [inner_type.create_api_response(r, base_url, **kwargs) for r in resp]
         else:
-            resp = response_model.create_api_response(resp, base_url)  # type:ignore
+            resp = response_model.create_api_response( # type:ignore
+                resp, base_url, **kwargs
+            )
         return resp
 
     return _endpoint
@@ -92,6 +102,17 @@ def create_collections_router(client: BaseCollectionClient) -> APIRouter:
         methods=["GET"],
         endpoint=create_endpoint_with_depends(
             client.get_collection, CollectionUri, schemas.Collection
+        ),
+    )
+    router.add_api_route(
+        name="Get ItemCollection",
+        path="/collections/{collectionId}/items",
+        response_model=schemas.ItemCollection,
+        response_model_exclude_unset=True,
+        response_model_exclude_none=True,
+        methods=["GET"],
+        endpoint=create_endpoint_with_depends(
+            client.item_collection, ItemCollectionUri, schemas.ItemCollection
         ),
     )
     return router

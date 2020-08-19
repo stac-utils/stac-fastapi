@@ -42,12 +42,12 @@ class CollectionCrudClient(PostgresClient, BaseCollectionClient):
         return self.lookup_id(id).first()
 
     def item_collection(
-        self, collection_id: str, limit: int = 10, token: str = None
+        self, id: str, limit: int = 10, token: str = None
     ) -> Tuple[Page, int]:
         """Read an item collection from the database"""
         try:
             collection_children = (
-                self.lookup_id(collection_id)
+                self.lookup_id(id)
                 .first()
                 .children.order_by(database.Item.datetime.desc(), database.Item.id)
             )
