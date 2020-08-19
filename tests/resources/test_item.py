@@ -12,7 +12,6 @@ from shapely.geometry import Polygon
 from stac_api.clients.postgres.base import PostgresClient
 from stac_api.clients.postgres.collection import (
     CollectionCrudClient,
-    collection_crud_client_factory,
 )
 from stac_api.clients.postgres.item import ItemCrudClient, item_crud_client_factory
 from stac_api.errors import DatabaseError
@@ -752,16 +751,13 @@ def test_delete_item_database_error(app_client, load_test_data):
         assert resp.status_code == 424
 
 
-def test_get_item_collection_database_error(load_test_data):
+def test_get_item_collection_database_error(app_client, load_test_data):
     """Test 424 is raised on database error"""
     test_collection = load_test_data("test_collection.json")
-    with create_test_client_with_error(
-        client=CollectionCrudClient,
-        mocked_method="item_collection",
-        dependency=collection_crud_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.get(f"/collections/{test_collection['id']}/items")
+    with patch.object(
+        CollectionCrudClient, "lookup_id", _raise_exception(DatabaseError())
+    ):
+        resp = app_client.get(f"/collections/{test_collection['id']}/items")
         assert resp.status_code == 424
 
 

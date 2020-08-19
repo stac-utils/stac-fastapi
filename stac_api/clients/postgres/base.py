@@ -2,7 +2,7 @@
 import abc
 import logging
 from dataclasses import dataclass
-from typing import Optional, Type, Union
+from typing import Optional, Type
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Query
@@ -68,8 +68,3 @@ class PostgresClient(abc.ABC):
             logger.warning(error_message)
             raise errors.NotFoundError(error_message)
         return query
-
-    def read(self, item_id: str) -> Union[database.Collection, database.Item]:
-        """Read a single record from the table"""
-        row_data = self.lookup_id(item_id).first()
-        return row_data

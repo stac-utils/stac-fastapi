@@ -18,7 +18,7 @@ class APIRequest(abc.ABC):
 
 
 @dataclass  # type:ignore
-class DeleteCollection(APIRequest):
+class CollectionUri(APIRequest):
     """Delete collection"""
 
     collectionId: str = Path(..., description="Collection ID")
@@ -29,7 +29,7 @@ class DeleteCollection(APIRequest):
 
 
 @dataclass
-class DeleteItem(DeleteCollection):
+class ItemUri(CollectionUri):
     """Delete item"""
 
     itemId: str = Path(..., description="Item ID")
@@ -39,12 +39,24 @@ class DeleteItem(DeleteCollection):
         return {"id": self.itemId}
 
 
+@dataclass
+class ItemCollectionUri(CollectionUri):
+    """Get item collection"""
+
+    limit: int = 10
+    token: str = None
+
+    def kwargs(self) -> Dict:
+        """kwargs"""
+        return {"id": self.collectionId, "limit": self.limit, "token": self.token}
+
+
 @dataclass  # type:ignore
 class APIResponse(abc.ABC):
     """Generic API Response base class"""
 
     @classmethod
     @abc.abstractmethod
-    def create_api_response(self, obj: Any, base_url: str) -> Any:
+    def create_api_response(self, obj: Any, base_url: str, **kwargs) -> Any:
         """Transform endpoint response into something compatible with fastapi"""
         ...

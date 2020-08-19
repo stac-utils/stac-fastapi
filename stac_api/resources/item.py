@@ -8,10 +8,6 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, Query
 from starlette.requests import Request
 
-from stac_api.clients.postgres.collection import (
-    CollectionCrudClient,
-    collection_crud_client_factory,
-)
 from stac_api.clients.postgres.item import ItemCrudClient, item_crud_client_factory
 from stac_api.models import schemas
 from stac_api.utils.dependencies import discover_base_url, parse_list_factory
@@ -22,55 +18,6 @@ from stac_pydantic.shared import Link, Relations
 router = APIRouter()
 
 NumType = Union[float, int]
-
-
-@router.get(
-    "/collections/{collectionId}/items",
-    response_model=ItemCollection,
-    response_model_exclude_unset=True,
-    response_model_exclude_none=True,
-)
-def get_item_collection(
-    collectionId: str,
-    limit: int = 10,
-    token: Optional[str] = None,
-    crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
-    base_url: str = Depends(discover_base_url),
-):
-    """Get collection items"""
-    page, count = crud_client.item_collection(collectionId, limit, token=token)
-
-    links = []
-    if page.next:
-        links.append(
-            PaginationLink(
-                rel=Relations.next,
-                type="application/geo+json",
-                href=f"{base_url}/collections/{collectionId}/items?token={page.next}&limit={limit}",
-                method="GET",
-            )
-        )
-    if page.previous:
-        links.append(
-            PaginationLink(
-                rel=Relations.previous,
-                type="application/geo+json",
-                href=f"{base_url}/collections/{collectionId}/items?token={page.previous}&limit={limit}",
-                method="GET",
-            )
-        )
-
-    response_features = []
-    for item in page:
-        item.base_url = base_url
-        response_features.append(schemas.Item.from_orm(item))
-
-    return ItemCollection(
-        type="FeatureCollection",
-        context={"returned": len(page), "limit": limit, "matched": count},
-        features=response_features,
-        links=links,
-    )
 
 
 @router.get(
@@ -85,7 +32,7 @@ def get_item_by_id(
     base_url: str = Depends(discover_base_url),
 ):
     """Get item"""
-    row_data = crud_client.read(itemId)
+    row_data = crud_client.get_item(itemId)
     row_data.base_url = base_url
     return row_data
 
