@@ -85,7 +85,7 @@ def get_item_by_id(
     base_url: str = Depends(discover_base_url),
 ):
     """Get item"""
-    row_data = crud_client.read(itemId)
+    row_data = crud_client.get_item(itemId)
     row_data.base_url = base_url
     return row_data
 
