@@ -10,6 +10,7 @@ from sqlalchemy.orm import Query
 import psycopg2
 from stac_api import errors
 from stac_api.models import database
+from stac_api.utils.dependencies import READER, WRITER
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +19,17 @@ logger = logging.getLogger(__name__)
 class PostgresClient(abc.ABC):
     """Database CRUD operations on the defined table"""
 
-    reader_session: sa.orm.Session
-    writer_session: sa.orm.Session
     table: Type[database.BaseModel]
+
+    @property
+    def reader_session(self):
+        """Get reader session from context var"""
+        return READER.get()
+
+    @property
+    def writer_session(self):
+        """Get writer session from context var"""
+        return WRITER.get()
 
     @staticmethod
     def row_exists(query: Query) -> bool:
