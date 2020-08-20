@@ -150,6 +150,8 @@ class NAIPProperties(Extensions.eo, ItemProperties):
     statename: str = Field(..., alias="naip:statename")
     cell_id: int = Field(..., alias="naip:cell_id")
     quadrant: str = Field(..., alias="naip:quadrant")
+    utm: int = Field(..., alias="naip:utm")
+    quad_location: int = Field(..., alias="naip:quad_location")
 
 
 class Item(ItemBase):
