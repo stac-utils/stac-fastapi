@@ -8,7 +8,6 @@ from stac_api.create_app import create_app
 settings = ApiSettings()
 pagination_client = PaginationTokenClient()
 collection_client = CollectionCrudClient(pagination_client=pagination_client)
-collection_client = CollectionCrudClient(pagination_client=PaginationTokenClient())
 item_client = ItemCrudClient(
     collection_crud=collection_client, pagination_client=pagination_client
 )
