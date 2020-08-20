@@ -7,7 +7,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.requests import Request
 
-from stac_api.clients.base import BaseCollectionClient, BaseTransactionsClient
+from stac_api.clients.base import (
+    BaseCollectionClient,
+    BaseItemClient,
+    BaseTransactionsClient,
+)
 from stac_api.clients.postgres.transactions import TransactionsClient
 from stac_api.config import ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
@@ -38,7 +42,7 @@ def create_endpoint_from_model(
     ):
         """endpoint"""
         resp = func(request_data)
-        return response_model.create_api_response(resp, base_url)
+        return response_model.create_api_response(resp, base_url, request=request_data)
 
     return _endpoint
 
@@ -61,7 +65,7 @@ def create_endpoint_with_depends(
         if not request_data:
             resp = func()
         else:
-            kwargs = request_data.kwargs() # type: ignore
+            kwargs = request_data.kwargs()  # type: ignore
             resp = func(**kwargs)
 
         # TODO: Improve handling of type and List[type]
@@ -69,12 +73,38 @@ def create_endpoint_with_depends(
             inner_type = response_model.__args__[0]  # type:ignore
             resp = [inner_type.create_api_response(r, base_url, **kwargs) for r in resp]
         else:
-            resp = response_model.create_api_response( # type:ignore
+            resp = response_model.create_api_response(  # type:ignore
                 resp, base_url, **kwargs
             )
         return resp
 
     return _endpoint
+
+
+def create_items_router(client: BaseItemClient) -> APIRouter:
+    """Create API router with item endpoints"""
+    router = APIRouter()
+    router.add_api_route(
+        name="Get Item",
+        path="/collections/{collectionId}/items/{itemId}",
+        response_model=schemas.Item,
+        response_model_exclude_unset=True,
+        response_model_exclude_none=True,
+        methods=["GET"],
+        endpoint=create_endpoint_with_depends(client.get_item, ItemUri, schemas.Item),
+    )
+    router.add_api_route(
+        name="Search",
+        path="/search",
+        response_model=schemas.ItemCollection,
+        response_model_exclude_unset=True,
+        response_model_exclude_none=True,
+        methods=["POST"],
+        endpoint=create_endpoint_from_model(
+            client.search, schemas.STACSearch, schemas.SearchResponse
+        ),
+    )
+    return router
 
 
 def create_collections_router(client: BaseCollectionClient) -> APIRouter:
@@ -191,7 +221,10 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
 
 
 def create_app(
-    settings: ApiSettings, collection_client: BaseCollectionClient, transactions=False
+    settings: ApiSettings,
+    collection_client: BaseCollectionClient,
+    item_client: BaseItemClient,
+    transactions=False,
 ) -> FastAPI:
     """Create a FastAPI app"""
     app = FastAPI()
@@ -201,6 +234,8 @@ def create_app(
     app.include_router(mgmt.router)
     app.include_router(conformance.router)
     app.include_router(create_collections_router(collection_client))
+    app.include_router(create_items_router(item_client))
+    # TODO: Move remaining item endpoints to factory
     app.include_router(item.router)
     add_exception_handlers(app, DEFAULT_STATUS_CODES)
 

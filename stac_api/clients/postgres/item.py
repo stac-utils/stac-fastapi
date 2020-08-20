@@ -1,7 +1,7 @@
 """Item crud client."""
 import logging
 from dataclasses import dataclass
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Type, Union
 
 import sqlalchemy as sa
 from fastapi import Depends
@@ -32,6 +32,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
 
     collection_crud: Optional[CollectionCrudClient] = None
     pagination_client: Optional[PaginationTokenClient] = None
+    table: Type[database.Item] = database.Item
 
     def get_item(self, id: str) -> Any:
         """Get item by id"""
