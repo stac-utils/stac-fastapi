@@ -10,14 +10,11 @@ from urllib.parse import parse_qs, urlparse, urlsplit
 from shapely.geometry import Polygon
 
 from stac_api.clients.postgres.base import PostgresClient
-from stac_api.clients.postgres.collection import (
-    CollectionCrudClient,
-)
-from stac_api.clients.postgres.item import ItemCrudClient, item_crud_client_factory
+from stac_api.clients.postgres.collection import CollectionCrudClient
 from stac_api.errors import DatabaseError
 from stac_pydantic.api.search import DATETIME_RFC339
 
-from ..conftest import _raise_exception, create_test_client_with_error
+from ..conftest import _raise_exception
 
 
 def test_create_and_delete_item(app_client, load_test_data):
@@ -716,16 +713,11 @@ def test_create_item_database_error(app_client, load_test_data):
         assert resp.status_code == 424
 
 
-def test_read_item_database_error(load_test_data):
+def test_read_item_database_error(app_client, load_test_data):
     """Test 424 is raised on database error"""
     test_item = load_test_data("test_item.json")
-    with create_test_client_with_error(
-        client=ItemCrudClient,
-        mocked_method="read",
-        dependency=item_crud_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.get(
+    with patch.object(PostgresClient, "lookup_id", _raise_exception(DatabaseError())):
+        resp = app_client.get(
             f"/collections/{test_item['collection']}/items/{test_item['id']}"
         )
         assert resp.status_code == 424
@@ -758,23 +750,4 @@ def test_get_item_collection_database_error(app_client, load_test_data):
         CollectionCrudClient, "lookup_id", _raise_exception(DatabaseError())
     ):
         resp = app_client.get(f"/collections/{test_collection['id']}/items")
-        assert resp.status_code == 424
-
-
-def test_item_search_database_error(load_test_data):
-    """Test 424 is raised on database error"""
-    test_item = load_test_data("test_item.json")
-
-    params = {
-        "collections": [test_item["collection"]],
-        "ids": [test_item["id"]],
-        "sort": {"field": "datetime", "direction": "desc"},
-    }
-    with create_test_client_with_error(
-        client=ItemCrudClient,
-        mocked_method="search",
-        dependency=item_crud_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.post("/search", json=params)
         assert resp.status_code == 424

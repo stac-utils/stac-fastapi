@@ -269,3 +269,75 @@ class STACSearch(Search):
             return ShapelyPolygon.from_bounds(*self.bbox)
         else:
             return None
+
+
+@dataclass
+class SearchResponse(APIResponse):
+    """search response"""
+
+    @classmethod
+    def create_api_response(cls, obj: Any, base_url: str, **kwargs) -> Any:
+        """create api response"""
+        page, count = obj
+        links = []
+        if page.next:
+            links.append(
+                PaginationLink(
+                    rel=Relations.next,
+                    type="application/geo+json",
+                    href=f"{base_url}/search",
+                    method="POST",
+                    body={"token": page.next},
+                    merge=True,
+                )
+            )
+        if page.previous:
+            links.append(
+                PaginationLink(
+                    rel=Relations.previous,
+                    type="application/geo+json",
+                    href=f"{base_url}/search",
+                    method="POST",
+                    body={"token": page.previous},
+                    merge=True,
+                )
+            )
+
+        response_features = []
+        filter_kwargs = kwargs["request"].field.filter_fields
+        for item in page:
+            item.base_url = base_url
+            response_features.append(Item.from_orm(item).to_dict(**filter_kwargs))
+
+        # Geoalchemy doesn't have a good way of calculating extent of many features, so we'll calculate it outside the db
+        bbox = None
+        if count > 0:
+            xvals = [
+                item
+                for sublist in [
+                    [float(item["bbox"][0]), float(item["bbox"][2])]
+                    for item in response_features
+                ]
+                for item in sublist
+            ]
+            yvals = [
+                item
+                for sublist in [
+                    [float(item["bbox"][1]), float(item["bbox"][3])]
+                    for item in response_features
+                ]
+                for item in sublist
+            ]
+            bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
+
+        return ItemCollection(
+            type="FeatureCollection",
+            context={
+                "returned": len(page),
+                "limit": kwargs["request"].limit,
+                "matched": count,
+            },
+            features=response_features,
+            links=links,
+            bbox=bbox,
+        )
