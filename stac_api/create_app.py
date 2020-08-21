@@ -1,5 +1,5 @@
 """fastapi app creation"""
-from typing import Callable, List, Type, Union
+from typing import Callable, List, Type
 
 from fastapi import APIRouter, Depends, FastAPI
 from pydantic import BaseModel
@@ -18,18 +18,19 @@ from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_api.models import schemas
 from stac_api.models.api import (
     APIRequest,
-    APIResponse,
     CollectionUri,
+    EmptyRequest,
     ItemCollectionUri,
     ItemUri,
 )
 from stac_api.resources import conformance, item, mgmt
 from stac_api.utils.dependencies import READER, WRITER, discover_base_url
+from stac_pydantic import ItemCollection
 
 
 # TODO: Only use one endpoint factory
 def create_endpoint_from_model(
-    func: Callable, request_model: Type[BaseModel], response_model: Type[APIResponse]
+    func: Callable, request_model: Type[BaseModel]
 ) -> Callable:
     """
     Create a FastAPI endpoint where request model is a pydantic model.  This works best for validating request bodies
@@ -41,16 +42,14 @@ def create_endpoint_from_model(
         base_url: str = Depends(discover_base_url),  # type:ignore
     ):
         """endpoint"""
-        resp = func(request_data)
-        return response_model.create_api_response(resp, base_url, request=request_data)
+        resp = func(request_data, base_url=base_url)
+        return resp
 
     return _endpoint
 
 
 def create_endpoint_with_depends(
-    func: Callable,
-    request_model: Type[APIRequest],
-    response_model: Union[Type[APIResponse], Type[List[APIResponse]]],
+    func: Callable, request_model: Type[APIRequest],
 ) -> Callable:
     """
     Create a fastapi endpoint where request model is a dataclass.  This works best for validating query/patm params.
@@ -61,21 +60,7 @@ def create_endpoint_with_depends(
         base_url: str = Depends(discover_base_url),
     ):
         """endpoint"""
-        kwargs = {}
-        if not request_data:
-            resp = func()
-        else:
-            kwargs = request_data.kwargs()  # type: ignore
-            resp = func(**kwargs)
-
-        # TODO: Improve handling of type and List[type]
-        if isinstance(resp, list):
-            inner_type = response_model.__args__[0]  # type:ignore
-            resp = [inner_type.create_api_response(r, base_url, **kwargs) for r in resp]
-        else:
-            resp = response_model.create_api_response(  # type:ignore
-                resp, base_url, **kwargs
-            )
+        resp = func(base_url=base_url, **request_data.kwargs())  # type:ignore
         return resp
 
     return _endpoint
@@ -91,18 +76,16 @@ def create_items_router(client: BaseItemClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["GET"],
-        endpoint=create_endpoint_with_depends(client.get_item, ItemUri, schemas.Item),
+        endpoint=create_endpoint_with_depends(client.get_item, ItemUri),
     )
     router.add_api_route(
         name="Search",
         path="/search",
-        response_model=schemas.ItemCollection,
+        response_model=ItemCollection,
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["POST"],
-        endpoint=create_endpoint_from_model(
-            client.search, schemas.STACSearch, schemas.SearchResponse
-        ),
+        endpoint=create_endpoint_from_model(client.search, schemas.STACSearch),
     )
     return router
 
@@ -117,11 +100,7 @@ def create_collections_router(client: BaseCollectionClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["GET"],
-        endpoint=create_endpoint_with_depends(
-            client.all_collections,
-            lambda: None,  # type:ignore
-            List[schemas.Collection],  # type:ignore
-        ),
+        endpoint=create_endpoint_with_depends(client.all_collections, EmptyRequest,),
     )
     router.add_api_route(
         name="Get Collection",
@@ -130,19 +109,17 @@ def create_collections_router(client: BaseCollectionClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["GET"],
-        endpoint=create_endpoint_with_depends(
-            client.get_collection, CollectionUri, schemas.Collection
-        ),
+        endpoint=create_endpoint_with_depends(client.get_collection, CollectionUri),
     )
     router.add_api_route(
         name="Get ItemCollection",
         path="/collections/{collectionId}/items",
-        response_model=schemas.ItemCollection,
+        response_model=ItemCollection,
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["GET"],
         endpoint=create_endpoint_with_depends(
-            client.item_collection, ItemCollectionUri, schemas.ItemCollection
+            client.item_collection, ItemCollectionUri
         ),
     )
     return router
@@ -158,9 +135,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["POST"],
-        endpoint=create_endpoint_from_model(
-            client.create_item, schemas.Item, schemas.Item
-        ),
+        endpoint=create_endpoint_from_model(client.create_item, schemas.Item),
     )
     router.add_api_route(
         name="Update Item",
@@ -169,9 +144,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["PUT"],
-        endpoint=create_endpoint_from_model(
-            client.update_item, schemas.Item, schemas.Item
-        ),
+        endpoint=create_endpoint_from_model(client.update_item, schemas.Item),
     )
     router.add_api_route(
         name="Delete Item",
@@ -180,9 +153,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["DELETE"],
-        endpoint=create_endpoint_with_depends(
-            client.delete_item, ItemUri, schemas.Item
-        ),
+        endpoint=create_endpoint_with_depends(client.delete_item, ItemUri),
     )
     router.add_api_route(
         name="Create Collection",
@@ -192,7 +163,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_none=True,
         methods=["POST"],
         endpoint=create_endpoint_from_model(
-            client.create_collection, schemas.Collection, schemas.Collection
+            client.create_collection, schemas.Collection
         ),
     )
     router.add_api_route(
@@ -203,7 +174,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_none=True,
         methods=["PUT"],
         endpoint=create_endpoint_from_model(
-            client.update_collection, schemas.Collection, schemas.Collection
+            client.update_collection, schemas.Collection
         ),
     )
     router.add_api_route(
@@ -213,9 +184,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["DELETE"],
-        endpoint=create_endpoint_with_depends(
-            client.delete_collection, CollectionUri, schemas.Collection
-        ),
+        endpoint=create_endpoint_with_depends(client.delete_collection, CollectionUri),
     )
     return router
 

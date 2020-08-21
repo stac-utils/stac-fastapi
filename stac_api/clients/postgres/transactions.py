@@ -71,29 +71,45 @@ class TransactionsClient(PostgresClient, BaseTransactionsClient):
         self.commit()
         return row_data
 
-    def create_item(self, model: schemas.Item) -> database.Item:
+    def create_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
         """Create an item"""
-        return self._create(model, table=self.item_table)
+        obj = self._create(model, table=self.item_table)
+        obj.base_url = kwargs["base_url"]
+        return schemas.Item.from_orm(obj)
 
-    def update_item(self, model: schemas.Item) -> database.Item:
+    def update_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
         """Update an item"""
-        return self._update(model, table=self.item_table)
+        obj = self._update(model, table=self.item_table)
+        obj.base_url = kwargs["base_url"]
+        return schemas.Item.from_orm(obj)
 
-    def delete_item(self, id: str) -> database.Item:
+    def delete_item(self, id: str, **kwargs) -> schemas.Item:
         """Delete an item"""
-        return self._delete(id, table=self.item_table)
+        obj = self._delete(id, table=self.item_table)
+        obj.base_url = kwargs["base_url"]
+        return schemas.Item.from_orm(obj)
 
-    def create_collection(self, model: schemas.Collection) -> database.Collection:
+    def create_collection(
+        self, model: schemas.Collection, **kwargs
+    ) -> schemas.Collection:
         """Create a collection"""
-        return self._create(model, table=self.collection_table)
+        obj = self._create(model, table=self.collection_table)
+        obj.base_url = kwargs["base_url"]
+        return schemas.Collection.from_orm(obj)
 
-    def update_collection(self, model: schemas.Collection) -> database.Collection:
+    def update_collection(
+        self, model: schemas.Collection, **kwargs
+    ) -> schemas.Collection:
         """Update a collection"""
-        return self._update(model, table=self.collection_table)
+        obj = self._update(model, table=self.collection_table)
+        obj.base_url = kwargs["base_url"]
+        return schemas.Collection.from_orm(obj)
 
-    def delete_collection(self, id: str) -> database.Collection:
+    def delete_collection(self, id: str, **kwargs) -> schemas.Collection:
         """Delete a collection"""
-        return self._delete(id, table=self.collection_table)
+        obj = self._delete(id, table=self.collection_table)
+        obj.base_url = kwargs["base_url"]
+        return schemas.Collection.from_orm(obj)
 
 
 def transactions_client_factory() -> TransactionsClient:
