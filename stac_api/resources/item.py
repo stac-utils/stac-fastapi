@@ -3,7 +3,6 @@
 import json
 from datetime import datetime
 from typing import List, Optional, Union
-from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, Query
 from starlette.requests import Request
@@ -11,9 +10,7 @@ from starlette.requests import Request
 from stac_api.clients.postgres.item import ItemCrudClient, item_crud_client_factory
 from stac_api.models import schemas
 from stac_api.utils.dependencies import discover_base_url, parse_list_factory
-from stac_pydantic.api.extensions.paging import PaginationLink
 from stac_pydantic.item import ItemCollection
-from stac_pydantic.shared import Link, Relations
 
 router = APIRouter()
 
@@ -75,80 +72,4 @@ def search_items_get(
 
     # Do the request
     search_request = schemas.STACSearch(**base_args)
-    filter_kwargs = search_request.field.filter_fields
-    page, count = crud_client.search(search_request)
-
-    # Pagination
-    links = []
-    query_params = dict(request.query_params)
-    if page.next:
-        query_params["token"] = page.next
-        links.append(
-            PaginationLink(
-                rel=Relations.next,
-                type="application/geo+json",
-                href=f"{base_url}/search?{urlencode(query_params)}",
-                method="GET",
-            )
-        )
-    if page.previous:
-        query_params["token"] = page.previous
-        links.append(
-            PaginationLink(
-                rel=Relations.previous,
-                type="application/geo+json",
-                href=f"{base_url}/search?{urlencode(query_params)}",
-                method="GET",
-            )
-        )
-
-    # Add OGC Tile links
-    if not collections:
-        collections = {item.collection_id for item in page}  # type:ignore
-
-    for coll in collections:
-        links.append(
-            Link(
-                rel=Relations.tiles,
-                type="application/json",
-                href=f"{base_url}/collections/{coll}/tiles?{urlencode(query_params)}",
-            )
-        )
-
-    # Decompose to pydantic models
-    response_features = []
-    for item in page:
-        item.base_url = base_url
-        response_features.append(schemas.Item.from_orm(item).to_dict(**filter_kwargs))
-
-    # Add bbox
-    if count > 0:
-        xvals = [
-            item
-            for sublist in [
-                [float(item["bbox"][0]), float(item["bbox"][2])]
-                for item in response_features
-            ]
-            for item in sublist
-        ]
-        yvals = [
-            item
-            for sublist in [
-                [float(item["bbox"][1]), float(item["bbox"][3])]
-                for item in response_features
-            ]
-            for item in sublist
-        ]
-        bbox = (min(xvals), min(yvals), max(xvals), max(yvals))  # type:ignore
-
-    return ItemCollection(
-        type="FeatureCollection",
-        context={
-            "returned": len(page),
-            "limit": search_request.limit,
-            "matched": count,
-        },
-        features=response_features,
-        links=links,
-        bbox=bbox,
-    )
+    return crud_client.search(search_request, base_url=base_url)

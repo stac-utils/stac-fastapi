@@ -81,6 +81,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
             try:
                 items = query.filter(id_filter).order_by(self.table.id)
                 page = get_page(items, per_page=search_request.limit, page=token)
+                count = len(search_request.ids)
                 page.next = (
                     self.pagination_client.insert(keyset=page.paging.bookmark_next)
                     if page.paging.has_next
@@ -96,57 +97,59 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
                 raise DatabaseError(
                     "Unhandled database error when searching for items by id"
                 )
-            # TODO: Fix this
-            return page, len(search_request.ids)
-
-        # Spatial query
-        poly = search_request.polygon()
-        if poly:
-            filter_geom = ga.shape.from_shape(poly, srid=4326)
-            query = query.filter(
-                ga.func.ST_Intersects(self.table.geometry, filter_geom)
-            )
-
-        # Temporal query
-        if search_request.datetime:
-            # Two tailed query (between)
-            if ".." not in search_request.datetime:
+        else:
+            # Spatial query
+            poly = search_request.polygon()
+            if poly:
+                filter_geom = ga.shape.from_shape(poly, srid=4326)
                 query = query.filter(
-                    self.table.datetime.between(*search_request.datetime)
+                    ga.func.ST_Intersects(self.table.geometry, filter_geom)
                 )
-            # All items after the start date
-            if search_request.datetime[0] != "..":
-                query = query.filter(self.table.datetime >= search_request.datetime[0])
-            # All items before the end date
-            if search_request.datetime[1] != "..":
-                query = query.filter(self.table.datetime <= search_request.datetime[1])
 
-        # Query fields
-        if search_request.query:
-            for (field_name, expr) in search_request.query.items():
-                field = self.table.get_field(field_name)
-                for (op, value) in expr.items():
-                    query = query.filter(op.operator(field, value))
+            # Temporal query
+            if search_request.datetime:
+                # Two tailed query (between)
+                if ".." not in search_request.datetime:
+                    query = query.filter(
+                        self.table.datetime.between(*search_request.datetime)
+                    )
+                # All items after the start date
+                if search_request.datetime[0] != "..":
+                    query = query.filter(
+                        self.table.datetime >= search_request.datetime[0]
+                    )
+                # All items before the end date
+                if search_request.datetime[1] != "..":
+                    query = query.filter(
+                        self.table.datetime <= search_request.datetime[1]
+                    )
 
-        try:
-            count = query.count()
-            page = get_page(query, per_page=search_request.limit, page=token)
-            # Create dynamic attributes for each page
-            page.next = (
-                self.pagination_client.insert(keyset=page.paging.bookmark_next)
-                if page.paging.has_next
-                else None
-            )
-            page.previous = (
-                self.pagination_client.insert(keyset=page.paging.bookmark_previous)
-                if page.paging.has_previous
-                else None
-            )
-        except Exception as e:
-            logger.error(e, exc_info=True)
-            raise DatabaseError(
-                "Unhandled database error during spatial/temporal query"
-            )
+            # Query fields
+            if search_request.query:
+                for (field_name, expr) in search_request.query.items():
+                    field = self.table.get_field(field_name)
+                    for (op, value) in expr.items():
+                        query = query.filter(op.operator(field, value))
+
+            try:
+                count = query.count()
+                page = get_page(query, per_page=search_request.limit, page=token)
+                # Create dynamic attributes for each page
+                page.next = (
+                    self.pagination_client.insert(keyset=page.paging.bookmark_next)
+                    if page.paging.has_next
+                    else None
+                )
+                page.previous = (
+                    self.pagination_client.insert(keyset=page.paging.bookmark_previous)
+                    if page.paging.has_previous
+                    else None
+                )
+            except Exception as e:
+                logger.error(e, exc_info=True)
+                raise DatabaseError(
+                    "Unhandled database error during spatial/temporal query"
+                )
         links = []
         if page.next:
             links.append(
@@ -172,7 +175,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
             )
 
         response_features = []
-        filter_kwargs = kwargs["request"].field.filter_fields
+        filter_kwargs = search_request.field.filter_fields
         for item in page:
             item.base_url = kwargs["base_url"]
             response_features.append(
@@ -204,7 +207,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
             type="FeatureCollection",
             context={
                 "returned": len(page),
-                "limit": kwargs["request"].limit,
+                "limit": search_request.limit,
                 "matched": count,
             },
             features=response_features,

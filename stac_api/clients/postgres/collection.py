@@ -83,15 +83,13 @@ class CollectionCrudClient(PostgresClient, BaseCollectionClient):
                 "Unhandled database error when getting collection children"
             )
 
-        collection_id = collection_children[0].collection_id
-
         links = []
         if page.next:
             links.append(
                 PaginationLink(
                     rel=Relations.next,
                     type="application/geo+json",
-                    href=f"{kwargs['base_url']}/collections/{collection_id}/items?token={page.next}&limit={limit}",
+                    href=f"{kwargs['base_url']}/collections/{id}/items?token={page.next}&limit={limit}",
                     method="GET",
                 )
             )
@@ -100,7 +98,7 @@ class CollectionCrudClient(PostgresClient, BaseCollectionClient):
                 PaginationLink(
                     rel=Relations.previous,
                     type="application/geo+json",
-                    href=f"{kwargs['base_url']}/collections/{collection_id}/items?token={page.previous}&limit={limit}",
+                    href=f"{kwargs['base_url']}/collections/{id}/items?token={page.previous}&limit={limit}",
                     method="GET",
                 )
             )
