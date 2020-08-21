@@ -14,16 +14,13 @@ from shapely.geometry import shape
 
 from geojson_pydantic.geometries import Polygon
 from stac_api import config
-from stac_api.models.api import APIResponse
 from stac_api.models.decompose import CollectionGetter, ItemGetter
 from stac_pydantic import Collection as CollectionBase
 from stac_pydantic import Item as ItemBase
-from stac_pydantic import ItemCollection as ItemCollectionBase
 from stac_pydantic.api import Search
 from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
-from stac_pydantic.api.extensions.paging import PaginationLink
 from stac_pydantic.api.search import DATETIME_RFC339
-from stac_pydantic.shared import Link, Relations
+from stac_pydantic.shared import Link
 from stac_pydantic.utils import AutoValueEnum
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
@@ -143,7 +140,7 @@ class FieldsExtension(FieldsBase):
         }
 
 
-class Collection(CollectionBase, APIResponse):
+class Collection(CollectionBase):
     """Collection model"""
 
     links: Optional[List[Link]]
@@ -155,15 +152,8 @@ class Collection(CollectionBase, APIResponse):
         use_enum_values = True
         getter_dict = CollectionGetter
 
-    @classmethod
-    def create_api_response(cls, obj: Any, base_url: str, **kwargs):
-        """create api response"""
-        obj.base_url = base_url
-        model = cls.from_orm(obj)
-        return model
 
-
-class Item(ItemBase, APIResponse):
+class Item(ItemBase):
     """Item model"""
 
     geometry: Polygon
@@ -176,56 +166,6 @@ class Item(ItemBase, APIResponse):
         use_enum_values = True
         orm_mode = True
         getter_dict = ItemGetter
-
-    @classmethod
-    def create_api_response(cls, obj: Any, base_url: str, **kwargs):
-        """create api response"""
-        obj.base_url = base_url
-        model = cls.from_orm(obj)
-        return model
-
-
-class ItemCollection(ItemCollectionBase, APIResponse):
-    """item collection"""
-
-    @classmethod
-    def create_api_response(self, obj: Any, base_url: str, **kwargs) -> Any:
-        """create api response"""
-        page, count = obj
-        collection_id = kwargs["id"]
-        limit = kwargs.get("limit", 10)
-
-        links = []
-        if page.next:
-            links.append(
-                PaginationLink(
-                    rel=Relations.next,
-                    type="application/geo+json",
-                    href=f"{base_url}/collections/{collection_id}/items?token={page.next}&limit={limit}",
-                    method="GET",
-                )
-            )
-        if page.previous:
-            links.append(
-                PaginationLink(
-                    rel=Relations.previous,
-                    type="application/geo+json",
-                    href=f"{base_url}/collections/{collection_id}/items?token={page.previous}&limit={limit}",
-                    method="GET",
-                )
-            )
-
-        response_features = []
-        for item in page:
-            item.base_url = base_url
-            response_features.append(Item.from_orm(item))
-
-        return ItemCollection(
-            type="FeatureCollection",
-            context={"returned": len(page), "limit": limit, "matched": count},
-            features=response_features,
-            links=links,
-        )
 
 
 class STACSearch(Search):
@@ -269,75 +209,3 @@ class STACSearch(Search):
             return ShapelyPolygon.from_bounds(*self.bbox)
         else:
             return None
-
-
-@dataclass
-class SearchResponse(APIResponse):
-    """search response"""
-
-    @classmethod
-    def create_api_response(cls, obj: Any, base_url: str, **kwargs) -> Any:
-        """create api response"""
-        page, count = obj
-        links = []
-        if page.next:
-            links.append(
-                PaginationLink(
-                    rel=Relations.next,
-                    type="application/geo+json",
-                    href=f"{base_url}/search",
-                    method="POST",
-                    body={"token": page.next},
-                    merge=True,
-                )
-            )
-        if page.previous:
-            links.append(
-                PaginationLink(
-                    rel=Relations.previous,
-                    type="application/geo+json",
-                    href=f"{base_url}/search",
-                    method="POST",
-                    body={"token": page.previous},
-                    merge=True,
-                )
-            )
-
-        response_features = []
-        filter_kwargs = kwargs["request"].field.filter_fields
-        for item in page:
-            item.base_url = base_url
-            response_features.append(Item.from_orm(item).to_dict(**filter_kwargs))
-
-        # Geoalchemy doesn't have a good way of calculating extent of many features, so we'll calculate it outside the db
-        bbox = None
-        if count > 0:
-            xvals = [
-                item
-                for sublist in [
-                    [float(item["bbox"][0]), float(item["bbox"][2])]
-                    for item in response_features
-                ]
-                for item in sublist
-            ]
-            yvals = [
-                item
-                for sublist in [
-                    [float(item["bbox"][1]), float(item["bbox"][3])]
-                    for item in response_features
-                ]
-                for item in sublist
-            ]
-            bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
-
-        return ItemCollection(
-            type="FeatureCollection",
-            context={
-                "returned": len(page),
-                "limit": kwargs["request"].limit,
-                "matched": count,
-            },
-            features=response_features,
-            links=links,
-            bbox=bbox,
-        )

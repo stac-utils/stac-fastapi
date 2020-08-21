@@ -1,13 +1,13 @@
 """Item crud client."""
 import logging
 from dataclasses import dataclass
-from typing import Any, Optional, Tuple, Type, Union
+from typing import Optional, Type, Union
 
 import sqlalchemy as sa
 from fastapi import Depends
 
 import geoalchemy2 as ga
-from sqlakeyset import Page, get_page
+from sqlakeyset import get_page
 from stac_api.clients.base import BaseItemClient
 from stac_api.clients.postgres.base import PostgresClient
 from stac_api.clients.postgres.collection import (
@@ -20,6 +20,9 @@ from stac_api.clients.postgres.tokens import (
 )
 from stac_api.errors import DatabaseError
 from stac_api.models import database, schemas
+from stac_pydantic import ItemCollection
+from stac_pydantic.api.extensions.paging import PaginationLink
+from stac_pydantic.shared import Relations
 
 logger = logging.getLogger(__name__)
 
@@ -34,11 +37,13 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
     pagination_client: Optional[PaginationTokenClient] = None
     table: Type[database.Item] = database.Item
 
-    def get_item(self, id: str) -> Any:
+    def get_item(self, id: str, **kwargs) -> schemas.Item:
         """Get item by id"""
-        return self.lookup_id(id).first()
+        obj = self.lookup_id(id).first()
+        obj.base_url = kwargs["base_url"]
+        return schemas.Item.from_orm(obj)
 
-    def search(self, search_request: schemas.STACSearch) -> Tuple[Page, int]:
+    def search(self, search_request: schemas.STACSearch, **kwargs) -> ItemCollection:
         """STAC search operation"""
         token = (
             self.pagination_client.get(search_request.token)
@@ -91,6 +96,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
                 raise DatabaseError(
                     "Unhandled database error when searching for items by id"
                 )
+            # TODO: Fix this
             return page, len(search_request.ids)
 
         # Spatial query
@@ -141,7 +147,70 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
             raise DatabaseError(
                 "Unhandled database error during spatial/temporal query"
             )
-        return page, count
+        links = []
+        if page.next:
+            links.append(
+                PaginationLink(
+                    rel=Relations.next,
+                    type="application/geo+json",
+                    href=f"{kwargs['base_url']}/search",
+                    method="POST",
+                    body={"token": page.next},
+                    merge=True,
+                )
+            )
+        if page.previous:
+            links.append(
+                PaginationLink(
+                    rel=Relations.previous,
+                    type="application/geo+json",
+                    href=f"{kwargs['base_url']}/search",
+                    method="POST",
+                    body={"token": page.previous},
+                    merge=True,
+                )
+            )
+
+        response_features = []
+        filter_kwargs = kwargs["request"].field.filter_fields
+        for item in page:
+            item.base_url = kwargs["base_url"]
+            response_features.append(
+                schemas.Item.from_orm(item).to_dict(**filter_kwargs)
+            )
+
+        # Geoalchemy doesn't have a good way of calculating extent of many features, so we'll calculate it outside the db
+        bbox = None
+        if count > 0:
+            xvals = [
+                item
+                for sublist in [
+                    [float(item["bbox"][0]), float(item["bbox"][2])]
+                    for item in response_features
+                ]
+                for item in sublist
+            ]
+            yvals = [
+                item
+                for sublist in [
+                    [float(item["bbox"][1]), float(item["bbox"][3])]
+                    for item in response_features
+                ]
+                for item in sublist
+            ]
+            bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
+
+        return ItemCollection(
+            type="FeatureCollection",
+            context={
+                "returned": len(page),
+                "limit": kwargs["request"].limit,
+                "matched": count,
+            },
+            features=response_features,
+            links=links,
+            bbox=bbox,
+        )
 
 
 def item_crud_client_factory(

@@ -2,7 +2,7 @@
 
 import abc
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Dict
 
 from fastapi import Path
 
@@ -49,14 +49,3 @@ class ItemCollectionUri(CollectionUri):
     def kwargs(self) -> Dict:
         """kwargs"""
         return {"id": self.collectionId, "limit": self.limit, "token": self.token}
-
-
-@dataclass  # type:ignore
-class APIResponse(abc.ABC):
-    """Generic API Response base class"""
-
-    @classmethod
-    @abc.abstractmethod
-    def create_api_response(self, obj: Any, base_url: str, **kwargs) -> Any:
-        """Transform endpoint response into something compatible with fastapi"""
-        ...
