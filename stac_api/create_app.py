@@ -16,7 +16,13 @@ from stac_api.clients.postgres.transactions import TransactionsClient
 from stac_api.config import ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_api.models import schemas
-from stac_api.models.api import APIRequest, CollectionUri, ItemCollectionUri, ItemUri
+from stac_api.models.api import (
+    APIRequest,
+    CollectionUri,
+    EmptyRequest,
+    ItemCollectionUri,
+    ItemUri,
+)
 from stac_api.resources import conformance, item, mgmt
 from stac_api.utils.dependencies import READER, WRITER, discover_base_url
 from stac_pydantic import ItemCollection
@@ -98,9 +104,7 @@ def create_collections_router(client: BaseCollectionClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["GET"],
-        endpoint=create_endpoint_with_depends(
-            client.all_collections, lambda: None,  # type:ignore
-        ),
+        endpoint=create_endpoint_with_depends(client.all_collections, EmptyRequest,),
     )
     router.add_api_route(
         name="Get Collection",

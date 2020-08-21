@@ -40,6 +40,15 @@ class ItemUri(CollectionUri):
 
 
 @dataclass
+class EmptyRequest(APIRequest):
+    """Empty request"""
+
+    def kwargs(self) -> Dict:
+        """kwargs"""
+        return {}
+
+
+@dataclass
 class ItemCollectionUri(CollectionUri):
     """Get item collection"""
 
