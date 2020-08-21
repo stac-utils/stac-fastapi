@@ -60,11 +60,7 @@ def create_endpoint_with_depends(
         base_url: str = Depends(discover_base_url),
     ):
         """endpoint"""
-        if not request_data:
-            resp = func(base_url=base_url)
-        else:
-            kwargs = request_data.kwargs()  # type: ignore
-            resp = func(base_url=base_url, **kwargs)
+        resp = func(base_url=base_url, **request_data.kwargs())  # type:ignore
         return resp
 
     return _endpoint
