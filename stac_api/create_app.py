@@ -44,6 +44,10 @@ def _create_request_model(
             if not settings.is_enabled(ApiExtensions.sort):
                 continue
 
+        if k == "field":
+            if not settings.is_enabled(ApiExtensions.fields):
+                continue
+
         field_info = v.field_info
         body = Body(
             None

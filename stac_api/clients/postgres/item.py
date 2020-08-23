@@ -3,10 +3,9 @@ import logging
 from dataclasses import dataclass
 from typing import Optional, Type, Union
 
+import geoalchemy2 as ga
 import sqlalchemy as sa
 from fastapi import Depends
-
-import geoalchemy2 as ga
 from sqlakeyset import get_page
 from stac_api import config
 from stac_api.clients.base import BaseItemClient
@@ -180,7 +179,10 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
             )
 
         response_features = []
-        filter_kwargs = search_request.field.filter_fields
+        filter_kwargs = {}
+        if config.settings.is_enabled(ApiExtensions.fields):
+            filter_kwargs = search_request.field.filter_fields
+
         for item in page:
             item.base_url = kwargs["base_url"]
             response_features.append(
