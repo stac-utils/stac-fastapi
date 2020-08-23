@@ -14,7 +14,7 @@ from stac_api.clients.base import (
     BaseTransactionsClient,
 )
 from stac_api.clients.postgres.transactions import TransactionsClient
-from stac_api.config import ApiSettings, inject_settings
+from stac_api.config import ApiExtensions, ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_api.models import schemas
 from stac_api.models.api import (
@@ -231,7 +231,6 @@ def create_app(
     settings: ApiSettings,
     collection_client: BaseCollectionClient,
     item_client: BaseItemClient,
-    transactions=False,
 ) -> FastAPI:
     """Create a FastAPI app"""
     app = FastAPI()
@@ -246,7 +245,7 @@ def create_app(
     app.include_router(item.router)
     add_exception_handlers(app, DEFAULT_STATUS_CODES)
 
-    if transactions:
+    if settings.is_enabled(ApiExtensions.transaction):
         transaction_client = TransactionsClient()
         app.include_router(create_transactions_router(transaction_client))
 
