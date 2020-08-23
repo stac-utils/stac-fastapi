@@ -66,6 +66,10 @@ class ApiSettings(BaseSettings):
         """Create writer psql connection string"""
         return f"postgresql://{self.postgres_user}:{self.postgres_pass}@{self.postgres_host_writer}:{self.postgres_port}/{self.postgres_dbname}"
 
+    def is_enabled(self, ext: ApiExtensions) -> bool:
+        """Helper method to check if an api extension is enabled"""
+        return ext in self.stac_api_extensions or False
+
 
 settings: Optional[ApiSettings] = None
 
