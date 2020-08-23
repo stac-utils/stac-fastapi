@@ -1,12 +1,13 @@
 """fastapi app creation"""
 from typing import Callable, List, Type
 
-from fastapi import APIRouter, Depends, FastAPI
-from pydantic import BaseModel
+from fastapi import APIRouter, Body, Depends, FastAPI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.requests import Request
 
+from pydantic import BaseModel, create_model
+from pydantic.fields import UndefinedType
 from stac_api.clients.base import (
     BaseCollectionClient,
     BaseItemClient,
@@ -26,6 +27,43 @@ from stac_api.models.api import (
 from stac_api.resources import conformance, item, mgmt
 from stac_api.utils.dependencies import READER, WRITER, discover_base_url
 from stac_pydantic import ItemCollection
+
+
+def _create_request_model(model: Type[BaseModel]) -> Type[BaseModel]:
+    """Create a pydantic model for validating a request body"""
+    fields = {}
+    for (k, v) in model.__fields__.items():
+        field_info = v.field_info
+        body = Body(
+            None
+            if isinstance(field_info.default, UndefinedType)
+            else field_info.default,
+            default_factory=field_info.default_factory,
+            alias=field_info.alias,
+            alias_priority=field_info.alias_priority,
+            title=field_info.title,
+            description=field_info.description,
+            const=field_info.const,
+            gt=field_info.gt,
+            ge=field_info.ge,
+            lt=field_info.lt,
+            le=field_info.le,
+            multiple_of=field_info.multiple_of,
+            min_items=field_info.min_items,
+            max_items=field_info.max_items,
+            min_length=field_info.min_length,
+            max_length=field_info.max_length,
+            regex=field_info.regex,
+            extra=field_info.extra,
+        )
+        fields[k] = (v.outer_type_, body)
+    return create_model(model.__name__, **fields)
+
+
+# Create request models in global scope so they are registered before FastAPI app creation
+ITEM_REQUEST_MODEL = _create_request_model(schemas.Item)
+COLLECTION_REQUEST_MODEL = _create_request_model(schemas.Collection)
+SEARCH_REQUEST_MODEL = _create_request_model(schemas.STACSearch)
 
 
 # TODO: Only use one endpoint factory
@@ -85,7 +123,7 @@ def create_items_router(client: BaseItemClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["POST"],
-        endpoint=create_endpoint_from_model(client.search, schemas.STACSearch),
+        endpoint=create_endpoint_from_model(client.search, SEARCH_REQUEST_MODEL),
     )
     return router
 
@@ -135,7 +173,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["POST"],
-        endpoint=create_endpoint_from_model(client.create_item, schemas.Item),
+        endpoint=create_endpoint_from_model(client.create_item, ITEM_REQUEST_MODEL),
     )
     router.add_api_route(
         name="Update Item",
@@ -144,7 +182,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["PUT"],
-        endpoint=create_endpoint_from_model(client.update_item, schemas.Item),
+        endpoint=create_endpoint_from_model(client.update_item, ITEM_REQUEST_MODEL),
     )
     router.add_api_route(
         name="Delete Item",
@@ -163,7 +201,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_none=True,
         methods=["POST"],
         endpoint=create_endpoint_from_model(
-            client.create_collection, schemas.Collection
+            client.create_collection, COLLECTION_REQUEST_MODEL
         ),
     )
     router.add_api_route(
@@ -174,7 +212,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_none=True,
         methods=["PUT"],
         endpoint=create_endpoint_from_model(
-            client.update_collection, schemas.Collection
+            client.update_collection, COLLECTION_REQUEST_MODEL
         ),
     )
     router.add_api_route(
