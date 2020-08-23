@@ -72,7 +72,7 @@ def _create_request_model(
             extra=field_info.extra,
         )
         fields[k] = (v.outer_type_, body)
-    return create_model(model.__name__, **fields)
+    return create_model(model.__name__, **fields, __base__=model)
 
 
 # TODO: Only use one endpoint factory
