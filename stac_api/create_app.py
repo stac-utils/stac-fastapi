@@ -2,17 +2,18 @@
 from typing import Callable, List, Type
 
 from fastapi import APIRouter, Body, Depends, FastAPI
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from starlette.requests import Request
-
 from pydantic import BaseModel, create_model
 from pydantic.fields import UndefinedType
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from stac_api.clients.base import (
     BaseCollectionClient,
     BaseItemClient,
     BaseTransactionsClient,
 )
+from stac_api.clients.postgres.collection import CollectionCrudClient
+from stac_api.clients.postgres.item import ItemCrudClient
+from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.clients.postgres.transactions import TransactionsClient
 from stac_api.config import ApiExtensions, ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
@@ -27,6 +28,7 @@ from stac_api.models.api import (
 from stac_api.resources import conformance, item, mgmt
 from stac_api.utils.dependencies import READER, WRITER, discover_base_url
 from stac_pydantic import ItemCollection
+from starlette.requests import Request
 
 
 def _create_request_model(
@@ -241,12 +243,14 @@ def create_transactions_router(
     return router
 
 
-def create_app(
-    settings: ApiSettings,
-    collection_client: BaseCollectionClient,
-    item_client: BaseItemClient,
-) -> FastAPI:
+def create_app(settings: ApiSettings) -> FastAPI:
     """Create a FastAPI app"""
+    paging_client = PaginationTokenClient()
+    collection_client = CollectionCrudClient(pagination_client=paging_client)
+    item_client = ItemCrudClient(
+        collection_crud=collection_client, pagination_client=paging_client
+    )
+
     app = FastAPI()
     inject_settings(settings)
 
