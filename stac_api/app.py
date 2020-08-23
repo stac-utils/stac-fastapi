@@ -5,15 +5,14 @@ from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.config import ApiSettings
 from stac_api.create_app import create_app
 
-settings = ApiSettings()
+settings = ApiSettings(
+    stac_api_extensions=["context", "fields", "query", "sort", "transaction"]
+)
 pagination_client = PaginationTokenClient()
 collection_client = CollectionCrudClient(pagination_client=pagination_client)
 item_client = ItemCrudClient(
     collection_crud=collection_client, pagination_client=pagination_client
 )
 app = create_app(
-    settings=settings,
-    collection_client=collection_client,
-    item_client=item_client,
-    transactions=True,
+    settings=settings, collection_client=collection_client, item_client=item_client,
 )

@@ -1,19 +1,20 @@
 """fastapi app creation"""
 from typing import Callable, List, Type
 
-from fastapi import APIRouter, Depends, FastAPI
-from pydantic import BaseModel
+from fastapi import APIRouter, Body, Depends, FastAPI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.requests import Request
 
+from pydantic import BaseModel, create_model
+from pydantic.fields import UndefinedType
 from stac_api.clients.base import (
     BaseCollectionClient,
     BaseItemClient,
     BaseTransactionsClient,
 )
 from stac_api.clients.postgres.transactions import TransactionsClient
-from stac_api.config import ApiSettings, inject_settings
+from stac_api.config import ApiExtensions, ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_api.models import schemas
 from stac_api.models.api import (
@@ -26,6 +27,52 @@ from stac_api.models.api import (
 from stac_api.resources import conformance, item, mgmt
 from stac_api.utils.dependencies import READER, WRITER, discover_base_url
 from stac_pydantic import ItemCollection
+
+
+def _create_request_model(
+    model: Type[BaseModel], settings: ApiSettings
+) -> Type[BaseModel]:
+    """Create a pydantic model for validating a request body"""
+
+    fields = {}
+    for (k, v) in model.__fields__.items():
+        if k == "query":
+            if not settings.is_enabled(ApiExtensions.query):
+                continue
+
+        if k == "sortby":
+            if not settings.is_enabled(ApiExtensions.sort):
+                continue
+
+        if k == "field":
+            if not settings.is_enabled(ApiExtensions.fields):
+                continue
+
+        field_info = v.field_info
+        body = Body(
+            None
+            if isinstance(field_info.default, UndefinedType)
+            else field_info.default,
+            default_factory=field_info.default_factory,
+            alias=field_info.alias,
+            alias_priority=field_info.alias_priority,
+            title=field_info.title,
+            description=field_info.description,
+            const=field_info.const,
+            gt=field_info.gt,
+            ge=field_info.ge,
+            lt=field_info.lt,
+            le=field_info.le,
+            multiple_of=field_info.multiple_of,
+            min_items=field_info.min_items,
+            max_items=field_info.max_items,
+            min_length=field_info.min_length,
+            max_length=field_info.max_length,
+            regex=field_info.regex,
+            extra=field_info.extra,
+        )
+        fields[k] = (v.outer_type_, body)
+    return create_model(model.__name__, **fields, __base__=model)
 
 
 # TODO: Only use one endpoint factory
@@ -66,8 +113,9 @@ def create_endpoint_with_depends(
     return _endpoint
 
 
-def create_items_router(client: BaseItemClient) -> APIRouter:
+def create_items_router(client: BaseItemClient, settings: ApiSettings) -> APIRouter:
     """Create API router with item endpoints"""
+    search_request_model = _create_request_model(schemas.STACSearch, settings)
     router = APIRouter()
     router.add_api_route(
         name="Get Item",
@@ -85,7 +133,7 @@ def create_items_router(client: BaseItemClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["POST"],
-        endpoint=create_endpoint_from_model(client.search, schemas.STACSearch),
+        endpoint=create_endpoint_from_model(client.search, search_request_model),
     )
     return router
 
@@ -125,8 +173,12 @@ def create_collections_router(client: BaseCollectionClient) -> APIRouter:
     return router
 
 
-def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
+def create_transactions_router(
+    client: BaseTransactionsClient, settings: ApiSettings
+) -> APIRouter:
     """Create API router for transactions extension"""
+    item_request_model = _create_request_model(schemas.Item, settings)
+    collection_request_model = _create_request_model(schemas.Collection, settings)
     router = APIRouter()
     router.add_api_route(
         name="Create Item",
@@ -135,7 +187,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["POST"],
-        endpoint=create_endpoint_from_model(client.create_item, schemas.Item),
+        endpoint=create_endpoint_from_model(client.create_item, item_request_model),
     )
     router.add_api_route(
         name="Update Item",
@@ -144,7 +196,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["PUT"],
-        endpoint=create_endpoint_from_model(client.update_item, schemas.Item),
+        endpoint=create_endpoint_from_model(client.update_item, item_request_model),
     )
     router.add_api_route(
         name="Delete Item",
@@ -163,7 +215,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_none=True,
         methods=["POST"],
         endpoint=create_endpoint_from_model(
-            client.create_collection, schemas.Collection
+            client.create_collection, collection_request_model
         ),
     )
     router.add_api_route(
@@ -174,7 +226,7 @@ def create_transactions_router(client: BaseTransactionsClient) -> APIRouter:
         response_model_exclude_none=True,
         methods=["PUT"],
         endpoint=create_endpoint_from_model(
-            client.update_collection, schemas.Collection
+            client.update_collection, collection_request_model
         ),
     )
     router.add_api_route(
@@ -193,7 +245,6 @@ def create_app(
     settings: ApiSettings,
     collection_client: BaseCollectionClient,
     item_client: BaseItemClient,
-    transactions=False,
 ) -> FastAPI:
     """Create a FastAPI app"""
     app = FastAPI()
@@ -203,14 +254,14 @@ def create_app(
     app.include_router(mgmt.router)
     app.include_router(conformance.router)
     app.include_router(create_collections_router(collection_client))
-    app.include_router(create_items_router(item_client))
+    app.include_router(create_items_router(item_client, settings))
     # TODO: Move remaining item endpoints to factory
     app.include_router(item.router)
     add_exception_handlers(app, DEFAULT_STATUS_CODES)
 
-    if transactions:
+    if settings.is_enabled(ApiExtensions.transaction):
         transaction_client = TransactionsClient()
-        app.include_router(create_transactions_router(transaction_client))
+        app.include_router(create_transactions_router(transaction_client, settings))
 
     @app.on_event("startup")
     async def on_startup():

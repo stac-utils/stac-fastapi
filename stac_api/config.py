@@ -1,8 +1,22 @@
 """Application settings."""
-
-from typing import Optional, Set
+import enum
+from typing import List, Optional, Set
 
 from pydantic import BaseSettings
+
+
+# TODO: Move to stac-pydantic
+class ApiExtensions(enum.Enum):
+    """
+    Enumeration of available stac api extensions
+    Ref: https://github.com/radiantearth/stac-api-spec/tree/master/extensions
+    """
+
+    context = "context"
+    fields = "fields"
+    query = "query"
+    sort = "sort"
+    transaction = "transaction"
 
 
 class ApiSettings(BaseSettings):
@@ -16,6 +30,9 @@ class ApiSettings(BaseSettings):
     postgres_host_writer: str
     postgres_port: str
     postgres_dbname: str
+
+    # Enabled api extensions
+    stac_api_extensions: Optional[List[ApiExtensions]] = None
 
     # Fields which are defined by STAC but not included in the database model
     forbidden_fields: Set[str] = {"type", "stac_version"}
@@ -48,6 +65,10 @@ class ApiSettings(BaseSettings):
     def writer_connection_string(self):
         """Create writer psql connection string"""
         return f"postgresql://{self.postgres_user}:{self.postgres_pass}@{self.postgres_host_writer}:{self.postgres_port}/{self.postgres_dbname}"
+
+    def is_enabled(self, ext: ApiExtensions) -> bool:
+        """Helper method to check if an api extension is enabled"""
+        return ext in self.stac_api_extensions or False
 
 
 settings: Optional[ApiSettings] = None
