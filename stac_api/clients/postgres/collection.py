@@ -7,13 +7,14 @@ from typing import List, Optional, Type
 from fastapi import Depends
 
 from sqlakeyset import get_page
-from stac_api import errors
+from stac_api import config, errors
 from stac_api.clients.base import BaseCollectionClient
 from stac_api.clients.postgres.base import PostgresClient
 from stac_api.clients.postgres.tokens import (
     PaginationTokenClient,
     pagination_token_client_factory,
 )
+from stac_api.config import ApiExtensions
 from stac_api.models import database, schemas
 from stac_pydantic import ItemCollection
 from stac_pydantic.api.extensions.paging import PaginationLink
@@ -61,7 +62,9 @@ class CollectionCrudClient(PostgresClient, BaseCollectionClient):
                 .first()
                 .children.order_by(database.Item.datetime.desc(), database.Item.id)
             )
-            count = collection_children.count()
+            count = None
+            if config.settings.is_enabled(config.ApiExtensions.context):
+                count = collection_children.count()
             token = self.pagination_client.get(token) if token else token
             page = get_page(collection_children, per_page=limit, page=(token or False))
             # Create dynamic attributes for each page
@@ -108,9 +111,13 @@ class CollectionCrudClient(PostgresClient, BaseCollectionClient):
             item.base_url = kwargs["base_url"]
             response_features.append(schemas.Item.from_orm(item))
 
+        context_obj = None
+        if config.settings.is_enabled(ApiExtensions.context):
+            context_obj = {"returned": len(page), "limit": limit, "matched": count}
+
         return ItemCollection(
             type="FeatureCollection",
-            context={"returned": len(page), "limit": limit, "matched": count},
+            context=context_obj,
             features=response_features,
             links=links,
         )

@@ -36,9 +36,12 @@ def _create_request_model(
 
     fields = {}
     for (k, v) in model.__fields__.items():
-
         if k == "query":
             if not settings.is_enabled(ApiExtensions.query):
+                continue
+
+        if k == "sortby":
+            if not settings.is_enabled(ApiExtensions.sort):
                 continue
 
         field_info = v.field_info

@@ -8,6 +8,7 @@ from fastapi import Depends
 
 import geoalchemy2 as ga
 from sqlakeyset import get_page
+from stac_api import config
 from stac_api.clients.base import BaseItemClient
 from stac_api.clients.postgres.base import PostgresClient
 from stac_api.clients.postgres.collection import (
@@ -18,6 +19,7 @@ from stac_api.clients.postgres.tokens import (
     PaginationTokenClient,
     pagination_token_client_factory,
 )
+from stac_api.config import ApiExtensions
 from stac_api.errors import DatabaseError
 from stac_api.models import database, schemas
 from stac_pydantic import ItemCollection
@@ -51,6 +53,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
             else False
         )
         query = self.reader_session.query(self.table)
+        count = None
 
         # Filter by collection
         if search_request.collections:
@@ -81,7 +84,8 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
             try:
                 items = query.filter(id_filter).order_by(self.table.id)
                 page = get_page(items, per_page=search_request.limit, page=token)
-                count = len(search_request.ids)
+                if config.settings.is_enabled(ApiExtensions.context):
+                    count = len(search_request.ids)
                 page.next = (
                     self.pagination_client.insert(keyset=page.paging.bookmark_next)
                     if page.paging.has_next
@@ -132,7 +136,8 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
                         query = query.filter(op.operator(field, value))
 
             try:
-                count = query.count()
+                if config.settings.is_enabled(ApiExtensions.context):
+                    count = query.count()
                 page = get_page(query, per_page=search_request.limit, page=token)
                 # Create dynamic attributes for each page
                 page.next = (
@@ -203,13 +208,17 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
             ]
             bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
 
-        return ItemCollection(
-            type="FeatureCollection",
-            context={
+        context_obj = None
+        if config.settings.is_enabled(ApiExtensions.context):
+            context_obj = {
                 "returned": len(page),
                 "limit": search_request.limit,
                 "matched": count,
-            },
+            }
+
+        return ItemCollection(
+            type="FeatureCollection",
+            context=context_obj,
             features=response_features,
             links=links,
             bbox=bbox,
