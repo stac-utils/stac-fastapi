@@ -63,7 +63,7 @@ class CollectionCrudClient(PostgresClient, BaseCollectionClient):
                 .children.order_by(database.Item.datetime.desc(), database.Item.id)
             )
             count = None
-            if config.settings.is_enabled(config.ApiExtensions.context):
+            if config.settings.api_extension_is_enabled(config.ApiExtensions.context):
                 count = collection_children.count()
             token = self.pagination_client.get(token) if token else token
             page = get_page(collection_children, per_page=limit, page=(token or False))
@@ -112,7 +112,7 @@ class CollectionCrudClient(PostgresClient, BaseCollectionClient):
             response_features.append(schemas.Item.from_orm(item))
 
         context_obj = None
-        if config.settings.is_enabled(ApiExtensions.context):
+        if config.settings.api_extension_is_enabled(ApiExtensions.context):
             context_obj = {"returned": len(page), "limit": limit, "matched": count}
 
         return ItemCollection(

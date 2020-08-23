@@ -2,10 +2,12 @@
 from typing import Callable, List, Type
 
 from fastapi import APIRouter, Body, Depends, FastAPI
-from pydantic import BaseModel, create_model
-from pydantic.fields import UndefinedType
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from starlette.requests import Request
+
+from pydantic import BaseModel, create_model
+from pydantic.fields import UndefinedType
 from stac_api.clients.base import (
     BaseCollectionClient,
     BaseItemClient,
@@ -15,9 +17,10 @@ from stac_api.clients.postgres.collection import CollectionCrudClient
 from stac_api.clients.postgres.item import ItemCrudClient
 from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.clients.postgres.transactions import TransactionsClient
-from stac_api.config import ApiExtensions, ApiSettings, inject_settings
+from stac_api.clients.tiles.ogc import TilesClient
+from stac_api.config import AddOns, ApiExtensions, ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
-from stac_api.models import schemas
+from stac_api.models import ogc, schemas
 from stac_api.models.api import (
     APIRequest,
     CollectionUri,
@@ -28,7 +31,6 @@ from stac_api.models.api import (
 from stac_api.resources import conformance, item, mgmt
 from stac_api.utils.dependencies import READER, WRITER, discover_base_url
 from stac_pydantic import ItemCollection
-from starlette.requests import Request
 
 
 def _create_request_model(
@@ -39,15 +41,15 @@ def _create_request_model(
     fields = {}
     for (k, v) in model.__fields__.items():
         if k == "query":
-            if not settings.is_enabled(ApiExtensions.query):
+            if not settings.api_extension_is_enabled(ApiExtensions.query):
                 continue
 
         if k == "sortby":
-            if not settings.is_enabled(ApiExtensions.sort):
+            if not settings.api_extension_is_enabled(ApiExtensions.sort):
                 continue
 
         if k == "field":
-            if not settings.is_enabled(ApiExtensions.fields):
+            if not settings.api_extension_is_enabled(ApiExtensions.fields):
                 continue
 
         field_info = v.field_info
@@ -113,6 +115,21 @@ def create_endpoint_with_depends(
         return resp
 
     return _endpoint
+
+
+def create_tiles_router(client: TilesClient) -> APIRouter:
+    """Create API router with OGC tiles endpoints"""
+    router = APIRouter()
+    router.add_api_route(
+        name="Get OGC Tiles Resource",
+        path="/collections/{collectionId}/items/{itemId}/tiles",
+        response_model=ogc.TileSetResource,
+        response_model_exclude_none=True,
+        response_model_exclude_unset=True,
+        methods=["GET"],
+        endpoint=create_endpoint_with_depends(client.get_item_tiles, ItemUri),
+    )
+    return router
 
 
 def create_items_router(client: BaseItemClient, settings: ApiSettings) -> APIRouter:
@@ -263,9 +280,13 @@ def create_app(settings: ApiSettings) -> FastAPI:
     app.include_router(item.router)
     add_exception_handlers(app, DEFAULT_STATUS_CODES)
 
-    if settings.is_enabled(ApiExtensions.transaction):
+    if settings.api_extension_is_enabled(ApiExtensions.transaction):
         transaction_client = TransactionsClient()
         app.include_router(create_transactions_router(transaction_client, settings))
+
+    if settings.add_on_is_enabled(AddOns.tiles):
+        tiles_client = TilesClient()
+        app.include_router(create_tiles_router(tiles_client))
 
     @app.on_event("startup")
     async def on_startup():

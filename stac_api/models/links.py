@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Dict, List
 from urllib.parse import urljoin
 
+from stac_api.models.ogc import OGCTileLink
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
 # These can be inferred from the item/collection so they aren't included in the database
@@ -101,3 +102,33 @@ class ItemLinks(BaseLinks):
             self.collection(),
             self.root(),
         ]
+
+
+@dataclass
+class TileLinks:
+    """Create inferred links specific to OGC Tiles API"""
+
+    collection_id: str
+    item_id: str
+
+    @property
+    def item_uri(self):
+        """Create stac item uri"""
+        return f"http://base_url/{self.collection_id}/{self.item_id}"
+
+    def tiles(self) -> OGCTileLink:
+        """Create tiles link"""
+        return OGCTileLink(
+            href=urljoin(
+                "http://base_url",
+                f"/cog/tiles/{{z}}/{{x}}/{{y}}.png?url={self.item_uri}",
+            ),
+            rel=Relations.item,
+            title="Tile layer",
+            type=MimeTypes.png,
+            templated=True,
+        )
+
+    def create_links(self) -> List[OGCTileLink]:
+        """Convenience method to return all inferred links"""
+        return [self.tiles()]
