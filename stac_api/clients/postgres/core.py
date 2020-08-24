@@ -29,7 +29,7 @@ NumType = Union[float, int]
 
 @dataclass
 class CoreCrudClient(PostgresClient, BaseCoreClient):
-    """Item specific CRUD operations"""
+    """Client for core endpoints defined by stac"""
 
     pagination_client: Optional[PaginationTokenClient] = None
     table: Type[database.Item] = database.Item
