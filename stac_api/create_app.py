@@ -1,4 +1,5 @@
 """fastapi app creation"""
+import importlib
 from typing import Callable, List, Type
 
 from fastapi import APIRouter, Body, Depends, FastAPI
@@ -31,6 +32,19 @@ from stac_api.models.api import (
 from stac_api.resources import conformance, item, mgmt
 from stac_api.utils.dependencies import READER, WRITER, discover_base_url
 from stac_pydantic import ItemCollection
+
+
+def _include_extra_router(router: APIRouter, module: str, **kwargs) -> None:
+    """
+    Helper function to add routers available through pip extras.
+
+    Ref: https://github.com/developmentseed/titiler/blob/master/titiler/main.py#L21-L27
+    """
+    try:
+        mod = importlib.import_module(module)
+        router.include_router(mod.router, **kwargs)  # type: ignore
+    except ModuleNotFoundError:
+        raise
 
 
 def _create_request_model(
@@ -89,11 +103,12 @@ def create_endpoint_from_model(
     """
 
     def _endpoint(
+        request: Request,
         request_data: request_model,  # type:ignore
         base_url: str = Depends(discover_base_url),  # type:ignore
     ):
         """endpoint"""
-        resp = func(request_data, base_url=base_url)
+        resp = func(request_data, base_url=base_url, request=request)
         return resp
 
     return _endpoint
@@ -107,11 +122,14 @@ def create_endpoint_with_depends(
     """
 
     def _endpoint(
+        request: Request,
         request_data: request_model = Depends(),  # type:ignore
         base_url: str = Depends(discover_base_url),
     ):
         """endpoint"""
-        resp = func(base_url=base_url, **request_data.kwargs())  # type:ignore
+        resp = func(
+            base_url=base_url, request=request, **request_data.kwargs()  # type:ignore
+        )
         return resp
 
     return _endpoint
@@ -129,6 +147,14 @@ def create_tiles_router(client: TilesClient) -> APIRouter:
         methods=["GET"],
         endpoint=create_endpoint_with_depends(client.get_item_tiles, ItemUri),
     )
+
+    # Add titiler routers
+    _include_extra_router(router, "titiler.endpoints.stac")
+    _include_extra_router(router, "titiler.endpoints.demo")
+    # TODO: Add titiler middleware
+    # TODO: Add titiler exception handling
+    # I think the above will require using an application mount (https://fastapi.tiangolo.com/advanced/sub-applications/)
+
     return router
 
 
