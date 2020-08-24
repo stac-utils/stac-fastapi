@@ -130,27 +130,6 @@ def pagination_client(
     return PaginationTokenClient(table=database.PaginationToken,)
 
 
-# @pytest.fixture
-# def collection_crud_client(
-#     reader_connection: Session,
-#     writer_connection: Session,
-#     pagination_client: PaginationTokenClient,
-#     transaction_client: TransactionsClient,
-# ) -> Generator[CoreCrudClient, None, None]:
-#     """Create a collection client.  Clean up data after each test. """
-#     client = CoreCrudClient(
-#         table=database.Collection, pagination_client=pagination_client,
-#     )
-#     yield client
-#
-#     # Cleanup collections
-#     for test_data in load_all_test_data("collection"):
-#         try:
-#             transaction_client.delete_collection(test_data["id"])
-#         except NotFoundError:
-#             pass
-
-
 @pytest.fixture
 def core_crud_client(
     reader_connection: Session,
