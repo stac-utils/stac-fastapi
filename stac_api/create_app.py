@@ -30,7 +30,7 @@ from stac_api.models.api import (
     ItemUri,
 )
 from stac_api.resources import conformance, item, mgmt
-from stac_api.utils.dependencies import READER, WRITER, discover_base_url
+from stac_api.utils.dependencies import READER, WRITER
 from stac_pydantic import ItemCollection
 
 
@@ -103,9 +103,7 @@ def create_endpoint_from_model(
     """
 
     def _endpoint(
-        request: Request,
-        request_data: request_model,  # type:ignore
-        base_url: str = Depends(discover_base_url),  # type:ignore
+        request: Request, request_data: request_model,  # type:ignore
     ):
         """endpoint"""
         resp = func(request_data, request=request)
@@ -122,9 +120,7 @@ def create_endpoint_with_depends(
     """
 
     def _endpoint(
-        request: Request,
-        request_data: request_model = Depends(),  # type:ignore
-        base_url: str = Depends(discover_base_url),
+        request: Request, request_data: request_model = Depends(),  # type:ignore
     ):
         """endpoint"""
         resp = func(

@@ -2,13 +2,13 @@
 from urllib.parse import urljoin
 
 from fastapi import APIRouter, Depends
+from starlette.requests import Request
 
 from stac_api.clients.postgres.collection import (
     CollectionCrudClient,
     collection_crud_client_factory,
 )
 from stac_api.models.links import CollectionLinks
-from stac_api.utils.dependencies import discover_base_url
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
@@ -17,7 +17,7 @@ router = APIRouter()
 
 @router.get("/", response_model=LandingPage, response_model_exclude_unset=True)
 def landing_page(
-    base_url: str = Depends(discover_base_url),
+    request: Request,
     crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
 ):
     """Get landing page"""
@@ -25,30 +25,32 @@ def landing_page(
         title="Arturo STAC API",
         description="Arturo raster datastore",
         links=[
-            Link(rel=Relations.self, type=MimeTypes.json, href=base_url),
+            Link(rel=Relations.self, type=MimeTypes.json, href=str(request.base_url)),
             Link(
                 rel=Relations.docs,
                 type=MimeTypes.html,
                 title="OpenAPI docs",
-                href=urljoin(base_url, "/docs"),
+                href=urljoin(str(request.base_url), "/docs"),
             ),
             Link(
                 rel=Relations.conformance,
                 type=MimeTypes.json,
                 title="STAC/WFS3 conformance classes implemented by this server",
-                href=urljoin(base_url, "/conformance"),
+                href=urljoin(str(request.base_url), "/conformance"),
             ),
             Link(
                 rel=Relations.search,
                 type=MimeTypes.geojson,
                 title="STAC search",
-                href=urljoin(base_url, "/search"),
+                href=urljoin(str(request.base_url), "/search"),
             ),
         ],
     )
-    collections = crud_client.all_collections(base_url=base_url)
+    collections = crud_client.all_collections(base_url=str(request.base_url))
     for coll in collections:
-        coll_link = CollectionLinks(collection_id=coll.id, base_url=base_url).self()
+        coll_link = CollectionLinks(
+            collection_id=coll.id, base_url=str(request.base_url)
+        ).self()
         coll_link.rel = Relations.child
         coll_link.title = coll.title
         resp.links.append(coll_link)

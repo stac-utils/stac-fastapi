@@ -9,7 +9,7 @@ from starlette.requests import Request
 
 from stac_api.clients.postgres.item import ItemCrudClient, item_crud_client_factory
 from stac_api.models import schemas
-from stac_api.utils.dependencies import discover_base_url, parse_list_factory
+from stac_api.utils.dependencies import parse_list_factory
 from stac_pydantic.item import ItemCollection
 
 router = APIRouter()
@@ -35,7 +35,6 @@ def search_items_get(
     fields: Optional[List[str]] = Depends(parse_list_factory("fields")),
     sortby: Optional[str] = Depends(parse_list_factory("sortby")),
     crud_client: ItemCrudClient = Depends(item_crud_client_factory),
-    base_url: str = Depends(discover_base_url),
 ):
     """GET search catalog"""
     # Parse request parameters
@@ -72,4 +71,4 @@ def search_items_get(
 
     # Do the request
     search_request = schemas.STACSearch(**base_args)
-    return crud_client.search(search_request, base_url=base_url)
+    return crud_client.search(search_request, base_url=str(request.base_url))
