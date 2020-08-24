@@ -7,7 +7,7 @@ from typing import List, Optional, Union
 from fastapi import APIRouter, Depends, Query
 from starlette.requests import Request
 
-from stac_api.clients.postgres.item import ItemCrudClient, item_crud_client_factory
+from stac_api.clients.postgres.core import CoreCrudClient, core_crud_client_factory
 from stac_api.models import schemas
 from stac_api.utils.dependencies import parse_list_factory
 from stac_pydantic.item import ItemCollection
@@ -34,7 +34,7 @@ def search_items_get(
     token: Optional[str] = None,
     fields: Optional[List[str]] = Depends(parse_list_factory("fields")),
     sortby: Optional[str] = Depends(parse_list_factory("sortby")),
-    crud_client: ItemCrudClient = Depends(item_crud_client_factory),
+    crud_client: CoreCrudClient = Depends(core_crud_client_factory),
 ):
     """GET search catalog"""
     # Parse request parameters

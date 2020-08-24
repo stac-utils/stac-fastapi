@@ -47,8 +47,8 @@ class BaseTransactionsClient(abc.ABC):
 
 
 @dataclass  # type:ignore
-class BaseItemClient(abc.ABC):
-    """Base item client"""
+class BaseCoreClient(abc.ABC):
+    """Base client for core endpoints defined by stac"""
 
     @abc.abstractmethod
     def search(self, search_request: schemas.STACSearch, **kwargs) -> ItemCollection:
@@ -59,11 +59,6 @@ class BaseItemClient(abc.ABC):
     def get_item(self, id: str, **kwargs) -> schemas.Item:
         """get item by id"""
         ...
-
-
-@dataclass  # type:ignore
-class BaseCollectionClient(abc.ABC):
-    """Base collections client"""
 
     @abc.abstractmethod
     def all_collections(self) -> List[schemas.Collection]:

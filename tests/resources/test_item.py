@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, urlparse, urlsplit
 from shapely.geometry import Polygon
 
 from stac_api.clients.postgres.base import PostgresClient
-from stac_api.clients.postgres.collection import CollectionCrudClient
+from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.errors import DatabaseError
 from stac_pydantic.api.search import DATETIME_RFC339
 
@@ -746,8 +746,6 @@ def test_delete_item_database_error(app_client, load_test_data):
 def test_get_item_collection_database_error(app_client, load_test_data):
     """Test 424 is raised on database error"""
     test_collection = load_test_data("test_collection.json")
-    with patch.object(
-        CollectionCrudClient, "lookup_id", _raise_exception(DatabaseError())
-    ):
+    with patch.object(CoreCrudClient, "lookup_id", _raise_exception(DatabaseError())):
         resp = app_client.get(f"/collections/{test_collection['id']}/items")
         assert resp.status_code == 424
