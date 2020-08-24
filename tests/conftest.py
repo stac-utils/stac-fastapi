@@ -13,8 +13,7 @@ from starlette.testclient import TestClient
 from stac_api import config
 from stac_api.app import app
 from stac_api.clients.postgres.base import PostgresClient
-from stac_api.clients.postgres.collection import CollectionCrudClient
-from stac_api.clients.postgres.item import ItemCrudClient
+from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.clients.postgres.transactions import TransactionsClient
 from stac_api.errors import ConflictError, NotFoundError
@@ -131,45 +130,40 @@ def pagination_client(
     return PaginationTokenClient(table=database.PaginationToken,)
 
 
+# @pytest.fixture
+# def collection_crud_client(
+#     reader_connection: Session,
+#     writer_connection: Session,
+#     pagination_client: PaginationTokenClient,
+#     transaction_client: TransactionsClient,
+# ) -> Generator[CoreCrudClient, None, None]:
+#     """Create a collection client.  Clean up data after each test. """
+#     client = CoreCrudClient(
+#         table=database.Collection, pagination_client=pagination_client,
+#     )
+#     yield client
+#
+#     # Cleanup collections
+#     for test_data in load_all_test_data("collection"):
+#         try:
+#             transaction_client.delete_collection(test_data["id"])
+#         except NotFoundError:
+#             pass
+
+
 @pytest.fixture
-def collection_crud_client(
+def core_crud_client(
     reader_connection: Session,
     writer_connection: Session,
-    pagination_client: PaginationTokenClient,
-    transaction_client: TransactionsClient,
-) -> Generator[CollectionCrudClient, None, None]:
-    """Create a collection client.  Clean up data after each test. """
-    client = CollectionCrudClient(
-        table=database.Collection, pagination_client=pagination_client,
-    )
-    yield client
-
-    # Cleanup collections
-    for test_data in load_all_test_data("collection"):
-        try:
-            transaction_client.delete_collection(test_data["id"])
-        except NotFoundError:
-            pass
-
-
-@pytest.fixture
-def item_crud_client(
-    reader_connection: Session,
-    writer_connection: Session,
-    collection_crud_client: CollectionCrudClient,
     transaction_client: TransactionsClient,
     load_test_data,
-) -> Generator[ItemCrudClient, None, None]:
+) -> Generator[CoreCrudClient, None, None]:
     """Create an item client.  Create a collection used for testing and clean up data after each test."""
     # Create a test collection (foreignkey)
     test_collection = schemas.Collection(**load_test_data("test_collection.json"))
     transaction_client.create_collection(test_collection)
 
-    client = ItemCrudClient(
-        table=database.Item,
-        collection_crud=CollectionCrudClient,  # type:ignore
-        pagination_client=pagination_client,
-    )
+    client = CoreCrudClient(pagination_client=pagination_client,)
     yield client
 
     # Cleanup test items
