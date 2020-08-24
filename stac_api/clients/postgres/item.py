@@ -42,7 +42,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
     def get_item(self, id: str, **kwargs) -> schemas.Item:
         """Get item by id"""
         obj = self.lookup_id(id).first()
-        obj.base_url = kwargs["base_url"]
+        obj.base_url = str(kwargs["request"].base_url)
         return schemas.Item.from_orm(obj)
 
     def search(self, search_request: schemas.STACSearch, **kwargs) -> ItemCollection:
@@ -161,7 +161,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
                 PaginationLink(
                     rel=Relations.next,
                     type="application/geo+json",
-                    href=f"{kwargs['base_url']}/search",
+                    href=f"{kwargs['request'].base_url}search",
                     method="POST",
                     body={"token": page.next},
                     merge=True,
@@ -172,7 +172,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
                 PaginationLink(
                     rel=Relations.previous,
                     type="application/geo+json",
-                    href=f"{kwargs['base_url']}/search",
+                    href=f"{kwargs['request'].base_url}search",
                     method="POST",
                     body={"token": page.previous},
                     merge=True,
@@ -185,7 +185,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
             filter_kwargs = search_request.field.filter_fields
 
         for item in page:
-            item.base_url = kwargs["base_url"]
+            item.base_url = str(kwargs["request"].base_url)
             response_features.append(
                 schemas.Item.from_orm(item).to_dict(**filter_kwargs)
             )

@@ -14,14 +14,14 @@ WORKDIR /app
 
 COPY Pipfile Pipfile.lock ./
 RUN pipenv install --deploy --ignore-pipfile ${install_dev_dependencies:+--dev}
+RUN pipenv run pip install numpy
+RUN pipenv run pip install git+https://github.com/geospatial-jeff/titiler@stac-api
+
 
 COPY . ./
 
 ENV APP_HOST=0.0.0.0
 ENV APP_PORT=80
-
-RUN pipenv run pip install numpy
-RUN pipenv run pip install git+https://github.com/geospatial-jeff/titiler@stac-api
 
 ENTRYPOINT ["pipenv", "run"]
 CMD uvicorn stac_api.app:app --host=${APP_HOST} --port=${APP_PORT} --reload

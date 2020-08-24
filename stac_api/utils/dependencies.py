@@ -9,11 +9,6 @@ READER: ContextVar = ContextVar("reader")
 WRITER: ContextVar = ContextVar("writer")
 
 
-def discover_base_url(request: Request):
-    """Discover base url of a request"""
-    return f"{request.url.scheme}://{request.url.netloc}"
-
-
 def parse_list_factory(varname) -> Callable[[Request], List[str]]:
     """Parse the value of a specific parameter from comma-delimited string to list of strings"""
 
