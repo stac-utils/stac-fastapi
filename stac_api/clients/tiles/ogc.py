@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 
 from starlette.responses import RedirectResponse
 
-from stac_api.clients.postgres.item import ItemCrudClient
+from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.models.links import TileLinks
 from stac_api.models.ogc import TileSetResource
 from stac_pydantic.collection import SpatialExtent
@@ -14,7 +14,7 @@ from stac_pydantic.collection import SpatialExtent
 
 # TODO: Decouple from postgres by inherting from base class (stac_api.clients.base)
 @dataclass
-class TilesClient(ItemCrudClient):
+class TilesClient(CoreCrudClient):
     """OGC Tiles specific operations"""
 
     def get_item_tiles(
@@ -28,18 +28,16 @@ class TilesClient(ItemCrudClient):
             links=TileLinks(
                 item_id=item.id,
                 collection_id=item.collection,
-                base_url=kwargs["request"].base_url,
+                base_url=str(kwargs["request"].base_url),
             ).create_links(),
         )
 
         if "text/html" in kwargs["request"].headers["accept"]:
             item_uri = urljoin(
-                kwargs["request"].base_url,
+                str(kwargs["request"].base_url),
                 f"collections/{item.collection}/items/{item.id}",
             )
-            redirect_url = (
-                f"{urljoin(kwargs['request'].base_url, '/stac/viewer')}?url={item_uri}"
-            )
+            redirect_url = f"{urljoin(str(kwargs['request'].base_url), '/stac/viewer')}?url={item_uri}"
             return RedirectResponse(redirect_url)
 
         return resource

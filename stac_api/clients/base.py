@@ -47,7 +47,7 @@ class BaseTransactionsClient(abc.ABC):
 
 
 @dataclass  # type:ignore
-class BaseItemClient(abc.ABC):
+class BaseCoreClient(abc.ABC):
     """Base item client"""
 
     @abc.abstractmethod
@@ -59,11 +59,6 @@ class BaseItemClient(abc.ABC):
     def get_item(self, id: str, **kwargs) -> schemas.Item:
         """get item by id"""
         ...
-
-
-@dataclass  # type:ignore
-class BaseCollectionClient(abc.ABC):
-    """Base collections client"""
 
     @abc.abstractmethod
     def all_collections(self) -> List[schemas.Collection]:

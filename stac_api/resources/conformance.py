@@ -4,10 +4,7 @@ from urllib.parse import urljoin
 from fastapi import APIRouter, Depends
 from starlette.requests import Request
 
-from stac_api.clients.postgres.collection import (
-    CollectionCrudClient,
-    collection_crud_client_factory,
-)
+from stac_api.clients.postgres.core import CoreCrudClient, core_crud_client_factory
 from stac_api.models.links import CollectionLinks
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.shared import Link, MimeTypes, Relations
@@ -17,8 +14,7 @@ router = APIRouter()
 
 @router.get("/", response_model=LandingPage, response_model_exclude_unset=True)
 def landing_page(
-    request: Request,
-    crud_client: CollectionCrudClient = Depends(collection_crud_client_factory),
+    request: Request, crud_client: CoreCrudClient = Depends(core_crud_client_factory),
 ):
     """Get landing page"""
     resp = LandingPage(

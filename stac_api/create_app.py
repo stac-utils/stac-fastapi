@@ -9,13 +9,8 @@ from starlette.requests import Request
 
 from pydantic import BaseModel, create_model
 from pydantic.fields import UndefinedType
-from stac_api.clients.base import (
-    BaseCollectionClient,
-    BaseItemClient,
-    BaseTransactionsClient,
-)
-from stac_api.clients.postgres.collection import CollectionCrudClient
-from stac_api.clients.postgres.item import ItemCrudClient
+from stac_api.clients.base import BaseCoreClient, BaseTransactionsClient
+from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.clients.postgres.transactions import TransactionsClient
 from stac_api.clients.tiles.ogc import TilesClient
@@ -154,7 +149,7 @@ def create_tiles_router(client: TilesClient) -> APIRouter:
     return router
 
 
-def create_items_router(client: BaseItemClient, settings: ApiSettings) -> APIRouter:
+def create_core_router(client: BaseCoreClient, settings: ApiSettings) -> APIRouter:
     """Create API router with item endpoints"""
     search_request_model = _create_request_model(schemas.STACSearch, settings)
     router = APIRouter()
@@ -176,12 +171,6 @@ def create_items_router(client: BaseItemClient, settings: ApiSettings) -> APIRou
         methods=["POST"],
         endpoint=create_endpoint_from_model(client.search, search_request_model),
     )
-    return router
-
-
-def create_collections_router(client: BaseCollectionClient) -> APIRouter:
-    """Create API router with collection endpoints"""
-    router = APIRouter()
     router.add_api_route(
         name="Get Collections",
         path="/collections",
@@ -285,10 +274,7 @@ def create_transactions_router(
 def create_app(settings: ApiSettings) -> FastAPI:
     """Create a FastAPI app"""
     paging_client = PaginationTokenClient()
-    collection_client = CollectionCrudClient(pagination_client=paging_client)
-    item_client = ItemCrudClient(
-        collection_crud=collection_client, pagination_client=paging_client
-    )
+    core_client = CoreCrudClient(pagination_client=paging_client)
 
     app = FastAPI()
     inject_settings(settings)
@@ -296,8 +282,7 @@ def create_app(settings: ApiSettings) -> FastAPI:
     app.debug = settings.debug
     app.include_router(mgmt.router)
     app.include_router(conformance.router)
-    app.include_router(create_collections_router(collection_client))
-    app.include_router(create_items_router(item_client, settings))
+    app.include_router(create_core_router(core_client, settings))
     # TODO: Move remaining item endpoints to factory
     app.include_router(item.router)
     add_exception_handlers(app, DEFAULT_STATUS_CODES)
