@@ -46,7 +46,7 @@ def landing_page(
             ),
         ],
     )
-    collections = crud_client.all_collections(base_url=str(request.base_url))
+    collections = crud_client.all_collections(request=request)
     for coll in collections:
         coll_link = CollectionLinks(
             collection_id=coll.id, base_url=str(request.base_url)

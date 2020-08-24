@@ -71,4 +71,4 @@ def search_items_get(
 
     # Do the request
     search_request = schemas.STACSearch(**base_args)
-    return crud_client.search(search_request, base_url=str(request.base_url))
+    return crud_client.search(search_request, request=request)
