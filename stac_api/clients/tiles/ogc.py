@@ -28,16 +28,17 @@ class TilesClient(ItemCrudClient):
             links=TileLinks(
                 item_id=item.id,
                 collection_id=item.collection,
-                base_url=kwargs["base_url"],
+                base_url=kwargs["request"].base_url,
             ).create_links(),
         )
 
         if "text/html" in kwargs["request"].headers["accept"]:
             item_uri = urljoin(
-                kwargs["base_url"], f"collections/{item.collection}/items/{item.id}"
+                kwargs["request"].base_url,
+                f"collections/{item.collection}/items/{item.id}",
             )
             redirect_url = (
-                f"{urljoin(kwargs['base_url'], '/stac/viewer')}?url={item_uri}"
+                f"{urljoin(kwargs['request'].base_url, '/stac/viewer')}?url={item_uri}"
             )
             return RedirectResponse(redirect_url)
 

@@ -74,19 +74,19 @@ class TransactionsClient(PostgresClient, BaseTransactionsClient):
     def create_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
         """Create an item"""
         obj = self._create(model, table=self.item_table)
-        obj.base_url = kwargs["base_url"]
+        obj.base_url = str(kwargs["request"].base_url)
         return schemas.Item.from_orm(obj)
 
     def update_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
         """Update an item"""
         obj = self._update(model, table=self.item_table)
-        obj.base_url = kwargs["base_url"]
+        obj.base_url = str(kwargs["request"].base_url)
         return schemas.Item.from_orm(obj)
 
     def delete_item(self, id: str, **kwargs) -> schemas.Item:
         """Delete an item"""
         obj = self._delete(id, table=self.item_table)
-        obj.base_url = kwargs["base_url"]
+        obj.base_url = str(kwargs["request"].base_url)
         return schemas.Item.from_orm(obj)
 
     def create_collection(
@@ -94,7 +94,7 @@ class TransactionsClient(PostgresClient, BaseTransactionsClient):
     ) -> schemas.Collection:
         """Create a collection"""
         obj = self._create(model, table=self.collection_table)
-        obj.base_url = kwargs["base_url"]
+        obj.base_url = str(kwargs["request"].base_url)
         return schemas.Collection.from_orm(obj)
 
     def update_collection(
@@ -102,13 +102,13 @@ class TransactionsClient(PostgresClient, BaseTransactionsClient):
     ) -> schemas.Collection:
         """Update a collection"""
         obj = self._update(model, table=self.collection_table)
-        obj.base_url = kwargs["base_url"]
+        obj.base_url = str(kwargs["request"].base_url)
         return schemas.Collection.from_orm(obj)
 
     def delete_collection(self, id: str, **kwargs) -> schemas.Collection:
         """Delete a collection"""
         obj = self._delete(id, table=self.collection_table)
-        obj.base_url = kwargs["base_url"]
+        obj.base_url = str(kwargs["request"].base_url)
         return schemas.Collection.from_orm(obj)
 
 

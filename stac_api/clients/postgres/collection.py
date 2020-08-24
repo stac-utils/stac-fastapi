@@ -42,14 +42,14 @@ class CollectionCrudClient(PostgresClient, BaseCollectionClient):
 
         response = []
         for collection in collections:
-            collection.base_url = kwargs["base_url"]
+            collection.base_url = str(kwargs["request"].base_url)
             response.append(schemas.Collection.from_orm(collection))
         return response
 
     def get_collection(self, id: str, **kwargs) -> schemas.Collection:
         """Get collection by id"""
         collection = self.lookup_id(id).first()
-        collection.base_url = kwargs["base_url"]
+        collection.base_url = str(kwargs["request"].base_url)
         return schemas.Collection.from_orm(collection)
 
     def item_collection(
@@ -92,7 +92,7 @@ class CollectionCrudClient(PostgresClient, BaseCollectionClient):
                 PaginationLink(
                     rel=Relations.next,
                     type="application/geo+json",
-                    href=f"{kwargs['base_url']}/collections/{id}/items?token={page.next}&limit={limit}",
+                    href=f"{kwargs['request'].base_url}/collections/{id}/items?token={page.next}&limit={limit}",
                     method="GET",
                 )
             )
@@ -101,14 +101,14 @@ class CollectionCrudClient(PostgresClient, BaseCollectionClient):
                 PaginationLink(
                     rel=Relations.previous,
                     type="application/geo+json",
-                    href=f"{kwargs['base_url']}/collections/{id}/items?token={page.previous}&limit={limit}",
+                    href=f"{kwargs['request'].base_url}/collections/{id}/items?token={page.previous}&limit={limit}",
                     method="GET",
                 )
             )
 
         response_features = []
         for item in page:
-            item.base_url = kwargs["base_url"]
+            item.base_url = str(kwargs["request"].base_url)
             response_features.append(schemas.Item.from_orm(item))
 
         context_obj = None

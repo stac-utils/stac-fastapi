@@ -108,7 +108,7 @@ def create_endpoint_from_model(
         base_url: str = Depends(discover_base_url),  # type:ignore
     ):
         """endpoint"""
-        resp = func(request_data, base_url=base_url, request=request)
+        resp = func(request_data, request=request)
         return resp
 
     return _endpoint
@@ -128,7 +128,7 @@ def create_endpoint_with_depends(
     ):
         """endpoint"""
         resp = func(
-            base_url=base_url, request=request, **request_data.kwargs()  # type:ignore
+            request=request, **request_data.kwargs()  # type:ignore
         )
         return resp
 
