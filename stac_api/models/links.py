@@ -141,7 +141,7 @@ class TileLinks:
                 self.base_url, f"/tiles/{{z}}/{{x}}/{{y}}.png?url={self.item_uri}",
             ),
             rel=Relations.item,
-            title="Tile layer",
+            title="tiles",
             type=MimeTypes.png,
             templated=True,
         )
@@ -152,6 +152,7 @@ class TileLinks:
             href=urljoin(self.base_url, f"/viewer?url={self.item_uri}"),
             rel=Relations.alternate,
             type=MimeTypes.html,
+            title="viewer",
         )
 
     def tilejson(self) -> OGCTileLink:
@@ -160,8 +161,17 @@ class TileLinks:
             href=urljoin(self.base_url, f"/tilejson.json?url={self.item_uri}"),
             rel=Relations.alternate,
             type=MimeTypes.json,
+            title="tilejson",
+        )
+
+    def wmts(self) -> OGCTileLink:
+        return OGCTileLink(
+            href=urljoin(self.base_url, f"/WMTSCapabilities.xml?url={self.item_uri}"),
+            rel=Relations.alternate,
+            type=MimeTypes.xml,
+            title="WMTS Capabilities",
         )
 
     def create_links(self) -> List[OGCTileLink]:
         """Convenience method to return all inferred links"""
-        return [self.tiles(), self.tilejson(), self.viewer()]
+        return [self.tiles(), self.tilejson(), self.wmts(), self.viewer()]
