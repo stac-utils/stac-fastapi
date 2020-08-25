@@ -114,7 +114,9 @@ class TileLinks:
 
     def __post_init__(self):
         """post init"""
-        self.item_uri = urljoin(self.base_url, f"{self.collection_id}/{self.item_id}")
+        self.item_uri = urljoin(
+            self.base_url, f"/collections/{self.collection_id}/items/{self.item_id}"
+        )
 
     def tiles(self) -> OGCTileLink:
         """Create tiles link"""
