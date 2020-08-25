@@ -1,10 +1,13 @@
 """fastapi app creation"""
 from typing import Callable, List, Type
 
+import pkg_resources
 from fastapi import APIRouter, Body, Depends, FastAPI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.requests import Request
+from starlette.responses import HTMLResponse
+from starlette.templating import Jinja2Templates
 
 from pydantic import BaseModel, create_model
 from pydantic.fields import UndefinedType
@@ -116,9 +119,12 @@ def create_endpoint_with_depends(
 
 def create_tiles_router(client: TilesClient) -> APIRouter:
     """Create API router with OGC tiles endpoints"""
-    from titiler.endpoints import demo
+    # from titiler.endpoints import demo
     from titiler.endpoints.factory import TilerFactory
     from rio_tiler_crs import STACReader
+
+    template_dir = pkg_resources.resource_filename("titiler", "templates")
+    templates = Jinja2Templates(directory=template_dir)
 
     router = APIRouter()
     router.add_api_route(
@@ -132,11 +138,24 @@ def create_tiles_router(client: TilesClient) -> APIRouter:
         tags=["OGC Tiles"],
     )
 
-    titiler_router = TilerFactory(reader=STACReader).router
+    titiler_router = TilerFactory(reader=STACReader, add_asset_deps=True).router
     for route in titiler_router.routes:
         route.tags = []
+
+    @titiler_router.get("/viewer", response_class=HTMLResponse)
+    def stac_demo(request: Request):
+        """STAC Viewer."""
+        return templates.TemplateResponse(
+            name="stac_index.html",
+            context={
+                "request": request,
+                "tilejson": request.url_for("tilejson"),
+                "metadata": request.url_for("info"),
+            },
+            media_type="text/html",
+        )
+
     router.include_router(titiler_router, tags=["Titiler"])
-    router.include_router(demo.router)
     # TODO: add titiler exception handlers
     return router
 
