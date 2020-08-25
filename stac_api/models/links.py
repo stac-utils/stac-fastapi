@@ -133,7 +133,7 @@ class TileLinks:
     def viewer(self) -> OGCTileLink:
         """Create viewer link"""
         return OGCTileLink(
-            href=urljoin(self.base_url, f"/stac/viewer?url={self.item_uri}"),
+            href=urljoin(self.base_url, f"/viewer?url={self.item_uri}"),
             rel=Relations.alternate,
             type=MimeTypes.html,
         )

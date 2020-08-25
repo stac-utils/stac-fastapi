@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from typing import Union
-from urllib.parse import urljoin
 
 from starlette.responses import RedirectResponse
 
@@ -10,6 +9,7 @@ from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.models.links import TileLinks
 from stac_api.models.ogc import TileSetResource
 from stac_pydantic.collection import SpatialExtent
+from stac_pydantic.shared import MimeTypes
 
 
 # TODO: Decouple from postgres by inherting from base class (stac_api.clients.base)
@@ -33,11 +33,9 @@ class TilesClient(CoreCrudClient):
         )
 
         if "text/html" in kwargs["request"].headers["accept"]:
-            item_uri = urljoin(
-                str(kwargs["request"].base_url),
-                f"collections/{item.collection}/items/{item.id}",
-            )
-            redirect_url = f"{urljoin(str(kwargs['request'].base_url), '/stac/viewer')}?url={item_uri}"
-            return RedirectResponse(redirect_url)
+            viewer_url = [
+                link.href for link in resource.links if link.type == MimeTypes.html
+            ][0]
+            return RedirectResponse(viewer_url)
 
         return resource
