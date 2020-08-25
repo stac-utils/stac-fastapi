@@ -1,10 +1,13 @@
 """Base clients."""
 import abc
 from dataclasses import dataclass
-from typing import List
+from datetime import datetime
+from typing import List, Optional, Union
 
 from stac_api.models import schemas
 from stac_pydantic import ItemCollection
+
+NumType = Union[float, int]
 
 
 @dataclass  # type:ignore
@@ -51,8 +54,27 @@ class BaseCoreClient(abc.ABC):
     """Base client for core endpoints defined by stac"""
 
     @abc.abstractmethod
-    def search(self, search_request: schemas.STACSearch, **kwargs) -> ItemCollection:
+    def post_search(
+        self, search_request: schemas.STACSearch, **kwargs
+    ) -> ItemCollection:
         """search for items"""
+        ...
+
+    @abc.abstractmethod
+    def get_search(
+        self,
+        collections: Optional[List[str]] = None,
+        ids: Optional[List[str]] = None,
+        bbox: Optional[List[NumType]] = None,
+        datetime: Optional[Union[str, datetime]] = None,
+        limit: Optional[int] = 10,
+        query: Optional[str] = None,
+        token: Optional[str] = None,
+        fields: Optional[List[str]] = None,
+        sortby: Optional[str] = None,
+        **kwargs
+    ) -> ItemCollection:
+        """GET search catalog"""
         ...
 
     @abc.abstractmethod

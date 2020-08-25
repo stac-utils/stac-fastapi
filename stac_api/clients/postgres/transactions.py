@@ -110,8 +110,3 @@ class TransactionsClient(PostgresClient, BaseTransactionsClient):
         obj = self._delete(id, table=self.collection_table)
         obj.base_url = str(kwargs["request"].base_url)
         return schemas.Collection.from_orm(obj)
-
-
-def transactions_client_factory() -> TransactionsClient:
-    """FastAPI dependency"""
-    return TransactionsClient(table=database.Collection, item_table=database.Item,)

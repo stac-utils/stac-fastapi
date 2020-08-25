@@ -1,6 +1,8 @@
 """Item crud client."""
+import json
 import logging
 from dataclasses import dataclass
+from datetime import datetime
 from typing import List, Optional, Type, Union
 
 import sqlalchemy as sa
@@ -133,8 +135,63 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         obj.base_url = str(kwargs["request"].base_url)
         return schemas.Item.from_orm(obj)
 
-    def search(self, search_request: schemas.STACSearch, **kwargs) -> ItemCollection:
-        """STAC search operation"""
+    def get_search(
+        self,
+        collections: Optional[List[str]] = None,
+        ids: Optional[List[str]] = None,
+        bbox: Optional[List[NumType]] = None,
+        datetime: Optional[Union[str, datetime]] = None,
+        limit: Optional[int] = 10,
+        query: Optional[str] = None,
+        token: Optional[str] = None,
+        fields: Optional[List[str]] = None,
+        sortby: Optional[str] = None,
+        **kwargs,
+    ) -> ItemCollection:
+        """GET search catalog"""
+        # Parse request parameters
+        base_args = {
+            "collections": collections,
+            "ids": ids,
+            "bbox": bbox,
+            "limit": limit,
+            "token": token,
+            "query": json.loads(query) if query else query,
+        }
+        if datetime:
+            base_args["datetime"] = datetime
+        if sortby:
+            # https://github.com/radiantearth/stac-spec/tree/master/api-spec/extensions/sort#http-get-or-post-form
+            sort_param = []
+            for sort in sortby:
+                sort_param.append(
+                    {
+                        "field": sort[1:],
+                        "direction": "asc" if sort[0] == "+" else "desc",
+                    }
+                )
+            base_args["sortby"] = sort_param
+
+        if fields:
+            includes = set()
+            excludes = set()
+            for field in fields:
+                if field[0] == "-":
+                    excludes.add(field[1:])
+                elif field[0] == "+":
+                    includes.add(field[1:])
+                else:
+                    includes.add(field)
+            base_args["fields"] = {"include": includes, "exclude": excludes}
+
+        # Do the request
+        search_request = schemas.STACSearch(**base_args)
+        return self.post_search(search_request, request=kwargs["request"])
+
+    def post_search(
+        self, search_request: schemas.STACSearch, **kwargs
+    ) -> ItemCollection:
+        """POST search catalog"""
         token = (
             self.pagination_client.get(search_request.token)
             if search_request.token
