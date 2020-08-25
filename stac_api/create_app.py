@@ -23,8 +23,9 @@ from stac_api.models.api import (
     EmptyRequest,
     ItemCollectionUri,
     ItemUri,
+    SearchGetRequest,
 )
-from stac_api.resources import conformance, item, mgmt
+from stac_api.resources import conformance, mgmt
 from stac_api.utils.dependencies import READER, WRITER
 from stac_pydantic import ItemCollection
 
@@ -169,7 +170,16 @@ def create_core_router(client: BaseCoreClient, settings: ApiSettings) -> APIRout
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["POST"],
-        endpoint=create_endpoint_from_model(client.search, search_request_model),
+        endpoint=create_endpoint_from_model(client.post_search, search_request_model),
+    ),
+    router.add_api_route(
+        name="Search",
+        path="/search",
+        response_model=ItemCollection,
+        response_model_exclude_unset=True,
+        response_model_exclude_none=True,
+        methods=["GET"],
+        endpoint=create_endpoint_with_depends(client.get_search, SearchGetRequest),
     )
     router.add_api_route(
         name="Get Collections",
@@ -178,7 +188,7 @@ def create_core_router(client: BaseCoreClient, settings: ApiSettings) -> APIRout
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["GET"],
-        endpoint=create_endpoint_with_depends(client.all_collections, EmptyRequest,),
+        endpoint=create_endpoint_with_depends(client.all_collections, EmptyRequest),
     )
     router.add_api_route(
         name="Get Collection",
@@ -283,8 +293,6 @@ def create_app(settings: ApiSettings) -> FastAPI:
     app.include_router(mgmt.router)
     app.include_router(conformance.router)
     app.include_router(create_core_router(core_client, settings))
-    # TODO: Move remaining item endpoints to factory
-    app.include_router(item.router)
     add_exception_handlers(app, DEFAULT_STATUS_CODES)
 
     if settings.api_extension_is_enabled(ApiExtensions.transaction):
