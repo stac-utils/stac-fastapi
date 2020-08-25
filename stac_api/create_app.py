@@ -1,5 +1,4 @@
 """fastapi app creation"""
-import importlib
 from typing import Callable, List, Type
 
 from fastapi import APIRouter, Body, Depends, FastAPI
@@ -25,22 +24,10 @@ from stac_api.models.api import (
     ItemUri,
     SearchGetRequest,
 )
+from stac_api.openapi import config_openapi
 from stac_api.resources import conformance, mgmt
 from stac_api.utils.dependencies import READER, WRITER
 from stac_pydantic import ItemCollection
-
-
-def _include_extra_router(router: APIRouter, module: str, **kwargs) -> None:
-    """
-    Helper function to add routers available through pip extras.
-
-    Ref: https://github.com/developmentseed/titiler/blob/master/titiler/main.py#L21-L27
-    """
-    try:
-        mod = importlib.import_module(module)
-        router.include_router(mod.router, **kwargs)  # type: ignore
-    except ModuleNotFoundError:
-        raise
 
 
 def _create_request_model(
@@ -129,6 +116,10 @@ def create_endpoint_with_depends(
 
 def create_tiles_router(client: TilesClient) -> APIRouter:
     """Create API router with OGC tiles endpoints"""
+    from titiler.endpoints import demo
+    from titiler.endpoints.factory import TilerFactory
+    from rio_tiler_crs import STACReader
+
     router = APIRouter()
     router.add_api_route(
         name="Get OGC Tiles Resource",
@@ -138,15 +129,15 @@ def create_tiles_router(client: TilesClient) -> APIRouter:
         response_model_exclude_unset=True,
         methods=["GET"],
         endpoint=create_endpoint_with_depends(client.get_item_tiles, ItemUri),
+        tags=["OGC Tiles"],
     )
 
-    # Add titiler routers
-    _include_extra_router(router, "titiler.endpoints.stac")
-    _include_extra_router(router, "titiler.endpoints.demo")
-    # TODO: Add titiler middleware
-    # TODO: Add titiler exception handling
-    # I think the above will require using an application mount (https://fastapi.tiangolo.com/advanced/sub-applications/)
-
+    titiler_router = TilerFactory(reader=STACReader).router
+    for route in titiler_router.routes:
+        route.tags = []
+    router.include_router(titiler_router, tags=["Titiler"])
+    router.include_router(demo.router)
+    # TODO: add titiler exception handlers
     return router
 
 
@@ -290,18 +281,25 @@ def create_app(settings: ApiSettings) -> FastAPI:
     inject_settings(settings)
 
     app.debug = settings.debug
-    app.include_router(mgmt.router)
-    app.include_router(conformance.router)
-    app.include_router(create_core_router(core_client, settings))
+    app.include_router(mgmt.router, tags=["Liveliness/Readiness"])
+    app.include_router(conformance.router, tags=["Conformance Classes"])
+    app.include_router(
+        create_core_router(core_client, settings), tags=["Core Endpoints"]
+    )
     add_exception_handlers(app, DEFAULT_STATUS_CODES)
 
     if settings.api_extension_is_enabled(ApiExtensions.transaction):
         transaction_client = TransactionsClient()
-        app.include_router(create_transactions_router(transaction_client, settings))
+        app.include_router(
+            create_transactions_router(transaction_client, settings),
+            tags=["Transaction Extension"],
+        )
 
     if settings.add_on_is_enabled(AddOns.tiles):
         tiles_client = TilesClient()
         app.include_router(create_tiles_router(tiles_client))
+
+    config_openapi(app)
 
     @app.on_event("startup")
     async def on_startup():

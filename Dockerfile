@@ -14,8 +14,7 @@ WORKDIR /app
 
 COPY Pipfile Pipfile.lock ./
 RUN pipenv install --deploy --ignore-pipfile ${install_dev_dependencies:+--dev}
-RUN pipenv run pip install numpy
-RUN pipenv run pip install git+https://github.com/geospatial-jeff/titiler@stac-api
+RUN pipenv run pip install git+https://github.com/developmentseed/titiler@TilerFactories
 
 
 COPY . ./
