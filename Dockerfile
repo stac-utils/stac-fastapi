@@ -15,9 +15,6 @@ WORKDIR /app
 
 COPY Pipfile Pipfile.lock ./
 RUN pipenv install --deploy --ignore-pipfile ${install_dev_dependencies:+--dev}
-#RUN pipenv run pip install git+https://github.com/developmentseed/titiler@refactorDemo
-#RUN pipenv run pip install cogeo-mosaic==3.0a10
-
 
 COPY . ./
 
