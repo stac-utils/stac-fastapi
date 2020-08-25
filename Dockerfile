@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y build-essential git
 RUN pip install pipenv
 ENV PIPENV_NOSPIN=true
 ENV PIPENV_HIDE_EMOJIS=true
+ENV CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 ARG install_dev_dependencies=true
 
@@ -14,7 +15,8 @@ WORKDIR /app
 
 COPY Pipfile Pipfile.lock ./
 RUN pipenv install --deploy --ignore-pipfile ${install_dev_dependencies:+--dev}
-RUN pipenv run pip install git+https://github.com/developmentseed/titiler@TilerFactories
+#RUN pipenv run pip install git+https://github.com/developmentseed/titiler@refactorDemo
+#RUN pipenv run pip install cogeo-mosaic==3.0a10
 
 
 COPY . ./
