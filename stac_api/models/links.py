@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Dict, List
 from urllib.parse import urljoin
 
+from stac_api import config
 from stac_api.models.ogc import OGCTileLink
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
@@ -94,14 +95,29 @@ class ItemLinks(BaseLinks):
             href=urljoin(self.base_url, f"/collections/{self.collection_id}"),
         )
 
+    def tiles(self) -> Link:
+        """Create the `tiles` link"""
+        return Link(
+            rel=Relations.alternate,
+            type=MimeTypes.json,
+            title="tiles",
+            href=urljoin(
+                self.base_url,
+                f"/collections/{self.collection_id}/items/{self.item_id}/tiles",
+            ),
+        )
+
     def create_links(self) -> List[Link]:
         """Convenience method to return all inferred links"""
-        return [
+        links = [
             self.self(),
             self.parent(),
             self.collection(),
             self.root(),
         ]
+        if config.settings.add_on_is_enabled(config.AddOns.tiles):
+            links.append(self.tiles())
+        return links
 
 
 @dataclass
