@@ -19,6 +19,14 @@ class ApiExtensions(enum.Enum):
     transaction = "transaction"
 
 
+class AddOns(enum.Enum):
+    """
+    Enumeration of available third party add ons
+    """
+
+    tiles = "tiles"
+
+
 class ApiSettings(BaseSettings):
     """Application settings"""
 
@@ -33,6 +41,9 @@ class ApiSettings(BaseSettings):
 
     # Enabled api extensions
     stac_api_extensions: Optional[List[ApiExtensions]] = None
+
+    # Enabled third party add ons
+    add_ons: Optional[List[AddOns]] = None
 
     # Fields which are defined by STAC but not included in the database model
     forbidden_fields: Set[str] = {"type", "stac_version"}
@@ -66,9 +77,17 @@ class ApiSettings(BaseSettings):
         """Create writer psql connection string"""
         return f"postgresql://{self.postgres_user}:{self.postgres_pass}@{self.postgres_host_writer}:{self.postgres_port}/{self.postgres_dbname}"
 
-    def is_enabled(self, ext: ApiExtensions) -> bool:
+    def api_extension_is_enabled(self, ext: ApiExtensions) -> bool:
         """Helper method to check if an api extension is enabled"""
-        return ext in self.stac_api_extensions or False
+        return (
+            ext in self.stac_api_extensions or False
+            if self.stac_api_extensions
+            else False
+        )
+
+    def add_on_is_enabled(self, add_on: AddOns) -> bool:
+        """Helper method to check if an add on is enabled"""
+        return add_on in self.add_ons or False if self.add_ons else False
 
 
 settings: Optional[ApiSettings] = None

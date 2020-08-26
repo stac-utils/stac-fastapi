@@ -2,11 +2,12 @@ FROM python:3.8-slim
 
 # Any python libraries that require system libraries to be installed will likely
 # need the following packages in order to build
-RUN apt-get update && apt-get install -y build-essential
+RUN apt-get update && apt-get install -y build-essential git
 
 RUN pip install pipenv
 ENV PIPENV_NOSPIN=true
 ENV PIPENV_HIDE_EMOJIS=true
+ENV CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 ARG install_dev_dependencies=true
 

@@ -1,34 +1,36 @@
 """fastapi app creation"""
 from typing import Callable, List, Type
 
+import pkg_resources
 from fastapi import APIRouter, Body, Depends, FastAPI
-from pydantic import BaseModel, create_model
-from pydantic.fields import UndefinedType
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from stac_api.clients.base import (
-    BaseCollectionClient,
-    BaseItemClient,
-    BaseTransactionsClient,
-)
-from stac_api.clients.postgres.collection import CollectionCrudClient
-from stac_api.clients.postgres.item import ItemCrudClient
+from starlette.requests import Request
+from starlette.responses import HTMLResponse
+from starlette.templating import Jinja2Templates
+
+from pydantic import BaseModel, create_model
+from pydantic.fields import UndefinedType
+from stac_api.clients.base import BaseCoreClient, BaseTransactionsClient
+from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.clients.postgres.transactions import TransactionsClient
-from stac_api.config import ApiExtensions, ApiSettings, inject_settings
+from stac_api.clients.tiles.ogc import TilesClient
+from stac_api.config import AddOns, ApiExtensions, ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
-from stac_api.models import schemas
+from stac_api.models import ogc, schemas
 from stac_api.models.api import (
     APIRequest,
     CollectionUri,
     EmptyRequest,
     ItemCollectionUri,
     ItemUri,
+    SearchGetRequest,
 )
-from stac_api.resources import conformance, item, mgmt
-from stac_api.utils.dependencies import READER, WRITER, discover_base_url
+from stac_api.openapi import config_openapi
+from stac_api.resources import conformance, mgmt
+from stac_api.utils.dependencies import READER, WRITER
 from stac_pydantic import ItemCollection
-from starlette.requests import Request
 
 
 def _create_request_model(
@@ -39,15 +41,15 @@ def _create_request_model(
     fields = {}
     for (k, v) in model.__fields__.items():
         if k == "query":
-            if not settings.is_enabled(ApiExtensions.query):
+            if not settings.api_extension_is_enabled(ApiExtensions.query):
                 continue
 
         if k == "sortby":
-            if not settings.is_enabled(ApiExtensions.sort):
+            if not settings.api_extension_is_enabled(ApiExtensions.sort):
                 continue
 
         if k == "field":
-            if not settings.is_enabled(ApiExtensions.fields):
+            if not settings.api_extension_is_enabled(ApiExtensions.fields):
                 continue
 
         field_info = v.field_info
@@ -87,11 +89,10 @@ def create_endpoint_from_model(
     """
 
     def _endpoint(
-        request_data: request_model,  # type:ignore
-        base_url: str = Depends(discover_base_url),  # type:ignore
+        request: Request, request_data: request_model,  # type:ignore
     ):
         """endpoint"""
-        resp = func(request_data, base_url=base_url)
+        resp = func(request_data, request=request)
         return resp
 
     return _endpoint
@@ -105,17 +106,61 @@ def create_endpoint_with_depends(
     """
 
     def _endpoint(
-        request_data: request_model = Depends(),  # type:ignore
-        base_url: str = Depends(discover_base_url),
+        request: Request, request_data: request_model = Depends(),  # type:ignore
     ):
         """endpoint"""
-        resp = func(base_url=base_url, **request_data.kwargs())  # type:ignore
+        resp = func(
+            request=request, **request_data.kwargs()  # type:ignore
+        )
         return resp
 
     return _endpoint
 
 
-def create_items_router(client: BaseItemClient, settings: ApiSettings) -> APIRouter:
+def create_tiles_router(client: TilesClient) -> APIRouter:
+    """Create API router with OGC tiles endpoints"""
+    # from titiler.endpoints import demo
+    from titiler.endpoints.factory import TilerFactory
+    from rio_tiler_crs import STACReader
+
+    template_dir = pkg_resources.resource_filename("titiler", "templates")
+    templates = Jinja2Templates(directory=template_dir)
+
+    router = APIRouter()
+    router.add_api_route(
+        name="Get OGC Tiles Resource",
+        path="/collections/{collectionId}/items/{itemId}/tiles",
+        response_model=ogc.TileSetResource,
+        response_model_exclude_none=True,
+        response_model_exclude_unset=True,
+        methods=["GET"],
+        endpoint=create_endpoint_with_depends(client.get_item_tiles, ItemUri),
+        tags=["OGC Tiles"],
+    )
+
+    titiler_router = TilerFactory(reader=STACReader, add_asset_deps=True).router
+    for route in titiler_router.routes:
+        route.tags = []
+
+    @titiler_router.get("/viewer", response_class=HTMLResponse)
+    def stac_demo(request: Request):
+        """STAC Viewer."""
+        return templates.TemplateResponse(
+            name="stac_index.html",
+            context={
+                "request": request,
+                "tilejson": request.url_for("tilejson"),
+                "metadata": request.url_for("info"),
+            },
+            media_type="text/html",
+        )
+
+    router.include_router(titiler_router, tags=["Titiler"])
+    # TODO: add titiler exception handlers
+    return router
+
+
+def create_core_router(client: BaseCoreClient, settings: ApiSettings) -> APIRouter:
     """Create API router with item endpoints"""
     search_request_model = _create_request_model(schemas.STACSearch, settings)
     router = APIRouter()
@@ -135,14 +180,17 @@ def create_items_router(client: BaseItemClient, settings: ApiSettings) -> APIRou
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["POST"],
-        endpoint=create_endpoint_from_model(client.search, search_request_model),
+        endpoint=create_endpoint_from_model(client.post_search, search_request_model),
+    ),
+    router.add_api_route(
+        name="Search",
+        path="/search",
+        response_model=ItemCollection,
+        response_model_exclude_unset=True,
+        response_model_exclude_none=True,
+        methods=["GET"],
+        endpoint=create_endpoint_with_depends(client.get_search, SearchGetRequest),
     )
-    return router
-
-
-def create_collections_router(client: BaseCollectionClient) -> APIRouter:
-    """Create API router with collection endpoints"""
-    router = APIRouter()
     router.add_api_route(
         name="Get Collections",
         path="/collections",
@@ -150,7 +198,7 @@ def create_collections_router(client: BaseCollectionClient) -> APIRouter:
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["GET"],
-        endpoint=create_endpoint_with_depends(client.all_collections, EmptyRequest,),
+        endpoint=create_endpoint_with_depends(client.all_collections, EmptyRequest),
     )
     router.add_api_route(
         name="Get Collection",
@@ -246,26 +294,31 @@ def create_transactions_router(
 def create_app(settings: ApiSettings) -> FastAPI:
     """Create a FastAPI app"""
     paging_client = PaginationTokenClient()
-    collection_client = CollectionCrudClient(pagination_client=paging_client)
-    item_client = ItemCrudClient(
-        collection_crud=collection_client, pagination_client=paging_client
-    )
+    core_client = CoreCrudClient(pagination_client=paging_client)
 
     app = FastAPI()
     inject_settings(settings)
 
     app.debug = settings.debug
-    app.include_router(mgmt.router)
-    app.include_router(conformance.router)
-    app.include_router(create_collections_router(collection_client))
-    app.include_router(create_items_router(item_client, settings))
-    # TODO: Move remaining item endpoints to factory
-    app.include_router(item.router)
+    app.include_router(mgmt.router, tags=["Liveliness/Readiness"])
+    app.include_router(conformance.router, tags=["Conformance Classes"])
+    app.include_router(
+        create_core_router(core_client, settings), tags=["Core Endpoints"]
+    )
     add_exception_handlers(app, DEFAULT_STATUS_CODES)
 
-    if settings.is_enabled(ApiExtensions.transaction):
+    if settings.api_extension_is_enabled(ApiExtensions.transaction):
         transaction_client = TransactionsClient()
-        app.include_router(create_transactions_router(transaction_client, settings))
+        app.include_router(
+            create_transactions_router(transaction_client, settings),
+            tags=["Transaction Extension"],
+        )
+
+    if settings.add_on_is_enabled(AddOns.tiles):
+        tiles_client = TilesClient()
+        app.include_router(create_tiles_router(tiles_client))
+
+    config_openapi(app)
 
     @app.on_event("startup")
     async def on_startup():

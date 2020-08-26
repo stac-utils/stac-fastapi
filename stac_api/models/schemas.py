@@ -8,11 +8,11 @@ from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 
 import sqlalchemy as sa
-from pydantic import Field, root_validator
 from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import shape
 
 from geojson_pydantic.geometries import Polygon
+from pydantic import Field, root_validator
 from stac_api import config
 from stac_api.models.decompose import CollectionGetter, ItemGetter
 from stac_pydantic import Collection as CollectionBase

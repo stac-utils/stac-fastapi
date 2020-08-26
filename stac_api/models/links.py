@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from typing import Dict, List
 from urllib.parse import urljoin
 
+from stac_api import config
+from stac_api.models.ogc import OGCTileLink
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
 # These can be inferred from the item/collection so they aren't included in the database
@@ -93,11 +95,83 @@ class ItemLinks(BaseLinks):
             href=urljoin(self.base_url, f"/collections/{self.collection_id}"),
         )
 
+    def tiles(self) -> Link:
+        """Create the `tiles` link"""
+        return Link(
+            rel=Relations.alternate,
+            type=MimeTypes.json,
+            title="tiles",
+            href=urljoin(
+                self.base_url,
+                f"/collections/{self.collection_id}/items/{self.item_id}/tiles",
+            ),
+        )
+
     def create_links(self) -> List[Link]:
         """Convenience method to return all inferred links"""
-        return [
+        links = [
             self.self(),
             self.parent(),
             self.collection(),
             self.root(),
         ]
+        if config.settings.add_on_is_enabled(config.AddOns.tiles):
+            links.append(self.tiles())
+        return links
+
+
+@dataclass
+class TileLinks:
+    """Create inferred links specific to OGC Tiles API"""
+
+    base_url: str
+    collection_id: str
+    item_id: str
+
+    def __post_init__(self):
+        """post init"""
+        self.item_uri = urljoin(
+            self.base_url, f"/collections/{self.collection_id}/items/{self.item_id}"
+        )
+
+    def tiles(self) -> OGCTileLink:
+        """Create tiles link"""
+        return OGCTileLink(
+            href=urljoin(
+                self.base_url, f"/tiles/{{z}}/{{x}}/{{y}}.png?url={self.item_uri}",
+            ),
+            rel=Relations.item,
+            title="tiles",
+            type=MimeTypes.png,
+            templated=True,
+        )
+
+    def viewer(self) -> OGCTileLink:
+        """Create viewer link"""
+        return OGCTileLink(
+            href=urljoin(self.base_url, f"/viewer?url={self.item_uri}"),
+            rel=Relations.alternate,
+            type=MimeTypes.html,
+            title="viewer",
+        )
+
+    def tilejson(self) -> OGCTileLink:
+        """Create tilejson link"""
+        return OGCTileLink(
+            href=urljoin(self.base_url, f"/tilejson.json?url={self.item_uri}"),
+            rel=Relations.alternate,
+            type=MimeTypes.json,
+            title="tilejson",
+        )
+
+    def wmts(self) -> OGCTileLink:
+        return OGCTileLink(
+            href=urljoin(self.base_url, f"/WMTSCapabilities.xml?url={self.item_uri}"),
+            rel=Relations.alternate,
+            type=MimeTypes.xml,
+            title="WMTS Capabilities",
+        )
+
+    def create_links(self) -> List[OGCTileLink]:
+        """Convenience method to return all inferred links"""
+        return [self.tiles(), self.tilejson(), self.wmts(), self.viewer()]

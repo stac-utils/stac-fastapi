@@ -1,19 +1,18 @@
 """Item crud client."""
+import json
 import logging
 from dataclasses import dataclass
-from typing import Optional, Type, Union
+from datetime import datetime
+from typing import List, Optional, Type, Union
 
-import geoalchemy2 as ga
 import sqlalchemy as sa
 from fastapi import Depends
+
+import geoalchemy2 as ga
 from sqlakeyset import get_page
-from stac_api import config
-from stac_api.clients.base import BaseItemClient
+from stac_api import config, errors
+from stac_api.clients.base import BaseCoreClient
 from stac_api.clients.postgres.base import PostgresClient
-from stac_api.clients.postgres.collection import (
-    CollectionCrudClient,
-    collection_crud_client_factory,
-)
 from stac_api.clients.postgres.tokens import (
     PaginationTokenClient,
     pagination_token_client_factory,
@@ -31,21 +30,168 @@ NumType = Union[float, int]
 
 
 @dataclass
-class ItemCrudClient(PostgresClient, BaseItemClient):
-    """Item specific CRUD operations"""
+class CoreCrudClient(PostgresClient, BaseCoreClient):
+    """Client for core endpoints defined by stac"""
 
-    collection_crud: Optional[CollectionCrudClient] = None
     pagination_client: Optional[PaginationTokenClient] = None
     table: Type[database.Item] = database.Item
+    collection_table: Type[database.Collection] = database.Collection
+
+    def all_collections(self, **kwargs) -> List[schemas.Collection]:
+        """Read all collections from the database"""
+        try:
+            collections = self.reader_session.query(self.collection_table).all()
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            raise errors.DatabaseError(
+                "Unhandled database error when getting item collection"
+            )
+
+        response = []
+        for collection in collections:
+            collection.base_url = str(kwargs["request"].base_url)
+            response.append(schemas.Collection.from_orm(collection))
+        return response
+
+    def get_collection(self, id: str, **kwargs) -> schemas.Collection:
+        """Get collection by id"""
+        collection = self.lookup_id(id, table=self.collection_table).first()
+        collection.base_url = str(kwargs["request"].base_url)
+        return schemas.Collection.from_orm(collection)
+
+    def item_collection(
+        self, id: str, limit: int = 10, token: str = None, **kwargs
+    ) -> ItemCollection:
+        """Read an item collection from the database"""
+        try:
+            collection_children = (
+                self.lookup_id(id, table=self.collection_table)
+                .first()
+                .children.order_by(database.Item.datetime.desc(), database.Item.id)
+            )
+            count = None
+            if config.settings.api_extension_is_enabled(config.ApiExtensions.context):
+                count = collection_children.count()
+            token = self.pagination_client.get(token) if token else token
+            page = get_page(collection_children, per_page=limit, page=(token or False))
+            # Create dynamic attributes for each page
+            page.next = (
+                self.pagination_client.insert(keyset=page.paging.bookmark_next)
+                if page.paging.has_next
+                else None
+            )
+            page.previous = (
+                self.pagination_client.insert(keyset=page.paging.bookmark_previous)
+                if page.paging.has_previous
+                else None
+            )
+        except errors.NotFoundError:
+            raise
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            raise errors.DatabaseError(
+                "Unhandled database error when getting collection children"
+            )
+
+        links = []
+        if page.next:
+            links.append(
+                PaginationLink(
+                    rel=Relations.next,
+                    type="application/geo+json",
+                    href=f"{kwargs['request'].base_url}collections/{id}/items?token={page.next}&limit={limit}",
+                    method="GET",
+                )
+            )
+        if page.previous:
+            links.append(
+                PaginationLink(
+                    rel=Relations.previous,
+                    type="application/geo+json",
+                    href=f"{kwargs['request'].base_url}collections/{id}/items?token={page.previous}&limit={limit}",
+                    method="GET",
+                )
+            )
+
+        response_features = []
+        for item in page:
+            item.base_url = str(kwargs["request"].base_url)
+            response_features.append(schemas.Item.from_orm(item))
+
+        context_obj = None
+        if config.settings.api_extension_is_enabled(ApiExtensions.context):
+            context_obj = {"returned": len(page), "limit": limit, "matched": count}
+
+        return ItemCollection(
+            type="FeatureCollection",
+            context=context_obj,
+            features=response_features,
+            links=links,
+        )
 
     def get_item(self, id: str, **kwargs) -> schemas.Item:
         """Get item by id"""
         obj = self.lookup_id(id).first()
-        obj.base_url = kwargs["base_url"]
+        obj.base_url = str(kwargs["request"].base_url)
         return schemas.Item.from_orm(obj)
 
-    def search(self, search_request: schemas.STACSearch, **kwargs) -> ItemCollection:
-        """STAC search operation"""
+    def get_search(
+        self,
+        collections: Optional[List[str]] = None,
+        ids: Optional[List[str]] = None,
+        bbox: Optional[List[NumType]] = None,
+        datetime: Optional[Union[str, datetime]] = None,
+        limit: Optional[int] = 10,
+        query: Optional[str] = None,
+        token: Optional[str] = None,
+        fields: Optional[List[str]] = None,
+        sortby: Optional[str] = None,
+        **kwargs,
+    ) -> ItemCollection:
+        """GET search catalog"""
+        # Parse request parameters
+        base_args = {
+            "collections": collections,
+            "ids": ids,
+            "bbox": bbox,
+            "limit": limit,
+            "token": token,
+            "query": json.loads(query) if query else query,
+        }
+        if datetime:
+            base_args["datetime"] = datetime
+        if sortby:
+            # https://github.com/radiantearth/stac-spec/tree/master/api-spec/extensions/sort#http-get-or-post-form
+            sort_param = []
+            for sort in sortby:
+                sort_param.append(
+                    {
+                        "field": sort[1:],
+                        "direction": "asc" if sort[0] == "+" else "desc",
+                    }
+                )
+            base_args["sortby"] = sort_param
+
+        if fields:
+            includes = set()
+            excludes = set()
+            for field in fields:
+                if field[0] == "-":
+                    excludes.add(field[1:])
+                elif field[0] == "+":
+                    includes.add(field[1:])
+                else:
+                    includes.add(field)
+            base_args["fields"] = {"include": includes, "exclude": excludes}
+
+        # Do the request
+        search_request = schemas.STACSearch(**base_args)
+        return self.post_search(search_request, request=kwargs["request"])
+
+    def post_search(
+        self, search_request: schemas.STACSearch, **kwargs
+    ) -> ItemCollection:
+        """POST search catalog"""
         token = (
             self.pagination_client.get(search_request.token)
             if search_request.token
@@ -83,7 +229,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
             try:
                 items = query.filter(id_filter).order_by(self.table.id)
                 page = get_page(items, per_page=search_request.limit, page=token)
-                if config.settings.is_enabled(ApiExtensions.context):
+                if config.settings.api_extension_is_enabled(ApiExtensions.context):
                     count = len(search_request.ids)
                 page.next = (
                     self.pagination_client.insert(keyset=page.paging.bookmark_next)
@@ -135,7 +281,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
                         query = query.filter(op.operator(field, value))
 
             try:
-                if config.settings.is_enabled(ApiExtensions.context):
+                if config.settings.api_extension_is_enabled(ApiExtensions.context):
                     count = query.count()
                 page = get_page(query, per_page=search_request.limit, page=token)
                 # Create dynamic attributes for each page
@@ -160,7 +306,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
                 PaginationLink(
                     rel=Relations.next,
                     type="application/geo+json",
-                    href=f"{kwargs['base_url']}/search",
+                    href=f"{kwargs['request'].base_url}search",
                     method="POST",
                     body={"token": page.next},
                     merge=True,
@@ -171,7 +317,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
                 PaginationLink(
                     rel=Relations.previous,
                     type="application/geo+json",
-                    href=f"{kwargs['base_url']}/search",
+                    href=f"{kwargs['request'].base_url}search",
                     method="POST",
                     body={"token": page.previous},
                     merge=True,
@@ -180,11 +326,11 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
 
         response_features = []
         filter_kwargs = {}
-        if config.settings.is_enabled(ApiExtensions.fields):
+        if config.settings.api_extension_is_enabled(ApiExtensions.fields):
             filter_kwargs = search_request.field.filter_fields
 
         for item in page:
-            item.base_url = kwargs["base_url"]
+            item.base_url = str(kwargs["request"].base_url)
             response_features.append(
                 schemas.Item.from_orm(item).to_dict(**filter_kwargs)
             )
@@ -211,7 +357,7 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
             bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
 
         context_obj = None
-        if config.settings.is_enabled(ApiExtensions.context):
+        if config.settings.api_extension_is_enabled(ApiExtensions.context):
             context_obj = {
                 "returned": len(page),
                 "limit": search_request.limit,
@@ -227,13 +373,8 @@ class ItemCrudClient(PostgresClient, BaseItemClient):
         )
 
 
-def item_crud_client_factory(
-    collection_crud: CollectionCrudClient = Depends(collection_crud_client_factory),
+def core_crud_client_factory(
     pagination_client: PaginationTokenClient = Depends(pagination_token_client_factory),
-) -> ItemCrudClient:
+) -> CoreCrudClient:
     """FastAPI dependency."""
-    return ItemCrudClient(
-        collection_crud=collection_crud,
-        table=database.Item,
-        pagination_client=pagination_client,
-    )
+    return CoreCrudClient(table=database.Item, pagination_client=pagination_client,)
