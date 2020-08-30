@@ -4,17 +4,11 @@ import uuid
 from copy import deepcopy
 from datetime import datetime, timedelta
 from random import randint
-from unittest.mock import patch
 from urllib.parse import parse_qs, urlparse, urlsplit
 
 from shapely.geometry import Polygon
 
-from stac_api.clients.postgres.base import PostgresClient
-from stac_api.clients.postgres.core import CoreCrudClient
-from stac_api.errors import DatabaseError
 from stac_pydantic.api.search import DATETIME_RFC339
-
-from ..conftest import _raise_exception
 
 
 def test_create_and_delete_item(app_client, load_test_data):
@@ -701,51 +695,3 @@ def test_get_missing_item(app_client, load_test_data):
     test_coll = load_test_data("test_collection.json")
     resp = app_client.get(f"/collections/{test_coll['id']}/items/invalid-item")
     assert resp.status_code == 404
-
-
-def test_create_item_database_error(app_client, load_test_data):
-    """Test 424 is raised on database error"""
-    test_item = load_test_data("test_item.json")
-    with patch.object(PostgresClient, "lookup_id", _raise_exception(DatabaseError())):
-        resp = app_client.post(
-            f"/collections/{test_item['collection']}/items", json=test_item
-        )
-        assert resp.status_code == 424
-
-
-def test_read_item_database_error(app_client, load_test_data):
-    """Test 424 is raised on database error"""
-    test_item = load_test_data("test_item.json")
-    with patch.object(PostgresClient, "lookup_id", _raise_exception(DatabaseError())):
-        resp = app_client.get(
-            f"/collections/{test_item['collection']}/items/{test_item['id']}"
-        )
-        assert resp.status_code == 424
-
-
-def test_update_item_database_error(app_client, load_test_data):
-    """Test 424 is raised on database error"""
-    test_item = load_test_data("test_item.json")
-    with patch.object(PostgresClient, "commit", _raise_exception(DatabaseError())):
-        resp = app_client.put(
-            f"/collections/{test_item['collection']}/items", json=test_item
-        )
-        assert resp.status_code == 424
-
-
-def test_delete_item_database_error(app_client, load_test_data):
-    """Test 424 is raised on database error"""
-    test_item = load_test_data("test_item.json")
-    with patch.object(PostgresClient, "lookup_id", _raise_exception(DatabaseError())):
-        resp = app_client.delete(
-            f"/collections/{test_item['collection']}/items/{test_item['id']}"
-        )
-        assert resp.status_code == 424
-
-
-def test_get_item_collection_database_error(app_client, load_test_data):
-    """Test 424 is raised on database error"""
-    test_collection = load_test_data("test_collection.json")
-    with patch.object(CoreCrudClient, "lookup_id", _raise_exception(DatabaseError())):
-        resp = app_client.get(f"/collections/{test_collection['id']}/items")
-        assert resp.status_code == 424

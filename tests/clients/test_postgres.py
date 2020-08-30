@@ -1,0 +1,163 @@
+import uuid
+from typing import Callable
+
+import pytest
+
+from stac_api.clients.postgres.core import CoreCrudClient
+from stac_api.clients.postgres.transactions import TransactionsClient
+from stac_api.errors import ConflictError, NotFoundError
+from stac_api.models.schemas import Collection, Item
+from tests.conftest import MockStarletteRequest
+
+
+def test_create_collection(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    data = Collection.parse_obj(load_test_data("test_collection.json"))
+    resp = postgres_transactions.create_collection(data, request=MockStarletteRequest)
+    assert data.dict(exclude={"links"}) == resp.dict(exclude={"links"})
+    coll = postgres_core.get_collection(data.id, request=MockStarletteRequest)
+    assert coll.id == data.id
+
+
+def test_create_collection_already_exists(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    data = Collection.parse_obj(load_test_data("test_collection.json"))
+    postgres_transactions.create_collection(data, request=MockStarletteRequest)
+
+    with pytest.raises(ConflictError):
+        postgres_transactions.create_collection(data, request=MockStarletteRequest)
+
+
+def test_update_collection(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    data = Collection.parse_obj(load_test_data("test_collection.json"))
+    postgres_transactions.create_collection(data, request=MockStarletteRequest)
+
+    data.keywords.append("new keyword")
+    postgres_transactions.update_collection(data, request=MockStarletteRequest)
+
+    coll = postgres_core.get_collection(data.id, request=MockStarletteRequest)
+    assert "new keyword" in coll.keywords
+
+
+def test_delete_collection(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    data = Collection.parse_obj(load_test_data("test_collection.json"))
+    postgres_transactions.create_collection(data, request=MockStarletteRequest)
+
+    deleted = postgres_transactions.delete_collection(
+        data.id, request=MockStarletteRequest
+    )
+
+    with pytest.raises(NotFoundError):
+        postgres_core.get_collection(deleted.id, request=MockStarletteRequest)
+
+
+def test_get_collection(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    data = Collection.parse_obj(load_test_data("test_collection.json"))
+    postgres_transactions.create_collection(data, request=MockStarletteRequest)
+    coll = postgres_core.get_collection(data.id, request=MockStarletteRequest)
+    assert data.dict(exclude={"links"}) == coll.dict(exclude={"links"})
+    assert coll.id == data.id
+
+
+def test_get_collection_items(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+
+    item = Item.parse_obj(load_test_data("test_item.json"))
+
+    for _ in range(5):
+        item.id = str(uuid.uuid4())
+        postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    fc = postgres_core.item_collection(coll.id, request=MockStarletteRequest)
+    assert len(fc.features) == 5
+
+    for item in fc.features:
+        assert item.collection == coll.id
+
+
+def test_create_item(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+    item = Item.parse_obj(load_test_data("test_item.json"))
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    resp = postgres_core.get_item(item.id, request=MockStarletteRequest)
+    assert item.dict(
+        exclude={"links": ..., "properties": {"created", "updated"}}
+    ) == resp.dict(exclude={"links": ..., "properties": {"created", "updated"}})
+
+
+def test_create_item_already_exists(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+
+    item = Item.parse_obj(load_test_data("test_item.json"))
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    with pytest.raises(ConflictError):
+        postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+
+def test_update_item(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+
+    item = Item.parse_obj(load_test_data("test_item.json"))
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    item.properties.foo = "bar"
+    postgres_transactions.update_item(item, request=MockStarletteRequest)
+
+    updated_item = postgres_core.get_item(item.id, request=MockStarletteRequest)
+    assert updated_item.properties.foo == "bar"
+
+
+def test_delete_item(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+
+    item = Item.parse_obj(load_test_data("test_item.json"))
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    postgres_transactions.delete_item(item.id, request=MockStarletteRequest)
+
+    with pytest.raises(NotFoundError):
+        postgres_core.get_item(item.id, request=MockStarletteRequest)
