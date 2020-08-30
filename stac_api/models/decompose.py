@@ -3,14 +3,12 @@ import json
 from typing import Any, Dict, List, Union
 from urllib.parse import urljoin
 
+import geoalchemy2 as ga
 from pydantic import BaseModel
 from pydantic.utils import GetterDict
-
-import geoalchemy2 as ga
 from stac_api import config
 from stac_api.errors import DatabaseError
 from stac_api.models.links import CollectionLinks, ItemLinks, filter_links
-from stac_pydantic.item import ItemProperties
 from stac_pydantic.shared import DATETIME_RFC339
 
 
@@ -49,14 +47,13 @@ class ItemGetter(GetterDict):
 
     def __init__(self, obj: Any):
         """Decompose orm model to pydantic model"""
-        properties = {}
+        properties = obj.properties.copy()
         for field in config.settings.indexed_fields:
             # Use getattr to accommodate extension namespaces
             field_value = getattr(obj, field.split(":")[-1])
             if field == "datetime":
                 field_value = field_value.strftime(DATETIME_RFC339)
             properties[field] = field_value
-        obj.properties.update(ItemProperties(**properties))
         # Create inferred links
         item_links = ItemLinks(
             collection_id=obj.collection_id, base_url=obj.base_url, item_id=obj.id
@@ -72,7 +69,7 @@ class ItemGetter(GetterDict):
             assets=obj.assets,
             collection_id=obj.collection_id,
             datetime=obj.datetime,
-            links=item_links
+            links=item_links,
         )
         db_model.type = "Feature"
         db_model.collection = db_model.collection_id
