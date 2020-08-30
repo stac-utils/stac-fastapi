@@ -3,6 +3,7 @@ import json
 from typing import Any, Dict, List, Union
 from urllib.parse import urljoin
 
+from pydantic import BaseModel
 from pydantic.utils import GetterDict
 
 import geoalchemy2 as ga
@@ -18,6 +19,8 @@ def resolve_links(links: list, base_url: str) -> List[Dict]:
     Convert relative links to absolute links using the specified base url.  It would be more appropriate to use a view,
     but SQLAlchemy ORM doesn't support this as far as I know.
     """
+    if isinstance(links[0], BaseModel):
+        links = [link.dict() for link in links]
     filtered_links = filter_links(links)
     for link in filtered_links:
         link.update({"href": urljoin(base_url, link["href"])})
@@ -61,11 +64,19 @@ class ItemGetter(GetterDict):
         # Resolve existing links
         if obj.links:
             item_links += resolve_links(obj.links, obj.base_url)
-        obj.type = "Feature"
-        obj.links = item_links
-        obj.geometry = self.decode_geom(obj.geometry)
-        obj.collection = obj.collection_id
-        super().__init__(obj)
+        db_model = obj.__class__(
+            id=obj.id,
+            geometry=self.decode_geom(obj.geometry),
+            bbox=obj.bbox,
+            properties=properties,
+            assets=obj.assets,
+            collection_id=obj.collection_id,
+            datetime=obj.datetime,
+            links=item_links
+        )
+        db_model.type = "Feature"
+        db_model.collection = db_model.collection_id
+        super().__init__(db_model)
 
 
 class CollectionGetter(GetterDict):
@@ -82,5 +93,15 @@ class CollectionGetter(GetterDict):
         # Resolve existing links
         if obj.links:
             collection_links += resolve_links(obj.links, obj.base_url)
-        obj.links = collection_links
-        super().__init__(obj)
+        db_model = obj.__class__(
+            id=obj.id,
+            stac_version=obj.stac_version,
+            title=obj.title,
+            description=obj.description,
+            keywords=obj.keywords,
+            license=obj.license,
+            providers=obj.providers,
+            extent=obj.extent,
+            links=collection_links,
+        )
+        super().__init__(db_model)
