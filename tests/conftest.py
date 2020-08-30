@@ -63,7 +63,7 @@ class MockStarletteRequest:
 @pytest.fixture
 def reader_connection() -> Generator[Session, None, None]:
     """Create a reader connection"""
-    engine = create_engine(settings.reader_connection_string, echo=True)
+    engine = create_engine(settings.reader_connection_string)
     db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
     yield db_session
     db_session.close()
@@ -73,7 +73,7 @@ def reader_connection() -> Generator[Session, None, None]:
 @pytest.fixture
 def writer_connection() -> Generator[Session, None, None]:
     """Create a writer connection"""
-    engine = create_engine(settings.writer_connection_string, echo=True)
+    engine = create_engine(settings.writer_connection_string)
     db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
     yield db_session
     db_session.close()
