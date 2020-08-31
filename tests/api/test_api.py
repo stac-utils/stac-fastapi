@@ -9,10 +9,12 @@ from stac_api.models.schemas import Collection, Item
 from ..conftest import ApiSettings, MockStarletteRequest
 
 STAC_CORE_ROUTES = [
+    "GET /",
     "GET /collections",
     "GET /collections/{collectionId}",
     "GET /collections/{collectionId}/items",
     "GET /collections/{collectionId}/items/{itemId}",
+    "GET /conformance",
     "GET /search",
     "POST /search",
 ]
