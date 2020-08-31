@@ -12,6 +12,7 @@ from stac_pydantic.shared import Link, MimeTypes, Relations
 router = APIRouter()
 
 
+# TODO: Move conformance classes to core router
 @router.get("/", response_model=LandingPage, response_model_exclude_unset=True)
 def landing_page(
     request: Request, crud_client: CoreCrudClient = Depends(core_crud_client_factory),

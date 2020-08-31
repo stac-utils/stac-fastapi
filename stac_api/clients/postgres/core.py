@@ -198,9 +198,9 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
             else False
         )
         query = self.reader_session.query(self.table)
-        count = None
 
         # Filter by collection
+        count = None
         if search_request.collections:
             collection_filter = sa.or_(
                 *[
@@ -337,7 +337,7 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
 
         # Geoalchemy doesn't have a good way of calculating extent of many features, so we'll calculate it outside the db
         bbox = None
-        if count > 0:
+        if len(response_features) > 0:
             xvals = [
                 item
                 for sublist in [
