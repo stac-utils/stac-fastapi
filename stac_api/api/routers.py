@@ -25,7 +25,6 @@ from stac_pydantic import ItemCollection
 
 def create_tiles_router(client: TilesClient) -> APIRouter:
     """Create API router with OGC tiles endpoints"""
-    # from titiler.endpoints import demo
     from titiler.endpoints.factory import TilerFactory
     from rio_tiler_crs import STACReader
 
