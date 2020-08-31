@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 
 import sqlalchemy as sa
 from fastapi import Depends
+from sqlalchemy import func
 
 import geoalchemy2 as ga
 from sqlakeyset import get_page
@@ -124,7 +125,10 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
             )
             count = None
             if config.settings.api_extension_is_enabled(config.ApiExtensions.context):
-                count = collection_children.count()
+                count_query = collection_children.statement.with_only_columns(
+                    [func.count()]
+                ).order_by(None)
+                count = collection_children.session.execute(count_query).scalar()
             token = self.pagination_client.get(token) if token else token
             page = get_page(collection_children, per_page=limit, page=(token or False))
             # Create dynamic attributes for each page
@@ -335,7 +339,10 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
 
             try:
                 if config.settings.api_extension_is_enabled(ApiExtensions.context):
-                    count = query.count()
+                    count_query = query.statement.with_only_columns(
+                        [func.count()]
+                    ).order_by(None)
+                    count = query.session.execute(count_query).scalar()
                 page = get_page(query, per_page=search_request.limit, page=token)
                 # Create dynamic attributes for each page
                 page.next = (
