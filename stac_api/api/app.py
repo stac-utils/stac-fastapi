@@ -50,8 +50,12 @@ def create_app(settings: ApiSettings) -> FastAPI:
     @app.on_event("startup")
     async def on_startup():
         """Create database engines and sessions on startup"""
-        app.state.ENGINE_READER = create_engine(settings.reader_connection_string)
-        app.state.ENGINE_WRITER = create_engine(settings.writer_connection_string)
+        app.state.ENGINE_READER = create_engine(
+            settings.reader_connection_string, echo=settings.debug
+        )
+        app.state.ENGINE_WRITER = create_engine(
+            settings.writer_connection_string, echo=settings.debug
+        )
         app.state.DB_READER = sessionmaker(
             autocommit=False, autoflush=False, bind=app.state.ENGINE_READER
         )
