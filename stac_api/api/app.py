@@ -1,6 +1,6 @@
 """fastapi app creation"""
 
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.requests import Request
@@ -17,7 +17,6 @@ from stac_api.clients.tiles.ogc import TilesClient
 from stac_api.config import AddOns, ApiExtensions, ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_api.openapi import config_openapi
-from stac_api.resources import mgmt
 from stac_api.utils.dependencies import READER, WRITER
 
 
@@ -30,7 +29,6 @@ def create_app(settings: ApiSettings) -> FastAPI:
     inject_settings(settings)
 
     app.debug = settings.debug
-    app.include_router(mgmt.router, tags=["Liveliness/Readiness"])
     app.include_router(
         create_core_router(core_client, settings), tags=["Core Endpoints"]
     )
@@ -78,5 +76,14 @@ def create_app(settings: ApiSettings) -> FastAPI:
         reader.close()
         writer.close()
         return resp
+
+    mgmt_router = APIRouter()
+
+    @mgmt_router.get("/_mgmt/ping")
+    async def ping():
+        """Liveliness/readiness probe"""
+        return {"message": "PONG"}
+
+    app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
 
     return app
