@@ -24,7 +24,7 @@ class PaginationTokenClient(PostgresClient):
             token = database.PaginationToken(id=uid, keyset=keyset)
             self.writer_session.add(token)
             self.commit()
-            return token.id
+            return uid
         except DatabaseError:
             # Try again if uid already exists in the database
             # TODO: Explicitely check for ConflictError (if insert fails for other reasons it should be raised)
