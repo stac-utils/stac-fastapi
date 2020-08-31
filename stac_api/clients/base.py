@@ -6,6 +6,7 @@ from typing import List, Optional, Union
 
 from stac_api.models import schemas
 from stac_pydantic import ItemCollection
+from stac_pydantic.api import ConformanceClasses, LandingPage
 
 NumType = Union[float, int]
 
@@ -52,6 +53,16 @@ class BaseTransactionsClient(abc.ABC):
 @dataclass  # type:ignore
 class BaseCoreClient(abc.ABC):
     """Base client for core endpoints defined by stac"""
+
+    @abc.abstractmethod
+    def landing_page(self, **kwargs) -> LandingPage:
+        """landing page"""
+        ...
+
+    @abc.abstractmethod
+    def conformance(self, **kwargs) -> ConformanceClasses:
+        """conformance classes"""
+        ...
 
     @abc.abstractmethod
     def post_search(

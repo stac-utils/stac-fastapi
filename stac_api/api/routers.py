@@ -21,6 +21,7 @@ from stac_api.clients.tiles.ogc import TilesClient
 from stac_api.config import ApiSettings
 from stac_api.models import ogc, schemas
 from stac_pydantic import ItemCollection
+from stac_pydantic.api import ConformanceClasses, LandingPage
 
 
 def create_tiles_router(client: TilesClient) -> APIRouter:
@@ -69,6 +70,24 @@ def create_core_router(client: BaseCoreClient, settings: ApiSettings) -> APIRout
     """Create API router with item endpoints"""
     search_request_model = _create_request_model(schemas.STACSearch, settings)
     router = APIRouter()
+    router.add_api_route(
+        name="Landing Page",
+        path="/",
+        response_model=LandingPage,
+        response_model_exclude_unset=True,
+        response_model_exclude_none=True,
+        methods=["GET"],
+        endpoint=create_endpoint_with_depends(client.landing_page, EmptyRequest),
+    )
+    router.add_api_route(
+        name="Conformance Classes",
+        path="/conformance",
+        response_model=ConformanceClasses,
+        response_model_exclude_unset=True,
+        response_model_exclude_none=True,
+        methods=["GET"],
+        endpoint=create_endpoint_with_depends(client.conformance, EmptyRequest),
+    )
     router.add_api_route(
         name="Get Item",
         path="/collections/{collectionId}/items/{itemId}",

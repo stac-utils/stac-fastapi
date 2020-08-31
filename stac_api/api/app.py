@@ -17,7 +17,7 @@ from stac_api.clients.tiles.ogc import TilesClient
 from stac_api.config import AddOns, ApiExtensions, ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_api.openapi import config_openapi
-from stac_api.resources import conformance, mgmt
+from stac_api.resources import mgmt
 from stac_api.utils.dependencies import READER, WRITER
 
 
@@ -31,7 +31,7 @@ def create_app(settings: ApiSettings) -> FastAPI:
 
     app.debug = settings.debug
     app.include_router(mgmt.router, tags=["Liveliness/Readiness"])
-    app.include_router(conformance.router, tags=["Conformance Classes"])
+    # app.include_router(conformance.router, tags=["Conformance Classes"])
     app.include_router(
         create_core_router(core_client, settings), tags=["Core Endpoints"]
     )

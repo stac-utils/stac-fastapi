@@ -4,6 +4,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Type, Union
+from urllib.parse import urljoin
 
 import sqlalchemy as sa
 from fastapi import Depends
@@ -20,9 +21,11 @@ from stac_api.clients.postgres.tokens import (
 from stac_api.config import ApiExtensions
 from stac_api.errors import DatabaseError
 from stac_api.models import database, schemas
+from stac_api.models.links import CollectionLinks
 from stac_pydantic import ItemCollection
+from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.extensions.paging import PaginationLink
-from stac_pydantic.shared import Relations
+from stac_pydantic.shared import Link, MimeTypes, Relations
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +39,56 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
     pagination_client: Optional[PaginationTokenClient] = None
     table: Type[database.Item] = database.Item
     collection_table: Type[database.Collection] = database.Collection
+
+    def landing_page(self, **kwargs) -> LandingPage:
+        """landing page"""
+        landing_page = LandingPage(
+            title="Arturo STAC API",
+            description="Arturo raster datastore",
+            links=[
+                Link(
+                    rel=Relations.self,
+                    type=MimeTypes.json,
+                    href=str(kwargs["request"].base_url),
+                ),
+                Link(
+                    rel=Relations.docs,
+                    type=MimeTypes.html,
+                    title="OpenAPI docs",
+                    href=urljoin(str(kwargs["request"].base_url), "/docs"),
+                ),
+                Link(
+                    rel=Relations.conformance,
+                    type=MimeTypes.json,
+                    title="STAC/WFS3 conformance classes implemented by this server",
+                    href=urljoin(str(kwargs["request"].base_url), "/conformance"),
+                ),
+                Link(
+                    rel=Relations.search,
+                    type=MimeTypes.geojson,
+                    title="STAC search",
+                    href=urljoin(str(kwargs["request"].base_url), "/search"),
+                ),
+            ],
+        )
+        collections = self.all_collections(request=kwargs["request"])
+        for coll in collections:
+            coll_link = CollectionLinks(
+                collection_id=coll.id, base_url=str(kwargs["request"].base_url)
+            ).self()
+            coll_link.rel = Relations.child
+            coll_link.title = coll.title
+            landing_page.links.append(coll_link)
+        return landing_page
+
+    def conformance(self, **kwargs) -> ConformanceClasses:
+        """conformance classes"""
+        return ConformanceClasses(
+            conformsTo=[
+                "https://stacspec.org/STAC-api.html",
+                "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
+            ]
+        )
 
     def all_collections(self, **kwargs) -> List[schemas.Collection]:
         """Read all collections from the database"""
