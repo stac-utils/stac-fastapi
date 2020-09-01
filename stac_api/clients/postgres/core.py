@@ -120,7 +120,8 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         try:
             collection_children = (
                 self.reader_session.query(self.table)
-                .filter(self.table.collection_id == id)
+                .join(self.collection_table)
+                .filter(self.collection_table.id == id)
                 .order_by(self.table.datetime.desc())
             )
             count = None
@@ -259,13 +260,14 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         # Filter by collection
         count = None
         if search_request.collections:
-            collection_filter = sa.or_(
-                *[
-                    self.table.collection_id == col_id
-                    for col_id in search_request.collections
-                ]
+            query = query.join(self.collection_table).filter(
+                sa.or_(
+                    *[
+                        self.collection_table.id == col_id
+                        for col_id in search_request.collections
+                    ]
+                )
             )
-            query = query.filter(collection_filter)
 
         # Sort
         if search_request.sortby:
@@ -273,8 +275,6 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
                 getattr(self.table.get_field(sort.field), sort.direction.value)()
                 for sort in search_request.sortby
             ]
-            # Add id to end of sort to ensure unique keyset
-            sort_fields.append(self.table.id)
             query = query.order_by(*sort_fields)
         else:
             # Default sort is date
