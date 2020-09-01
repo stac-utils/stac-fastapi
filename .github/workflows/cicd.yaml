@@ -1,9 +1,9 @@
 name: arturo-stac-api
 on:
   push:
-    branches: [ master, stac-sprint ]
+    branches: [ master ]
   pull_request:
-    branches: [ master, stac-sprint ]
+    branches: [ master ]
 
 jobs:
   test:
