@@ -26,8 +26,7 @@ from stac_pydantic.api import ConformanceClasses, LandingPage
 
 def create_tiles_router(client: TilesClient) -> APIRouter:
     """Create API router with OGC tiles endpoints"""
-    from titiler.endpoints.factory import TilerFactory
-    from rio_tiler_crs import STACReader
+    from titiler.endpoints.stac import STACTiler
 
     template_dir = pkg_resources.resource_filename("titiler", "templates")
     templates = Jinja2Templates(directory=template_dir)
@@ -43,10 +42,7 @@ def create_tiles_router(client: TilesClient) -> APIRouter:
         endpoint=create_endpoint_with_depends(client.get_item_tiles, ItemUri),
         tags=["OGC Tiles"],
     )
-
-    titiler_router = TilerFactory(reader=STACReader, add_asset_deps=True).router
-    for route in titiler_router.routes:
-        route.tags = []
+    titiler_router = STACTiler().router
 
     @titiler_router.get("/viewer", response_class=HTMLResponse)
     def stac_demo(request: Request):
