@@ -22,6 +22,8 @@ from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
 from stac_pydantic.api.search import DATETIME_RFC339
 from stac_pydantic.shared import Link
 from stac_pydantic.utils import AutoValueEnum
+from stac_pydantic import Extensions
+from stac_pydantic import ItemProperties
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
@@ -142,7 +144,7 @@ class FieldsExtension(FieldsBase):
 
 class Collection(CollectionBase):
     """Collection model"""
-
+    stac_extensions: Optional[List[str]]
     links: Optional[List[Link]]
 
     class Config:
@@ -152,11 +154,20 @@ class Collection(CollectionBase):
         use_enum_values = True
         getter_dict = CollectionGetter
 
+class NAIPProperties(Extensions.eo, ItemProperties):
+    epsg: int = Field(..., alias="proj:epsg")
+    statename: str = Field(..., alias="naip:statename")
+    cell_id: int = Field(..., alias="naip:cell_id")
+    quadrant: str = Field(..., alias="naip:quadrant")
+    utm: int = Field(..., alias="naip:utm")
+    quad_location: int = Field(..., alias="naip:quad_location")
+
 
 class Item(ItemBase):
     """Item model"""
 
     geometry: Polygon
+    properties: NAIPProperties
     links: Optional[List[Link]]
 
     class Config:

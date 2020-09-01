@@ -64,7 +64,7 @@ class Collection(BaseModel):  # type:ignore
     @classmethod
     def get_database_model(cls, schema: schemas.Collection) -> dict:
         """Decompose pydantic model to data model"""
-        return schema.dict(exclude_none=True)
+        return schema.dict(exclude_none=True, exclude={"stac_extensions"})
 
     @classmethod
     def from_schema(cls, schema: schemas.Collection) -> "Collection":
