@@ -132,8 +132,6 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
                 count = collection_children.session.execute(count_query).scalar()
             token = self.pagination_client.get(token) if token else token
             page = get_page(collection_children, per_page=limit, page=(token or False))
-            if not page:
-                raise errors.NotFoundError(f"Row {id} does not exist")
             # Create dynamic attributes for each page
             page.next = (
                 self.pagination_client.insert(keyset=page.paging.bookmark_next)
