@@ -122,7 +122,7 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
                 self.reader_session.query(self.table)
                 .join(self.collection_table)
                 .filter(self.collection_table.id == id)
-                .order_by(self.table.datetime.desc())
+                .order_by(self.table.datetime.desc(), self.table.id)
             )
             count = None
             if config.settings.api_extension_is_enabled(config.ApiExtensions.context):
@@ -275,10 +275,11 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
                 getattr(self.table.get_field(sort.field), sort.direction.value)()
                 for sort in search_request.sortby
             ]
+            sort_fields.append(self.table.id)
             query = query.order_by(*sort_fields)
         else:
             # Default sort is date
-            query = query.order_by(self.table.datetime.desc())
+            query = query.order_by(self.table.datetime.desc(), self.table.id)
 
         # Ignore other parameters if ID is present
         if search_request.ids:
