@@ -277,8 +277,8 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
             sort_fields.append(self.table.id)
             query = query.order_by(*sort_fields)
         else:
-            # Default sort is date and id
-            query = query.order_by(self.table.datetime.desc(), self.table.id)
+            # Default sort is date
+            query = query.order_by(self.table.datetime.desc())
 
         # Ignore other parameters if ID is present
         if search_request.ids:
