@@ -1,10 +1,11 @@
 """FastAPI application."""
 import os
 
-os.environ['AWS_REQUEST_PAYER'] = 'requester'
-
 from stac_api.api import create_app
 from stac_api.config import ApiSettings
+
+os.environ["AWS_REQUEST_PAYER"] = "requester"
+
 
 settings = ApiSettings(
     stac_api_extensions=["context", "fields", "query", "sort", "transaction"],
@@ -26,7 +27,7 @@ settings = ApiSettings(
         "properties.naip:cell_id",
         "properties.naip:statename",
         "properties.naip:utm",
-        "properties.naip:quad_location"
-    }
+        "properties.naip:quad_location",
+    },
 )
 app = create_app(settings=settings)

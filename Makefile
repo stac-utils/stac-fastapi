@@ -4,6 +4,7 @@ APP_PORT ?= 8080
 EXTERNAL_APP_PORT ?= ${APP_PORT}
 run_docker = docker run -it --rm \
 				-p ${EXTERNAL_APP_PORT}:${APP_PORT} \
+                -v ~/.aws:/root/.aws \
 				-v $(shell pwd):/app \
 				--env APP_HOST=${APP_HOST} \
 				--env APP_PORT=${APP_PORT} \
