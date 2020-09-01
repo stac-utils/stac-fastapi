@@ -119,9 +119,9 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         """Read an item collection from the database"""
         try:
             collection_children = (
-                self.lookup_id(id, table=self.collection_table)
-                .first()
-                .children.order_by(database.Item.datetime.desc(), database.Item.id)
+                self.reader_session.query(self.table)
+                .filter(self.table.collection_id == id)
+                .order_by(self.table.datetime.desc())
             )
             count = None
             if config.settings.api_extension_is_enabled(config.ApiExtensions.context):
