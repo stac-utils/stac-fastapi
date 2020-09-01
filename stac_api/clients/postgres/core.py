@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 
 import sqlalchemy as sa
 from fastapi import Depends
+from sqlalchemy import func
 
 import geoalchemy2 as ga
 from sqlakeyset import get_page
@@ -118,13 +119,17 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         """Read an item collection from the database"""
         try:
             collection_children = (
-                self.lookup_id(id, table=self.collection_table)
-                .first()
-                .children.order_by(database.Item.datetime.desc(), database.Item.id)
+                self.reader_session.query(self.table)
+                .join(self.collection_table)
+                .filter(self.collection_table.id == id)
+                .order_by(self.table.datetime.desc(), self.table.id)
             )
             count = None
             if config.settings.api_extension_is_enabled(config.ApiExtensions.context):
-                count = collection_children.count()
+                count_query = collection_children.statement.with_only_columns(
+                    [func.count()]
+                ).order_by(None)
+                count = collection_children.session.execute(count_query).scalar()
             token = self.pagination_client.get(token) if token else token
             page = get_page(collection_children, per_page=limit, page=(token or False))
             # Create dynamic attributes for each page
@@ -255,13 +260,14 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         # Filter by collection
         count = None
         if search_request.collections:
-            collection_filter = sa.or_(
-                *[
-                    self.table.collection_id == col_id
-                    for col_id in search_request.collections
-                ]
+            query = query.join(self.collection_table).filter(
+                sa.or_(
+                    *[
+                        self.collection_table.id == col_id
+                        for col_id in search_request.collections
+                    ]
+                )
             )
-            query = query.filter(collection_filter)
 
         # Sort
         if search_request.sortby:
@@ -269,11 +275,10 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
                 getattr(self.table.get_field(sort.field), sort.direction.value)()
                 for sort in search_request.sortby
             ]
-            # Add id to end of sort to ensure unique keyset
             sort_fields.append(self.table.id)
             query = query.order_by(*sort_fields)
         else:
-            # Default sort is date and id
+            # Default sort is date
             query = query.order_by(self.table.datetime.desc(), self.table.id)
 
         # Ignore other parameters if ID is present
@@ -335,7 +340,10 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
 
             try:
                 if config.settings.api_extension_is_enabled(ApiExtensions.context):
-                    count = query.count()
+                    count_query = query.statement.with_only_columns(
+                        [func.count()]
+                    ).order_by(None)
+                    count = query.session.execute(count_query).scalar()
                 page = get_page(query, per_page=search_request.limit, page=token)
                 # Create dynamic attributes for each page
                 page.next = (
