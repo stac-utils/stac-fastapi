@@ -1,20 +1,22 @@
+"""Pagination token client."""
+
+import os
 from base64 import urlsafe_b64encode
 from dataclasses import dataclass
-import os
+from typing import Type
 
-from fastapi import Depends
-from sqlalchemy.orm import Session
-
-from .base_crud import BaseCrudClient
-from ..models import database
-
-from ..errors import DatabaseError
-from ..utils.dependencies import database_reader_factory, database_writer_factory
+from stac_api.clients.postgres.base import PostgresClient
+from stac_api.errors import DatabaseError
+from stac_api.models import database
 
 
 @dataclass
-class PaginationTokenClient(BaseCrudClient):
-    def insert(self, keyset: str, tries: int = 0) -> str:
+class PaginationTokenClient(PostgresClient):
+    """Pagination token specific CRUD operations"""
+
+    table: Type[database.PaginationToken] = database.PaginationToken
+
+    def insert(self, keyset: str, tries: int = 0) -> str:  # type:ignore
         """Insert a keyset into the database"""
         # uid has collision chance of 1e-7 percent
         uid = urlsafe_b64encode(os.urandom(6)).decode()
@@ -22,7 +24,7 @@ class PaginationTokenClient(BaseCrudClient):
             token = database.PaginationToken(id=uid, keyset=keyset)
             self.writer_session.add(token)
             self.commit()
-            return token.id
+            return uid
         except DatabaseError:
             # Try again if uid already exists in the database
             # TODO: Explicitely check for ConflictError (if insert fails for other reasons it should be raised)
@@ -36,12 +38,6 @@ class PaginationTokenClient(BaseCrudClient):
         return row.keyset
 
 
-def pagination_token_client_factory(
-    reader_session: Session = Depends(database_reader_factory),
-    writer_session: Session = Depends(database_writer_factory),
-) -> PaginationTokenClient:
-    return PaginationTokenClient(
-        reader_session=reader_session,
-        writer_session=writer_session,
-        table=database.PaginationToken,
-    )
+def pagination_token_client_factory() -> PaginationTokenClient:
+    """FastAPI dependency"""
+    return PaginationTokenClient()

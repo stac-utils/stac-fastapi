@@ -1,78 +1,50 @@
-from contextlib import contextmanager
 import json
 import os
-from starlette.config import environ
-from typing import Callable, ContextManager, Dict, List, Union
-from unittest.mock import Mock, MagicMock
-
-# This line would raise an error if we use it after 'settings' has been imported.
-environ["TESTING"] = "true"
-environ["DEBUG"] = "true"
+from typing import Callable, Dict, Generator
+from unittest.mock import PropertyMock, patch
 
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 from starlette.testclient import TestClient
 
-from stac_api.settings import settings
-from stac_api.app import app
-from stac_api.models import database, schemas
-from stac_api.clients.collection_crud import CollectionCrudClient
-from stac_api.clients.item_crud import ItemCrudClient
-from stac_api.clients.tokens import PaginationTokenClient
-from stac_api.errors import NotFoundError
+from stac_api.api import create_app
+from stac_api.clients.postgres.core import CoreCrudClient
+from stac_api.clients.postgres.transactions import TransactionsClient
+from stac_api.config import ApiSettings, inject_settings
+from stac_api.models.schemas import Collection
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
-def create_mock(client: Callable, mocked_method: str, error: Exception) -> MagicMock:
-    """Create a mock client which raises an exception"""
-    mock_client = MagicMock(client)
-    setattr(mock_client, mocked_method, Mock(side_effect=error))
-    return mock_client
+class TestSettings(ApiSettings):
+    class Config:
+        env_file = ".env.test"
 
 
-@contextmanager
-def create_test_client_with_error(
-    client: Union[ItemCrudClient, CollectionCrudClient],
-    mocked_method: str,
-    dependency: Callable,
-    error: Exception,
-) -> ContextManager[TestClient]:
-    """Inject a mock client into the test app"""
-    app.dependency_overrides[dependency] = lambda: create_mock(
-        client, mocked_method, error
-    )
-    with TestClient(app) as test_client:
-        yield test_client
-
-    app.dependency_overrides = {}
+settings = TestSettings(
+    stac_api_extensions=["context", "fields", "query", "sort", "transaction"],
+)
+inject_settings(settings)
 
 
-@pytest.fixture
-def app_client(load_test_data):
-    """
-    Make a client fixture available to test cases.
-    """
-    test_collection = load_test_data("test_collection.json")
-    with TestClient(app) as test_client:
-        # Create collection
-        test_client.post("/collections", json=test_collection)
-        yield test_client
-
-    # Cleanup test data
-    collections = test_client.get("/collections").json()
+@pytest.fixture(autouse=True)
+def cleanup(postgres_core: CoreCrudClient, postgres_transactions: TransactionsClient):
+    yield
+    collections = postgres_core.all_collections(request=MockStarletteRequest)
     for coll in collections:
-        collection_id = coll["id"]
-        if "test" in collection_id:
-            # Get collection items
-            item_collection = test_client.get(
-                f"/collections/{collection_id}/items", params={"limit": 500}
-            ).json()
-            for item in item_collection["features"]:
-                test_client.delete(f"/collections/{collection_id}/items/{item['id']}")
-            test_client.delete(f"/collections/{collection_id}")
+        if coll.id.split("-")[0] == "test":
+            # Delete the items
+            items = postgres_core.item_collection(
+                coll.id, limit=100, request=MockStarletteRequest
+            )
+            for feat in items.features:
+                postgres_transactions.delete_item(feat.id, request=MockStarletteRequest)
+
+            # Delete the collection
+            postgres_transactions.delete_collection(
+                coll.id, request=MockStarletteRequest
+            )
 
 
 @pytest.fixture
@@ -84,16 +56,12 @@ def load_test_data() -> Callable[[str], Dict]:
     return load_file
 
 
-def load_all_test_data(filter: str) -> List[Dict]:
-    return [
-        json.load(open(os.path.join(DATA_DIR, f)))
-        for f in os.listdir(DATA_DIR)
-        if filter in f
-    ]
+class MockStarletteRequest:
+    base_url = "http://test-server"
 
 
 @pytest.fixture
-def reader_connection() -> Session:
+def reader_connection() -> Generator[Session, None, None]:
     """Create a reader connection"""
     engine = create_engine(settings.reader_connection_string)
     db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
@@ -103,7 +71,7 @@ def reader_connection() -> Session:
 
 
 @pytest.fixture
-def writer_connection() -> Session:
+def writer_connection() -> Generator[Session, None, None]:
     """Create a writer connection"""
     engine = create_engine(settings.writer_connection_string)
     db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
@@ -113,70 +81,42 @@ def writer_connection() -> Session:
 
 
 @pytest.fixture
-def pagination_client(
-    reader_connection: Session, writer_connection: Session
-) -> PaginationTokenClient:
-    """Create a pagination client"""
-    return PaginationTokenClient(
-        reader_session=reader_connection,
-        writer_session=writer_connection,
-        table=database.PaginationToken,
-    )
+def postgres_core(reader_connection, writer_connection):
+    with patch(
+        "stac_api.clients.postgres.base.PostgresClient.writer_session",
+        new_callable=PropertyMock,
+    ) as mock_writer:
+        mock_writer.return_value = writer_connection
+        with patch(
+            "stac_api.clients.postgres.base.PostgresClient.reader_session",
+            new_callable=PropertyMock,
+        ) as mock_reader:
+            mock_reader.return_value = reader_connection
+            client = CoreCrudClient()
+            yield client
 
 
 @pytest.fixture
-def collection_crud_client(
-    reader_connection: Session,
-    writer_connection: Session,
-    pagination_client: PaginationTokenClient,
-) -> CollectionCrudClient:
-    """Create a collection client.  Clean up data after each test. """
-    client = CollectionCrudClient(
-        reader_session=reader_connection,
-        writer_session=writer_connection,
-        table=database.Collection,
-        pagination_client=pagination_client,
-    )
-    yield client
-
-    # Cleanup collections
-    for test_data in load_all_test_data("collection"):
-        try:
-            client.delete(test_data["id"])
-        except NotFoundError:
-            pass
+def postgres_transactions(reader_connection, writer_connection):
+    with patch(
+        "stac_api.clients.postgres.base.PostgresClient.writer_session",
+        new_callable=PropertyMock,
+    ) as mock_writer:
+        mock_writer.return_value = writer_connection
+        with patch(
+            "stac_api.clients.postgres.base.PostgresClient.reader_session",
+            new_callable=PropertyMock,
+        ) as mock_reader:
+            mock_reader.return_value = reader_connection
+            client = TransactionsClient()
+            yield client
 
 
 @pytest.fixture
-def item_crud_client(
-    reader_connection: Session,
-    writer_connection: Session,
-    collection_crud_client: CollectionCrudClient,
-    load_test_data,
-) -> ItemCrudClient:
-    """Create an item client.  Create a collection used for testing and clean up data after each test."""
-    # Create a test collection (foreignkey)
-    test_collection = schemas.Collection(**load_test_data("test_collection.json"))
-    collection_crud_client.create(test_collection)
+def app_client(load_test_data, postgres_transactions):
+    app = create_app(settings)
+    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    client = ItemCrudClient(
-        reader_session=reader_connection,
-        writer_session=writer_connection,
-        table=database.Item,
-        collection_crud=collection_crud_client,
-        pagination_client=pagination_client,
-    )
-    yield client
-
-    # Cleanup test items
-    for test_data in load_all_test_data("item"):
-        try:
-            client.delete(test_data["id"])
-        except NotFoundError:
-            pass
-
-    # Cleanup collection
-    try:
-        collection_crud_client.delete(test_collection.id)
-    except NotFoundError:
-        pass
+    with TestClient(app) as test_app:
+        yield test_app

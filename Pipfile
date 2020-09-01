@@ -13,12 +13,16 @@ sqlalchemy = "*"
 geoalchemy2 = "<0.8.0"
 sqlakeyset = "*"
 stac-pydantic = ">=1.1.3"
+pydantic = {extras=["dotenv"], version="*"}
+cogeo-mosaic = "==3.0a10"
+titiler = "==0.1a0"
 
 [dev-packages]
 pytest = "*"
 pytest-cov = "*"
 pytest-asyncio = "*"
 requests = "*"
+pre-commit = "*"
 
 [requires]
 python_version = "3.8"

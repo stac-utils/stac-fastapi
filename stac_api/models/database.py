@@ -1,17 +1,18 @@
-from datetime import datetime
+"""SQLAlchemy ORM models."""
+
 import json
+from datetime import datetime
 from typing import Optional
 
-import geoalchemy2 as ga
-from shapely.geometry import shape
 import sqlalchemy as sa
-from sqlalchemy.ext.declarative import declarative_base
+from shapely.geometry import shape
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declarative_base
+
+import geoalchemy2 as ga
+from stac_api import config
+from stac_api.models import schemas
 from stac_pydantic.shared import DATETIME_RFC339
-
-from . import schemas
-from ..settings import settings
-
 
 BaseModel = declarative_base()
 
@@ -38,7 +39,11 @@ class GeojsonGeometry(ga.Geometry):
         return process
 
 
-class Collection(BaseModel):
+class Collection(BaseModel):  # type:ignore
+    """
+    Collection orm model.
+    """
+
     __tablename__ = "collections"
     __table_args__ = {"schema": "data"}
 
@@ -56,14 +61,20 @@ class Collection(BaseModel):
 
     @classmethod
     def get_database_model(cls, schema: schemas.Collection) -> dict:
+        """Decompose pydantic model to data model"""
         return schema.dict(exclude_none=True)
 
     @classmethod
     def from_schema(cls, schema: schemas.Collection) -> "Collection":
+        """Create orm model from pydantic model"""
         return cls(**cls.get_database_model(schema))
 
 
-class Item(BaseModel):
+class Item(BaseModel):  # type:ignore
+    """
+    Item orm model.
+    """
+
     __tablename__ = "items"
     __table_args__ = {"schema": "data"}
 
@@ -83,7 +94,7 @@ class Item(BaseModel):
     def get_database_model(cls, schema: schemas.Item) -> dict:
         """Decompose pydantic model to data model"""
         indexed_fields = {}
-        for field in settings.indexed_fields:
+        for field in config.settings.indexed_fields:
             # Use getattr to accommodate extension namespaces
             field_value = getattr(schema.properties, field)
             if field == "datetime":
@@ -91,7 +102,7 @@ class Item(BaseModel):
             indexed_fields[field.split(":")[-1]] = field_value
 
         # Exclude indexed fields from the properties jsonb field
-        properties = schema.properties.dict(exclude=set(settings.indexed_fields))
+        properties = schema.properties.dict(exclude=set(config.settings.indexed_fields))
         now = datetime.utcnow().strftime(DATETIME_RFC339)
         if "created" not in properties:
             properties["created"] = now
@@ -105,13 +116,15 @@ class Item(BaseModel):
             **schema.dict(
                 exclude_none=True,
                 exclude=set(
-                    settings.forbidden_fields | {"geometry", "properties", "collection"}
+                    config.settings.forbidden_fields
+                    | {"geometry", "properties", "collection"}
                 ),
             )
         )
 
     @classmethod
     def from_schema(cls, schema: schemas.Item) -> "Item":
+        """Create orm model from pydantic model"""
         return cls(**cls.get_database_model(schema))
 
     @classmethod
@@ -126,7 +139,11 @@ class Item(BaseModel):
             )
 
 
-class PaginationToken(BaseModel):
+class PaginationToken(BaseModel):  # type:ignore
+    """
+    Pagination orm model.
+    """
+
     __tablename__ = "tokens"
     __table_args__ = {"schema": "data"}
 

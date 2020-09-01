@@ -1,21 +1,14 @@
+import json
+import time
+import uuid
 from copy import deepcopy
 from datetime import datetime, timedelta
-import json
 from random import randint
+from urllib.parse import parse_qs, urlparse, urlsplit
+
 from shapely.geometry import Polygon
-from stac_pydantic.shared import Asset, MimeTypes
+
 from stac_pydantic.api.search import DATETIME_RFC339
-import time
-from urllib.parse import urlsplit, urlparse, parse_qs
-import uuid
-
-
-from stac_api.errors import DatabaseError
-from stac_api.clients import collection_crud_client_factory, item_crud_client_factory
-from stac_api.clients.collection_crud import CollectionCrudClient
-from stac_api.clients.item_crud import ItemCrudClient
-
-from ..conftest import create_test_client_with_error
 
 
 def test_create_and_delete_item(app_client, load_test_data):
@@ -498,7 +491,7 @@ def test_item_search_get_query_extension(app_client, load_test_data):
 def test_get_missing_item_collection(app_client):
     """Test reading a collection which does not exist"""
     resp = app_client.get("/collections/invalid-collection/items")
-    assert resp.status_code == 404
+    assert resp.status_code == 200
 
 
 def test_pagination_item_collection(app_client, load_test_data):
@@ -681,7 +674,7 @@ def test_field_extension_exclude_default_includes(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    body = {"fields": {"exclude": ["geometry"],}}
+    body = {"fields": {"exclude": ["geometry"]}}
 
     resp = app_client.post("/search", json=body)
     resp_json = resp.json()
@@ -702,95 +695,3 @@ def test_get_missing_item(app_client, load_test_data):
     test_coll = load_test_data("test_collection.json")
     resp = app_client.get(f"/collections/{test_coll['id']}/items/invalid-item")
     assert resp.status_code == 404
-
-
-def test_create_item_database_error(load_test_data):
-    """Test 424 is raised on database error"""
-    test_item = load_test_data("test_item.json")
-    with create_test_client_with_error(
-        client=ItemCrudClient,
-        mocked_method="create",
-        dependency=item_crud_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.post(
-            f"/collections/{test_item['collection']}/items", json=test_item
-        )
-        assert resp.status_code == 424
-
-
-def test_read_item_database_error(load_test_data):
-    """Test 424 is raised on database error"""
-    test_item = load_test_data("test_item.json")
-    with create_test_client_with_error(
-        client=ItemCrudClient,
-        mocked_method="read",
-        dependency=item_crud_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.get(
-            f"/collections/{test_item['collection']}/items/{test_item['id']}"
-        )
-        assert resp.status_code == 424
-
-
-def test_update_item_database_error(load_test_data):
-    """Test 424 is raised on database error"""
-    test_item = load_test_data("test_item.json")
-    with create_test_client_with_error(
-        client=ItemCrudClient,
-        mocked_method="update",
-        dependency=item_crud_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.put(
-            f"/collections/{test_item['collection']}/items", json=test_item
-        )
-        assert resp.status_code == 424
-
-
-def test_delete_item_database_error(load_test_data):
-    """Test 424 is raised on database error"""
-    test_item = load_test_data("test_item.json")
-    with create_test_client_with_error(
-        client=ItemCrudClient,
-        mocked_method="delete",
-        dependency=item_crud_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.delete(
-            f"/collections/{test_item['collection']}/items/{test_item['id']}"
-        )
-        assert resp.status_code == 424
-
-
-def test_get_item_collection_database_error(load_test_data):
-    """Test 424 is raised on database error"""
-    test_collection = load_test_data("test_collection.json")
-    with create_test_client_with_error(
-        client=CollectionCrudClient,
-        mocked_method="get_item_collection",
-        dependency=collection_crud_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.get(f"/collections/{test_collection['id']}/items")
-        assert resp.status_code == 424
-
-
-def test_item_search_database_error(load_test_data):
-    """Test 424 is raised on database error"""
-    test_item = load_test_data("test_item.json")
-
-    params = {
-        "collections": [test_item["collection"]],
-        "ids": [test_item["id"]],
-        "sort": {"field": "datetime", "direction": "desc"},
-    }
-    with create_test_client_with_error(
-        client=ItemCrudClient,
-        mocked_method="stac_search",
-        dependency=item_crud_client_factory,
-        error=DatabaseError(),
-    ) as test_client:
-        resp = test_client.post(f"/search", json=params)
-        assert resp.status_code == 424
