@@ -7,13 +7,7 @@ run_docker = docker run -it --rm \
 				-v $(shell pwd):/app \
 				--env APP_HOST=${APP_HOST} \
 				--env APP_PORT=${APP_PORT} \
-				--env POSTGRES_USER=username \
-				--env POSTGRES_PASS=password \
-				--env POSTGRES_DBNAME=postgis \
-				--env POSTGRES_HOST_READER=host.docker.internal \
-				--env POSTGRES_HOST_WRITER=host.docker.internal \
-				--env POSTGRES_PORT=5432 \
-				--env ENVIRONMENT=development \
+				--env-file .env.example \
 				arturo-ai/stac-api:latest
 
 .PHONY: image

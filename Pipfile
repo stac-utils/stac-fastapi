@@ -5,6 +5,7 @@ verify_ssl = "true"
 
 [packages]
 uvicorn = ">=0.11.7"
+gunicorn = "*"
 fastapi = {extras = ["all"],version = "*"}
 alembic = "*"
 psycopg2-binary = "*"
@@ -15,7 +16,7 @@ sqlakeyset = "*"
 stac-pydantic = ">=1.1.3"
 pydantic = {extras=["dotenv"], version="*"}
 cogeo-mosaic = "==3.0a10"
-titiler = "==0.1a0"
+titiler = "==0.1a2"
 
 [dev-packages]
 pytest = "*"
