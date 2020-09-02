@@ -5,6 +5,7 @@ verify_ssl = "true"
 
 [packages]
 uvicorn = ">=0.11.7"
+gunicorn = "*"
 fastapi = {extras = ["all"],version = "*"}
 alembic = "*"
 psycopg2-binary = "*"
