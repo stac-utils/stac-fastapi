@@ -138,7 +138,8 @@ class TileLinks:
         """Create tiles link"""
         return OGCTileLink(
             href=urljoin(
-                self.base_url, f"/tiles/{{z}}/{{x}}/{{y}}.png?url={self.item_uri}",
+                self.base_url,
+                f"/titiler/tiles/{{z}}/{{x}}/{{y}}.png?url={self.item_uri}",
             ),
             rel=Relations.item,
             title="tiles",
@@ -149,7 +150,7 @@ class TileLinks:
     def viewer(self) -> OGCTileLink:
         """Create viewer link"""
         return OGCTileLink(
-            href=urljoin(self.base_url, f"/viewer?url={self.item_uri}"),
+            href=urljoin(self.base_url, f"/titiler/viewer?url={self.item_uri}"),
             rel=Relations.alternate,
             type=MimeTypes.html,
             title="viewer",
@@ -158,15 +159,18 @@ class TileLinks:
     def tilejson(self) -> OGCTileLink:
         """Create tilejson link"""
         return OGCTileLink(
-            href=urljoin(self.base_url, f"/tilejson.json?url={self.item_uri}"),
+            href=urljoin(self.base_url, f"/titiler/tilejson.json?url={self.item_uri}"),
             rel=Relations.alternate,
             type=MimeTypes.json,
             title="tilejson",
         )
 
     def wmts(self) -> OGCTileLink:
+        """Create wmts capabilities link"""
         return OGCTileLink(
-            href=urljoin(self.base_url, f"/WMTSCapabilities.xml?url={self.item_uri}"),
+            href=urljoin(
+                self.base_url, f"/titiler/WMTSCapabilities.xml?url={self.item_uri}"
+            ),
             rel=Relations.alternate,
             type=MimeTypes.xml,
             title="WMTS Capabilities",

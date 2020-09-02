@@ -17,31 +17,19 @@ from stac_api.api.models import (
 )
 from stac_api.api.routes import create_endpoint_from_model, create_endpoint_with_depends
 from stac_api.clients.base import BaseCoreClient, BaseTransactionsClient
-from stac_api.clients.tiles.ogc import TilesClient
 from stac_api.config import ApiSettings
-from stac_api.models import ogc, schemas
+from stac_api.models import schemas
 from stac_pydantic import ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 
 
-def create_tiles_router(client: TilesClient) -> APIRouter:
+def create_tiles_router() -> APIRouter:
     """Create API router with OGC tiles endpoints"""
     from titiler.endpoints.stac import STACTiler
 
     template_dir = pkg_resources.resource_filename("titiler", "templates")
     templates = Jinja2Templates(directory=template_dir)
 
-    router = APIRouter()
-    router.add_api_route(
-        name="Get OGC Tiles Resource",
-        path="/collections/{collectionId}/items/{itemId}/tiles",
-        response_model=ogc.TileSetResource,
-        response_model_exclude_none=True,
-        response_model_exclude_unset=True,
-        methods=["GET"],
-        endpoint=create_endpoint_with_depends(client.get_item_tiles, ItemUri),
-        tags=["OGC Tiles"],
-    )
     titiler_router = STACTiler().router
 
     @titiler_router.get("/viewer", response_class=HTMLResponse)
@@ -57,9 +45,8 @@ def create_tiles_router(client: TilesClient) -> APIRouter:
             media_type="text/html",
         )
 
-    router.include_router(titiler_router, tags=["Titiler"])
     # TODO: add titiler exception handlers
-    return router
+    return titiler_router
 
 
 def create_core_router(client: BaseCoreClient, settings: ApiSettings) -> APIRouter:
