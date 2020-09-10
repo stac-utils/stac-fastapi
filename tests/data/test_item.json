@@ -1,6 +1,7 @@
 {
 "type": "Feature",
 "id": "test-item",
+"stac_extensions": ["eo", "view"],
 "geometry": {
 "coordinates": [
 [
