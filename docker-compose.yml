@@ -14,8 +14,8 @@ services:
       - POSTGRES_USER=username
       - POSTGRES_PASS=password
       - POSTGRES_DBNAME=postgis
-      - POSTGRES_HOST_READER=host.docker.internal
-      - POSTGRES_HOST_WRITER=host.docker.internal
+      - POSTGRES_HOST_READER=172.17.0.1
+      - POSTGRES_HOST_WRITER=172.17.0.1
       - POSTGRES_PORT=5432
     ports:
       - "8081:8081"
@@ -43,7 +43,7 @@ services:
       - POSTGRES_USER=username
       - POSTGRES_PASS=password
       - POSTGRES_DBNAME=postgis
-      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_HOST=172.17.0.1
       - POSTGRES_PORT=5432
     command: >
       bash -c "sleep 10 && alembic upgrade head && python scripts/ingest_joplin.py"
