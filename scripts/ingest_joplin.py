@@ -19,6 +19,7 @@ def ingest_joplin_data():
     r = requests.get(f"https://{bucket}.s3.amazonaws.com/joplin/index.geojson")
     index = r.json()
     for feat in index["features"]:
+        del feat["stac_extensions"]
         r = requests.post(
             urljoin(app_host, f"/collections/{collection['id']}/items"), json=feat
         )

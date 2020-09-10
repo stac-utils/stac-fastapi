@@ -31,8 +31,8 @@
 "properties": {
 "datetime": "2020-02-12T12:30:22Z",
 "landsat:scene_id": "LC82081612020043LGN00",
-"eo:row": "161",
-"eo:gsd": 15,
+"landsat:row": "161",
+"gsd": 15,
 "eo:bands": [
 {
 "gsd": 30,
@@ -113,17 +113,17 @@
 }
 ],
 "landsat:revision": "00",
-"eo:sun_azimuth": -148.83296771,
-"eo:instrument": "OLI_TIRS",
+"view:sun_azimuth": -148.83296771,
+"instrument": "OLI_TIRS",
 "landsat:product_id": "LC08_L1GT_208161_20200212_20200212_01_RT",
 "eo:cloud_cover": -1,
 "landsat:tier": "RT",
 "landsat:processing_level": "L1GT",
-"eo:column": "208",
-"eo:platform": "landsat-8",
+"landsat:column": "208",
+"platform": "landsat-8",
 "proj:epsg": 32756,
-"eo:sun_elevation": -37.30791534,
-"eo:off_nadir": 0,
+"view:sun_elevation": -37.30791534,
+"view:off_nadir": 0,
 "height": 2500,
 "width": 2500
 },

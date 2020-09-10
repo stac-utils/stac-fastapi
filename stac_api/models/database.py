@@ -104,7 +104,7 @@ class Item(BaseModel):  # type:ignore
         # Exclude indexed fields from the properties jsonb field
         properties = schema.properties.dict(exclude=set(config.settings.indexed_fields))
         now = datetime.utcnow().strftime(DATETIME_RFC339)
-        if "created" not in properties:
+        if not properties["created"]:
             properties["created"] = now
         properties["updated"] = now
 

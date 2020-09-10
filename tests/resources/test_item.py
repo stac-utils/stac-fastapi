@@ -64,12 +64,13 @@ def test_update_item_already_exists(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    test_item["properties"]["eo:gsd"] = 16
+    assert test_item["properties"]["gsd"] != 16
+    test_item["properties"]["gsd"] = 16
     resp = app_client.put(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
     updated_item = resp.json()
-    assert updated_item["properties"]["eo:gsd"] == 16
+    assert updated_item["properties"]["gsd"] == 16
 
 
 def test_update_new_item(app_client, load_test_data):
@@ -615,10 +616,10 @@ def test_field_extension_get(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    params = {"fields": "+properties.proj:epsg,+properties.eo:gsd"}
+    params = {"fields": "+properties.proj:epsg,+properties.gsd"}
     resp = app_client.get("/search", params=params)
     feat_properties = resp.json()["features"][0]["properties"]
-    assert not set(feat_properties) - {"proj:epsg", "eo:gsd", "datetime"}
+    assert not set(feat_properties) - {"proj:epsg", "gsd", "datetime"}
 
 
 def test_field_extension_post(app_client, load_test_data):
