@@ -35,6 +35,7 @@ def upgrade():
         sa.Column("version", sa.VARCHAR(300)),
         sa.Column("license", sa.VARCHAR(300), nullable=False),
         sa.Column("providers", JSONB),
+        sa.Column("summaries", JSONB, nullable=True),
         sa.Column("extent", JSONB),
         sa.Column("links", JSONB, nullable=True),
         schema="data",
