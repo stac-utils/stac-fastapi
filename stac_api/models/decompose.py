@@ -63,6 +63,7 @@ class ItemGetter(GetterDict):
             item_links += resolve_links(obj.links, obj.base_url)
         db_model = obj.__class__(
             id=obj.id,
+            stac_version=obj.stac_version,
             geometry=self.decode_geom(obj.geometry),
             bbox=obj.bbox,
             properties=properties,
