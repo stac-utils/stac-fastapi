@@ -56,6 +56,7 @@ class Collection(BaseModel):  # type:ignore
     version = sa.Column(sa.VARCHAR(300))
     license = sa.Column(sa.VARCHAR(300), nullable=False)
     providers = sa.Column(JSONB)
+    summaries = sa.Column(JSONB, nullable=True)
     extent = sa.Column(JSONB)
     links = sa.Column(JSONB)
     children = sa.orm.relationship("Item", lazy="dynamic")
