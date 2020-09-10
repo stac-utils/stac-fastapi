@@ -90,8 +90,11 @@ class CollectionGetter(GetterDict):
         # Resolve existing links
         if obj.links:
             collection_links += resolve_links(obj.links, obj.base_url)
+        # TODO: Fix bug in stac-pydantic (collection root validator) that requires coercing to empty list
+        stac_extensions = obj.stac_extensions or []
         db_model = obj.__class__(
             id=obj.id,
+            stac_extensions=stac_extensions,
             stac_version=obj.stac_version,
             title=obj.title,
             description=obj.description,
