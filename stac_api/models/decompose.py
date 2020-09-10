@@ -70,6 +70,7 @@ class ItemGetter(GetterDict):
             collection_id=obj.collection_id,
             datetime=obj.datetime,
             links=item_links,
+            stac_extensions=obj.stac_extensions,
         )
         db_model.type = "Feature"
         db_model.collection = db_model.collection_id
