@@ -26,7 +26,7 @@ settings = ApiSettings(
         "properties.naip:quadrant",
         "properties.naip:cell_id",
         "properties.naip:statename",
-        "properties.naip:utm",
+        "properties.naip:utm_zone",
         "properties.naip:quad_location",
     },
 )
