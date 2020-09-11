@@ -46,10 +46,10 @@ class ApiSettings(BaseSettings):
     add_ons: Optional[List[AddOns]] = None
 
     # Fields which are defined by STAC but not included in the database model
-    forbidden_fields: Set[str] = {"type", "stac_version"}
+    forbidden_fields: Set[str] = {"type"}
 
     # Fields which are item properties but indexed as distinct fields in the database model
-    indexed_fields: Set[str] = {"datetime"}
+    indexed_fields: Set[str] = {"datetime", "gsd"}
 
     # Fields which are always included in the response (fields extension)
     default_includes: Set[str] = {
