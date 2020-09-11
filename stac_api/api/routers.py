@@ -30,7 +30,13 @@ def create_tiles_router() -> APIRouter:
     template_dir = pkg_resources.resource_filename("titiler", "templates")
     templates = Jinja2Templates(directory=template_dir)
 
-    titiler_router = STACTiler().router
+    titiler_router = STACTiler(
+        reader_options={
+            "include_asset_types": {
+                "image/tiff; application=geotiff; profile=cloud-optimized"
+            }
+        }
+    ).router
 
     @titiler_router.get("/viewer", response_class=HTMLResponse)
     def stac_demo(request: Request):
