@@ -72,6 +72,6 @@ def downgrade():
     """downgrade to previous revision"""
     op.execute("DROP TABLE data.items")
     op.execute("DROP TABLE data.collections")
-    op.execute("DROP TABLE data.paging_tokens")
+    op.execute("DROP TABLE data.tokens")
     op.execute("DROP SCHEMA data")
-    op.execute("DROP EXTENSION IF EXISTS postgis")
+    # op.execute("DROP EXTENSION IF EXISTS postgis")
