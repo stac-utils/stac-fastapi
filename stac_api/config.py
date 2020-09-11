@@ -49,7 +49,7 @@ class ApiSettings(BaseSettings):
     forbidden_fields: Set[str] = {"type"}
 
     # Fields which are item properties but indexed as distinct fields in the database model
-    indexed_fields: Set[str] = {"datetime"}
+    indexed_fields: Set[str] = {"datetime", "gsd"}
 
     # Fields which are always included in the response (fields extension)
     default_includes: Set[str] = {

@@ -60,14 +60,8 @@ class Queryables(str, AutoValueEnum):
     # TODO: Let the user define these in a config file
     """
 
-    orientation = auto()
     gsd = auto()
     epsg = "proj:epsg"
-    height = auto()
-    width = auto()
-    minzoom = "cog:minzoom"
-    maxzoom = "cog:maxzoom"
-    dtype = "cog:dtype"
 
 
 @dataclass
@@ -79,14 +73,8 @@ class QueryableTypes:
     # TODO: There is a much better way of defining this field <> type mapping than two enums with same keys
     """
 
-    orientation = sa.String
     gsd = sa.Float
     epsg = sa.Integer
-    height = sa.Integer
-    width = sa.Integer
-    minzoom = sa.Integer
-    maxzoom = sa.Integer
-    dtype = sa.String
 
 
 class FieldsExtension(FieldsBase):

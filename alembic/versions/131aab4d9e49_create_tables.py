@@ -49,6 +49,7 @@ def upgrade():
         sa.Column("stac_extensions", sa.ARRAY(sa.VARCHAR(300)), nullable=True),
         sa.Column("geometry", Geometry("POLYGON", srid=4326, spatial_index=True)),
         sa.Column("bbox", sa.ARRAY(sa.NUMERIC), nullable=False),
+        sa.Column("gsd", sa.REAL, nullable=True, index=True),
         sa.Column("properties", JSONB),
         sa.Column("assets", JSONB),
         sa.Column("collection_id", sa.VARCHAR(1024), nullable=False, index=True),

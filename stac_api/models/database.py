@@ -85,6 +85,7 @@ class Item(BaseModel):  # type:ignore
     stac_extensions = sa.Column(sa.ARRAY(sa.VARCHAR(300)), nullable=True)
     geometry = sa.Column(GeojsonGeometry("POLYGON", srid=4326, spatial_index=True))
     bbox = sa.Column(sa.ARRAY(sa.NUMERIC), nullable=False)
+    gsd = sa.Column(sa.REAL, nullable=False)
     properties = sa.Column(JSONB)
     assets = sa.Column(JSONB)
     collection_id = sa.Column(

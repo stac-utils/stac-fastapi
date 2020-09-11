@@ -20,7 +20,7 @@ settings = ApiSettings(
         "properties.datetime",
         "properties.updated",
         "properties.created",
-        "properties.eo:gsd",
+        "properties.gsd",
         "properties.eo:bands",
         "properties.proj:epsg",
         "properties.naip:quadrant",
