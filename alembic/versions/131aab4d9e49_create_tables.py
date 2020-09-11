@@ -45,6 +45,7 @@ def upgrade():
     op.create_table(
         "items",
         sa.Column("id", sa.VARCHAR(1024), nullable=False, primary_key=True),
+        sa.Column("stac_version", sa.VARCHAR(300)),
         sa.Column("stac_extensions", sa.ARRAY(sa.VARCHAR(300)), nullable=True),
         sa.Column("geometry", Geometry("POLYGON", srid=4326, spatial_index=True)),
         sa.Column("bbox", sa.ARRAY(sa.NUMERIC), nullable=False),
@@ -71,6 +72,6 @@ def downgrade():
     """downgrade to previous revision"""
     op.execute("DROP TABLE data.items")
     op.execute("DROP TABLE data.collections")
-    op.execute("DROP TABLE data.paging_tokens")
+    op.execute("DROP TABLE data.tokens")
     op.execute("DROP SCHEMA data")
     op.execute("DROP EXTENSION IF EXISTS postgis")
