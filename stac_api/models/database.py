@@ -49,12 +49,14 @@ class Collection(BaseModel):  # type:ignore
 
     id = sa.Column(sa.VARCHAR(1024), nullable=False, primary_key=True)
     stac_version = sa.Column(sa.VARCHAR(300))
+    stac_extensions = sa.Column(sa.ARRAY(sa.VARCHAR(300)), nullable=True)
     title = sa.Column(sa.VARCHAR(1024))
     description = sa.Column(sa.VARCHAR(1024), nullable=False)
     keywords = sa.Column(sa.VARCHAR(300))
     version = sa.Column(sa.VARCHAR(300))
     license = sa.Column(sa.VARCHAR(300), nullable=False)
     providers = sa.Column(JSONB)
+    summaries = sa.Column(JSONB, nullable=True)
     extent = sa.Column(JSONB)
     links = sa.Column(JSONB)
     children = sa.orm.relationship("Item", lazy="dynamic")
@@ -79,6 +81,7 @@ class Item(BaseModel):  # type:ignore
     __table_args__ = {"schema": "data"}
 
     id = sa.Column(sa.VARCHAR(1024), nullable=False, primary_key=True)
+    stac_extensions = sa.Column(sa.ARRAY(sa.VARCHAR(300)), nullable=True)
     geometry = sa.Column(GeojsonGeometry("POLYGON", srid=4326, spatial_index=True))
     bbox = sa.Column(sa.ARRAY(sa.NUMERIC), nullable=False)
     properties = sa.Column(JSONB)
@@ -104,7 +107,7 @@ class Item(BaseModel):  # type:ignore
         # Exclude indexed fields from the properties jsonb field
         properties = schema.properties.dict(exclude=set(config.settings.indexed_fields))
         now = datetime.utcnow().strftime(DATETIME_RFC339)
-        if "created" not in properties:
+        if not properties["created"]:
             properties["created"] = now
         properties["updated"] = now
 
