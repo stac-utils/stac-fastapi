@@ -17,7 +17,7 @@ from stac_api.api.models import (
 )
 from stac_api.api.routes import create_endpoint_from_model, create_endpoint_with_depends
 from stac_api.clients.base import BaseCoreClient, BaseTransactionsClient
-from stac_api.config import ApiSettings
+from stac_api.config import ApiExtensions, ApiSettings
 from stac_api.models import schemas
 from stac_pydantic import ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
@@ -83,7 +83,9 @@ def create_core_router(client: BaseCoreClient, settings: ApiSettings) -> APIRout
     router.add_api_route(
         name="Search",
         path="/search",
-        response_model=ItemCollection,
+        response_model=None
+        if settings.api_extension_is_enabled(ApiExtensions.fields)
+        else ItemCollection,
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["POST"],
@@ -92,7 +94,9 @@ def create_core_router(client: BaseCoreClient, settings: ApiSettings) -> APIRout
     router.add_api_route(
         name="Search",
         path="/search",
-        response_model=ItemCollection,
+        response_model=None
+        if settings.api_extension_is_enabled(ApiExtensions.fields)
+        else ItemCollection,
         response_model_exclude_unset=True,
         response_model_exclude_none=True,
         methods=["GET"],

@@ -58,7 +58,7 @@ def create_app(settings: ApiSettings) -> FastAPI:
         )
         app.include_router(create_tiles_router(), prefix="/titiler", tags=["Titiler"])
 
-    config_openapi(app)
+    config_openapi(app, settings)
 
     @app.on_event("startup")
     async def on_startup():
