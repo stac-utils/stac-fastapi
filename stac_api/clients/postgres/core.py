@@ -251,10 +251,10 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         for link in resp.links:
             if link.rel == Relations.next or link.rel == Relations.previous:
                 query_params = dict(kwargs["request"].query_params)
-                if resp.links[0].body:
-                    query_params.update(resp.links[0].body)
+                if link.body and link.merge:
+                    query_params.update(link.body)
                 link.method = "GET"
-                link.href = f"{resp.links[0].href}?{urlencode(query_params)}"
+                link.href = f"{link.href}?{urlencode(query_params)}"
                 link.body = None
                 link.merge = False
                 page_links.append(link)
