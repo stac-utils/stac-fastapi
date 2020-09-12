@@ -415,7 +415,11 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
             xvals += [item_model.bbox[0], item_model.bbox[2]]
             yvals += [item_model.bbox[1], item_model.bbox[3]]
             response_features.append(item_model.to_dict(**filter_kwargs))
-        bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
+
+        try:
+            bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
+        except ValueError:
+            bbox = None
 
         context_obj = None
         if config.settings.api_extension_is_enabled(ApiExtensions.context):
