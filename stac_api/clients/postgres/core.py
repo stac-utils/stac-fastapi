@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Type, Union
-from urllib.parse import urljoin
+from urllib.parse import urlencode, urljoin
 
 import sqlalchemy as sa
 from fastapi import Depends
@@ -244,7 +244,24 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
 
         # Do the request
         search_request = schemas.STACSearch(**base_args)
-        return self.post_search(search_request, request=kwargs["request"])
+        resp = self.post_search(search_request, request=kwargs["request"])
+
+        # Pagination
+        page_links = []
+        for link in resp.links:
+            if link.rel == Relations.next or link.rel == Relations.previous:
+                query_params = dict(kwargs["request"].query_params)
+                if resp.links[0].body:
+                    query_params.update(resp.links[0].body)
+                link.method = "GET"
+                link.href = f"{resp.links[0].href}?{urlencode(query_params)}"
+                link.body = None
+                link.merge = False
+                page_links.append(link)
+            else:
+                page_links.append(link)
+        resp.links = page_links
+        return resp
 
     def post_search(
         self, search_request: schemas.STACSearch, **kwargs
