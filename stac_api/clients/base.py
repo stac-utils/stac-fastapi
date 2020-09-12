@@ -2,7 +2,7 @@
 import abc
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from stac_api.models import schemas
 from stac_pydantic import ItemCollection
@@ -67,7 +67,7 @@ class BaseCoreClient(abc.ABC):
     @abc.abstractmethod
     def post_search(
         self, search_request: schemas.STACSearch, **kwargs
-    ) -> ItemCollection:
+    ) -> Dict[str, Any]:
         """search for items"""
         ...
 
@@ -84,7 +84,7 @@ class BaseCoreClient(abc.ABC):
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
         **kwargs
-    ) -> ItemCollection:
+    ) -> Dict[str, Any]:
         """GET search catalog"""
         ...
 

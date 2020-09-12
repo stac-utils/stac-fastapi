@@ -3,7 +3,7 @@ import json
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union
 from urllib.parse import urlencode, urljoin
 
 import sqlalchemy as sa
@@ -205,7 +205,7 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
         **kwargs,
-    ) -> ItemCollection:
+    ) -> Dict[str, Any]:
         """GET search catalog"""
         # Parse request parameters
         base_args = {
@@ -248,8 +248,8 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
 
         # Pagination
         page_links = []
-        for link in resp.links:
-            if link.rel == Relations.next or link.rel == Relations.previous:
+        for link in resp["links"]:
+            if link == Relations.next or link.rel == Relations.previous:
                 query_params = dict(kwargs["request"].query_params)
                 if link.body and link.merge:
                     query_params.update(link.body)
@@ -260,12 +260,12 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
                 page_links.append(link)
             else:
                 page_links.append(link)
-        resp.links = page_links
+        resp["links"] = page_links
         return resp
 
     def post_search(
         self, search_request: schemas.STACSearch, **kwargs
-    ) -> ItemCollection:
+    ) -> Dict[str, Any]:
         """POST search catalog"""
         token = (
             self.pagination_client.get(search_request.token)
@@ -407,32 +407,15 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         if config.settings.api_extension_is_enabled(ApiExtensions.fields):
             filter_kwargs = search_request.field.filter_fields
 
+        xvals = []
+        yvals = []
         for item in page:
             item.base_url = str(kwargs["request"].base_url)
-            response_features.append(
-                schemas.Item.from_orm(item).to_dict(**filter_kwargs)
-            )
-
-        # Geoalchemy doesn't have a good way of calculating extent of many features, so we'll calculate it outside the db
-        bbox = None
-        if len(response_features) > 0:
-            xvals = [
-                item
-                for sublist in [
-                    [float(item["bbox"][0]), float(item["bbox"][2])]
-                    for item in response_features
-                ]
-                for item in sublist
-            ]
-            yvals = [
-                item
-                for sublist in [
-                    [float(item["bbox"][1]), float(item["bbox"][3])]
-                    for item in response_features
-                ]
-                for item in sublist
-            ]
-            bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
+            item_model = schemas.Item.from_orm(item)
+            xvals += [item_model.bbox[0], item_model.bbox[2]]
+            yvals += [item_model.bbox[1], item_model.bbox[3]]
+            response_features.append(item_model.to_dict(**filter_kwargs))
+        bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
 
         context_obj = None
         if config.settings.api_extension_is_enabled(ApiExtensions.context):
@@ -442,13 +425,13 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
                 "matched": count,
             }
 
-        return ItemCollection(
-            type="FeatureCollection",
-            context=context_obj,
-            features=response_features,
-            links=links,
-            bbox=bbox,
-        )
+        return {
+            "type": "FeatureCollection",
+            "context": context_obj,
+            "features": response_features,
+            "links": links,
+            "bbox": bbox,
+        }
 
 
 def core_crud_client_factory(

@@ -134,9 +134,7 @@ class FieldsExtension(FieldsBase):
             )
         return {
             "include": self._get_field_dict(include),
-            "exclude": self._get_field_dict(
-                self.exclude - config.settings.default_includes
-            ),
+            "exclude": self._get_field_dict(self.exclude),
         }
 
 
