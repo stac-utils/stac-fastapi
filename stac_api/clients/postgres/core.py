@@ -249,7 +249,7 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         # Pagination
         page_links = []
         for link in resp["links"]:
-            if link == Relations.next or link.rel == Relations.previous:
+            if link.rel == Relations.next or link.rel == Relations.previous:
                 query_params = dict(kwargs["request"].query_params)
                 if link.body and link.merge:
                     query_params.update(link.body)
