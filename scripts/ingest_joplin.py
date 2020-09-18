@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 import requests
 
 bucket = "arturo-stac-api-test-data"
-app_host = "http://172.17.0.1:8081"
+app_host = "http://0.0.0.0:8081"
 
 
 def ingest_joplin_data():
