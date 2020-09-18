@@ -139,3 +139,12 @@ class SearchGetRequest(APIRequest):
             "fields": self.fields.split(",") if self.fields else self.fields,
             "sortby": self.sortby.split(",") if self.sortby else self.sortby,
         }
+
+
+class Login(BaseModel):
+    username: str
+    password: str
+
+    class Config:
+        schema_extra = {"example": {"username": "TestAdmin", "password": "TestAdmin",}}
+

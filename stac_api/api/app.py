@@ -1,11 +1,15 @@
 """fastapi app creation"""
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI,  Depends, HTTPException, Request, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.requests import Request
 
-from stac_api.api.models import ItemUri
+from stac_api.api.models import ItemUri, Login
 from stac_api.api.routers import (
     create_core_router,
     create_tiles_router,
@@ -20,7 +24,10 @@ from stac_api.config import AddOns, ApiExtensions, ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_api.models.ogc import TileSetResource
 from stac_api.openapi import config_openapi
+from stac_api.utils.cognito import get_tokens
 from stac_api.utils.dependencies import READER, WRITER
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 
 def create_app(settings: ApiSettings) -> FastAPI:
@@ -36,6 +43,20 @@ def create_app(settings: ApiSettings) -> FastAPI:
         create_core_router(core_client, settings), tags=["Core Endpoints"]
     )
     add_exception_handlers(app, DEFAULT_STATUS_CODES)
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request: Request,
+                                           exc: RequestValidationError):
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content=jsonable_encoder(
+                {
+                    "detail": exc.errors(),
+                    "query_params": request.query_params,
+                    "path_params": request.path_params,
+                }
+            ),
+        )
 
     if settings.api_extension_is_enabled(ApiExtensions.transaction):
         transaction_client = TransactionsClient()
@@ -95,6 +116,27 @@ def create_app(settings: ApiSettings) -> FastAPI:
         reader.close()
         writer.close()
         return resp
+
+    @app.post("/login")
+    async def login(body: Login):
+        try:
+            tokens = await get_tokens(body.username, body.password)
+
+            return tokens
+        except Exception as exception:
+            raise HTTPException(status_code=400, detail=f"{exception}")
+
+    @app.post("/token")
+    async def get_token(form_data: OAuth2PasswordRequestForm = Depends()):
+        try:
+            username = form_data.username
+            password = form_data.password
+            tokens = await get_tokens(username, password)
+            access_token = tokens["access_token"]
+
+            return {"access_token": access_token, "token_type": "bearer"}
+        except Exception as exception:
+            raise HTTPException(status_code=400, detail=f"{exception}")
 
     mgmt_router = APIRouter()
 
