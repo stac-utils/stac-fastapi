@@ -4,6 +4,9 @@ FROM python:3.8-slim
 # need the following packages in order to build
 RUN apt-get update && apt-get install -y build-essential git
 
+# FIX: https://github.com/pypa/pipenv/issues/4174#issuecomment-694339080
+ENV PIPENV_VENV_IN_PROJECT 1
+
 RUN pip install pipenv
 ENV PIPENV_NOSPIN=true
 ENV PIPENV_HIDE_EMOJIS=true
@@ -17,9 +20,8 @@ COPY Pipfile Pipfile.lock ./
 RUN pipenv install --deploy --ignore-pipfile ${install_dev_dependencies:+--dev}
 
 COPY . ./
-
 ENV APP_HOST=0.0.0.0
-ENV APP_PORT=80
+ENV APP_PORT=8080
 ENV RELOAD=""
 
 ENTRYPOINT ["pipenv", "run"]
