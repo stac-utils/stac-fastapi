@@ -11,7 +11,7 @@ def config_openapi(app: FastAPI):
         if app.openapi_schema:
             return app.openapi_schema
         openapi_schema = get_openapi(
-            title="Arturo STAC API", version="0.1", routes=app.routes
+            title="Sherlock STAC API", version="0.1", routes=app.routes
         )
         app.openapi_schema = openapi_schema
         return app.openapi_schema
