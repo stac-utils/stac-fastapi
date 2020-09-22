@@ -2,7 +2,8 @@
 from typing import List
 
 import pkg_resources
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordBearer
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
 from starlette.templating import Jinja2Templates
@@ -22,6 +23,7 @@ from stac_api.models import schemas
 from stac_pydantic import ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 def create_tiles_router() -> APIRouter:
     """Create API router with OGC tiles endpoints"""
@@ -112,6 +114,7 @@ def create_core_router(client: BaseCoreClient, settings: ApiSettings) -> APIRout
         response_model_exclude_none=True,
         methods=["GET"],
         endpoint=create_endpoint_with_depends(client.all_collections, EmptyRequest),
+        dependencies=[Depends(oauth2_scheme)]
     )
     router.add_api_route(
         name="Get Collection",

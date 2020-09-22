@@ -44,8 +44,8 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
     def landing_page(self, **kwargs) -> LandingPage:
         """landing page"""
         landing_page = LandingPage(
-            title="Arturo STAC API",
-            description="Arturo raster datastore",
+            title="Sherlock STAC API",
+            description="Sherlock Data search datastore",
             links=[
                 Link(
                     rel=Relations.self,
