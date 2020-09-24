@@ -21,13 +21,18 @@ async def get_tokens(username: str, password: str):
     key_dict_future = get_key_dict()
 
     # Meanwhile, authenticate with User Pool
+    access_kwargs = {
+        'username':username,
+        'access_key':aws_access_key_id,
+        'secret_key': aws_secret_access_key
+        }
+    if client_secret:
+        access_kwargs['client_secret'] = client_secret
+
     user = Cognito(
         pool_id,
         client_id,
-        client_secret=client_secret,
-        username=username,
-        access_key=aws_access_key_id,
-        secret_key=aws_secret_access_key,
+        **access_kwargs
     )
     user.authenticate(password=password)
 
