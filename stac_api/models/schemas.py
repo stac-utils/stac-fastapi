@@ -12,7 +12,8 @@ from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import shape
 
 from geojson_pydantic.geometries import Polygon
-from pydantic import Field, root_validator
+from pydantic import Field, ValidationError, root_validator
+from pydantic.error_wrappers import ErrorWrapper
 from stac_api import config
 from stac_api.models.decompose import CollectionGetter, ItemGetter
 from stac_pydantic import Collection as CollectionBase
@@ -177,12 +178,30 @@ class STACSearch(Search):
     query: Optional[Dict[Queryables, Dict[Operator, Any]]]
     token: Optional[str] = None
 
+    @root_validator(pre=True)
+    def validate_query_fields(cls, values: Dict) -> Dict:
+        """validate query fields"""
+        if "query" in values:
+            queryable_fields = Queryables.__members__.values()
+            for field_name in values["query"]:
+                if field_name not in queryable_fields:
+                    raise ValidationError(
+                        [
+                            ErrorWrapper(
+                                ValueError(f"Cannot search on field: {field_name}"),
+                                "STACSearch",
+                            )
+                        ],
+                        STACSearch,
+                    )
+        return values
+
     @root_validator
     def include_query_fields(cls, values: Dict) -> Dict:
         """
         Root validator to ensure query fields are included in the API response
         """
-        if values["query"]:
+        if "query" in values:
             query_include = set(
                 [
                     k.value
