@@ -181,7 +181,7 @@ class STACSearch(Search):
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:
         """validate query fields"""
-        if "query" in values:
+        if "query" in values and values["query"]:
             queryable_fields = Queryables.__members__.values()
             for field_name in values["query"]:
                 if field_name not in queryable_fields:
@@ -201,7 +201,7 @@ class STACSearch(Search):
         """
         Root validator to ensure query fields are included in the API response
         """
-        if "query" in values:
+        if "query" in values and values["query"]:
             query_include = set(
                 [
                     k.value
