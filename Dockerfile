@@ -13,7 +13,7 @@ ARG install_dev_dependencies=true
 
 WORKDIR /app
 
-COPY Pipfile Pipfile.lock ./
+COPY Pipfile Pipfile.lock setup.py ./
 RUN pipenv install --deploy --ignore-pipfile ${install_dev_dependencies:+--dev}
 
 COPY . ./
