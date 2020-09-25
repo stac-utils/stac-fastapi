@@ -6,7 +6,7 @@ FastAPI/postgres implementation of the [STAC API specification](https://github.c
 .
 ├── alembic             # Database migrations
 │   └── versions        # Migration versions
-├── stac_api            
+├── stac_api
 │   ├── clients         # Database CRUD
 │   ├── models          # Database and API data models
 │   ├── resources       # API endpoints
@@ -40,4 +40,30 @@ Run individual tests by running pytest within the docker container:
 ```bash
 make docker-shell
 $ pytest -v
+```
+
+## Environment variables
+Copy .env file from cloud storage:
+
+``` bash
+aws s3 cp s3://c-core-secure/config/sherlock/gcp-dynamic-stac/.env .env
+```
+
+## Docker
+Build:
+
+``` bash
+docker build -t gcr.io/ln-sherlock/stac-api:latest .
+```
+
+Push:
+
+``` bash
+docker push gcr.io/ln-sherlock/stac-api:latest
+```
+
+Run local:
+
+``` bash
+docker run --rm -it -p 8080:8080 gcr.io/ln-sherlock/stac-api:latest
 ```
