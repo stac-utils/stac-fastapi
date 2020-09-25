@@ -9,6 +9,13 @@
 
 Python library for building and customizing a STAC compliant API:
 
+
+```
+pip install arturo-stac-api
+```
+
+
+## Usage
 ```python
 # my_app.py
 from stac_api.config import ApiSettings
