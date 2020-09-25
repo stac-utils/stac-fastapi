@@ -9,7 +9,7 @@ with open("README.md") as f:
 install_requires = [
     "uvicorn>=0.11.7",
     "gunicorn",
-    "fastapi",
+    "fastapi>=0.60.0",
     "alembic",
     "psycopg2-binary",
     "shapely",
@@ -20,6 +20,7 @@ install_requires = [
     "pydantic[dotenv]",
     "cogeo-mosaic==3.0a10",
     "titiler==0.1a2",
+    "rio-cogeo==2.0a5",
 ]
 
 extra_reqs = {
@@ -43,7 +44,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: MIT License",
     ],
-    keywords="stac fastapi cog",
+    keywords="STAC FastAPI COG",
     author=u"Arturo Engineering",
     author_email="engineering@arturo.ai",
     url="https://github.com/arturo-ai/arturo-stac-api",
