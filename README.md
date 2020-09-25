@@ -28,7 +28,7 @@ $ uvicorn my_app:app --reload
 ├── alembic             # Database migrations
 │   └── versions        # Migration versions
 ├── scripts             # Scripts for local development
-├── arturo_stac_api
+├── stac_api
 │   ├── api             # API layer
 │   ├── clients
 │   │   ├── postgres    # Postgres CRUD client
