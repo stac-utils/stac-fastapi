@@ -1,20 +1,44 @@
 # arturo-stac-api ![arturo-stac-api](https://github.com/arturo-ai/arturo-stac-api/workflows/arturo-stac-api/badge.svg)
-FastAPI/postgres implementation of the [STAC API specification](https://github.com/radiantearth/stac-api-spec).
+---
+
+**Documentation**: coming soon...
+
+**Source Code**: [https://github.com/arturo-ai/arturo-stac-api](https://github.com/arturo-ai/arturo-stac-api)
+
+---
+
+Python library for building and customizing a STAC compliant API:
+
+```python
+# my_app.py
+from stac_api.config import ApiSettings
+from stac_api.api import create_app
+
+settings = ApiSettings()
+app = create_app(settings)
+```
+
+```bash
+$ uvicorn my_app:app --reload
+```
 
 ## Project Structure
 ```
 .
 ├── alembic             # Database migrations
 │   └── versions        # Migration versions
-├── stac_api            
-│   ├── clients         # Database CRUD
-│   ├── models          # Database and API data models
-│   ├── resources       # API endpoints
-│   └── utils           # FastAPI dependencies
+├── scripts             # Scripts for local development
+├── arturo_stac_api
+│   ├── api             # API layer
+│   ├── clients
+│   │   ├── postgres    # Postgres CRUD client
+│   │   └── tiles       # OGC Tiles API client
+│   ├── models          # Pydantic and ORM models
+│   └── utils           # Helper functions
 └── tests
-    ├── clients         # CRUD test cases
-    ├── data            # Test data
-    └── resources       # API test cases
+    ├── api             # Test api creation
+    ├── clients         # Test application logic
+    └── resources       # Test api endpoints
 ```
 
 ## Local Development
