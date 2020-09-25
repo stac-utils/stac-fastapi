@@ -1,4 +1,6 @@
 # https://github.com/docker/docker-py/blob/master/.dockerignore
+/.venv
+/.github
 
 .git/
 
