@@ -32,7 +32,7 @@ setup(
     description="Arturo's STAC compliant API implementation",
     long_description=desc,
     long_description_content_type="text/markdown",
-    version="0.2.0",
+    version="1.0.0",
     python_requires=">=3.8",
     classifiers=[
         "Intended Audience :: Developers",
