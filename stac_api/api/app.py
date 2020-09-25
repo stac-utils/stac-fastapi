@@ -40,7 +40,8 @@ def create_app(settings: ApiSettings) -> FastAPI:
 
     app.debug = settings.debug
     app.include_router(
-        create_core_router(core_client, settings), tags=["Core Endpoints"]
+        create_core_router(core_client, settings), tags=["Core Endpoints"],
+        dependencies=[Depends(oauth2_scheme)]
     )
     add_exception_handlers(app, DEFAULT_STATUS_CODES)
 
