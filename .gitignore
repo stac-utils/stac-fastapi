@@ -1,5 +1,4 @@
 PIP_EXTRA_INDEX_URL
-*.txt
 !tests/resources/*.jpg
 **.pyc
 **.log
