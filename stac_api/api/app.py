@@ -1,10 +1,14 @@
 """fastapi app creation"""
+from dataclasses import dataclass, field
+from typing import Dict, List, Type
 
 from fastapi import APIRouter, FastAPI
+from fastapi.openapi.utils import get_openapi
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.requests import Request
 
+from stac_api.api.extensions import ApiExtension
 from stac_api.api.models import ItemUri
 from stac_api.api.routers import (
     create_core_router,
@@ -12,6 +16,7 @@ from stac_api.api.routers import (
     create_transactions_router,
 )
 from stac_api.api.routes import create_endpoint_with_depends
+from stac_api.clients.base import BaseCoreClient
 from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.clients.postgres.transactions import TransactionsClient
@@ -21,6 +26,42 @@ from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_api.models.ogc import TileSetResource
 from stac_api.openapi import config_openapi
 from stac_api.utils.dependencies import READER, WRITER
+
+
+@dataclass
+class StacApi:
+    """StacApi"""
+    extensions: List[ApiExtension]
+    client: BaseCoreClient
+    exceptions: Dict[Type[Exception], int] = field(
+        default_factory=lambda: DEFAULT_STATUS_CODES
+    )
+    app: FastAPI = FastAPI()
+
+    def customize_openapi(self):
+        """customize openapi schema"""
+        if self.app.openapi_schema:
+            return self.app.openapi_schema
+
+        # TODO: parametrize
+        openapi_schema = get_openapi(
+            title="Arturo STAC API", version="0.1", routes=self.app.routes
+        )
+
+        self.app.openapi_schema = openapi_schema
+        return self.app.openapi_schema
+
+    def __post_init__(self):
+        """post-init hook"""
+        # register extensions
+        for ext in self.extensions:
+            ext.register(self.app)
+
+        # register exception handlers
+        add_exception_handlers(self.app, status_codes=self.exceptions)
+
+        # customize openapi
+        self.app.openapi = self.customize_openapi
 
 
 def create_app(settings: ApiSettings) -> FastAPI:
