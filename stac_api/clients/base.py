@@ -1,6 +1,6 @@
 """Base clients."""
 import abc
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
@@ -55,7 +55,7 @@ class BaseTransactionsClient(abc.ABC):
 class BaseCoreClient(abc.ABC):
     """Base client for core endpoints defined by stac"""
 
-    extensions: List[ApiExtension]
+    extensions: List[ApiExtension] = field(default_factory=list)
 
     def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
         """check if an api extension is enabled"""
