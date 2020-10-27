@@ -12,14 +12,14 @@ from sqlalchemy import func
 
 import geoalchemy2 as ga
 from sqlakeyset import get_page
-from stac_api import config, errors
+from stac_api import errors
+from stac_api.api.extensions import ContextExtension, FieldsExtension
 from stac_api.clients.base import BaseCoreClient
 from stac_api.clients.postgres.base import PostgresClient
 from stac_api.clients.postgres.tokens import (
     PaginationTokenClient,
     pagination_token_client_factory,
 )
-from stac_api.config import ApiExtensions
 from stac_api.errors import DatabaseError
 from stac_api.models import database, schemas
 from stac_api.models.links import CollectionLinks
@@ -125,7 +125,7 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
                 .order_by(self.table.datetime.desc(), self.table.id)
             )
             count = None
-            if config.settings.api_extension_is_enabled(config.ApiExtensions.context):
+            if self.extension_is_enabled(ContextExtension):
                 count_query = collection_children.statement.with_only_columns(
                     [func.count()]
                 ).order_by(None)
@@ -177,7 +177,7 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
             response_features.append(schemas.Item.from_orm(item))
 
         context_obj = None
-        if config.settings.api_extension_is_enabled(ApiExtensions.context):
+        if self.extension_is_enabled(ContextExtension):
             context_obj = {"returned": len(page), "limit": limit, "matched": count}
 
         return ItemCollection(
@@ -304,7 +304,7 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
             try:
                 items = query.filter(id_filter).order_by(self.table.id)
                 page = get_page(items, per_page=search_request.limit, page=token)
-                if config.settings.api_extension_is_enabled(ApiExtensions.context):
+                if self.extension_is_enabled(ContextExtension):
                     count = len(search_request.ids)
                 page.next = (
                     self.pagination_client.insert(keyset=page.paging.bookmark_next)
@@ -356,7 +356,7 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
                         query = query.filter(op.operator(field, value))
 
             try:
-                if config.settings.api_extension_is_enabled(ApiExtensions.context):
+                if self.extension_is_enabled(ContextExtension):
                     count_query = query.statement.with_only_columns(
                         [func.count()]
                     ).order_by(None)
@@ -404,7 +404,7 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
 
         response_features = []
         filter_kwargs = {}
-        if config.settings.api_extension_is_enabled(ApiExtensions.fields):
+        if self.extension_is_enabled(FieldsExtension):
             filter_kwargs = search_request.field.filter_fields
 
         xvals = []
@@ -422,7 +422,7 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
             bbox = None
 
         context_obj = None
-        if config.settings.api_extension_is_enabled(ApiExtensions.context):
+        if self.extension_is_enabled(ContextExtension):
             context_obj = {
                 "returned": len(page),
                 "limit": search_request.limit,
@@ -436,10 +436,3 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
             "links": links,
             "bbox": bbox,
         }
-
-
-def core_crud_client_factory(
-    pagination_client: PaginationTokenClient = Depends(pagination_token_client_factory),
-) -> CoreCrudClient:
-    """FastAPI dependency."""
-    return CoreCrudClient(table=database.Item, pagination_client=pagination_client,)
