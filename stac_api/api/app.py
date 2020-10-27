@@ -9,13 +9,20 @@ from sqlalchemy.orm import sessionmaker
 from starlette.requests import Request
 
 from stac_api.api.extensions import ApiExtension
-from stac_api.api.models import ItemUri
+from stac_api.api.models import (
+    CollectionUri,
+    EmptyRequest,
+    ItemCollectionUri,
+    ItemUri,
+    SearchGetRequest,
+    _create_request_model,
+)
 from stac_api.api.routers import (
     create_core_router,
     create_tiles_router,
     create_transactions_router,
 )
-from stac_api.api.routes import create_endpoint_with_depends
+from stac_api.api.routes import create_endpoint_from_model, create_endpoint_with_depends
 from stac_api.clients.base import BaseCoreClient
 from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.clients.postgres.tokens import PaginationTokenClient
@@ -23,20 +30,116 @@ from stac_api.clients.postgres.transactions import TransactionsClient
 from stac_api.clients.tiles.ogc import TilesClient
 from stac_api.config import AddOns, ApiExtensions, ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
+from stac_api.models import schemas
 from stac_api.models.ogc import TileSetResource
 from stac_api.openapi import config_openapi
 from stac_api.utils.dependencies import READER, WRITER
+from stac_pydantic import ItemCollection
+from stac_pydantic.api import ConformanceClasses, LandingPage
 
 
 @dataclass
 class StacApi:
     """StacApi"""
+
     extensions: List[ApiExtension]
     client: BaseCoreClient
     exceptions: Dict[Type[Exception], int] = field(
         default_factory=lambda: DEFAULT_STATUS_CODES
     )
     app: FastAPI = FastAPI()
+
+    def register_core(self):
+        """register stac core endpoints"""
+        search_request_model = _create_request_model(schemas.STACSearch)
+        router = APIRouter()
+        router.add_api_route(
+            name="Landing Page",
+            path="/",
+            response_model=LandingPage,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_endpoint_with_depends(
+                self.client.landing_page, EmptyRequest
+            ),
+        )
+        router.add_api_route(
+            name="Conformance Classes",
+            path="/conformance",
+            response_model=ConformanceClasses,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_endpoint_with_depends(
+                self.client.conformance, EmptyRequest
+            ),
+        )
+        router.add_api_route(
+            name="Get Item",
+            path="/collections/{collectionId}/items/{itemId}",
+            response_model=schemas.Item,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_endpoint_with_depends(self.client.get_item, ItemUri),
+        )
+        router.add_api_route(
+            name="Search",
+            path="/search",
+            response_model=ItemCollection,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["POST"],
+            endpoint=create_endpoint_from_model(
+                self.client.post_search, search_request_model
+            ),
+        ),
+        router.add_api_route(
+            name="Search",
+            path="/search",
+            response_model=ItemCollection,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_endpoint_with_depends(
+                self.client.get_search, SearchGetRequest
+            ),
+        )
+        router.add_api_route(
+            name="Get Collections",
+            path="/collections",
+            response_model=List[schemas.Collection],
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_endpoint_with_depends(
+                self.client.all_collections, EmptyRequest
+            ),
+        )
+        router.add_api_route(
+            name="Get Collection",
+            path="/collections/{collectionId}",
+            response_model=schemas.Collection,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_endpoint_with_depends(
+                self.client.get_collection, CollectionUri
+            ),
+        )
+        router.add_api_route(
+            name="Get ItemCollection",
+            path="/collections/{collectionId}/items",
+            response_model=ItemCollection,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_endpoint_with_depends(
+                self.client.item_collection, ItemCollectionUri
+            ),
+        )
+        self.app.include_router(router)
 
     def customize_openapi(self):
         """customize openapi schema"""
@@ -53,6 +156,7 @@ class StacApi:
 
     def __post_init__(self):
         """post-init hook"""
+        self.register_core()
         # register extensions
         for ext in self.extensions:
             ext.register(self.app)
