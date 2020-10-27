@@ -154,12 +154,27 @@ class StacApi:
         self.app.openapi_schema = openapi_schema
         return self.app.openapi_schema
 
+    def add_health_check(self):
+        """add a health check"""
+        # add a health check
+        mgmt_router = APIRouter()
+
+        @mgmt_router.get("/_mgmt/ping")
+        async def ping():
+            """Liveliness/readiness probe"""
+            return {"message": "PONG"}
+
+        self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
+
     def __post_init__(self):
         """post-init hook"""
         self.register_core()
         # register extensions
         for ext in self.extensions:
             ext.register(self.app)
+
+        # add health check
+        self.add_health_check()
 
         # register exception handlers
         add_exception_handlers(self.app, status_codes=self.exceptions)
