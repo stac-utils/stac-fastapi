@@ -170,6 +170,7 @@ class StacApi:
         """post-init hook"""
         # inject settings
         inject_settings(self.settings)
+        self.app.debug = self.settings.debug
 
         self.register_core()
         # register extensions
