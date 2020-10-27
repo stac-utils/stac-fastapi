@@ -42,6 +42,7 @@ from stac_pydantic.api import ConformanceClasses, LandingPage
 class StacApi:
     """StacApi"""
 
+    settings: ApiSettings
     extensions: List[ApiExtension]
     client: BaseCoreClient
     exceptions: Dict[Type[Exception], int] = field(
@@ -156,7 +157,6 @@ class StacApi:
 
     def add_health_check(self):
         """add a health check"""
-        # add a health check
         mgmt_router = APIRouter()
 
         @mgmt_router.get("/_mgmt/ping")
@@ -168,6 +168,9 @@ class StacApi:
 
     def __post_init__(self):
         """post-init hook"""
+        # inject settings
+        inject_settings(self.settings)
+
         self.register_core()
         # register extensions
         for ext in self.extensions:
