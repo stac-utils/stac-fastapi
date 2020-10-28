@@ -15,7 +15,7 @@ def _create_request_model(model: Type[BaseModel]) -> Type[BaseModel]:
 
     fields = {}
     for (k, v) in model.__fields__.items():
-
+        # TODO: Filter out fields based on which extensions are present
         field_info = v.field_info
         body = Body(
             None

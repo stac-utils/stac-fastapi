@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from fastapi import APIRouter, FastAPI
 
-from stac_api.api.extensions import ApiExtension
+from stac_api.api.extensions.extension import ApiExtension
 from stac_api.api.models import CollectionUri, ItemUri, _create_request_model
 from stac_api.api.routes import create_endpoint_from_model, create_endpoint_with_depends
 from stac_api.clients.base import BaseTransactionsClient

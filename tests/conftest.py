@@ -3,12 +3,11 @@ import os
 from typing import Callable, Dict, Generator
 from unittest.mock import PropertyMock, patch
 
-import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from starlette.testclient import TestClient
 
-from stac_api.api import create_app
+import pytest
 from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.clients.postgres.transactions import TransactionsClient
 from stac_api.config import ApiSettings, inject_settings
@@ -22,9 +21,7 @@ class TestSettings(ApiSettings):
         env_file = ".env.test"
 
 
-settings = TestSettings(
-    stac_api_extensions=["context", "fields", "query", "sort", "transaction"],
-)
+settings = TestSettings()
 inject_settings(settings)
 
 
@@ -114,9 +111,40 @@ def postgres_transactions(reader_connection, writer_connection):
 
 @pytest.fixture
 def app_client(load_test_data, postgres_transactions):
-    app = create_app(settings)
+    from stac_api.api.app import StacApi
+    from stac_api.config import ApiSettings
+
+    from stac_api.clients.postgres.core import CoreCrudClient
+    from stac_api.clients.postgres.tokens import PaginationTokenClient
+    from stac_api.clients.postgres.transactions import TransactionsClient
+    from stac_api.api.extensions import (
+        TransactionExtension,
+        ContextExtension,
+        SortExtension,
+        FieldsExtension,
+        QueryExtension,
+    )
+
+    api = StacApi(
+        settings=ApiSettings(),
+        extensions=[
+            TransactionExtension(client=TransactionsClient()),
+            ContextExtension(),
+            SortExtension(),
+            FieldsExtension(),
+            QueryExtension(),
+        ],
+        client=CoreCrudClient(pagination_client=PaginationTokenClient()),
+    )
     coll = Collection.parse_obj(load_test_data("test_collection.json"))
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    with TestClient(app) as test_app:
+    with TestClient(api.app) as test_app:
         yield test_app
+
+    # app = create_app(settings)
+    # coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    # postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+    #
+    # with TestClient(app) as test_app:
+    #     yield test_app

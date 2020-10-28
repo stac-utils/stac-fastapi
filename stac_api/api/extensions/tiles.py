@@ -7,12 +7,13 @@ from starlette.requests import Request
 from starlette.responses import HTMLResponse
 from starlette.templating import Jinja2Templates
 
-from stac_api.api.extensions import ApiExtension
+from stac_api.api.extensions.extension import ApiExtension
 
 
 @dataclass
 class TilesExtension(ApiExtension):
     """titiler extension"""
+
     def register(self, app: FastAPI) -> None:
         """register extension with the application"""
         from titiler.endpoints.stac import STACTiler

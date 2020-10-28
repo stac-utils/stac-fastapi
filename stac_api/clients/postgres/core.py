@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional, Type, Union
 from urllib.parse import urlencode, urljoin
 
 import sqlalchemy as sa
-from fastapi import Depends
 from sqlalchemy import func
 
 import geoalchemy2 as ga
@@ -16,10 +15,7 @@ from stac_api import errors
 from stac_api.api.extensions import ContextExtension, FieldsExtension
 from stac_api.clients.base import BaseCoreClient
 from stac_api.clients.postgres.base import PostgresClient
-from stac_api.clients.postgres.tokens import (
-    PaginationTokenClient,
-    pagination_token_client_factory,
-)
+from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.errors import DatabaseError
 from stac_api.models import database, schemas
 from stac_api.models.links import CollectionLinks

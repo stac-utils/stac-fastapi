@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from fastapi import FastAPI
 
-from stac_api.api.extensions import ApiExtension
+from stac_api.api.extensions.extension import ApiExtension
 
 
 @dataclass

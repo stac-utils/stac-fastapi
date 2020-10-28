@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from starlette.requests import Request
 
-from stac_api.api.extensions import ApiExtension
+from stac_api.api.extensions.extension import ApiExtension
 from stac_api.api.models import (
     CollectionUri,
     EmptyRequest,
@@ -171,6 +171,7 @@ class StacApi:
         # inject settings
         inject_settings(self.settings)
         self.app.debug = self.settings.debug
+        self.client.extensions = self.extensions
 
         self.register_core()
         # register extensions
