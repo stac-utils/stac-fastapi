@@ -8,7 +8,16 @@ from sqlalchemy.orm import Session, sessionmaker
 from starlette.testclient import TestClient
 
 import pytest
+from stac_api.api.app import StacApi
+from stac_api.api.extensions import (
+    ContextExtension,
+    FieldsExtension,
+    QueryExtension,
+    SortExtension,
+    TransactionExtension,
+)
 from stac_api.clients.postgres.core import CoreCrudClient
+from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.clients.postgres.transactions import TransactionsClient
 from stac_api.config import ApiSettings, inject_settings
 from stac_api.models.schemas import Collection
@@ -111,20 +120,6 @@ def postgres_transactions(reader_connection, writer_connection):
 
 @pytest.fixture
 def app_client(load_test_data, postgres_transactions):
-    from stac_api.api.app import StacApi
-    from stac_api.config import ApiSettings
-
-    from stac_api.clients.postgres.core import CoreCrudClient
-    from stac_api.clients.postgres.tokens import PaginationTokenClient
-    from stac_api.clients.postgres.transactions import TransactionsClient
-    from stac_api.api.extensions import (
-        TransactionExtension,
-        ContextExtension,
-        SortExtension,
-        FieldsExtension,
-        QueryExtension,
-    )
-
     api = StacApi(
         settings=ApiSettings(),
         extensions=[
@@ -141,10 +136,3 @@ def app_client(load_test_data, postgres_transactions):
 
     with TestClient(api.app) as test_app:
         yield test_app
-
-    # app = create_app(settings)
-    # coll = Collection.parse_obj(load_test_data("test_collection.json"))
-    # postgres_transactions.create_collection(coll, request=MockStarletteRequest)
-    #
-    # with TestClient(app) as test_app:
-    #     yield test_app
