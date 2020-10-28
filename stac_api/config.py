@@ -1,6 +1,6 @@
 """Application settings."""
 import enum
-from typing import List, Optional, Set
+from typing import Optional, Set
 
 from pydantic import BaseSettings
 
@@ -48,6 +48,7 @@ class ApiSettings(BaseSettings):
     class Config:
         """model config"""
 
+        extra = "allow"
         env_file = ".env"
 
     @property

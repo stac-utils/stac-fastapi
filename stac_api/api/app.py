@@ -1,10 +1,11 @@
 """fastapi app creation"""
 from dataclasses import dataclass, field
-from typing import Dict, List, Type
+from typing import Dict, List, Optional, Type
 
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 
+from stac_api.api.extensions import FieldsExtension
 from stac_api.api.extensions.extension import ApiExtension
 from stac_api.api.models import (
     CollectionUri,
@@ -35,9 +36,17 @@ class StacApi:
     )
     app: FastAPI = FastAPI()
 
+    def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
+        """check if an api extension is enabled"""
+        for ext in self.extensions:
+            if isinstance(ext, extension):
+                return ext
+        return None
+
     def register_core(self):
         """register stac core endpoints"""
         search_request_model = _create_request_model(schemas.STACSearch)
+        fields_ext = self.get_extension(FieldsExtension)
         router = APIRouter()
         router.add_api_route(
             name="Landing Page",
@@ -73,7 +82,7 @@ class StacApi:
         router.add_api_route(
             name="Search",
             path="/search",
-            response_model=ItemCollection,
+            response_model=ItemCollection if not fields_ext else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
@@ -84,7 +93,7 @@ class StacApi:
         router.add_api_route(
             name="Search",
             path="/search",
-            response_model=ItemCollection,
+            response_model=ItemCollection if not fields_ext else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -154,9 +163,14 @@ class StacApi:
     def __post_init__(self):
         """post-init hook"""
         # inject settings
-        inject_settings(self.settings)
         self.app.debug = self.settings.debug
         self.client.extensions = self.extensions
+
+        fields_ext = self.get_extension(FieldsExtension)
+        if fields_ext:
+            self.settings.default_includes = fields_ext.default_includes
+
+        inject_settings(self.settings)
 
         self.register_core()
         # register extensions
