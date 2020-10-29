@@ -30,7 +30,9 @@ class StacApi:
 
     settings: ApiSettings
     client: BaseCoreClient
-    extensions: List[ApiExtension] = field(default_factory=list)
+    extensions: Optional[List[ApiExtension]] = field(  # type:ignore
+        default_factory=list
+    )
     exceptions: Dict[Type[Exception], int] = field(
         default_factory=lambda: DEFAULT_STATUS_CODES
     )

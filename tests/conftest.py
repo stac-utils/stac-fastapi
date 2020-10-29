@@ -119,9 +119,10 @@ def postgres_transactions(reader_connection, writer_connection):
 
 
 @pytest.fixture
-def app_client(load_test_data, postgres_transactions):
-    api = StacApi(
+def api_client():
+    return StacApi(
         settings=ApiSettings(),
+        client=CoreCrudClient(pagination_client=PaginationTokenClient()),
         extensions=[
             TransactionExtension(client=TransactionsClient()),
             ContextExtension(),
@@ -129,10 +130,13 @@ def app_client(load_test_data, postgres_transactions):
             FieldsExtension(),
             QueryExtension(),
         ],
-        client=CoreCrudClient(pagination_client=PaginationTokenClient()),
     )
+
+
+@pytest.fixture
+def app_client(api_client, load_test_data, postgres_transactions):
     coll = Collection.parse_obj(load_test_data("test_collection.json"))
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    with TestClient(api.app) as test_app:
+    with TestClient(api_client.app) as test_app:
         yield test_app
