@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class PostgresClient(abc.ABC):
     """Database CRUD operations on the defined table"""
 
-    table: Type[database.BaseModel]
+    table: Optional[Type[database.BaseModel]] = None
 
     @property
     def reader_session(self):

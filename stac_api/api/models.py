@@ -8,28 +8,14 @@ from fastapi import Body, Path
 
 from pydantic import BaseModel, create_model
 from pydantic.fields import UndefinedType
-from stac_api.config import ApiExtensions, ApiSettings
 
 
-def _create_request_model(
-    model: Type[BaseModel], settings: ApiSettings
-) -> Type[BaseModel]:
+def _create_request_model(model: Type[BaseModel]) -> Type[BaseModel]:
     """Create a pydantic model for validating a request body"""
 
     fields = {}
     for (k, v) in model.__fields__.items():
-        if k == "query":
-            if not settings.api_extension_is_enabled(ApiExtensions.query):
-                continue
-
-        if k == "sortby":
-            if not settings.api_extension_is_enabled(ApiExtensions.sort):
-                continue
-
-        if k == "field":
-            if not settings.api_extension_is_enabled(ApiExtensions.fields):
-                continue
-
+        # TODO: Filter out fields based on which extensions are present
         field_info = v.field_info
         body = Body(
             None

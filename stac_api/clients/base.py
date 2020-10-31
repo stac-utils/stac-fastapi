@@ -1,9 +1,10 @@
 """Base clients."""
 import abc
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
+from stac_api.api.extensions.extension import ApiExtension
 from stac_api.models import schemas
 from stac_pydantic import ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
@@ -53,6 +54,12 @@ class BaseTransactionsClient(abc.ABC):
 @dataclass  # type:ignore
 class BaseCoreClient(abc.ABC):
     """Base client for core endpoints defined by stac"""
+
+    extensions: List[ApiExtension] = field(default_factory=list)
+
+    def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
+        """check if an api extension is enabled"""
+        return any([isinstance(ext, extension) for ext in self.extensions])
 
     @abc.abstractmethod
     def landing_page(self, **kwargs) -> LandingPage:
