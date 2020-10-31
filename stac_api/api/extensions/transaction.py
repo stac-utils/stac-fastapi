@@ -90,4 +90,4 @@ class TransactionExtension(ApiExtension):
                 self.client.delete_collection, CollectionUri
             ),
         )
-        app.include_router(router)
+        app.include_router(router, tags=["Transaction Extension"])
