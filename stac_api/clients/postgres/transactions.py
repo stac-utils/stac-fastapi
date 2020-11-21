@@ -1,11 +1,14 @@
 """transactions extension client"""
 
+import json
 import logging
 from dataclasses import dataclass
-from typing import Type, Union
+from typing import Dict, List, Optional, Type, Union
+
+from sqlalchemy import create_engine
 
 from stac_api import errors
-from stac_api.clients.base import BaseTransactionsClient
+from stac_api.clients.base import BaseTransactionsClient, BulkTransactionsClient
 from stac_api.clients.postgres.base import PostgresClient
 from stac_api.models import database, schemas
 
@@ -110,3 +113,42 @@ class TransactionsClient(PostgresClient, BaseTransactionsClient):
         obj = self._delete(id, table=self.collection_table)
         obj.base_url = str(kwargs["request"].base_url)
         return schemas.Collection.from_orm(obj)
+
+
+@dataclass
+class PostgresBulkTransactions(BulkTransactionsClient):
+    """postgres bulk transactions"""
+
+    connection_str: str
+    debug: bool = False
+
+    def __post_init__(self):
+        """create sqlalchemy engine"""
+        self.engine = create_engine(self.connection_str, echo=self.debug)
+
+    @staticmethod
+    def _preprocess_item(item) -> Dict:
+        """
+        preprocess items to match data model
+        # TODO: dedup with GetterDict logic (ref #58)
+        """
+        item["geometry"] = json.dumps(item["geometry"])
+        item["collection_id"] = item.pop("collection")
+        item["datetime"] = item["properties"].pop("datetime")
+        return item
+
+    def bulk_item_insert(
+        self, items: List[Dict], chunk_size: Optional[int] = None
+    ) -> None:
+        """
+        bulk item insertion using sqlalchemy core
+        https://docs.sqlalchemy.org/en/13/faq/performance.html#i-m-inserting-400-000-rows-with-the-orm-and-it-s-really-slow
+        """
+        items = [self._preprocess_item(item) for item in items]
+        if chunk_size:
+            for chunk in self._chunks(items, chunk_size):
+                self.engine.execute(database.Item.__table__.insert(), chunk)
+            return
+
+        self.engine.execute(database.Item.__table__.insert(), items)
+        return
