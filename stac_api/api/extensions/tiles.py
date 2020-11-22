@@ -23,9 +23,7 @@ class TilesExtension(ApiExtension):
     def register(self, app: FastAPI) -> None:
         """register extension with the application"""
         from titiler.endpoints.stac import STACTiler
-
-        template_dir = pkg_resources.resource_filename("titiler", "templates")
-        templates = Jinja2Templates(directory=template_dir)
+        from titiler.templates import templates
 
         titiler_router = STACTiler().router
 
