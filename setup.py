@@ -7,7 +7,7 @@ with open("README.md") as f:
 
 
 install_requires = [
-    "uvicorn>=0.11.7",
+    "uvicorn[standard]",
     "gunicorn",
     "fastapi>=0.60.0",
     "alembic",
