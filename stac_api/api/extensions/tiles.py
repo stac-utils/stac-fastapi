@@ -1,17 +1,14 @@
 """tiles extension"""
 from dataclasses import dataclass
 
-import pkg_resources
 from fastapi import FastAPI
-from starlette.requests import Request
-from starlette.responses import HTMLResponse
-from starlette.templating import Jinja2Templates
-
 from stac_api.api.extensions.extension import ApiExtension
 from stac_api.api.models import ItemUri
 from stac_api.api.routes import create_endpoint_with_depends
 from stac_api.clients.tiles.ogc import TilesClient
 from stac_api.models.ogc import TileSetResource
+from starlette.requests import Request
+from starlette.responses import HTMLResponse
 
 
 @dataclass
