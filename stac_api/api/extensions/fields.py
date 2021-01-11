@@ -11,7 +11,7 @@ from stac_api.api.extensions.extension import ApiExtension
 class FieldsExtension(ApiExtension):
     """
     stac-api fields extension
-    (https://github.com/radiantearth/stac-api-spec/tree/master/extensions/fields)
+    (https://github.com/radiantearth/stac-api-spec/blob/master/fragments/fields/README.md)
     """
 
     default_includes: Set[str] = field(

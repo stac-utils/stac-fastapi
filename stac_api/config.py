@@ -9,7 +9,9 @@ from pydantic import BaseSettings
 class ApiExtensions(enum.Enum):
     """
     Enumeration of available stac api extensions
-    Ref: https://github.com/radiantearth/stac-api-spec/tree/master/extensions
+    Ref:
+    - https://github.com/radiantearth/stac-api-spec/tree/master/fragments
+    - https://github.com/radiantearth/stac-api-spec/tree/master/ogcapi-features/extensions
     """
 
     context = "context"

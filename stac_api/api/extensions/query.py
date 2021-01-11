@@ -10,7 +10,7 @@ from stac_api.api.extensions.extension import ApiExtension
 class QueryExtension(ApiExtension):
     """
     stac-api query extension
-    (https://github.com/radiantearth/stac-api-spec/tree/master/extensions/query)
+    (https://github.com/radiantearth/stac-api-spec/blob/master/fragments/query/README.md)
     """
 
     def register(self, app: FastAPI) -> None:

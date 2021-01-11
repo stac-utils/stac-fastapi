@@ -10,7 +10,7 @@ from stac_api.api.extensions.extension import ApiExtension
 class ContextExtension(ApiExtension):
     """
     stac-api context extension
-    (https://github.com/radiantearth/stac-api-spec/tree/master/extensions/context)
+    (https://github.com/radiantearth/stac-api-spec/blob/master/fragments/context/README.md)
     """
 
     def register(self, app: FastAPI) -> None:

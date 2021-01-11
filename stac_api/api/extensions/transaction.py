@@ -14,7 +14,7 @@ from stac_api.models import schemas
 class TransactionExtension(ApiExtension):
     """
     stac-api transaction extension
-    (https://github.com/radiantearth/stac-api-spec/blob/master/extensions/transaction/README.md)
+    (https://github.com/radiantearth/stac-api-spec/blob/master/ogcapi-features/extensions/transaction/README.md)
     """
 
     client: BaseTransactionsClient
