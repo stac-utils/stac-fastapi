@@ -7,7 +7,7 @@ with open("README.md") as f:
 
 
 install_requires = [
-    "uvicorn>=0.11.7",
+    "uvicorn[standard]",
     "gunicorn",
     "fastapi>=0.60.0",
     "alembic",
@@ -18,9 +18,7 @@ install_requires = [
     "sqlakeyset",
     "stac-pydantic>=1.3.5",
     "pydantic[dotenv]",
-    "cogeo-mosaic==3.0a10",
-    "titiler==0.1a2",
-    "rio-cogeo==2.0a5",
+    "titiler==0.1.0a12",
 ]
 
 extra_reqs = {
