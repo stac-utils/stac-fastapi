@@ -3,11 +3,11 @@ import os
 from typing import Callable, Dict, Generator
 from unittest.mock import PropertyMock, patch
 
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from starlette.testclient import TestClient
 
-import pytest
 from stac_api.api.app import StacApi
 from stac_api.api.extensions import (
     ContextExtension,
@@ -18,7 +18,10 @@ from stac_api.api.extensions import (
 )
 from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.clients.postgres.tokens import PaginationTokenClient
-from stac_api.clients.postgres.transactions import TransactionsClient
+from stac_api.clients.postgres.transactions import (
+    PostgresBulkTransactions,
+    TransactionsClient,
+)
 from stac_api.config import ApiSettings, inject_settings
 from stac_api.models.schemas import Collection
 
@@ -67,23 +70,30 @@ class MockStarletteRequest:
 
 
 @pytest.fixture
-def reader_connection() -> Generator[Session, None, None]:
-    """Create a reader connection"""
+def sqlalchemy_engine():
     engine = create_engine(settings.reader_connection_string)
-    db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
-    yield db_session
-    db_session.close()
+    yield engine
     engine.dispose()
 
 
 @pytest.fixture
-def writer_connection() -> Generator[Session, None, None]:
-    """Create a writer connection"""
-    engine = create_engine(settings.writer_connection_string)
-    db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)()
+def reader_connection(sqlalchemy_engine) -> Generator[Session, None, None]:
+    """Create a reader connection"""
+    db_session = sessionmaker(
+        autocommit=False, autoflush=False, bind=sqlalchemy_engine
+    )()
     yield db_session
     db_session.close()
-    engine.dispose()
+
+
+@pytest.fixture
+def writer_connection(sqlalchemy_engine) -> Generator[Session, None, None]:
+    """Create a writer connection"""
+    db_session = sessionmaker(
+        autocommit=False, autoflush=False, bind=sqlalchemy_engine
+    )()
+    yield db_session
+    db_session.close()
 
 
 @pytest.fixture
@@ -116,6 +126,12 @@ def postgres_transactions(reader_connection, writer_connection):
             mock_reader.return_value = reader_connection
             client = TransactionsClient()
             yield client
+
+
+@pytest.fixture
+def postgres_bulk_transactions():
+    client = PostgresBulkTransactions(connection_str=settings.writer_connection_string)
+    return client
 
 
 @pytest.fixture

@@ -4,10 +4,11 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
-from stac_api.api.extensions.extension import ApiExtension
-from stac_api.models import schemas
 from stac_pydantic import ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
+
+from stac_api.api.extensions.extension import ApiExtension
+from stac_api.models import schemas
 
 NumType = Union[float, int]
 
@@ -49,6 +50,22 @@ class BaseTransactionsClient(abc.ABC):
     def delete_collection(self, id: str, **kwargs) -> schemas.Collection:
         """Delete collection"""
         ...
+
+
+@dataclass  # type: ignore
+class BulkTransactionsClient(abc.ABC):
+    """bulk transactions client"""
+
+    @staticmethod
+    def _chunks(lst, n):
+        """Yield successive n-sized chunks from lst."""
+        for i in range(0, len(lst), n):
+            yield lst[i : i + n]
+
+    @abc.abstractmethod
+    def bulk_item_insert(self, items: List[Dict], chunks: Optional[int] = None) -> None:
+        """bulk item insertion, not implemented by default, and not exposed through the api"""
+        raise NotImplementedError
 
 
 @dataclass  # type:ignore
