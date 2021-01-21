@@ -20,6 +20,7 @@ install_requires = [
     "stac-pydantic>=1.3.5",
     "pydantic[dotenv]",
     "titiler==0.1.0a12",
+    "fastapi-utils"
 ]
 
 extra_reqs = {
