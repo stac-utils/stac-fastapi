@@ -1,13 +1,17 @@
 """Item crud client."""
 import json
 import logging
-from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 from urllib.parse import urlencode, urljoin
 
+import attr
 import sqlalchemy as sa
 from sqlalchemy import func
+from stac_pydantic import ItemCollection
+from stac_pydantic.api import ConformanceClasses, LandingPage
+from stac_pydantic.api.extensions.paging import PaginationLink
+from stac_pydantic.shared import Link, MimeTypes, Relations
 
 import geoalchemy2 as ga
 from sqlakeyset import get_page
@@ -19,23 +23,19 @@ from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.errors import DatabaseError
 from stac_api.models import database, schemas
 from stac_api.models.links import CollectionLinks
-from stac_pydantic import ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage
-from stac_pydantic.api.extensions.paging import PaginationLink
-from stac_pydantic.shared import Link, MimeTypes, Relations
 
 logger = logging.getLogger(__name__)
 
 NumType = Union[float, int]
 
 
-@dataclass
+@attr.s
 class CoreCrudClient(PostgresClient, BaseCoreClient):
     """Client for core endpoints defined by stac"""
 
-    pagination_client: Optional[PaginationTokenClient] = None
-    table: Type[database.Item] = database.Item
-    collection_table: Type[database.Collection] = database.Collection
+    pagination_client: PaginationTokenClient = attr.ib(default=None)
+    table: Type[database.Item] = attr.ib(default=database.Item)
+    collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
 
     def landing_page(self, **kwargs) -> LandingPage:
         """landing page"""

@@ -2,9 +2,9 @@
 
 import json
 import logging
-from dataclasses import dataclass
 from typing import Dict, List, Optional, Type, Union
 
+import attr
 from sqlalchemy import create_engine
 
 from stac_api import errors
@@ -15,12 +15,12 @@ from stac_api.models import database, schemas
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@attr.s
 class TransactionsClient(PostgresClient, BaseTransactionsClient):
     """Transactions extension specific CRUD operations"""
 
-    table: Type[database.Collection] = database.Collection
-    item_table: Type[database.Item] = database.Item
+    table: Type[database.Collection] = attr.ib(default=database.Collection)
+    item_table: Type[database.Item] = attr.ib(default=database.Item)
 
     @property
     def collection_table(self):
@@ -115,14 +115,14 @@ class TransactionsClient(PostgresClient, BaseTransactionsClient):
         return schemas.Collection.from_orm(obj)
 
 
-@dataclass
+@attr.s
 class PostgresBulkTransactions(BulkTransactionsClient):
     """postgres bulk transactions"""
 
-    connection_str: str
-    debug: bool = False
+    connection_str: str = attr.ib()
+    debug: bool = attr.ib(default=False)
 
-    def __post_init__(self):
+    def __attrs_post_init__(self):
         """create sqlalchemy engine"""
         self.engine = create_engine(self.connection_str, echo=self.debug)
 

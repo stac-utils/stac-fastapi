@@ -2,19 +2,20 @@
 
 import os
 from base64 import urlsafe_b64encode
-from dataclasses import dataclass
 from typing import Type
+
+import attr
 
 from stac_api.clients.postgres.base import PostgresClient
 from stac_api.errors import DatabaseError
 from stac_api.models import database
 
 
-@dataclass
+@attr.s
 class PaginationTokenClient(PostgresClient):
     """Pagination token specific CRUD operations"""
 
-    table: Type[database.PaginationToken] = database.PaginationToken
+    table: Type[database.PaginationToken] = attr.ib(default=database.PaginationToken)
 
     def insert(self, keyset: str, tries: int = 0) -> str:  # type:ignore
         """Insert a keyset into the database"""
