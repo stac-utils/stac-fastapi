@@ -1,6 +1,5 @@
 """stac-api transaction extension"""
-from dataclasses import dataclass
-
+import attr
 from fastapi import APIRouter, FastAPI
 
 from stac_api.api.extensions.extension import ApiExtension
@@ -10,14 +9,14 @@ from stac_api.clients.base import BaseTransactionsClient
 from stac_api.models import schemas
 
 
-@dataclass
+@attr.s
 class TransactionExtension(ApiExtension):
     """
     stac-api transaction extension
     (https://github.com/radiantearth/stac-api-spec/blob/master/extensions/transaction/README.md)
     """
 
-    client: BaseTransactionsClient
+    client: BaseTransactionsClient = attr.ib()
 
     def register(self, app: FastAPI) -> None:
         """register extension with the application"""

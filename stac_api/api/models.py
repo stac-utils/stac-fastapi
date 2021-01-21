@@ -1,11 +1,10 @@
 """api request/response models"""
 
 import abc
-from dataclasses import dataclass
 from typing import Dict, Optional, Type, Union
 
+import attr
 from fastapi import Body, Path
-
 from pydantic import BaseModel, create_model
 from pydantic.fields import UndefinedType
 
@@ -43,7 +42,7 @@ def _create_request_model(model: Type[BaseModel]) -> Type[BaseModel]:
     return create_model(model.__name__, **fields, __base__=model)
 
 
-@dataclass  # type:ignore
+@attr.s  # type:ignore
 class APIRequest(abc.ABC):
     """Generic API Request base class"""
 
@@ -53,29 +52,29 @@ class APIRequest(abc.ABC):
         ...
 
 
-@dataclass  # type:ignore
+@attr.s  # type:ignore
 class CollectionUri(APIRequest):
     """Delete collection"""
 
-    collectionId: str = Path(..., description="Collection ID")
+    collectionId: str = attr.ib(default=Path(..., description="Collection ID"))
 
     def kwargs(self) -> Dict:
         """kwargs"""
         return {"id": self.collectionId}
 
 
-@dataclass
+@attr.s
 class ItemUri(CollectionUri):
     """Delete item"""
 
-    itemId: str = Path(..., description="Item ID")
+    itemId: str = attr.ib(default=Path(..., description="Item ID"))
 
     def kwargs(self) -> Dict:
         """kwargs"""
         return {"id": self.itemId}
 
 
-@dataclass
+@attr.s
 class EmptyRequest(APIRequest):
     """Empty request"""
 
@@ -84,31 +83,31 @@ class EmptyRequest(APIRequest):
         return {}
 
 
-@dataclass
+@attr.s
 class ItemCollectionUri(CollectionUri):
     """Get item collection"""
 
-    limit: int = 10
-    token: str = None
+    limit: int = attr.ib(default=10)
+    token: str = attr.ib(default=None)
 
     def kwargs(self) -> Dict:
         """kwargs"""
         return {"id": self.collectionId, "limit": self.limit, "token": self.token}
 
 
-@dataclass
+@attr.s
 class SearchGetRequest(APIRequest):
     """GET search request"""
 
-    collections: Optional[str] = None
-    ids: Optional[str] = None
-    bbox: Optional[str] = None
-    datetime: Optional[Union[str]] = None
-    limit: Optional[int] = 10
-    query: Optional[str] = None
-    token: Optional[str] = None
-    fields: Optional[str] = None
-    sortby: Optional[str] = None
+    collections: Optional[str] = attr.ib(default=None)
+    ids: Optional[str] = attr.ib(default=None)
+    bbox: Optional[str] = attr.ib(default=None)
+    datetime: Optional[Union[str]] = attr.ib(default=None)
+    limit: Optional[int] = attr.ib(default=10)
+    query: Optional[str] = attr.ib(default=None)
+    token: Optional[str] = attr.ib(default=None)
+    fields: Optional[str] = attr.ib(default=None)
+    sortby: Optional[str] = attr.ib(default=None)
 
     def kwargs(self) -> Dict:
         """kwargs"""

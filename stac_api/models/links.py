@@ -1,11 +1,12 @@
 """link helpers."""
 
-from dataclasses import dataclass
 from typing import Dict, List
 from urllib.parse import urljoin
 
-from stac_api.models.ogc import OGCTileLink
+import attr
 from stac_pydantic.shared import Link, MimeTypes, Relations
+
+from stac_api.models.ogc import OGCTileLink
 
 # These can be inferred from the item/collection so they aren't included in the database
 # Instead they are dynamically generated when querying the database using the classes defined below
@@ -17,12 +18,12 @@ def filter_links(links: List[Dict]) -> List[Dict]:
     return [link for link in links if link["rel"] not in INFERRED_LINK_RELS]
 
 
-@dataclass
+@attr.s
 class BaseLinks:
     """Create inferred links common to collections and items"""
 
-    collection_id: str
-    base_url: str
+    collection_id: str = attr.ib()
+    base_url: str = attr.ib()
 
     def root(self) -> Link:
         """Return the catalog root"""
@@ -31,7 +32,7 @@ class BaseLinks:
         )
 
 
-@dataclass
+@attr.s
 class CollectionLinks(BaseLinks):
     """Create inferred links specific to collections"""
 
@@ -62,11 +63,11 @@ class CollectionLinks(BaseLinks):
         return [self.self(), self.parent(), self.item(), self.root()]
 
 
-@dataclass
+@attr.s
 class ItemLinks(BaseLinks):
     """Create inferred links specific to items"""
 
-    item_id: str
+    item_id: str = attr.ib()
 
     def self(self) -> Link:
         """Create the `self` link."""
@@ -120,13 +121,13 @@ class ItemLinks(BaseLinks):
         return links
 
 
-@dataclass
+@attr.s
 class TileLinks:
     """Create inferred links specific to OGC Tiles API"""
 
-    base_url: str
-    collection_id: str
-    item_id: str
+    base_url: str = attr.ib()
+    collection_id: str = attr.ib()
+    item_id: str = attr.ib()
 
     def __post_init__(self):
         """post init"""
