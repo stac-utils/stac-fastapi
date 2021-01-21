@@ -1,19 +1,19 @@
 """ogc tiles client"""
 
-from dataclasses import dataclass
 from typing import Union
 
+import attr
+from stac_pydantic.collection import SpatialExtent
+from stac_pydantic.shared import MimeTypes
 from starlette.responses import RedirectResponse
 
 from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.models.links import TileLinks
 from stac_api.models.ogc import TileSetResource
-from stac_pydantic.collection import SpatialExtent
-from stac_pydantic.shared import MimeTypes
 
 
 # TODO: Decouple from postgres by inherting from base class (stac_api.clients.base)
-@dataclass
+@attr.s
 class TilesClient(CoreCrudClient):
     """OGC Tiles specific operations"""
 

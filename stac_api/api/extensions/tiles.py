@@ -1,21 +1,21 @@
 """tiles extension"""
-from dataclasses import dataclass
-
+import attr
 from fastapi import FastAPI
+from starlette.requests import Request
+from starlette.responses import HTMLResponse
+
 from stac_api.api.extensions.extension import ApiExtension
 from stac_api.api.models import ItemUri
 from stac_api.api.routes import create_endpoint_with_depends
 from stac_api.clients.tiles.ogc import TilesClient
 from stac_api.models.ogc import TileSetResource
-from starlette.requests import Request
-from starlette.responses import HTMLResponse
 
 
-@dataclass
+@attr.s
 class TilesExtension(ApiExtension):
     """titiler extension"""
 
-    client: TilesClient = TilesClient()
+    client: TilesClient = attr.ib(default=attr.Factory(TilesClient))
 
     def register(self, app: FastAPI) -> None:
         """register extension with the application"""

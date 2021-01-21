@@ -1,9 +1,9 @@
 """Postgresql base client"""
 import abc
 import logging
-from dataclasses import dataclass
 from typing import Optional, Type
 
+import attr
 import sqlalchemy as sa
 from sqlalchemy.orm import Query
 
@@ -15,11 +15,11 @@ from stac_api.utils.dependencies import READER, WRITER
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@attr.s
 class PostgresClient(abc.ABC):
     """Database CRUD operations on the defined table"""
 
-    table: Optional[Type[database.BaseModel]] = None
+    table: Type[database.BaseModel] = attr.ib(default=database.BaseModel)
 
     @property
     def reader_session(self):

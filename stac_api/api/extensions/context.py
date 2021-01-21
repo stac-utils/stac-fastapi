@@ -1,12 +1,11 @@
 """context extension"""
-from dataclasses import dataclass
-
+import attr
 from fastapi import FastAPI
 
 from stac_api.api.extensions.extension import ApiExtension
 
 
-@dataclass
+@attr.s
 class ContextExtension(ApiExtension):
     """
     stac-api context extension

@@ -1,9 +1,9 @@
 """Base clients."""
 import abc
-from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
+import attr
 from stac_pydantic import ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 
@@ -13,7 +13,7 @@ from stac_api.models import schemas
 NumType = Union[float, int]
 
 
-@dataclass  # type:ignore
+@attr.s  # type:ignore
 class BaseTransactionsClient(abc.ABC):
     """Base transactions client"""
 
@@ -52,7 +52,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
 
-@dataclass  # type: ignore
+@attr.s  # type: ignore
 class BulkTransactionsClient(abc.ABC):
     """bulk transactions client"""
 
@@ -68,11 +68,11 @@ class BulkTransactionsClient(abc.ABC):
         raise NotImplementedError
 
 
-@dataclass  # type:ignore
+@attr.s  # type:ignore
 class BaseCoreClient(abc.ABC):
     """Base client for core endpoints defined by stac"""
 
-    extensions: List[ApiExtension] = field(default_factory=list)
+    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
     def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
         """check if an api extension is enabled"""

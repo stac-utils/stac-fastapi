@@ -1,11 +1,11 @@
 """base api extension"""
 import abc
-from dataclasses import dataclass
 
+import attr
 from fastapi import FastAPI
 
 
-@dataclass  # type:ignore
+@attr.s
 class ApiExtension(abc.ABC):
     """orchestration for API extensions"""
 
