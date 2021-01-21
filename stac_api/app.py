@@ -7,26 +7,27 @@ from stac_api.api.extensions import (
     TilesExtension,
     TransactionExtension,
 )
-from stac_api.clients.postgres.core import CoreCrudClient, Session
+from stac_api.clients.postgres.core import CoreCrudClient
+from stac_api.clients.postgres.session import Session
 from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.clients.postgres.transactions import TransactionsClient
+from stac_api.clients.tiles.ogc import TilesClient
 from stac_api.config import ApiSettings
 
 settings = ApiSettings()
+session = Session(settings.reader_connection_string, settings.writer_connection_string)
 api = StacApi(
     settings=settings,
     extensions=[
-        TransactionExtension(client=TransactionsClient()),
+        TransactionExtension(client=TransactionsClient(session=session)),
         FieldsExtension(),
         QueryExtension(),
         SortExtension(),
-        TilesExtension(),
+        TilesExtension(TilesClient(session=session)),
     ],
     client=CoreCrudClient(
-        session=Session(
-            settings.reader_connection_string, settings.writer_connection_string
-        ),
-        pagination_client=PaginationTokenClient(),
+        session=session,
+        pagination_client=PaginationTokenClient(session=session),
     ),
 )
 app = api.app

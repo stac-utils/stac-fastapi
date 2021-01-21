@@ -19,7 +19,6 @@ from stac_api import errors
 from stac_api.api.extensions import ContextExtension, FieldsExtension
 from stac_api.clients.base import BaseCoreClient
 from stac_api.clients.postgres.base import PostgresClient
-from stac_api.clients.postgres.session import Session
 from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.errors import DatabaseError
 from stac_api.models import database, schemas
@@ -34,7 +33,6 @@ NumType = Union[float, int]
 class CoreCrudClient(PostgresClient, BaseCoreClient):
     """Client for core endpoints defined by stac"""
 
-    session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     pagination_client: PaginationTokenClient = attr.ib(default=None)
     table: Type[database.Item] = attr.ib(default=database.Item)
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)

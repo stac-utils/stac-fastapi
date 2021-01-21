@@ -9,6 +9,7 @@ from sqlalchemy.orm import Query
 
 import psycopg2
 from stac_api import errors
+from stac_api.clients.postgres.session import Session
 from stac_api.models import database
 from stac_api.utils.dependencies import READER, WRITER
 
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 class PostgresClient(abc.ABC):
     """Database CRUD operations on the defined table"""
 
+    session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     table: Type[database.BaseModel] = attr.ib(default=database.BaseModel)
 
     @property
@@ -58,13 +60,14 @@ class PostgresClient(abc.ABC):
     ) -> Query:
         """Create a query to access a single record from the table"""
         table = table or self.table
-        try:
-            query = self.reader_session.query(table).filter(table.id == item_id)
-        except Exception as e:
-            logger.error(e, exc_info=True)
-            raise errors.DatabaseError("Unhandled database during ID lookup")
-        if not self.row_exists(query):
-            error_message = f"Row {item_id} does not exist"
-            logger.warning(error_message)
-            raise errors.NotFoundError(error_message)
-        return query
+        with self.session.reader.context_session() as session:
+            try:
+                query = session.query(table).filter(table.id == item_id)
+            except Exception as e:
+                logger.error(e, exc_info=True)
+                raise errors.DatabaseError("Unhandled database during ID lookup")
+            if not self.row_exists(query):
+                error_message = f"Row {item_id} does not exist"
+                logger.warning(error_message)
+                raise errors.NotFoundError(error_message)
+            return query
