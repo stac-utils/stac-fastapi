@@ -18,7 +18,9 @@ from sqlakeyset import get_page
 from stac_api import errors
 from stac_api.api.extensions import ContextExtension, FieldsExtension
 from stac_api.clients.base import BaseCoreClient
-from stac_api.clients.postgres.base import PostgresClient
+
+# from stac_api.clients.postgres.base import PostgresClient
+from stac_api.clients.postgres.session import Session
 from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.errors import DatabaseError
 from stac_api.models import database, schemas
@@ -30,11 +32,12 @@ NumType = Union[float, int]
 
 
 @attr.s
-class CoreCrudClient(PostgresClient, BaseCoreClient):
+class CoreCrudClient(BaseCoreClient):
     """Client for core endpoints defined by stac"""
 
+    session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     pagination_client: PaginationTokenClient = attr.ib(default=None)
-    table: Type[database.Item] = attr.ib(default=database.Item)
+    item_table: Type[database.Item] = attr.ib(default=database.Item)
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
 
     def landing_page(self, **kwargs) -> LandingPage:
@@ -132,10 +135,10 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         with self.session.reader.context_session() as session:
             try:
                 collection_children = (
-                    session.query(self.table)
+                    session.query(self.item_table)
                     .join(self.collection_table)
                     .filter(self.collection_table.id == id)
-                    .order_by(self.table.datetime.desc(), self.table.id)
+                    .order_by(self.item_table.datetime.desc(), self.item_table.id)
                 )
                 count = None
                 if self.extension_is_enabled(ContextExtension):
@@ -206,7 +209,11 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         """Get item by id"""
         with self.session.reader.context_session() as session:
             try:
-                item = session.query(self.table).filter(self.table.id == id).first()
+                item = (
+                    session.query(self.item_table)
+                    .filter(self.item_table.id == id)
+                    .first()
+                )
             except Exception as e:
                 logger.error(e, exc_info=True)
                 raise errors.DatabaseError("Unhandled database error")
@@ -295,7 +302,7 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
                 if search_request.token
                 else False
             )
-            query = session.query(self.table)
+            query = session.query(self.item_table)
 
             # Filter by collection
             count = None
@@ -312,20 +319,26 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
             # Sort
             if search_request.sortby:
                 sort_fields = [
-                    getattr(self.table.get_field(sort.field), sort.direction.value)()
+                    getattr(
+                        self.item_table.get_field(sort.field), sort.direction.value
+                    )()
                     for sort in search_request.sortby
                 ]
-                sort_fields.append(self.table.id)
+                sort_fields.append(self.item_table.id)
                 query = query.order_by(*sort_fields)
             else:
                 # Default sort is date
-                query = query.order_by(self.table.datetime.desc(), self.table.id)
+                query = query.order_by(
+                    self.item_table.datetime.desc(), self.item_table.id
+                )
 
             # Ignore other parameters if ID is present
             if search_request.ids:
-                id_filter = sa.or_(*[self.table.id == i for i in search_request.ids])
+                id_filter = sa.or_(
+                    *[self.item_table.id == i for i in search_request.ids]
+                )
                 try:
-                    items = query.filter(id_filter).order_by(self.table.id)
+                    items = query.filter(id_filter).order_by(self.item_table.id)
                     page = get_page(items, per_page=search_request.limit, page=token)
                     if self.extension_is_enabled(ContextExtension):
                         count = len(search_request.ids)
@@ -352,7 +365,7 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
                 if poly:
                     filter_geom = ga.shape.from_shape(poly, srid=4326)
                     query = query.filter(
-                        ga.func.ST_Intersects(self.table.geometry, filter_geom)
+                        ga.func.ST_Intersects(self.item_table.geometry, filter_geom)
                     )
 
                 # Temporal query
@@ -360,23 +373,23 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
                     # Two tailed query (between)
                     if ".." not in search_request.datetime:
                         query = query.filter(
-                            self.table.datetime.between(*search_request.datetime)
+                            self.item_table.datetime.between(*search_request.datetime)
                         )
                     # All items after the start date
                     if search_request.datetime[0] != "..":
                         query = query.filter(
-                            self.table.datetime >= search_request.datetime[0]
+                            self.item_table.datetime >= search_request.datetime[0]
                         )
                     # All items before the end date
                     if search_request.datetime[1] != "..":
                         query = query.filter(
-                            self.table.datetime <= search_request.datetime[1]
+                            self.item_table.datetime <= search_request.datetime[1]
                         )
 
                 # Query fields
                 if search_request.query:
                     for (field_name, expr) in search_request.query.items():
-                        field = self.table.get_field(field_name)
+                        field = self.item_table.get_field(field_name)
                         for (op, value) in expr.items():
                             query = query.filter(op.operator(field, value))
 
