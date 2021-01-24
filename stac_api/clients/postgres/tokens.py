@@ -26,7 +26,7 @@ class PaginationTokenClient(abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
-    def lookup_id(
+    def _lookup_id(
         id: str, table: Type[database.BaseModel], session: SqlSession
     ) -> Type[database.BaseModel]:
         """lookup row by id"""
@@ -51,5 +51,5 @@ class PaginationTokenClient(abc.ABC):
     def get_token(self, token_id: str) -> str:
         """Retrieve a keyset from the database"""
         with self.session.reader.context_session() as session:
-            token = self.lookup_id(token_id, self.token_table, session)
+            token = self._lookup_id(token_id, self.token_table, session)
             return token.keyset

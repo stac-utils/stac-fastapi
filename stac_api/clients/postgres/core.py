@@ -40,7 +40,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
 
     @staticmethod
-    def lookup_id(
+    def _lookup_id(
         id: str, table: Type[database.BaseModel], session: SqlSession
     ) -> Type[database.BaseModel]:
         """lookup row by id"""
@@ -122,7 +122,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     def get_collection(self, id: str, **kwargs) -> schemas.Collection:
         """Get collection by id"""
         with self.session.reader.context_session() as session:
-            collection = self.lookup_id(id, self.collection_table, session)
+            collection = self._lookup_id(id, self.collection_table, session)
             # TODO: Don't do this
             collection.base_url = str(kwargs["request"].base_url)
             return schemas.Collection.from_orm(collection)
@@ -207,7 +207,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     def get_item(self, id: str, **kwargs) -> schemas.Item:
         """Get item by id"""
         with self.session.reader.context_session() as session:
-            item = self.lookup_id(id, self.item_table, session)
+            item = self._lookup_id(id, self.item_table, session)
             item.base_url = str(kwargs["request"].base_url)
             return schemas.Item.from_orm(item)
 

@@ -19,13 +19,8 @@ logger = logging.getLogger(__name__)
 class TransactionsClient(PostgresClient, BaseTransactionsClient):
     """Transactions extension specific CRUD operations"""
 
-    table: Type[database.Collection] = attr.ib(default=database.Collection)
+    collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
     item_table: Type[database.Item] = attr.ib(default=database.Item)
-
-    @property
-    def collection_table(self):
-        """alias for `self.table` # TODO: Figure out a better way to do this"""
-        return self.table
 
     def _create(
         self,
