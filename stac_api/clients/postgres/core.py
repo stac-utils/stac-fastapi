@@ -8,6 +8,7 @@ from urllib.parse import urlencode, urljoin
 import attr
 import sqlalchemy as sa
 from sqlalchemy import func
+from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic import ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.extensions.paging import PaginationLink
@@ -18,11 +19,9 @@ from sqlakeyset import get_page
 from stac_api import errors
 from stac_api.api.extensions import ContextExtension, FieldsExtension
 from stac_api.clients.base import BaseCoreClient
-
-# from stac_api.clients.postgres.base import PostgresClient
 from stac_api.clients.postgres.session import Session
 from stac_api.clients.postgres.tokens import PaginationTokenClient
-from stac_api.errors import DatabaseError
+from stac_api.errors import DatabaseError, NotFoundError
 from stac_api.models import database, schemas
 from stac_api.models.links import CollectionLinks
 
@@ -39,6 +38,20 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     pagination_client: PaginationTokenClient = attr.ib(default=None)
     item_table: Type[database.Item] = attr.ib(default=database.Item)
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
+
+    @staticmethod
+    def lookup_id(
+        id: str, table: Type[database.BaseModel], session: SqlSession
+    ) -> Type[database.BaseModel]:
+        """lookup row by id"""
+        try:
+            row = session.query(table).filter(table.id == id).first()
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            raise DatabaseError("Unhandled database error")
+        if not row:
+            raise NotFoundError(f"{table.__name__} {id} not found")
+        return row
 
     def landing_page(self, **kwargs) -> LandingPage:
         """landing page"""
@@ -109,21 +122,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     def get_collection(self, id: str, **kwargs) -> schemas.Collection:
         """Get collection by id"""
         with self.session.reader.context_session() as session:
-            try:
-                collection = (
-                    session.query(self.collection_table)
-                    .filter(self.collection_table.id == id)
-                    .first()
-                )
-            except Exception as e:
-                logger.error(e, exc_info=True)
-                raise errors.DatabaseError(
-                    "Unhandled database error when getting collection"
-                )
-
-            if not collection:
-                raise errors.NotFoundError(f"Collection {id} not found")
-
+            collection = self.lookup_id(id, self.collection_table, session)
             # TODO: Don't do this
             collection.base_url = str(kwargs["request"].base_url)
             return schemas.Collection.from_orm(collection)
@@ -208,17 +207,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     def get_item(self, id: str, **kwargs) -> schemas.Item:
         """Get item by id"""
         with self.session.reader.context_session() as session:
-            try:
-                item = (
-                    session.query(self.item_table)
-                    .filter(self.item_table.id == id)
-                    .first()
-                )
-            except Exception as e:
-                logger.error(e, exc_info=True)
-                raise errors.DatabaseError("Unhandled database error")
-            if not item:
-                raise errors.NotFoundError(f"Item {id} not found")
+            item = self.lookup_id(id, self.item_table, session)
             item.base_url = str(kwargs["request"].base_url)
             return schemas.Item.from_orm(item)
 

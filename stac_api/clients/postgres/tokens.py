@@ -1,27 +1,36 @@
 """Pagination token client."""
-
+import abc
 import logging
 import os
 from base64 import urlsafe_b64encode
 from typing import Type
 
 import attr
+from sqlalchemy.orm import Session as SqlSession
 
 from stac_api.clients.postgres.session import Session
-from stac_api.errors import DatabaseError, NotFoundError
+from stac_api.errors import DatabaseError
 from stac_api.models import database
 
 logger = logging.getLogger(__name__)
 
 
 @attr.s
-class PaginationTokenClient:
+class PaginationTokenClient(abc.ABC):
     """Pagination token specific CRUD operations"""
 
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     token_table: Type[database.PaginationToken] = attr.ib(
         default=database.PaginationToken
     )
+
+    @staticmethod
+    @abc.abstractmethod
+    def lookup_id(
+        id: str, table: Type[database.BaseModel], session: SqlSession
+    ) -> Type[database.BaseModel]:
+        """lookup row by id"""
+        ...
 
     def insert_token(self, keyset: str, tries: int = 0) -> str:  # type:ignore
         """Insert a keyset into the database"""
@@ -42,17 +51,5 @@ class PaginationTokenClient:
     def get_token(self, token_id: str) -> str:
         """Retrieve a keyset from the database"""
         with self.session.reader.context_session() as session:
-            try:
-                token = (
-                    session.query(self.token_table)
-                    .filter(self.token_table.id == token_id)
-                    .first()
-                )
-            except Exception as e:
-                logger.error(e, exc_info=True)
-                raise DatabaseError("Error fetching token from database")
-
-            if not token:
-                raise NotFoundError(f"Could not find token {token_id}")
-
+            token = self.lookup_id(token_id, self.token_table, session)
             return token.keyset
