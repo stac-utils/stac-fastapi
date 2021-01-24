@@ -89,7 +89,6 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
 
     def all_collections(self, **kwargs) -> List[schemas.Collection]:
         """Read all collections from the database"""
-
         with self.session.reader.context_session() as session:
             try:
                 collections = session.query(self.collection_table).all()
@@ -106,89 +105,115 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
 
     def get_collection(self, id: str, **kwargs) -> schemas.Collection:
         """Get collection by id"""
-        collection = self.lookup_id(id, table=self.collection_table).first()
-        collection.base_url = str(kwargs["request"].base_url)
-        return schemas.Collection.from_orm(collection)
+        with self.session.reader.context_session() as session:
+            try:
+                collection = (
+                    session.query(self.collection_table)
+                    .filter(self.collection_table.id == id)
+                    .first()
+                )
+            except Exception as e:
+                logger.error(e, exc_info=True)
+                raise errors.DatabaseError(
+                    "Unhandled database error when getting collection"
+                )
+
+            if not collection:
+                raise errors.NotFoundError(f"Collection {id} not found")
+
+            # TODO: Don't do this
+            collection.base_url = str(kwargs["request"].base_url)
+            return schemas.Collection.from_orm(collection)
 
     def item_collection(
         self, id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
         """Read an item collection from the database"""
-        try:
-            collection_children = (
-                self.reader_session.query(self.table)
-                .join(self.collection_table)
-                .filter(self.collection_table.id == id)
-                .order_by(self.table.datetime.desc(), self.table.id)
-            )
-            count = None
+        with self.session.reader.context_session() as session:
+            try:
+                collection_children = (
+                    session.query(self.table)
+                    .join(self.collection_table)
+                    .filter(self.collection_table.id == id)
+                    .order_by(self.table.datetime.desc(), self.table.id)
+                )
+                count = None
+                if self.extension_is_enabled(ContextExtension):
+                    count_query = collection_children.statement.with_only_columns(
+                        [func.count()]
+                    ).order_by(None)
+                    count = collection_children.session.execute(count_query).scalar()
+                token = self.pagination_client.get(token) if token else token
+                page = get_page(
+                    collection_children, per_page=limit, page=(token or False)
+                )
+                # Create dynamic attributes for each page
+                page.next = (
+                    self.pagination_client.insert(keyset=page.paging.bookmark_next)
+                    if page.paging.has_next
+                    else None
+                )
+                page.previous = (
+                    self.pagination_client.insert(keyset=page.paging.bookmark_previous)
+                    if page.paging.has_previous
+                    else None
+                )
+            except errors.NotFoundError:
+                raise
+            except Exception as e:
+                logger.error(e, exc_info=True)
+                raise errors.DatabaseError(
+                    "Unhandled database error when getting collection children"
+                )
+
+            links = []
+            if page.next:
+                links.append(
+                    PaginationLink(
+                        rel=Relations.next,
+                        type="application/geo+json",
+                        href=f"{kwargs['request'].base_url}collections/{id}/items?token={page.next}&limit={limit}",
+                        method="GET",
+                    )
+                )
+            if page.previous:
+                links.append(
+                    PaginationLink(
+                        rel=Relations.previous,
+                        type="application/geo+json",
+                        href=f"{kwargs['request'].base_url}collections/{id}/items?token={page.previous}&limit={limit}",
+                        method="GET",
+                    )
+                )
+
+            response_features = []
+            for item in page:
+                item.base_url = str(kwargs["request"].base_url)
+                response_features.append(schemas.Item.from_orm(item))
+
+            context_obj = None
             if self.extension_is_enabled(ContextExtension):
-                count_query = collection_children.statement.with_only_columns(
-                    [func.count()]
-                ).order_by(None)
-                count = collection_children.session.execute(count_query).scalar()
-            token = self.pagination_client.get(token) if token else token
-            page = get_page(collection_children, per_page=limit, page=(token or False))
-            # Create dynamic attributes for each page
-            page.next = (
-                self.pagination_client.insert(keyset=page.paging.bookmark_next)
-                if page.paging.has_next
-                else None
-            )
-            page.previous = (
-                self.pagination_client.insert(keyset=page.paging.bookmark_previous)
-                if page.paging.has_previous
-                else None
-            )
-        except errors.NotFoundError:
-            raise
-        except Exception as e:
-            logger.error(e, exc_info=True)
-            raise errors.DatabaseError(
-                "Unhandled database error when getting collection children"
-            )
+                context_obj = {"returned": len(page), "limit": limit, "matched": count}
 
-        links = []
-        if page.next:
-            links.append(
-                PaginationLink(
-                    rel=Relations.next,
-                    type="application/geo+json",
-                    href=f"{kwargs['request'].base_url}collections/{id}/items?token={page.next}&limit={limit}",
-                    method="GET",
-                )
+            return ItemCollection(
+                type="FeatureCollection",
+                context=context_obj,
+                features=response_features,
+                links=links,
             )
-        if page.previous:
-            links.append(
-                PaginationLink(
-                    rel=Relations.previous,
-                    type="application/geo+json",
-                    href=f"{kwargs['request'].base_url}collections/{id}/items?token={page.previous}&limit={limit}",
-                    method="GET",
-                )
-            )
-
-        response_features = []
-        for item in page:
-            item.base_url = str(kwargs["request"].base_url)
-            response_features.append(schemas.Item.from_orm(item))
-
-        context_obj = None
-        if self.extension_is_enabled(ContextExtension):
-            context_obj = {"returned": len(page), "limit": limit, "matched": count}
-
-        return ItemCollection(
-            type="FeatureCollection",
-            context=context_obj,
-            features=response_features,
-            links=links,
-        )
 
     def get_item(self, id: str, **kwargs) -> schemas.Item:
         """Get item by id"""
-        obj = self.lookup_id(id).first()
-        obj.base_url = str(kwargs["request"].base_url)
-        return schemas.Item.from_orm(obj)
+        with self.session.reader.context_session() as session:
+            try:
+                item = session.query(self.table).filter(self.table.id == id).first()
+            except Exception as e:
+                logger.error(e, exc_info=True)
+                raise errors.DatabaseError("Unhandled database error")
+            if not item:
+                raise errors.NotFoundError(f"Item {id} not found")
+            item.base_url = str(kwargs["request"].base_url)
+            return schemas.Item.from_orm(item)
 
     def get_search(
         self,
@@ -264,154 +289,159 @@ class CoreCrudClient(PostgresClient, BaseCoreClient):
         self, search_request: schemas.STACSearch, **kwargs
     ) -> Dict[str, Any]:
         """POST search catalog"""
-        token = (
-            self.pagination_client.get(search_request.token)
-            if search_request.token
-            else False
-        )
-        query = self.reader_session.query(self.table)
-
-        # Filter by collection
-        count = None
-        if search_request.collections:
-            query = query.join(self.collection_table).filter(
-                sa.or_(
-                    *[
-                        self.collection_table.id == col_id
-                        for col_id in search_request.collections
-                    ]
-                )
+        with self.session.reader.context_session() as session:
+            token = (
+                self.pagination_client.get(search_request.token)
+                if search_request.token
+                else False
             )
+            query = session.query(self.table)
 
-        # Sort
-        if search_request.sortby:
-            sort_fields = [
-                getattr(self.table.get_field(sort.field), sort.direction.value)()
-                for sort in search_request.sortby
-            ]
-            sort_fields.append(self.table.id)
-            query = query.order_by(*sort_fields)
-        else:
-            # Default sort is date
-            query = query.order_by(self.table.datetime.desc(), self.table.id)
-
-        # Ignore other parameters if ID is present
-        if search_request.ids:
-            id_filter = sa.or_(*[self.table.id == i for i in search_request.ids])
-            try:
-                items = query.filter(id_filter).order_by(self.table.id)
-                page = get_page(items, per_page=search_request.limit, page=token)
-                if self.extension_is_enabled(ContextExtension):
-                    count = len(search_request.ids)
-                page.next = (
-                    self.pagination_client.insert(keyset=page.paging.bookmark_next)
-                    if page.paging.has_next
-                    else None
-                )
-                page.previous = (
-                    self.pagination_client.insert(keyset=page.paging.bookmark_previous)
-                    if page.paging.has_previous
-                    else None
-                )
-            except Exception as e:
-                logger.error(e, exc_info=True)
-                raise DatabaseError(
-                    "Unhandled database error when searching for items by id"
-                )
-        else:
-            # Spatial query
-            poly = search_request.polygon()
-            if poly:
-                filter_geom = ga.shape.from_shape(poly, srid=4326)
-                query = query.filter(
-                    ga.func.ST_Intersects(self.table.geometry, filter_geom)
-                )
-
-            # Temporal query
-            if search_request.datetime:
-                # Two tailed query (between)
-                if ".." not in search_request.datetime:
-                    query = query.filter(
-                        self.table.datetime.between(*search_request.datetime)
+            # Filter by collection
+            count = None
+            if search_request.collections:
+                query = query.join(self.collection_table).filter(
+                    sa.or_(
+                        *[
+                            self.collection_table.id == col_id
+                            for col_id in search_request.collections
+                        ]
                     )
-                # All items after the start date
-                if search_request.datetime[0] != "..":
-                    query = query.filter(
-                        self.table.datetime >= search_request.datetime[0]
+                )
+
+            # Sort
+            if search_request.sortby:
+                sort_fields = [
+                    getattr(self.table.get_field(sort.field), sort.direction.value)()
+                    for sort in search_request.sortby
+                ]
+                sort_fields.append(self.table.id)
+                query = query.order_by(*sort_fields)
+            else:
+                # Default sort is date
+                query = query.order_by(self.table.datetime.desc(), self.table.id)
+
+            # Ignore other parameters if ID is present
+            if search_request.ids:
+                id_filter = sa.or_(*[self.table.id == i for i in search_request.ids])
+                try:
+                    items = query.filter(id_filter).order_by(self.table.id)
+                    page = get_page(items, per_page=search_request.limit, page=token)
+                    if self.extension_is_enabled(ContextExtension):
+                        count = len(search_request.ids)
+                    page.next = (
+                        self.pagination_client.insert(keyset=page.paging.bookmark_next)
+                        if page.paging.has_next
+                        else None
                     )
-                # All items before the end date
-                if search_request.datetime[1] != "..":
+                    page.previous = (
+                        self.pagination_client.insert(
+                            keyset=page.paging.bookmark_previous
+                        )
+                        if page.paging.has_previous
+                        else None
+                    )
+                except Exception as e:
+                    logger.error(e, exc_info=True)
+                    raise DatabaseError(
+                        "Unhandled database error when searching for items by id"
+                    )
+            else:
+                # Spatial query
+                poly = search_request.polygon()
+                if poly:
+                    filter_geom = ga.shape.from_shape(poly, srid=4326)
                     query = query.filter(
-                        self.table.datetime <= search_request.datetime[1]
+                        ga.func.ST_Intersects(self.table.geometry, filter_geom)
                     )
 
-            # Query fields
-            if search_request.query:
-                for (field_name, expr) in search_request.query.items():
-                    field = self.table.get_field(field_name)
-                    for (op, value) in expr.items():
-                        query = query.filter(op.operator(field, value))
+                # Temporal query
+                if search_request.datetime:
+                    # Two tailed query (between)
+                    if ".." not in search_request.datetime:
+                        query = query.filter(
+                            self.table.datetime.between(*search_request.datetime)
+                        )
+                    # All items after the start date
+                    if search_request.datetime[0] != "..":
+                        query = query.filter(
+                            self.table.datetime >= search_request.datetime[0]
+                        )
+                    # All items before the end date
+                    if search_request.datetime[1] != "..":
+                        query = query.filter(
+                            self.table.datetime <= search_request.datetime[1]
+                        )
 
-            try:
-                if self.extension_is_enabled(ContextExtension):
-                    count_query = query.statement.with_only_columns(
-                        [func.count()]
-                    ).order_by(None)
-                    count = query.session.execute(count_query).scalar()
-                page = get_page(query, per_page=search_request.limit, page=token)
-                # Create dynamic attributes for each page
-                page.next = (
-                    self.pagination_client.insert(keyset=page.paging.bookmark_next)
-                    if page.paging.has_next
-                    else None
-                )
-                page.previous = (
-                    self.pagination_client.insert(keyset=page.paging.bookmark_previous)
-                    if page.paging.has_previous
-                    else None
-                )
-            except Exception as e:
-                logger.error(e, exc_info=True)
-                raise DatabaseError(
-                    "Unhandled database error during spatial/temporal query"
-                )
-        links = []
-        if page.next:
-            links.append(
-                PaginationLink(
-                    rel=Relations.next,
-                    type="application/geo+json",
-                    href=f"{kwargs['request'].base_url}search",
-                    method="POST",
-                    body={"token": page.next},
-                    merge=True,
-                )
-            )
-        if page.previous:
-            links.append(
-                PaginationLink(
-                    rel=Relations.previous,
-                    type="application/geo+json",
-                    href=f"{kwargs['request'].base_url}search",
-                    method="POST",
-                    body={"token": page.previous},
-                    merge=True,
-                )
-            )
+                # Query fields
+                if search_request.query:
+                    for (field_name, expr) in search_request.query.items():
+                        field = self.table.get_field(field_name)
+                        for (op, value) in expr.items():
+                            query = query.filter(op.operator(field, value))
 
-        response_features = []
-        filter_kwargs = {}
-        if self.extension_is_enabled(FieldsExtension):
-            filter_kwargs = search_request.field.filter_fields
+                try:
+                    if self.extension_is_enabled(ContextExtension):
+                        count_query = query.statement.with_only_columns(
+                            [func.count()]
+                        ).order_by(None)
+                        count = query.session.execute(count_query).scalar()
+                    page = get_page(query, per_page=search_request.limit, page=token)
+                    # Create dynamic attributes for each page
+                    page.next = (
+                        self.pagination_client.insert(keyset=page.paging.bookmark_next)
+                        if page.paging.has_next
+                        else None
+                    )
+                    page.previous = (
+                        self.pagination_client.insert(
+                            keyset=page.paging.bookmark_previous
+                        )
+                        if page.paging.has_previous
+                        else None
+                    )
+                except Exception as e:
+                    logger.error(e, exc_info=True)
+                    raise DatabaseError(
+                        "Unhandled database error during spatial/temporal query"
+                    )
+            links = []
+            if page.next:
+                links.append(
+                    PaginationLink(
+                        rel=Relations.next,
+                        type="application/geo+json",
+                        href=f"{kwargs['request'].base_url}search",
+                        method="POST",
+                        body={"token": page.next},
+                        merge=True,
+                    )
+                )
+            if page.previous:
+                links.append(
+                    PaginationLink(
+                        rel=Relations.previous,
+                        type="application/geo+json",
+                        href=f"{kwargs['request'].base_url}search",
+                        method="POST",
+                        body={"token": page.previous},
+                        merge=True,
+                    )
+                )
 
-        xvals = []
-        yvals = []
-        for item in page:
-            item.base_url = str(kwargs["request"].base_url)
-            item_model = schemas.Item.from_orm(item)
-            xvals += [item_model.bbox[0], item_model.bbox[2]]
-            yvals += [item_model.bbox[1], item_model.bbox[3]]
-            response_features.append(item_model.to_dict(**filter_kwargs))
+            response_features = []
+            filter_kwargs = {}
+            if self.extension_is_enabled(FieldsExtension):
+                filter_kwargs = search_request.field.filter_fields
+
+            xvals = []
+            yvals = []
+            for item in page:
+                item.base_url = str(kwargs["request"].base_url)
+                item_model = schemas.Item.from_orm(item)
+                xvals += [item_model.bbox[0], item_model.bbox[2]]
+                yvals += [item_model.bbox[1], item_model.bbox[3]]
+                response_features.append(item_model.to_dict(**filter_kwargs))
 
         try:
             bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
