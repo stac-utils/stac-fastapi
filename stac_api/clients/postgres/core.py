@@ -32,7 +32,7 @@ NumType = Union[float, int]
 
 
 @attr.s
-class CoreCrudClient(BaseCoreClient):
+class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     """Client for core endpoints defined by stac"""
 
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
@@ -146,18 +146,18 @@ class CoreCrudClient(BaseCoreClient):
                         [func.count()]
                     ).order_by(None)
                     count = collection_children.session.execute(count_query).scalar()
-                token = self.pagination_client.get(token) if token else token
+                token = self.get_token(token) if token else token
                 page = get_page(
                     collection_children, per_page=limit, page=(token or False)
                 )
                 # Create dynamic attributes for each page
                 page.next = (
-                    self.pagination_client.insert(keyset=page.paging.bookmark_next)
+                    self.insert_token(keyset=page.paging.bookmark_next)
                     if page.paging.has_next
                     else None
                 )
                 page.previous = (
-                    self.pagination_client.insert(keyset=page.paging.bookmark_previous)
+                    self.insert_token(keyset=page.paging.bookmark_previous)
                     if page.paging.has_previous
                     else None
                 )
@@ -298,9 +298,7 @@ class CoreCrudClient(BaseCoreClient):
         """POST search catalog"""
         with self.session.reader.context_session() as session:
             token = (
-                self.pagination_client.get(search_request.token)
-                if search_request.token
-                else False
+                self.get_token(search_request.token) if search_request.token else False
             )
             query = session.query(self.item_table)
 
@@ -343,14 +341,12 @@ class CoreCrudClient(BaseCoreClient):
                     if self.extension_is_enabled(ContextExtension):
                         count = len(search_request.ids)
                     page.next = (
-                        self.pagination_client.insert(keyset=page.paging.bookmark_next)
+                        self.insert_token(keyset=page.paging.bookmark_next)
                         if page.paging.has_next
                         else None
                     )
                     page.previous = (
-                        self.pagination_client.insert(
-                            keyset=page.paging.bookmark_previous
-                        )
+                        self.insert_token(keyset=page.paging.bookmark_previous)
                         if page.paging.has_previous
                         else None
                     )
@@ -402,14 +398,12 @@ class CoreCrudClient(BaseCoreClient):
                     page = get_page(query, per_page=search_request.limit, page=token)
                     # Create dynamic attributes for each page
                     page.next = (
-                        self.pagination_client.insert(keyset=page.paging.bookmark_next)
+                        self.insert_token(keyset=page.paging.bookmark_next)
                         if page.paging.has_next
                         else None
                     )
                     page.previous = (
-                        self.pagination_client.insert(
-                            keyset=page.paging.bookmark_previous
-                        )
+                        self.insert_token(keyset=page.paging.bookmark_previous)
                         if page.paging.has_previous
                         else None
                     )
