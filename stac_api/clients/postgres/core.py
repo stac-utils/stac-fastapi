@@ -35,7 +35,6 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     """Client for core endpoints defined by stac"""
 
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
-    pagination_client: PaginationTokenClient = attr.ib(default=None)
     item_table: Type[database.Item] = attr.ib(default=database.Item)
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
 
