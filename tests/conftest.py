@@ -3,7 +3,6 @@ import os
 from typing import Callable, Dict
 
 import pytest
-
 from starlette.testclient import TestClient
 
 from stac_api.api.app import StacApi
@@ -16,7 +15,6 @@ from stac_api.api.extensions import (
 )
 from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.clients.postgres.session import Session
-from stac_api.clients.postgres.tokens import PaginationTokenClient
 from stac_api.clients.postgres.transactions import (
     PostgresBulkTransactions,
     TransactionsClient,
@@ -103,12 +101,12 @@ def postgres_bulk_transactions():
 
 
 @pytest.fixture
-def api_client():
+def api_client(db_session):
     return StacApi(
         settings=ApiSettings(),
-        client=CoreCrudClient(pagination_client=PaginationTokenClient()),
+        client=CoreCrudClient(session=db_session),
         extensions=[
-            TransactionExtension(client=TransactionsClient()),
+            TransactionExtension(client=TransactionsClient(session=db_session)),
             ContextExtension(),
             SortExtension(),
             FieldsExtension(),
