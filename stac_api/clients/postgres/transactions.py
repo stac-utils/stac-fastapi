@@ -50,8 +50,8 @@ class TransactionsClient(BaseTransactionsClient):
         try:
             with self.session.writer.context_session() as session:
                 session.add(data)
-                model.base_url = str(kwargs["request"].base_url)
-                return schemas.Collection.from_orm(model)
+                data.base_url = str(kwargs["request"].base_url)
+                return schemas.Collection.from_orm(data)
         except sa.exc.IntegrityError as e:
             if isinstance(e.orig, psycopg2.errors.UniqueViolation):
                 raise errors.ConflictError(f"Collection {model.id} already exists")
