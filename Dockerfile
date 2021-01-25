@@ -2,7 +2,7 @@ FROM python:3.8-slim
 
 # Any python libraries that require system libraries to be installed will likely
 # need the following packages in order to build
-RUN apt-get update && apt-get install -y build-essential git libgeos-dev
+RUN apt-get update && apt-get install -y build-essential git
 
 RUN pip install pipenv
 ENV PIPENV_NOSPIN=true
