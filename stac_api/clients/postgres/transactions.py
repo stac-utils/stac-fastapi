@@ -5,13 +5,11 @@ import logging
 from typing import Dict, List, Optional, Type
 
 import attr
-import sqlalchemy as sa
 from sqlalchemy import create_engine
 
-import psycopg2
-from stac_api import errors
 from stac_api.clients.base import BaseTransactionsClient, BulkTransactionsClient
 from stac_api.clients.postgres.session import Session
+from stac_api.errors import NotFoundError
 from stac_api.models import database, schemas
 
 logger = logging.getLogger(__name__)
@@ -28,58 +26,37 @@ class TransactionsClient(BaseTransactionsClient):
     def create_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
         """create item"""
         data = self.item_table.from_schema(model)
-        try:
-            with self.session.writer.context_session() as session:
-                session.add(data)
-                data.base_url = str(kwargs["request"].base_url)
-                return schemas.Item.from_orm(data)
-        except sa.exc.IntegrityError as e:
-            if isinstance(e.orig, psycopg2.errors.UniqueViolation):
-                raise errors.ConflictError(f"Item {model.id} already exists")
-            elif isinstance(e.orig, psycopg2.errors.ForeignKeyViolation):
-                raise errors.ForeignKeyError(
-                    f"Collection {model.collection} does not exist"
-                )
-            raise e
+        with self.session.writer.context_session() as session:
+            session.add(data)
+            data.base_url = str(kwargs["request"].base_url)
+            return schemas.Item.from_orm(data)
 
     def create_collection(
         self, model: schemas.Collection, **kwargs
     ) -> schemas.Collection:
         """create collection"""
         data = self.collection_table.from_schema(model)
-        try:
-            with self.session.writer.context_session() as session:
-                session.add(data)
-                data.base_url = str(kwargs["request"].base_url)
-                return schemas.Collection.from_orm(data)
-        except sa.exc.IntegrityError as e:
-            if isinstance(e.orig, psycopg2.errors.UniqueViolation):
-                raise errors.ConflictError(f"Collection {model.id} already exists")
-            raise e
+        with self.session.writer.context_session() as session:
+            session.add(data)
+            data.base_url = str(kwargs["request"].base_url)
+            return schemas.Collection.from_orm(data)
 
     def update_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
         """update item"""
-        try:
-            with self.session.reader.context_session() as session:
-                query = session.query(self.item_table).filter(
-                    self.item_table.id == model.id
-                )
-                if not query.scalar():
-                    raise errors.NotFoundError(f"Item {model.id} not found")
-                # SQLAlchemy orm updates don't seem to like geoalchemy types
-                data = self.item_table.get_database_model(model)
-                data.pop("geometry", None)
-                query.update(data)
+        with self.session.reader.context_session() as session:
+            query = session.query(self.item_table).filter(
+                self.item_table.id == model.id
+            )
+            if not query.scalar():
+                raise NotFoundError(f"Item {model.id} not found")
+            # SQLAlchemy orm updates don't seem to like geoalchemy types
+            data = self.item_table.get_database_model(model)
+            data.pop("geometry", None)
+            query.update(data)
 
-                response = self.item_table.from_schema(model)
-                response.base_url = str(kwargs["request"].base_url)
-                return schemas.Item.from_orm(response)
-
-        except sa.exc.IntegrityError as e:
-            if isinstance(e.orig, psycopg2.errors.ForeignKeyViolation):
-                raise errors.ForeignKeyError(
-                    f"Collection {model.collection} does not exist"
-                )
+            response = self.item_table.from_schema(model)
+            response.base_url = str(kwargs["request"].base_url)
+            return schemas.Item.from_orm(response)
         return model
 
     def update_collection(
@@ -91,7 +68,7 @@ class TransactionsClient(BaseTransactionsClient):
                 self.collection_table.id == model.id
             )
             if not query.scalar():
-                raise errors.NotFoundError(f"Item {model.id} not found")
+                raise NotFoundError(f"Item {model.id} not found")
             # SQLAlchemy orm updates don't seem to like geoalchemy types
             data = self.collection_table.get_database_model(model)
             data.pop("geometry", None)
@@ -104,12 +81,12 @@ class TransactionsClient(BaseTransactionsClient):
             query = session.query(self.item_table).filter(self.item_table.id == id)
             data = query.first()
             if not data:
-                raise errors.NotFoundError(f"Item {id} not found")
+                raise NotFoundError(f"Item {id} not found")
             query.delete()
             data.base_url = str(kwargs["request"].base_url)
             return schemas.Item.from_orm(data)
 
-    def delete_collection(self, id: str, **kwargs) -> schemas.Item:
+    def delete_collection(self, id: str, **kwargs) -> schemas.Collection:
         """delete collection"""
         with self.session.writer.context_session() as session:
             query = session.query(self.collection_table).filter(
@@ -117,7 +94,7 @@ class TransactionsClient(BaseTransactionsClient):
             )
             data = query.first()
             if not data:
-                raise errors.NotFoundError(f"Collection {id} not found")
+                raise NotFoundError(f"Collection {id} not found")
             query.delete()
             data.base_url = str(kwargs["request"].base_url)
             return schemas.Collection.from_orm(data)

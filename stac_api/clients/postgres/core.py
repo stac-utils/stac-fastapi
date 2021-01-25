@@ -16,12 +16,11 @@ from stac_pydantic.shared import Link, MimeTypes, Relations
 
 import geoalchemy2 as ga
 from sqlakeyset import get_page
-from stac_api import errors
 from stac_api.api.extensions import ContextExtension, FieldsExtension
 from stac_api.clients.base import BaseCoreClient
 from stac_api.clients.postgres.session import Session
 from stac_api.clients.postgres.tokens import PaginationTokenClient
-from stac_api.errors import DatabaseError, NotFoundError
+from stac_api.errors import NotFoundError
 from stac_api.models import database, schemas
 from stac_api.models.links import CollectionLinks
 
@@ -43,11 +42,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         id: str, table: Type[database.BaseModel], session: SqlSession
     ) -> Type[database.BaseModel]:
         """lookup row by id"""
-        try:
-            row = session.query(table).filter(table.id == id).first()
-        except Exception as e:
-            logger.error(e, exc_info=True)
-            raise DatabaseError("Unhandled database error")
+        row = session.query(table).filter(table.id == id).first()
         if not row:
             raise NotFoundError(f"{table.__name__} {id} not found")
         return row
@@ -105,13 +100,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     def all_collections(self, **kwargs) -> List[schemas.Collection]:
         """Read all collections from the database"""
         with self.session.reader.context_session() as session:
-            try:
-                collections = session.query(self.collection_table).all()
-            except Exception as e:
-                logger.error(e, exc_info=True)
-                raise errors.DatabaseError(
-                    "Unhandled database error when getting item collection"
-                )
+            collections = session.query(self.collection_table).all()
             response = []
             for collection in collections:
                 collection.base_url = str(kwargs["request"].base_url)
@@ -131,41 +120,31 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     ) -> ItemCollection:
         """Read an item collection from the database"""
         with self.session.reader.context_session() as session:
-            try:
-                collection_children = (
-                    session.query(self.item_table)
-                    .join(self.collection_table)
-                    .filter(self.collection_table.id == id)
-                    .order_by(self.item_table.datetime.desc(), self.item_table.id)
-                )
-                count = None
-                if self.extension_is_enabled(ContextExtension):
-                    count_query = collection_children.statement.with_only_columns(
-                        [func.count()]
-                    ).order_by(None)
-                    count = collection_children.session.execute(count_query).scalar()
-                token = self.get_token(token) if token else token
-                page = get_page(
-                    collection_children, per_page=limit, page=(token or False)
-                )
-                # Create dynamic attributes for each page
-                page.next = (
-                    self.insert_token(keyset=page.paging.bookmark_next)
-                    if page.paging.has_next
-                    else None
-                )
-                page.previous = (
-                    self.insert_token(keyset=page.paging.bookmark_previous)
-                    if page.paging.has_previous
-                    else None
-                )
-            except errors.NotFoundError:
-                raise
-            except Exception as e:
-                logger.error(e, exc_info=True)
-                raise errors.DatabaseError(
-                    "Unhandled database error when getting collection children"
-                )
+            collection_children = (
+                session.query(self.item_table)
+                .join(self.collection_table)
+                .filter(self.collection_table.id == id)
+                .order_by(self.item_table.datetime.desc(), self.item_table.id)
+            )
+            count = None
+            if self.extension_is_enabled(ContextExtension):
+                count_query = collection_children.statement.with_only_columns(
+                    [func.count()]
+                ).order_by(None)
+                count = collection_children.session.execute(count_query).scalar()
+            token = self.get_token(token) if token else token
+            page = get_page(collection_children, per_page=limit, page=(token or False))
+            # Create dynamic attributes for each page
+            page.next = (
+                self.insert_token(keyset=page.paging.bookmark_next)
+                if page.paging.has_next
+                else None
+            )
+            page.previous = (
+                self.insert_token(keyset=page.paging.bookmark_previous)
+                if page.paging.has_previous
+                else None
+            )
 
             links = []
             if page.next:
@@ -323,26 +302,21 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 id_filter = sa.or_(
                     *[self.item_table.id == i for i in search_request.ids]
                 )
-                try:
-                    items = query.filter(id_filter).order_by(self.item_table.id)
-                    page = get_page(items, per_page=search_request.limit, page=token)
-                    if self.extension_is_enabled(ContextExtension):
-                        count = len(search_request.ids)
-                    page.next = (
-                        self.insert_token(keyset=page.paging.bookmark_next)
-                        if page.paging.has_next
-                        else None
-                    )
-                    page.previous = (
-                        self.insert_token(keyset=page.paging.bookmark_previous)
-                        if page.paging.has_previous
-                        else None
-                    )
-                except Exception as e:
-                    logger.error(e, exc_info=True)
-                    raise DatabaseError(
-                        "Unhandled database error when searching for items by id"
-                    )
+                items = query.filter(id_filter).order_by(self.item_table.id)
+                page = get_page(items, per_page=search_request.limit, page=token)
+                if self.extension_is_enabled(ContextExtension):
+                    count = len(search_request.ids)
+                page.next = (
+                    self.insert_token(keyset=page.paging.bookmark_next)
+                    if page.paging.has_next
+                    else None
+                )
+                page.previous = (
+                    self.insert_token(keyset=page.paging.bookmark_previous)
+                    if page.paging.has_previous
+                    else None
+                )
+
             else:
                 # Spatial query
                 poly = search_request.polygon()
@@ -377,29 +351,24 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                         for (op, value) in expr.items():
                             query = query.filter(op.operator(field, value))
 
-                try:
-                    if self.extension_is_enabled(ContextExtension):
-                        count_query = query.statement.with_only_columns(
-                            [func.count()]
-                        ).order_by(None)
-                        count = query.session.execute(count_query).scalar()
-                    page = get_page(query, per_page=search_request.limit, page=token)
-                    # Create dynamic attributes for each page
-                    page.next = (
-                        self.insert_token(keyset=page.paging.bookmark_next)
-                        if page.paging.has_next
-                        else None
-                    )
-                    page.previous = (
-                        self.insert_token(keyset=page.paging.bookmark_previous)
-                        if page.paging.has_previous
-                        else None
-                    )
-                except Exception as e:
-                    logger.error(e, exc_info=True)
-                    raise DatabaseError(
-                        "Unhandled database error during spatial/temporal query"
-                    )
+                if self.extension_is_enabled(ContextExtension):
+                    count_query = query.statement.with_only_columns(
+                        [func.count()]
+                    ).order_by(None)
+                    count = query.session.execute(count_query).scalar()
+                page = get_page(query, per_page=search_request.limit, page=token)
+                # Create dynamic attributes for each page
+                page.next = (
+                    self.insert_token(keyset=page.paging.bookmark_next)
+                    if page.paging.has_next
+                    else None
+                )
+                page.previous = (
+                    self.insert_token(keyset=page.paging.bookmark_previous)
+                    if page.paging.has_previous
+                    else None
+                )
+
             links = []
             if page.next:
                 links.append(
