@@ -21,6 +21,7 @@ install_requires = [
     "pydantic[dotenv]",
     "titiler==0.1.0a12",
     "fastapi-utils",
+    "pygeos==0.8.0",
 ]
 
 extra_reqs = {
