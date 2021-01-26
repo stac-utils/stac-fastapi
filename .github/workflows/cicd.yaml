@@ -43,7 +43,7 @@ jobs:
       - name: Lint code
         uses: pre-commit/action@v2.0.0
         with:
-          - python-version: "3.8"
+          python-version: "3.8"
 
       - name: Install pipenv
         run: |
