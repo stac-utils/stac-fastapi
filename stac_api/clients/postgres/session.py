@@ -6,6 +6,7 @@ from typing import Iterator
 
 import attr
 import sqlalchemy as sa
+import sqlalchemy.exc
 from sqlalchemy.orm import Session as SqlSession
 
 import psycopg2
@@ -18,16 +19,12 @@ logger = logging.getLogger(__name__)
 class FastAPISessionMaker(_FastAPISessionMaker):
     """FastAPISessionMaker"""
 
-    def __init__(self, database_uri: str):
-        """init"""
-        super().__init__(database_uri)
-
     @contextmanager
     def context_session(self) -> Iterator[SqlSession]:
         """override base method to include exception handling"""
         try:
             yield from self.get_db()
-        except sa.exc.IntegrityError as e:
+        except sa.exc.StatementError as e:
             if isinstance(e.orig, psycopg2.errors.UniqueViolation):
                 raise errors.ConflictError("resource already exists") from e
             elif isinstance(e.orig, psycopg2.errors.ForeignKeyViolation):
