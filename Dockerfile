@@ -20,7 +20,7 @@ COPY . ./
 
 ENV APP_HOST=0.0.0.0
 ENV APP_PORT=80
-ENV RELOAD=""
+ENV RELOAD="true"
 
 ENTRYPOINT ["pipenv", "run"]
 CMD if [ "$RELOAD" ]; then uvicorn stac_api.app:app --host=${APP_HOST} --port=${APP_PORT} --reload ; \

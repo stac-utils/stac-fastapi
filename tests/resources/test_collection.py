@@ -43,12 +43,7 @@ def test_update_new_collection(app_client, load_test_data):
     test_collection["id"] = "new-test-collection"
 
     resp = app_client.put("/collections", json=test_collection)
-    assert resp.status_code == 200
-
-    resp = app_client.get(f"/collections/{test_collection['id']}")
-    assert resp.status_code == 200
-    resp_json = resp.json()
-    assert resp_json["id"] == test_collection["id"]
+    assert resp.status_code == 404
 
 
 def test_collection_not_found(app_client):
