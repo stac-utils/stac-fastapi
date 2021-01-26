@@ -4,15 +4,15 @@ import json
 from datetime import datetime
 from typing import Optional
 
+import geoalchemy2 as ga
 import sqlalchemy as sa
 from shapely.geometry import shape
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
+from stac_pydantic.shared import DATETIME_RFC339
 
-import geoalchemy2 as ga
 from stac_api import config
 from stac_api.models import schemas
-from stac_pydantic.shared import DATETIME_RFC339
 
 BaseModel = declarative_base()
 

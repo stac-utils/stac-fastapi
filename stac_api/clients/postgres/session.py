@@ -5,12 +5,12 @@ from contextlib import contextmanager
 from typing import Iterator
 
 import attr
+import psycopg2
 import sqlalchemy as sa
 import sqlalchemy.exc
+from fastapi_utils.session import FastAPISessionMaker as _FastAPISessionMaker
 from sqlalchemy.orm import Session as SqlSession
 
-import psycopg2
-from fastapi_utils.session import FastAPISessionMaker as _FastAPISessionMaker
 from stac_api import errors
 
 logger = logging.getLogger(__name__)
