@@ -6,7 +6,9 @@ from typing import Any, Dict, List, Optional, Type, Union
 from urllib.parse import urlencode, urljoin
 
 import attr
+import geoalchemy2 as ga
 import sqlalchemy as sa
+from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic import ItemCollection
@@ -14,8 +16,6 @@ from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.extensions.paging import PaginationLink
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
-import geoalchemy2 as ga
-from sqlakeyset import get_page
 from stac_api.api.extensions import ContextExtension, FieldsExtension
 from stac_api.clients.base import BaseCoreClient
 from stac_api.clients.postgres.session import Session

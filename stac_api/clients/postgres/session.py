@@ -5,12 +5,12 @@ from contextlib import contextmanager
 from typing import Iterator
 
 import attr
+import psycopg2
 import sqlalchemy as sa
 import sqlalchemy.exc
+from fastapi_utils.session import FastAPISessionMaker as _FastAPISessionMaker
 from sqlalchemy.orm import Session as SqlSession
 
-import psycopg2
-from fastapi_utils.session import FastAPISessionMaker as _FastAPISessionMaker
 from stac_api import errors
 
 logger = logging.getLogger(__name__)
@@ -35,16 +35,20 @@ class FastAPISessionMaker(_FastAPISessionMaker):
 
 @attr.s
 class Session:
+    """Database session management"""
+
     reader_conn_string: str = attr.ib()
     writer_conn_string: str = attr.ib()
 
     @classmethod
     def create_from_env(cls):
+        """create from environment"""
         return cls(
             reader_conn_string=os.environ["READER_CONN_STRING"],
             writer_conn_string=os.environ["WRITER_CONN_STRING"],
         )
 
     def __attrs_post_init__(self):
+        """post init"""
         self.reader: FastAPISessionMaker = FastAPISessionMaker(self.reader_conn_string)
         self.writer: FastAPISessionMaker = FastAPISessionMaker(self.writer_conn_string)

@@ -6,10 +6,10 @@ Create Date: 2020-02-09 13:03:09.336631
 
 """  # noqa
 import sqlalchemy as sa
+from geoalchemy2.types import Geometry
 from sqlalchemy.dialects.postgresql import JSONB
 
 from alembic import op
-from geoalchemy2.types import Geometry
 
 # revision identifiers, used by Alembic.
 revision = "131aab4d9e49"
