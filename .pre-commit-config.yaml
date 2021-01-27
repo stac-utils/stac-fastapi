@@ -3,20 +3,20 @@ repos:
       rev: 5.4.2
       hooks:
         - id: isort
-          language_version: python3.7
+          language_version: python3.8
     -
         repo: https://github.com/psf/black
         rev: stable
         hooks:
             - id: black
               args: ['--safe']
-              language_version: python3.7
+              language_version: python3.8
     -
         repo: https://github.com/pre-commit/pre-commit-hooks
         rev: v2.4.0
         hooks:
             - id: flake8
-              language_version: python3.7
+              language_version: python3.8
               args: [
                   # E501 let black handle all line length decisions
                   # W503 black conflicts with "line break before operator" rule
@@ -28,7 +28,7 @@ repos:
         rev: 22d3ccf6cf91ffce3b16caa946c155778f0cb20f
         hooks:
             - id: pydocstyle
-              language_version: python3.7
+              language_version: python3.8
               args: [
                  # Check for docstring presence only
                  '--select=D1',
@@ -39,5 +39,5 @@ repos:
         rev: v0.770
         hooks:
             -   id: mypy
-                language_version: python3.7
+                language_version: python3.8
                 args: [--no-strict-optional, --ignore-missing-imports]
