@@ -8,6 +8,7 @@ from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 
 import sqlalchemy as sa
+from geojson_pydantic.geometries import Polygon
 from pydantic import Field, ValidationError, root_validator
 from pydantic.error_wrappers import ErrorWrapper
 from shapely.geometry import Polygon as ShapelyPolygon
@@ -20,7 +21,6 @@ from stac_pydantic.api.search import DATETIME_RFC339
 from stac_pydantic.shared import Link
 from stac_pydantic.utils import AutoValueEnum
 
-from geojson_pydantic.geometries import Polygon
 from stac_api import config
 from stac_api.models.decompose import CollectionGetter, ItemGetter
 

@@ -7,6 +7,7 @@ with open("README.md") as f:
 
 
 install_requires = [
+    "attrs",
     "uvicorn[standard]",
     "gunicorn",
     "fastapi>=0.60.0",
@@ -19,6 +20,7 @@ install_requires = [
     "stac-pydantic>=1.3.5",
     "pydantic[dotenv]",
     "titiler==0.1.0a12",
+    "fastapi-utils",
 ]
 
 extra_reqs = {
@@ -31,7 +33,7 @@ setup(
     description="Arturo's STAC compliant API implementation",
     long_description=desc,
     long_description_content_type="text/markdown",
-    version="1.0.0",
+    version="1.1.0",
     python_requires=">=3.8",
     classifiers=[
         "Intended Audience :: Developers",

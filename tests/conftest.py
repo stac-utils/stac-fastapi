@@ -1,11 +1,8 @@
 import json
 import os
-from typing import Callable, Dict, Generator
-from unittest.mock import PropertyMock, patch
+from typing import Callable, Dict
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
 from starlette.testclient import TestClient
 
 from stac_api.api.app import StacApi
@@ -17,12 +14,13 @@ from stac_api.api.extensions import (
     TransactionExtension,
 )
 from stac_api.clients.postgres.core import CoreCrudClient
-from stac_api.clients.postgres.tokens import PaginationTokenClient
+from stac_api.clients.postgres.session import Session
 from stac_api.clients.postgres.transactions import (
     PostgresBulkTransactions,
     TransactionsClient,
 )
 from stac_api.config import ApiSettings, inject_settings
+from stac_api.models import database
 from stac_api.models.schemas import Collection
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
@@ -70,62 +68,30 @@ class MockStarletteRequest:
 
 
 @pytest.fixture
-def sqlalchemy_engine():
-    engine = create_engine(settings.reader_connection_string)
-    yield engine
-    engine.dispose()
+def db_session() -> Session:
+    return Session(
+        reader_conn_string=settings.reader_connection_string,
+        writer_conn_string=settings.writer_connection_string,
+    )
 
 
 @pytest.fixture
-def reader_connection(sqlalchemy_engine) -> Generator[Session, None, None]:
-    """Create a reader connection"""
-    db_session = sessionmaker(
-        autocommit=False, autoflush=False, bind=sqlalchemy_engine
-    )()
-    yield db_session
-    db_session.close()
+def postgres_core(db_session):
+    return CoreCrudClient(
+        session=db_session,
+        item_table=database.Item,
+        collection_table=database.Collection,
+        token_table=database.PaginationToken,
+    )
 
 
 @pytest.fixture
-def writer_connection(sqlalchemy_engine) -> Generator[Session, None, None]:
-    """Create a writer connection"""
-    db_session = sessionmaker(
-        autocommit=False, autoflush=False, bind=sqlalchemy_engine
-    )()
-    yield db_session
-    db_session.close()
-
-
-@pytest.fixture
-def postgres_core(reader_connection, writer_connection):
-    with patch(
-        "stac_api.clients.postgres.base.PostgresClient.writer_session",
-        new_callable=PropertyMock,
-    ) as mock_writer:
-        mock_writer.return_value = writer_connection
-        with patch(
-            "stac_api.clients.postgres.base.PostgresClient.reader_session",
-            new_callable=PropertyMock,
-        ) as mock_reader:
-            mock_reader.return_value = reader_connection
-            client = CoreCrudClient()
-            yield client
-
-
-@pytest.fixture
-def postgres_transactions(reader_connection, writer_connection):
-    with patch(
-        "stac_api.clients.postgres.base.PostgresClient.writer_session",
-        new_callable=PropertyMock,
-    ) as mock_writer:
-        mock_writer.return_value = writer_connection
-        with patch(
-            "stac_api.clients.postgres.base.PostgresClient.reader_session",
-            new_callable=PropertyMock,
-        ) as mock_reader:
-            mock_reader.return_value = reader_connection
-            client = TransactionsClient()
-            yield client
+def postgres_transactions(db_session):
+    return TransactionsClient(
+        session=db_session,
+        item_table=database.Item,
+        collection_table=database.Collection,
+    )
 
 
 @pytest.fixture
@@ -135,12 +101,12 @@ def postgres_bulk_transactions():
 
 
 @pytest.fixture
-def api_client():
+def api_client(db_session):
     return StacApi(
         settings=ApiSettings(),
-        client=CoreCrudClient(pagination_client=PaginationTokenClient()),
+        client=CoreCrudClient(session=db_session),
         extensions=[
-            TransactionExtension(client=TransactionsClient()),
+            TransactionExtension(client=TransactionsClient(session=db_session)),
             ContextExtension(),
             SortExtension(),
             FieldsExtension(),

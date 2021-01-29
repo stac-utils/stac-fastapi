@@ -7,7 +7,6 @@ from random import randint
 from urllib.parse import parse_qs, urlparse, urlsplit
 
 from shapely.geometry import Polygon
-
 from stac_pydantic.api.search import DATETIME_RFC339
 
 
@@ -79,12 +78,20 @@ def test_update_new_item(app_client, load_test_data):
     resp = app_client.put(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
-    assert resp.status_code == 200
+    assert resp.status_code == 404
 
 
 def test_update_item_missing_collection(app_client, load_test_data):
     """Test updating an item without a parent collection (transactions extension)"""
     test_item = load_test_data("test_item.json")
+
+    # Create the item
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    # Try to update collection of the item
     test_item["collection"] = "stac is cool"
     resp = app_client.put(
         f"/collections/{test_item['collection']}/items", json=test_item
