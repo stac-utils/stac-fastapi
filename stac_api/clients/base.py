@@ -64,7 +64,7 @@ class BaseBulkTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def bulk_item_insert(
-        self, items: schemas.Items, chunks: Optional[int] = None
+        self, items: schemas.Items, chunk_size: Optional[int] = None, **kwargs
     ) -> str:
         """Bulk item insertion, not implemented by default"""
         raise NotImplementedError

@@ -5,7 +5,6 @@ import logging
 from typing import Dict, Optional, Type
 
 import attr
-from sqlalchemy import create_engine
 
 from stac_api.clients.base import BaseBulkTransactionsClient, BaseTransactionsClient
 from stac_api.clients.postgres.session import Session
@@ -109,8 +108,7 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
 
     def __attrs_post_init__(self):
         """create sqlalchemy engine"""
-        self.connection_str = self.session.writer_conn_string
-        self.engine = create_engine(self.connection_str, echo=self.debug)
+        self.engine = self.session.writer.cached_engine
 
     @staticmethod
     def _preprocess_item(item: schemas.Item) -> Dict:
@@ -125,7 +123,7 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         return item
 
     def bulk_item_insert(
-        self, items: schemas.Items, chunk_size: Optional[int] = None
+        self, items: schemas.Items, chunk_size: Optional[int] = None, **kwargs
     ) -> str:
         """
         bulk item insertion using sqlalchemy core
