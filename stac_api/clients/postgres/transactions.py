@@ -133,12 +133,12 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         https://docs.sqlalchemy.org/en/13/faq/performance.html#i-m-inserting-400-000-rows-with-the-orm-and-it-s-really-slow
         """
         # Use items.items because schemas.Items is a model with an items key
-        items = [self._preprocess_item(item) for item in items.items]
-        return_msg = f"Successfully added {len(items)} items."
+        processed_items = [self._preprocess_item(item) for item in items.items]
+        return_msg = f"Successfully added {len(processed_items)} items."
         if chunk_size:
-            for chunk in self._chunks(items, chunk_size):
+            for chunk in self._chunks(processed_items, chunk_size):
                 self.engine.execute(database.Item.__table__.insert(), chunk)
             return return_msg
 
-        self.engine.execute(database.Item.__table__.insert(), items)
+        self.engine.execute(database.Item.__table__.insert(), processed_items)
         return return_msg
