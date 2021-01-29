@@ -5,7 +5,7 @@ from fastapi import APIRouter, FastAPI
 from stac_api.api.extensions.extension import ApiExtension
 from stac_api.api.models import CollectionUri, ItemUri, _create_request_model
 from stac_api.api.routes import create_endpoint_from_model, create_endpoint_with_depends
-from stac_api.clients.base import BaseTransactionsClient, BaseBulkTransactionsClient
+from stac_api.clients.base import BaseBulkTransactionsClient, BaseTransactionsClient
 from stac_api.models import schemas
 
 
@@ -94,8 +94,7 @@ class TransactionExtension(ApiExtension):
 
 @attr.s
 class BulkTransactionExtension(ApiExtension):
-    """Bulk Transaction Extension
-    """
+    """Bulk Transaction Extension"""
 
     client: BaseBulkTransactionsClient = attr.ib()
 

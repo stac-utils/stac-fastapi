@@ -25,6 +25,7 @@ class AddOns(enum.Enum):
     """
 
     tiles = "tiles"
+    bulktransaction = "bulk-transaction"
 
 
 class ApiSettings(BaseSettings):

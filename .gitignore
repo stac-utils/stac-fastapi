@@ -1,3 +1,5 @@
+.mypy_cache
+
 PIP_EXTRA_INDEX_URL
 !tests/resources/*.jpg
 **.pyc

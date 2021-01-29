@@ -1,16 +1,19 @@
 """FastAPI application."""
 from stac_api.api.app import StacApi
 from stac_api.api.extensions import (
+    BulkTransactionExtension,
     FieldsExtension,
     QueryExtension,
     SortExtension,
     TilesExtension,
     TransactionExtension,
-    BulkTransactionExtension
 )
 from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.clients.postgres.session import Session
-from stac_api.clients.postgres.transactions import TransactionsClient, BulkTransactionsClient
+from stac_api.clients.postgres.transactions import (
+    BulkTransactionsClient,
+    TransactionsClient,
+)
 from stac_api.clients.tiles.ogc import TilesClient
 from stac_api.config import ApiSettings
 

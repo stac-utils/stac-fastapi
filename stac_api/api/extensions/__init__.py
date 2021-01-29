@@ -4,7 +4,7 @@ from .fields import FieldsExtension
 from .query import QueryExtension
 from .sort import SortExtension
 from .tiles import TilesExtension
-from .transaction import TransactionExtension, BulkTransactionExtension
+from .transaction import BulkTransactionExtension, TransactionExtension
 
 __all__ = (
     "ContextExtension",

@@ -2,12 +2,12 @@
 
 import json
 import logging
-from typing import Dict, List, Optional, Type
+from typing import Dict, Optional, Type
 
 import attr
 from sqlalchemy import create_engine
 
-from stac_api.clients.base import BaseTransactionsClient, BaseBulkTransactionsClient
+from stac_api.clients.base import BaseBulkTransactionsClient, BaseTransactionsClient
 from stac_api.clients.postgres.session import Session
 from stac_api.errors import NotFoundError
 from stac_api.models import database, schemas
@@ -134,7 +134,7 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         """
         # Use items.items because schemas.Items is a model with an items key
         items = [self._preprocess_item(item) for item in items.items]
-        return_msg = f'Successfully added {len(items)} items.'
+        return_msg = f"Successfully added {len(items)} items."
         if chunk_size:
             for chunk in self._chunks(items, chunk_size):
                 self.engine.execute(database.Item.__table__.insert(), chunk)
