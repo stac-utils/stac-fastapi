@@ -53,7 +53,7 @@ class BaseTransactionsClient(abc.ABC):
 
 
 @attr.s  # type: ignore
-class BulkTransactionsClient(abc.ABC):
+class BaseBulkTransactionsClient(abc.ABC):
     """bulk transactions client"""
 
     @staticmethod

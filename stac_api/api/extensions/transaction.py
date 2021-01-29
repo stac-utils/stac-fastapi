@@ -90,3 +90,29 @@ class TransactionExtension(ApiExtension):
             ),
         )
         app.include_router(router, tags=["Transaction Extension"])
+
+
+@attr.s
+class BulkTransactionExtension(ApiExtension):
+    """Bulk Transaction Extension
+    """
+
+    client: BaseTransactionsClient = attr.ib()
+
+    def register(self, app: FastAPI) -> None:
+        """register extension with the application"""
+
+        items_request_model = _create_request_model(schemas.Items)
+
+        router = APIRouter()
+        router.add_api_route(
+            name="Bulk Create Item",
+            path="/collections/{collectionId}/bulk_items",
+            response_model=str,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["POST"],
+            endpoint=create_endpoint_from_model(
+                self.client.bulk_item_insert, items_request_model
+            ),
+        )

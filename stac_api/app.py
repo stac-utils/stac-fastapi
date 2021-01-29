@@ -6,10 +6,11 @@ from stac_api.api.extensions import (
     SortExtension,
     TilesExtension,
     TransactionExtension,
+    BulkTransactionExtension
 )
 from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.clients.postgres.session import Session
-from stac_api.clients.postgres.transactions import TransactionsClient
+from stac_api.clients.postgres.transactions import TransactionsClient, BulkTransactionsClient
 from stac_api.clients.tiles.ogc import TilesClient
 from stac_api.config import ApiSettings
 
@@ -19,6 +20,7 @@ api = StacApi(
     settings=settings,
     extensions=[
         TransactionExtension(client=TransactionsClient(session=session)),
+        BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
         FieldsExtension(),
         QueryExtension(),
         SortExtension(),
