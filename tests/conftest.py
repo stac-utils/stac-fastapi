@@ -95,9 +95,8 @@ def postgres_transactions(db_session):
 
 
 @pytest.fixture
-def postgres_bulk_transactions():
-    client = BulkTransactionsClient(connection_str=settings.writer_connection_string)
-    return client
+def postgres_bulk_transactions(db_session):
+    return BulkTransactionsClient(session=db_session)
 
 
 @pytest.fixture
