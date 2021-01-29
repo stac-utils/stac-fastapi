@@ -105,7 +105,6 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
     """postgres bulk transactions"""
 
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
-    # connection_str: str = attr.ib()
     debug: bool = attr.ib(default=False)
 
     def __attrs_post_init__(self):
