@@ -5,8 +5,7 @@ from starlette.testclient import TestClient
 
 from stac_api.api.app import StacApi
 from stac_api.api.extensions import TransactionExtension
-from stac_api.clients.postgres.core import CoreCrudClient
-from stac_api.clients.postgres.tokens import PaginationTokenClient
+from stac_api.clients.postgres.core import CoreCrudClient, Session
 from stac_api.clients.postgres.transactions import TransactionsClient
 from stac_api.config import ApiSettings
 from stac_api.models.database import Item
@@ -19,34 +18,32 @@ class CustomItem(Item):
     foo = sa.Column(sa.VARCHAR(10))
 
 
-def create_app(item_model: Type[Item]) -> StacApi:
+def create_app(item_model: Type[Item], db_session: Session) -> StacApi:
     """Create application with a custom sqlalchemy item"""
     api = StacApi(
         settings=ApiSettings(indexed_fields={"datetime", "foo"}),
         extensions=[
-            TransactionExtension(client=TransactionsClient(item_table=item_model))
+            TransactionExtension(
+                client=TransactionsClient(item_table=item_model, session=db_session)
+            )
         ],
-        client=CoreCrudClient(
-            table=item_model, pagination_client=PaginationTokenClient()
-        ),
+        client=CoreCrudClient(item_table=item_model, session=db_session),
     )
     return api
 
 
-def test_custom_item(load_test_data, postgres_transactions):
-    api = create_app(CustomItem)
-    transactions = TransactionsClient(item_table=CustomItem)
+def test_custom_item(load_test_data, postgres_transactions, db_session):
+    api = create_app(CustomItem, db_session)
+    transactions = TransactionsClient(item_table=CustomItem, session=db_session)
 
     with TestClient(api.app) as test_client:
-        test_app = test_client.app
-
         # Ingest a collection
         coll = Collection.parse_obj(load_test_data("test_collection.json"))
         transactions.create_collection(coll, request=MockStarletteRequest)
 
         # Modify the table to match our custom item
         # This would typically be done with alembic
-        test_app.state.ENGINE_WRITER.execute(
+        db_session.writer.cached_engine.execute(
             "ALTER TABLE data.items ADD COLUMN foo VARCHAR(10)"
         )
 
@@ -70,4 +67,6 @@ def test_custom_item(load_test_data, postgres_transactions):
         # Cleanup
         transactions.delete_item(test_item["id"], request=MockStarletteRequest)
         transactions.delete_collection(coll.id, request=MockStarletteRequest)
-        test_app.state.ENGINE_WRITER.execute("ALTER TABLE data.items DROP COLUMN foo")
+        db_session.writer.cached_engine.execute(
+            "ALTER TABLE data.items DROP COLUMN foo"
+        )
