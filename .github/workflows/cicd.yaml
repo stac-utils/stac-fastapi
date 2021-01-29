@@ -12,7 +12,7 @@ jobs:
 
     services:
       db_service:
-        image: kartoza/postgis:latest
+        image: kartoza/postgis:13.0
         env:
           POSTGRES_USER: username
           POSTGRES_PASS: password
