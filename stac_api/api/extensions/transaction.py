@@ -101,7 +101,6 @@ class BulkTransactionExtension(ApiExtension):
 
     def register(self, app: FastAPI) -> None:
         """register extension with the application"""
-
         items_request_model = _create_request_model(schemas.Items)
 
         router = APIRouter()
@@ -116,3 +115,4 @@ class BulkTransactionExtension(ApiExtension):
                 self.client.bulk_item_insert, items_request_model
             ),
         )
+        app.include_router(router, tags=["Bulk Transaction Extension"])
