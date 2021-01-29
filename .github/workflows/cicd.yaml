@@ -12,14 +12,11 @@ jobs:
 
     services:
       db_service:
-        image: kartoza/postgis:12-3.0
+        image: postgis/postgis:12-3.0
         env:
           POSTGRES_USER: username
-          POSTGRES_PASS: password
-          POSTGRES_DBNAME: postgis
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          ALLOW_IP_RANGE: 0.0.0.0/0
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: postgis
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
