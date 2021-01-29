@@ -69,6 +69,7 @@ class Queryables(str, AutoValueEnum):
     minzoom = "cog:minzoom"
     maxzoom = "cog:maxzoom"
     dtype = "cog:dtype"
+    foo = "foo"
 
 
 @dataclass
