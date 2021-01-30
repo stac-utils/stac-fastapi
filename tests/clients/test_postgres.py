@@ -5,11 +5,11 @@ import pytest
 
 from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.clients.postgres.transactions import (
-    PostgresBulkTransactions,
+    BulkTransactionsClient,
     TransactionsClient,
 )
 from stac_api.errors import ConflictError, NotFoundError
-from stac_api.models.schemas import Collection, Item
+from stac_api.models.schemas import Collection, Item, Items
 from tests.conftest import MockStarletteRequest
 
 
@@ -168,7 +168,7 @@ def test_delete_item(
 
 def test_bulk_item_insert(
     postgres_transactions: TransactionsClient,
-    postgres_bulk_transactions: PostgresBulkTransactions,
+    postgres_bulk_transactions: BulkTransactionsClient,
     load_test_data: Callable,
 ):
     coll = Collection.parse_obj(load_test_data("test_collection.json"))
@@ -182,7 +182,7 @@ def test_bulk_item_insert(
         _item["id"] = str(uuid.uuid4())
         items.append(_item)
 
-    postgres_bulk_transactions.bulk_item_insert(items)
+    postgres_bulk_transactions.bulk_item_insert(Items(items=items))
 
     for item in items:
         postgres_transactions.delete_item(item["id"], request=MockStarletteRequest)
@@ -190,7 +190,7 @@ def test_bulk_item_insert(
 
 def test_bulk_item_insert_chunked(
     postgres_transactions: TransactionsClient,
-    postgres_bulk_transactions: PostgresBulkTransactions,
+    postgres_bulk_transactions: BulkTransactionsClient,
     load_test_data: Callable,
 ):
     coll = Collection.parse_obj(load_test_data("test_collection.json"))
@@ -204,7 +204,7 @@ def test_bulk_item_insert_chunked(
         _item["id"] = str(uuid.uuid4())
         items.append(_item)
 
-    postgres_bulk_transactions.bulk_item_insert(items, chunk_size=2)
+    postgres_bulk_transactions.bulk_item_insert(Items(items=items), chunk_size=2)
 
     for item in items:
         postgres_transactions.delete_item(item["id"], request=MockStarletteRequest)

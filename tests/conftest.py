@@ -16,7 +16,7 @@ from stac_api.api.extensions import (
 from stac_api.clients.postgres.core import CoreCrudClient
 from stac_api.clients.postgres.session import Session
 from stac_api.clients.postgres.transactions import (
-    PostgresBulkTransactions,
+    BulkTransactionsClient,
     TransactionsClient,
 )
 from stac_api.config import ApiSettings, inject_settings
@@ -95,9 +95,8 @@ def postgres_transactions(db_session):
 
 
 @pytest.fixture
-def postgres_bulk_transactions():
-    client = PostgresBulkTransactions(connection_str=settings.writer_connection_string)
-    return client
+def postgres_bulk_transactions(db_session):
+    return BulkTransactionsClient(session=db_session)
 
 
 @pytest.fixture

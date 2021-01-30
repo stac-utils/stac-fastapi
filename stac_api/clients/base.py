@@ -53,7 +53,7 @@ class BaseTransactionsClient(abc.ABC):
 
 
 @attr.s  # type: ignore
-class BulkTransactionsClient(abc.ABC):
+class BaseBulkTransactionsClient(abc.ABC):
     """bulk transactions client"""
 
     @staticmethod
@@ -63,8 +63,10 @@ class BulkTransactionsClient(abc.ABC):
             yield lst[i : i + n]
 
     @abc.abstractmethod
-    def bulk_item_insert(self, items: List[Dict], chunks: Optional[int] = None) -> None:
-        """bulk item insertion, not implemented by default, and not exposed through the api"""
+    def bulk_item_insert(
+        self, items: schemas.Items, chunk_size: Optional[int] = None, **kwargs
+    ) -> str:
+        """Bulk item insertion, not implemented by default"""
         raise NotImplementedError
 
 

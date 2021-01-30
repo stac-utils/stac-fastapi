@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Union
 
 import sqlalchemy as sa
 from geojson_pydantic.geometries import Polygon
-from pydantic import Field, ValidationError, root_validator
+from pydantic import BaseModel, Field, ValidationError, root_validator
 from pydantic.error_wrappers import ErrorWrapper
 from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import shape
@@ -166,6 +166,12 @@ class Item(ItemBase):
         use_enum_values = True
         orm_mode = True
         getter_dict = ItemGetter
+
+
+class Items(BaseModel):
+    """Items model"""
+
+    items: List[Item]
 
 
 class STACSearch(Search):

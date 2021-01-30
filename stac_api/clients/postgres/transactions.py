@@ -2,12 +2,11 @@
 
 import json
 import logging
-from typing import Dict, List, Optional, Type
+from typing import Dict, Optional, Type
 
 import attr
-from sqlalchemy import create_engine
 
-from stac_api.clients.base import BaseTransactionsClient, BulkTransactionsClient
+from stac_api.clients.base import BaseBulkTransactionsClient, BaseTransactionsClient
 from stac_api.clients.postgres.session import Session
 from stac_api.errors import NotFoundError
 from stac_api.models import database, schemas
@@ -101,39 +100,42 @@ class TransactionsClient(BaseTransactionsClient):
 
 
 @attr.s
-class PostgresBulkTransactions(BulkTransactionsClient):
+class BulkTransactionsClient(BaseBulkTransactionsClient):
     """postgres bulk transactions"""
 
-    connection_str: str = attr.ib()
+    session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     debug: bool = attr.ib(default=False)
 
     def __attrs_post_init__(self):
         """create sqlalchemy engine"""
-        self.engine = create_engine(self.connection_str, echo=self.debug)
+        self.engine = self.session.writer.cached_engine
 
     @staticmethod
-    def _preprocess_item(item) -> Dict:
+    def _preprocess_item(item: schemas.Item) -> Dict:
         """
         preprocess items to match data model
         # TODO: dedup with GetterDict logic (ref #58)
         """
+        item = item.dict(exclude_none=True)
         item["geometry"] = json.dumps(item["geometry"])
         item["collection_id"] = item.pop("collection")
         item["datetime"] = item["properties"].pop("datetime")
         return item
 
     def bulk_item_insert(
-        self, items: List[Dict], chunk_size: Optional[int] = None
-    ) -> None:
+        self, items: schemas.Items, chunk_size: Optional[int] = None, **kwargs
+    ) -> str:
         """
         bulk item insertion using sqlalchemy core
         https://docs.sqlalchemy.org/en/13/faq/performance.html#i-m-inserting-400-000-rows-with-the-orm-and-it-s-really-slow
         """
-        items = [self._preprocess_item(item) for item in items]
+        # Use items.items because schemas.Items is a model with an items key
+        processed_items = [self._preprocess_item(item) for item in items.items]
+        return_msg = f"Successfully added {len(processed_items)} items."
         if chunk_size:
-            for chunk in self._chunks(items, chunk_size):
+            for chunk in self._chunks(processed_items, chunk_size):
                 self.engine.execute(database.Item.__table__.insert(), chunk)
-            return
+            return return_msg
 
-        self.engine.execute(database.Item.__table__.insert(), items)
-        return
+        self.engine.execute(database.Item.__table__.insert(), processed_items)
+        return return_msg
