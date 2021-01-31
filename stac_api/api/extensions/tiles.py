@@ -13,12 +13,22 @@ from stac_api.models.ogc import TileSetResource
 
 @attr.s
 class TilesExtension(ApiExtension):
-    """titiler extension"""
+    """Tiles Extension (https://github.com/developmentseed/titiler)
+
+    The TilesExtension mounts `titiler` onto the application.
+    """
 
     client: TilesClient = attr.ib(default=attr.Factory(TilesClient))
 
     def register(self, app: FastAPI) -> None:
-        """register extension with the application"""
+        """Register the extension with a FastAPI application.
+
+        Args:
+            app (fastapi.FastAPI): target FastAPI application.
+
+        Returns:
+            None
+        """
         from titiler.endpoints.stac import STACTiler
         from titiler.templates import templates
 

@@ -7,11 +7,19 @@ from stac_api.api.extensions.extension import ApiExtension
 
 @attr.s
 class SortExtension(ApiExtension):
-    """
-    stac-api query extension
-    (https://github.com/radiantearth/stac-api-spec/tree/master/extensions/sort)
+    """Sort Extension (https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#sort)
+
+    The Sort extension adds the `sortby` parameter to the `/search` endpoint, allowing the caller to specify the sort
+    order of the returned items.
     """
 
     def register(self, app: FastAPI) -> None:
-        """register extension with the application"""
+        """Register the extension with a FastAPI application.
+
+        Args:
+            app (fastapi.FastAPI): target FastAPI application.
+
+        Returns:
+            None
+        """
         pass
