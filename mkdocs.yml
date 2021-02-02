@@ -31,12 +31,12 @@ theme:
     repo: 'fontawesome/brands/github'
   name: 'material'
   language: 'en'
-  palette:
-    primary: 'blue'
-    accent:  'light blue'
   font:
     text: 'Nunito Sans'
     code: 'Fira Code'
+
+extra_css:
+  - stylesheets/extra.css
 
 # These extensions are chosen to be a superset of Pandoc's Markdown.
 # This way, I can write in Pandoc's Markdown and have it be supported here.
