@@ -1,18 +1,19 @@
 """Base clients."""
 import abc
-from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
-from stac_api.api.extensions.extension import ApiExtension
-from stac_api.models import schemas
+import attr
 from stac_pydantic import ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
+
+from stac_api.api.extensions.extension import ApiExtension
+from stac_api.models import schemas
 
 NumType = Union[float, int]
 
 
-@dataclass  # type:ignore
+@attr.s  # type:ignore
 class BaseTransactionsClient(abc.ABC):
     """Base transactions client"""
 
@@ -51,11 +52,29 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
 
-@dataclass  # type:ignore
+@attr.s  # type: ignore
+class BaseBulkTransactionsClient(abc.ABC):
+    """bulk transactions client"""
+
+    @staticmethod
+    def _chunks(lst, n):
+        """Yield successive n-sized chunks from lst."""
+        for i in range(0, len(lst), n):
+            yield lst[i : i + n]
+
+    @abc.abstractmethod
+    def bulk_item_insert(
+        self, items: schemas.Items, chunk_size: Optional[int] = None, **kwargs
+    ) -> str:
+        """Bulk item insertion, not implemented by default"""
+        raise NotImplementedError
+
+
+@attr.s  # type:ignore
 class BaseCoreClient(abc.ABC):
     """Base client for core endpoints defined by stac"""
 
-    extensions: List[ApiExtension] = field(default_factory=list)
+    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
     def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
         """check if an api extension is enabled"""

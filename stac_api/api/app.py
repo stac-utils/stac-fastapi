@@ -1,12 +1,11 @@
 """fastapi app creation"""
-from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Type
 
+import attr
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from starlette.requests import Request
+from stac_pydantic import ItemCollection
+from stac_pydantic.api import ConformanceClasses, LandingPage
 
 from stac_api.api.extensions import FieldsExtension
 from stac_api.api.extensions.extension import ApiExtension
@@ -23,24 +22,19 @@ from stac_api.clients.base import BaseCoreClient
 from stac_api.config import ApiSettings, inject_settings
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_api.models import schemas
-from stac_api.utils.dependencies import READER, WRITER
-from stac_pydantic import ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage
 
 
-@dataclass
+@attr.s
 class StacApi:
     """StacApi"""
 
-    settings: ApiSettings
-    client: BaseCoreClient
-    extensions: Optional[List[ApiExtension]] = field(  # type:ignore
-        default_factory=list
+    settings: ApiSettings = attr.ib()
+    client: BaseCoreClient = attr.ib()
+    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
+    exceptions: Dict[Type[Exception], int] = attr.ib(
+        default=attr.Factory(lambda: DEFAULT_STATUS_CODES)
     )
-    exceptions: Dict[Type[Exception], int] = field(
-        default_factory=lambda: DEFAULT_STATUS_CODES
-    )
-    app: FastAPI = FastAPI()
+    app: FastAPI = attr.ib(default=attr.Factory(FastAPI))
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """check if an api extension is enabled"""
@@ -166,46 +160,7 @@ class StacApi:
 
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
 
-    def setup_db_connection(self):
-        """setup database connection"""
-
-        @self.app.on_event("startup")
-        async def on_startup():
-            """Create database engines and sessions on startup"""
-            self.app.state.ENGINE_READER = create_engine(
-                self.settings.reader_connection_string, echo=self.settings.debug
-            )
-            self.app.state.ENGINE_WRITER = create_engine(
-                self.settings.writer_connection_string, echo=self.settings.debug
-            )
-            self.app.state.DB_READER = sessionmaker(
-                autocommit=False, autoflush=False, bind=self.app.state.ENGINE_READER
-            )
-            self.app.state.DB_WRITER = sessionmaker(
-                autocommit=False, autoflush=False, bind=self.app.state.ENGINE_WRITER
-            )
-
-        @self.app.on_event("shutdown")
-        async def on_shutdown():
-            """Dispose of database engines and sessions on app shutdown"""
-            self.app.state.ENGINE_READER.dispose()
-            self.app.state.ENGINE_WRITER.dispose()
-
-        @self.app.middleware("http")
-        async def create_db_connection(request: Request, call_next):
-            """Create a new database connection for each request"""
-            if "titiler" in str(request.url):
-                return await call_next(request)
-            reader = request.app.state.DB_READER()
-            writer = request.app.state.DB_WRITER()
-            READER.set(reader)
-            WRITER.set(writer)
-            resp = await call_next(request)
-            reader.close()
-            writer.close()
-            return resp
-
-    def __post_init__(self):
+    def __attrs_post_init__(self):
         """post-init hook"""
         # inject settings
         self.app.debug = self.settings.debug
@@ -227,8 +182,6 @@ class StacApi:
 
         # register exception handlers
         add_exception_handlers(self.app, status_codes=self.exceptions)
-
-        self.setup_db_connection()
 
         # customize openapi
         self.app.openapi = self.customize_openapi

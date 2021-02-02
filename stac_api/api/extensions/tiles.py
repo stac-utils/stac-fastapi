@@ -1,11 +1,8 @@
 """tiles extension"""
-from dataclasses import dataclass
-
-import pkg_resources
+import attr
 from fastapi import FastAPI
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
-from starlette.templating import Jinja2Templates
 
 from stac_api.api.extensions.extension import ApiExtension
 from stac_api.api.models import ItemUri
@@ -14,18 +11,16 @@ from stac_api.clients.tiles.ogc import TilesClient
 from stac_api.models.ogc import TileSetResource
 
 
-@dataclass
+@attr.s
 class TilesExtension(ApiExtension):
     """titiler extension"""
 
-    client: TilesClient = TilesClient()
+    client: TilesClient = attr.ib(default=attr.Factory(TilesClient))
 
     def register(self, app: FastAPI) -> None:
         """register extension with the application"""
         from titiler.endpoints.stac import STACTiler
-
-        template_dir = pkg_resources.resource_filename("titiler", "templates")
-        templates = Jinja2Templates(directory=template_dir)
+        from titiler.templates import templates
 
         titiler_router = STACTiler().router
 

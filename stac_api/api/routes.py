@@ -2,9 +2,9 @@
 from typing import Callable, Type
 
 from fastapi import Depends
+from pydantic import BaseModel
 from starlette.requests import Request
 
-from pydantic import BaseModel
 from stac_api.api.models import APIRequest
 
 
@@ -18,7 +18,8 @@ def create_endpoint_from_model(
     """
 
     def _endpoint(
-        request: Request, request_data: request_model,  # type:ignore
+        request: Request,
+        request_data: request_model,  # type:ignore
     ):
         """endpoint"""
         resp = func(request_data, request=request)
@@ -28,14 +29,16 @@ def create_endpoint_from_model(
 
 
 def create_endpoint_with_depends(
-    func: Callable, request_model: Type[APIRequest],
+    func: Callable,
+    request_model: Type[APIRequest],
 ) -> Callable:
     """
     Create a fastapi endpoint where request model is a dataclass.  This works best for validating query/patm params.
     """
 
     def _endpoint(
-        request: Request, request_data: request_model = Depends(),  # type:ignore
+        request: Request,
+        request_data: request_model = Depends(),  # type:ignore
     ):
         """endpoint"""
         resp = func(
