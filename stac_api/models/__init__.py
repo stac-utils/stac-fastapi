@@ -1,1 +1,1 @@
-"""stac_api.models"""
+"""stac_api.models."""

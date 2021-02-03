@@ -1,4 +1,4 @@
-"""ogc tiles client"""
+"""ogc tiles client."""
 
 from typing import Union
 
@@ -15,12 +15,12 @@ from stac_api.models.ogc import TileSetResource
 # TODO: Decouple from postgres by inherting from base class (stac_api.clients.base)
 @attr.s
 class TilesClient(CoreCrudClient):
-    """OGC Tiles specific operations"""
+    """OGC Tiles specific operations."""
 
     def get_item_tiles(
         self, id: str, **kwargs
     ) -> Union[RedirectResponse, TileSetResource]:
-        """Get OGC TileSet resource for a stac item"""
+        """Get OGC TileSet resource for a stac item."""
         item = self.get_item(id, **kwargs)
         resource = TileSetResource(
             extent=SpatialExtent(bbox=[list(item.bbox)]),

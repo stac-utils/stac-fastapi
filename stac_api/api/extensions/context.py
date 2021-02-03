@@ -1,4 +1,4 @@
-"""context extension"""
+"""context extension."""
 import attr
 from fastapi import FastAPI
 
@@ -7,11 +7,21 @@ from stac_api.api.extensions.extension import ApiExtension
 
 @attr.s
 class ContextExtension(ApiExtension):
-    """
-    stac-api context extension
-    (https://github.com/radiantearth/stac-api-spec/tree/master/extensions/context)
+    """Context Extension.
+
+    The Context extension adds a JSON object to ItemCollection responses (`/search`, `/collections/{collectionId}/items`)
+    which includes the number of items matched, returned, and the limit requested.
+
+    https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#context
     """
 
     def register(self, app: FastAPI) -> None:
-        """register extension with the application"""
+        """Register the extension with a FastAPI application.
+
+        Args:
+            app: target FastAPI application.
+
+        Returns:
+            None
+        """
         pass

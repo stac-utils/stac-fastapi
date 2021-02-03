@@ -1,4 +1,4 @@
-"""Error handling"""
+"""Error handling."""
 
 import logging
 from typing import Callable, Dict, Type
@@ -12,31 +12,31 @@ logger = logging.getLogger(__name__)
 
 
 class StacApiError(Exception):
-    """Generic API error"""
+    """Generic API error."""
 
     pass
 
 
 class ConflictError(StacApiError):
-    """Database conflict"""
+    """Database conflict."""
 
     pass
 
 
 class NotFoundError(StacApiError):
-    """Resource not found"""
+    """Resource not found."""
 
     pass
 
 
 class ForeignKeyError(StacApiError):
-    """Foreign key error (collection does not exist)"""
+    """Foreign key error (collection does not exist)."""
 
     pass
 
 
 class DatabaseError(StacApiError):
-    """Generic database errors"""
+    """Generic database errors."""
 
     pass
 
@@ -51,11 +51,17 @@ DEFAULT_STATUS_CODES = {
 
 
 def exception_handler_factory(status_code: int) -> Callable:
-    """
-    Create a FastAPI exception handler from a status code.
+    """Create a FastAPI exception handler for a particular status code.
+
+    Args:
+        status_code: HTTP status code.
+
+    Returns:
+        callable: an exception handler.
     """
 
     def handler(request: Request, exc: Exception):
+        """I handle exceptions!!."""
         logger.error(exc, exc_info=True)
         return JSONResponse(content={"detail": str(exc)}, status_code=status_code)
 
@@ -65,8 +71,17 @@ def exception_handler_factory(status_code: int) -> Callable:
 def add_exception_handlers(
     app: FastAPI, status_codes: Dict[Type[Exception], int]
 ) -> None:
+    """Add exception handlers to the FastAPI application.
+
+    Args:
+        app: the FastAPI application.
+        status_codes: mapping between exceptions and status codes.
+
+    Returns:
+        None
     """
-    Add exception handlers to the FastAPI app.
-    """
+    # """
+    # Add exception handlers to the FastAPI app.
+    # """
     for (exc, code) in status_codes.items():
         app.add_exception_handler(exc, exception_handler_factory(code))

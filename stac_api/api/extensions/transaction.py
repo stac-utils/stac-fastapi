@@ -1,4 +1,4 @@
-"""stac-api transaction extension"""
+"""transaction extension."""
 import attr
 from fastapi import APIRouter, FastAPI
 
@@ -11,16 +11,34 @@ from stac_api.models import schemas
 
 @attr.s
 class TransactionExtension(ApiExtension):
-    """
-    stac-api transaction extension
-    (https://github.com/radiantearth/stac-api-spec/blob/master/extensions/transaction/README.md)
+    """Transaction Extension.
+
+    The transaction extension adds several endpoints which allow the creation, deletion, and updating of items and
+    collections:
+        POST /collections
+        PUT /collections/{collectionId}
+        DELETE /collections/{collectionId}
+        POST /collections/{collectionId}/items
+        PUT /collections/{collectionId}/items
+        DELETE /collections/{collectionId}/items
+
+    https://github.com/radiantearth/stac-api-spec/blob/master/ogcapi-features/extensions/transaction/README.md
+
+    Attributes:
+        client: CRUD application logic
     """
 
     client: BaseTransactionsClient = attr.ib()
 
     def register(self, app: FastAPI) -> None:
-        """register extension with the application"""
+        """Register the extension with a FastAPI application.
 
+        Args:
+            app: target FastAPI application.
+
+        Returns:
+            None
+        """
         item_request_model = _create_request_model(schemas.Item)
         collection_request_model = _create_request_model(schemas.Collection)
 
@@ -94,12 +112,23 @@ class TransactionExtension(ApiExtension):
 
 @attr.s
 class BulkTransactionExtension(ApiExtension):
-    """Bulk Transaction Extension"""
+    """Bulk Transaction Extension.
+
+    Bulk Transaction extension adds the `POST /collections/{collectionId}/bulk_items` endpoint to the application
+    for efficient bulk insertion of items.
+    """
 
     client: BaseBulkTransactionsClient = attr.ib()
 
     def register(self, app: FastAPI) -> None:
-        """register extension with the application"""
+        """Register the extension with a FastAPI application.
+
+        Args:
+            app: target FastAPI application.
+
+        Returns:
+            None
+        """
         items_request_model = _create_request_model(schemas.Items)
 
         router = APIRouter()

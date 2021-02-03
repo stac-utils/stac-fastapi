@@ -1,4 +1,4 @@
-"""base api extension"""
+"""base api extension."""
 import abc
 
 import attr
@@ -7,9 +7,16 @@ from fastapi import FastAPI
 
 @attr.s
 class ApiExtension(abc.ABC):
-    """orchestration for API extensions"""
+    """Abstract base class for defining API extensions."""
 
     @abc.abstractmethod
     def register(self, app: FastAPI) -> None:
-        """register extension with the application"""
-        ...
+        """Register the extension with a FastAPI application.
+
+        Args:
+            app: target FastAPI application.
+
+        Returns:
+            None
+        """
+        pass

@@ -1,4 +1,4 @@
-"""openapi"""
+"""openapi."""
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
@@ -6,10 +6,10 @@ from stac_api.config import ApiExtensions, ApiSettings
 
 
 def config_openapi(app: FastAPI, settings: ApiSettings):
-    """config openapi"""
+    """Config openapi."""
 
     def custom_openapi():
-        """config openapi"""
+        """Config openapi."""
         if app.openapi_schema:
             return app.openapi_schema
 
