@@ -46,7 +46,7 @@ repos:
         rev: 5.1.1
         hooks:
           - id: pydocstyle
-            language_version: python3.7
+            language_version: python3.8
             args: [
                 # Don't require docstrings for tests
                 '--match=(?!test|alembic|scripts).*\.py',
