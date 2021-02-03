@@ -17,12 +17,19 @@ pip install arturo-stac-api
 
 ## Usage
 ```python
-# my_app.py
+from stac_api.api.app import StacApi
+from stac_api.clients.postgres.core import CoreCrudClient
+from stac_api.clients.postgres.session import Session
 from stac_api.config import ApiSettings
-from stac_api.api import create_app
 
 settings = ApiSettings()
-app = create_app(settings)
+session = Session(settings.reader_connection_string, settings.writer_connection_string)
+api = StacApi(
+    settings=settings,
+    client=CoreCrudClient(
+        session=Session(settings.reader_connection_string, settings.writer_connection_string)
+    ),
+)
 ```
 
 ```bash
