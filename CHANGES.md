@@ -6,7 +6,7 @@
 * Update TiTiler version (https://github.com/arturo-ai/arturo-stac-api/pull/61)
 * Use attrs instead of dataclasses (https://github.com/arturo-ai/arturo-stac-api/pull/73)
 * Remove postgres database connection from API layer (https://github.com/arturo-ai/arturo-stac-api/pull/74)
-* Fix precommit config (https://github.com/arturo-ai/arturo-stac-api/pull/75)
+* Fix `pre-commit` config (https://github.com/arturo-ai/arturo-stac-api/pull/75)
 
 ## 1.0.0 (2020-09-25)
 
