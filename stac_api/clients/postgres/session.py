@@ -1,4 +1,4 @@
-"""database session management"""
+"""database session management."""
 import logging
 import os
 from contextlib import contextmanager
@@ -17,11 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 class FastAPISessionMaker(_FastAPISessionMaker):
-    """FastAPISessionMaker"""
+    """FastAPISessionMaker."""
 
     @contextmanager
     def context_session(self) -> Iterator[SqlSession]:
-        """override base method to include exception handling"""
+        """Override base method to include exception handling."""
         try:
             yield from self.get_db()
         except sa.exc.StatementError as e:
@@ -35,20 +35,20 @@ class FastAPISessionMaker(_FastAPISessionMaker):
 
 @attr.s
 class Session:
-    """Database session management"""
+    """Database session management."""
 
     reader_conn_string: str = attr.ib()
     writer_conn_string: str = attr.ib()
 
     @classmethod
     def create_from_env(cls):
-        """create from environment"""
+        """Create from environment."""
         return cls(
             reader_conn_string=os.environ["READER_CONN_STRING"],
             writer_conn_string=os.environ["WRITER_CONN_STRING"],
         )
 
     def __attrs_post_init__(self):
-        """post init"""
+        """Post init handler."""
         self.reader: FastAPISessionMaker = FastAPISessionMaker(self.reader_conn_string)
         self.writer: FastAPISessionMaker = FastAPISessionMaker(self.writer_conn_string)

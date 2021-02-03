@@ -1,1 +1,1 @@
-"""stac_api.clients.tiles"""
+"""stac_api.clients.tiles."""

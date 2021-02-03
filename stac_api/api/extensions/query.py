@@ -1,4 +1,4 @@
-"""query extension"""
+"""query extension."""
 import attr
 from fastapi import FastAPI
 
@@ -7,11 +7,21 @@ from stac_api.api.extensions.extension import ApiExtension
 
 @attr.s
 class QueryExtension(ApiExtension):
-    """
-    stac-api query extension
-    (https://github.com/radiantearth/stac-api-spec/tree/master/extensions/query)
+    """Query Extension.
+
+    The Query extension adds an additional `query` parameter to `/search` requests which allows the caller to perform
+    queries against item metadata (ex. find all images with cloud cover less than 15%).
+
+    https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#query
     """
 
     def register(self, app: FastAPI) -> None:
-        """register extension with the application"""
+        """Register the extension with a FastAPI application.
+
+        Args:
+            app: target FastAPI application.
+
+        Returns:
+            None
+        """
         pass
