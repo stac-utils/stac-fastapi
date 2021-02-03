@@ -7,13 +7,14 @@
 
 ---
 
-Python library for building and customizing a STAC compliant API:
-
+Python library for building a STAC compliant FastAPI application.  It provides:
+- An API layer which enforces the [stac-api spec](https://github.com/radiantearth/stac-api-spec) and allows users
+to customize how the API interacts with their data through dependency injection.
+- A PostGIS implementation using [sqlalchemy](https://github.com/sqlalchemy/sqlalchemy)/[geoalchemy2](https://geoalchemy-2.readthedocs.io/en/latest/).
 
 ```
 pip install arturo-stac-api
 ```
-
 
 ## Usage
 ```python
@@ -30,10 +31,9 @@ api = StacApi(
         session=Session(settings.reader_connection_string, settings.writer_connection_string)
     ),
 )
-```
 
-```bash
-$ uvicorn my_app:app --reload
+# FastAPI application
+app = api.app
 ```
 
 ## Project Structure
