@@ -180,7 +180,6 @@ class StacApi:
 
     def customize_openapi(self) -> Optional[Dict[str, Any]]:
         """Customize openapi schema."""
-        # """customize openapi schema"""
         if self.app.openapi_schema:
             return self.app.openapi_schema
 
