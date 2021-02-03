@@ -36,5 +36,22 @@ To manually deploy docs (note you should never need to do this because Github
 Actions deploys automatically for new commits.):
 
 ```bash
+Create API documentations
+$ pdocs as_markdown \
+  --output_dir docs/api/ \
+  --exclude_source \
+  --overwrite \
+  stac_api.errors \
+  stac_api.config \
+  stac_api.models.database \
+  stac_api.models.decompose \
+  stac_api.models.links \
+  stac_api.models.ogc \
+  stac_api.models.schemas \
+  stac_api.api.routes \
+  stac_api.api.models \
+  stac_api.api.app
+
+# deploy
 $ mkdocs gh-deploy
 ```

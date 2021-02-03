@@ -28,15 +28,24 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e .["docs"]
 
-      # - name: update API docs
-      #   run: |
-      #     python -m pip install git+https://github.com/timothycrosley/pdocs
-      #     pdocs as_markdown \
-      #       --output_dir docs/api/ \
-      #       --exclude_source \
-      #       --overwrite \
-      #       stac_api.errors \
-      #       ...
+      - name: update API docs
+        run: |
+          python -m pip install git+https://github.com/timothycrosley/pdocs
+          pdocs as_markdown \
+            --output_dir docs/api/ \
+            --exclude_source \
+            --overwrite \
+            stac_api.errors \
+            stac_api.config \
+            stac_api.models.database \
+            stac_api.models.decompose \
+            stac_api.models.links \
+            stac_api.models.ogc \
+            stac_api.models.schemas \
+            stac_api.api.routes \
+            stac_api.api.models \
+            stac_api.api.app
+            ...
 
       - name: Deploy docs
         run: mkdocs gh-deploy --force

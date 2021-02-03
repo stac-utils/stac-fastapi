@@ -18,6 +18,22 @@ extra:
 # Layout
 nav:
   - Home: 'index.md'
+  - API:
+    - errors: api/stac_api/errors.md
+    - config: api/stac_api/config.md
+
+    - models:
+      - database: api/stac_api/models/database.md
+      - decompose: api/stac_api/models/decompose.md
+      - links: api/stac_api/models/links.md
+      - ogc: api/stac_api/models/ogc.md
+      - schemas: api/stac_api/models/schemas.md
+
+    - api:
+      - routes: api/stac_api/api/routes.md
+      - models: api/stac_api/api/models.md
+      - app: api/stac_api/api/app.md
+
   - Development - Contributing: 'contributing.md'
   - Release Notes: 'release-notes.md'
 
