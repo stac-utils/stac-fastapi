@@ -29,7 +29,25 @@ class AddOns(enum.Enum):
 
 
 class ApiSettings(BaseSettings):
-    """Application settings"""
+    """ApiSettings
+
+    Defines api configuration, potentially through environment variables.
+    See https://pydantic-docs.helpmanual.io/usage/settings/.
+
+    Attributes:
+        environment: name of the environment (ex. dev/prod).
+        debug: toggles debug mode.
+        postgres_user: postgres username.
+        postgres_pass: postgres password.
+        postgres_host_reader: hostname for the reader connection.
+        postgres_host_writer: hostname for the writer connection.
+        postgres_port: database port.
+        postgres_dbname: database name.
+        forbidden_fields: set of fields defined by STAC but not included in the database.
+        indexed_fields:
+            set of fields which are usually in `item.properties` but are indexed as distinct columns in
+            the database.
+    """
 
     environment: str
     debug: bool = False
@@ -47,7 +65,7 @@ class ApiSettings(BaseSettings):
     indexed_fields: Set[str] = {"datetime"}
 
     class Config:
-        """model config"""
+        """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)"""
 
         extra = "allow"
         env_file = ".env"
@@ -67,6 +85,11 @@ settings: Optional[ApiSettings] = None
 
 
 def inject_settings(base_settings: ApiSettings):
-    """Inject settings to global scope"""
+    """Inject settings to global scope
+
+    Attributes:
+        base_settings: api settings.
+
+    """
     global settings
     settings = base_settings

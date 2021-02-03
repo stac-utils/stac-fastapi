@@ -12,9 +12,18 @@ from stac_api.api.models import APIRequest
 def create_endpoint_from_model(
     func: Callable, request_model: Type[BaseModel]
 ) -> Callable:
-    """
-    Create a FastAPI endpoint where request model is a pydantic model.  This works best for validating request bodies
-    (POST/PUT etc.)
+    """Create a FastAPI endpoint from pydantic model.
+
+    Wrap a callable in a function which uses the desired request model.  It is expected
+    that the signature of the callable matches that of the request model.  This is best for validating
+    request bodies (ex. POST requests).
+
+    Args:
+        func: the wrapped function.
+        request_model: a pydantic model.
+
+    Returns:
+        callable: fastapi route which may be added to a router/application
     """
 
     def _endpoint(
@@ -32,8 +41,21 @@ def create_endpoint_with_depends(
     func: Callable,
     request_model: Type[APIRequest],
 ) -> Callable:
-    """
-    Create a fastapi endpoint where request model is a dataclass.  This works best for validating query/patm params.
+    # """
+    # Create a fastapi endpoint where request model is a dataclass.  This works best for validating query/patm params.
+    # """
+    """Create a FastAPI endpoint from an `APIRequest` (dataclass).
+
+    Wrap a callable in a function which uses the desired `APIRequest` to define request parameters.  It is expected
+    that the return of `APIRequest.kwargs` matches that of the callable.  This works best for validating query/path
+    parameters (ex. GET request) and allows for dependency injection.
+
+    Args:
+        func: the wrapped function
+        request_model: subclass of `APIRequest`
+
+    Returns:
+        callable: fastapi route which may be added to a router/application
     """
 
     def _endpoint(

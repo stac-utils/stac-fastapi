@@ -29,9 +29,7 @@ NumType = Union[float, int]
 
 
 class Operator(str, AutoValueEnum):
-    """
-    Define our own operators because all operators defined in stac-pydantic are not currently supported.
-    """
+    """Defines the set of operators supported by the API."""
 
     eq = auto()
     ne = auto()
@@ -74,8 +72,7 @@ class Queryables(str, AutoValueEnum):
 
 @dataclass
 class QueryableTypes:
-    """
-    Define an enum of the field type of each queryable field
+    """Defines a set of queryable fields.
 
     # TODO: Let the user define these in a config file
     # TODO: There is a much better way of defining this field <> type mapping than two enums with same keys
@@ -92,12 +89,18 @@ class QueryableTypes:
 
 
 class FieldsExtension(FieldsBase):
-    """Fields extension"""
+    """FieldsExtension
+
+    Attributes:
+        include: set of fields to include.
+        exclude: set of fields to exclude.
+    """
 
     include: Optional[Set[str]] = set()
     exclude: Optional[Set[str]] = set()
 
-    def _get_field_dict(self, fields: Set[str]) -> Dict:
+    @staticmethod
+    def _get_field_dict(fields: Set[str]) -> Dict:
         """
         Internal method to reate a dictionary for advanced include or exclude of pydantic fields on model export
 

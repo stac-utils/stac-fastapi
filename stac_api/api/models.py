@@ -10,7 +10,15 @@ from pydantic.fields import UndefinedType
 
 
 def _create_request_model(model: Type[BaseModel]) -> Type[BaseModel]:
-    """Create a pydantic model for validating a request body"""
+    # """Create a pydantic model for validating a request body"""
+    """Create a pydantic model for va
+
+    Args:
+        model:
+
+    Returns:
+
+    """
 
     fields = {}
     for (k, v) in model.__fields__.items():

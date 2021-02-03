@@ -11,19 +11,21 @@ from stac_api.models import schemas
 
 @attr.s
 class TransactionExtension(ApiExtension):
-    """Transaction Extension ( (https://github.com/radiantearth/stac-api-spec/blob/master/ogcapi-features/extensions/transaction/README.md))
+    """Transaction Extension
 
     The transaction extension adds several endpoints which allow the creation, deletion, and updating of items and
     collections:
-      - `POST /collections` - create a new collection
-      - `PUT /collections/{collectionId}` - update an existing collection
-      - `DELETE /collections/{collectionId}` - delete a collection
-      - `POST /collections/{collectionId}/items` - create a new item
-      - `PUT /collections/{collectionId}/items` - update an existing item
-      - `DELETE /collections/{collectionId}/items` - delete an item
+        POST /collections
+        PUT /collections/{collectionId}
+        DELETE /collections/{collectionId}
+        POST /collections/{collectionId}/items
+        PUT /collections/{collectionId}/items
+        DELETE /collections/{collectionId}/items
+
+    https://github.com/radiantearth/stac-api-spec/blob/master/ogcapi-features/extensions/transaction/README.md
 
     Attributes:
-        client (stac_api.clients.base.BaseTransactionsClient): CRUD application logic
+        client: CRUD application logic
     """
 
     client: BaseTransactionsClient = attr.ib()
@@ -32,7 +34,7 @@ class TransactionExtension(ApiExtension):
         """Register the extension with a FastAPI application.
 
         Args:
-            app (fastapi.FastAPI): target FastAPI application.
+            app: target FastAPI application.
 
         Returns:
             None
@@ -122,7 +124,7 @@ class BulkTransactionExtension(ApiExtension):
         """Register the extension with a FastAPI application.
 
         Args:
-            app (fastapi.FastAPI): target FastAPI application.
+            app: target FastAPI application.
 
         Returns:
             None

@@ -51,11 +51,17 @@ DEFAULT_STATUS_CODES = {
 
 
 def exception_handler_factory(status_code: int) -> Callable:
-    """
-    Create a FastAPI exception handler from a status code.
+    """Create a FastAPI exception handler for a particular status code.
+
+    Args:
+        status_code: HTTP status code.
+
+    Returns:
+        callable: an exception handler.
     """
 
     def handler(request: Request, exc: Exception):
+        """i handle exceptions!!"""
         logger.error(exc, exc_info=True)
         return JSONResponse(content={"detail": str(exc)}, status_code=status_code)
 
@@ -65,8 +71,17 @@ def exception_handler_factory(status_code: int) -> Callable:
 def add_exception_handlers(
     app: FastAPI, status_codes: Dict[Type[Exception], int]
 ) -> None:
+    """Add exception handlers to the FastAPI application.
+
+    Args:
+        app: the FastAPI application.
+        status_codes: mapping between exceptions and status codes.
+
+    Returns:
+        None
     """
-    Add exception handlers to the FastAPI app.
-    """
+    # """
+    # Add exception handlers to the FastAPI app.
+    # """
     for (exc, code) in status_codes.items():
         app.add_exception_handler(exc, exception_handler_factory(code))

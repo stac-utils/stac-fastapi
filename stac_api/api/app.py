@@ -1,5 +1,5 @@
 """fastapi app creation"""
-from typing import Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -26,7 +26,27 @@ from stac_api.models import schemas
 
 @attr.s
 class StacApi:
-    """StacApi"""
+    """StacApi
+
+    Factory for creating a STAC-compliant FastAPI application.  After instantation, the application is accessible from
+    the `StacApi.app` attribute.
+
+    Attributes:
+        settings:
+            API settings and configuration, potentially using environment variables.
+            See https://pydantic-docs.helpmanual.io/usage/settings/.
+        client:
+            A subclass of `stac_api.clients.BaseCoreClient`.  Defines the application logic which is injected
+            into the API.
+        extensions:
+            API extensions to include with the application.  This may include official STAC extensions as well as
+            third-party add ons.
+        exceptions:
+            Defines a global mapping between exceptions and status codes, allowing configuration of response behavior on
+            certain exceptions (https://fastapi.tiangolo.com/tutorial/handling-errors/#install-custom-exception-handlers).
+        app:
+            The FastAPI application, defaults to a fresh application.
+    """
 
     settings: ApiSettings = attr.ib()
     client: BaseCoreClient = attr.ib()
@@ -37,14 +57,36 @@ class StacApi:
     app: FastAPI = attr.ib(default=attr.Factory(FastAPI))
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
-        """check if an api extension is enabled"""
+        """Get an extension.
+
+        Args:
+            extension: extension to check for.
+
+        Returns:
+            The extension instance, if it exists.
+        """
         for ext in self.extensions:
             if isinstance(ext, extension):
                 return ext
         return None
 
     def register_core(self):
-        """register stac core endpoints"""
+        """Register core STAC endpoints.
+
+            GET /
+            GET /conformance
+            GET /collections
+            GET /collections/{collectionId}
+            GET /collections/{collectionId}/items
+            GET /collection/{collectionId}/items/{itemId}
+            GET /search
+            POST /search
+
+        Injects application logic (StacApi.client) into the API layer.
+
+        Returns:
+            None
+        """
         search_request_model = _create_request_model(schemas.STACSearch)
         fields_ext = self.get_extension(FieldsExtension)
         router = APIRouter()
@@ -136,8 +178,9 @@ class StacApi:
         )
         self.app.include_router(router)
 
-    def customize_openapi(self):
-        """customize openapi schema"""
+    def customize_openapi(self) -> Optional[Dict[str, Any]]:
+        """Customize openapi schema."""
+        # """customize openapi schema"""
         if self.app.openapi_schema:
             return self.app.openapi_schema
 
@@ -161,7 +204,13 @@ class StacApi:
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
 
     def __attrs_post_init__(self):
-        """post-init hook"""
+        """Post-init hook.
+
+        Responsible for setting up the application upon instantiation of the class.
+
+        Returns:
+            None
+        """
         # inject settings
         self.app.debug = self.settings.debug
         self.client.extensions = self.extensions

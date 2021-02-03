@@ -14,7 +14,7 @@ class ApiExtension(abc.ABC):
         """Register the extension with a FastAPI application.
 
         Args:
-            app (fastapi.FastAPI): target FastAPI application.
+            app: target FastAPI application.
 
         Returns:
             None
