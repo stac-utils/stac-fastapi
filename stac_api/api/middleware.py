@@ -1,4 +1,4 @@
-"""api middleware"""
+"""api middleware."""
 
 from typing import Callable
 
@@ -9,10 +9,7 @@ from starlette.routing import Match
 
 
 def router_middleware(app: FastAPI, router: APIRouter):
-    """
-    Decorator to add a middleware which will only execute on routes attached to the specified router.  Assumes the
-    router has no prefix.
-    """
+    """Add middleware to a specific router, assumes no router prefix."""
 
     def deco(func: Callable) -> Callable:
         async def _middleware(request: Request, call_next):

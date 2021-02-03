@@ -7,8 +7,8 @@ from pydantic import BaseSettings
 
 # TODO: Move to stac-pydantic
 class ApiExtensions(enum.Enum):
-    """
-    Enumeration of available stac api extensions
+    """Enumeration of available stac api extensions.
+
     Ref: https://github.com/radiantearth/stac-api-spec/tree/master/extensions
     """
 
@@ -20,16 +20,14 @@ class ApiExtensions(enum.Enum):
 
 
 class AddOns(enum.Enum):
-    """
-    Enumeration of available third party add ons
-    """
+    """Enumeration of available third party add ons."""
 
     tiles = "tiles"
     bulk_transaction = "bulk-transaction"
 
 
 class ApiSettings(BaseSettings):
-    """ApiSettings
+    """ApiSettings.
 
     Defines api configuration, potentially through environment variables.
     See https://pydantic-docs.helpmanual.io/usage/settings/.
@@ -65,19 +63,19 @@ class ApiSettings(BaseSettings):
     indexed_fields: Set[str] = {"datetime"}
 
     class Config:
-        """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)"""
+        """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
 
         extra = "allow"
         env_file = ".env"
 
     @property
     def reader_connection_string(self):
-        """Create reader psql connection string"""
+        """Create reader psql connection string."""
         return f"postgresql://{self.postgres_user}:{self.postgres_pass}@{self.postgres_host_reader}:{self.postgres_port}/{self.postgres_dbname}"
 
     @property
     def writer_connection_string(self):
-        """Create writer psql connection string"""
+        """Create writer psql connection string."""
         return f"postgresql://{self.postgres_user}:{self.postgres_pass}@{self.postgres_host_writer}:{self.postgres_port}/{self.postgres_dbname}"
 
 
@@ -85,7 +83,7 @@ settings: Optional[ApiSettings] = None
 
 
 def inject_settings(base_settings: ApiSettings):
-    """Inject settings to global scope
+    """Inject settings to global scope.
 
     Attributes:
         base_settings: api settings.

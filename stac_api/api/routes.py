@@ -1,4 +1,4 @@
-"""route factories"""
+"""route factories."""
 from typing import Callable, Type
 
 from fastapi import Depends
@@ -30,7 +30,7 @@ def create_endpoint_from_model(
         request: Request,
         request_data: request_model,  # type:ignore
     ):
-        """endpoint"""
+        """Endpoint."""
         resp = func(request_data, request=request)
         return resp
 
@@ -41,9 +41,6 @@ def create_endpoint_with_depends(
     func: Callable,
     request_model: Type[APIRequest],
 ) -> Callable:
-    # """
-    # Create a fastapi endpoint where request model is a dataclass.  This works best for validating query/patm params.
-    # """
     """Create a FastAPI endpoint from an `APIRequest` (dataclass).
 
     Wrap a callable in a function which uses the desired `APIRequest` to define request parameters.  It is expected
@@ -62,7 +59,7 @@ def create_endpoint_with_depends(
         request: Request,
         request_data: request_model = Depends(),  # type:ignore
     ):
-        """endpoint"""
+        """Endpoint."""
         resp = func(
             request=request, **request_data.kwargs()  # type:ignore
         )

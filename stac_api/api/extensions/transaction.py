@@ -1,4 +1,4 @@
-"""stac-api transaction extension"""
+"""transaction extension."""
 import attr
 from fastapi import APIRouter, FastAPI
 
@@ -11,7 +11,7 @@ from stac_api.models import schemas
 
 @attr.s
 class TransactionExtension(ApiExtension):
-    """Transaction Extension
+    """Transaction Extension.
 
     The transaction extension adds several endpoints which allow the creation, deletion, and updating of items and
     collections:
@@ -112,7 +112,7 @@ class TransactionExtension(ApiExtension):
 
 @attr.s
 class BulkTransactionExtension(ApiExtension):
-    """Bulk Transaction Extension
+    """Bulk Transaction Extension.
 
     Bulk Transaction extension adds the `POST /collections/{collectionId}/bulk_items` endpoint to the application
     for efficient bulk insertion of items.

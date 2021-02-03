@@ -92,7 +92,7 @@ class BaseTransactionsClient(abc.ABC):
             model: the collection (must be complete)
 
         Returns:
-
+            The updated collection.
         """
         ...
 
@@ -113,7 +113,7 @@ class BaseTransactionsClient(abc.ABC):
 
 @attr.s  # type: ignore
 class BaseBulkTransactionsClient(abc.ABC):
-    """BulkTransactionsClient"""
+    """BulkTransactionsClient."""
 
     @staticmethod
     def _chunks(lst, n):
@@ -153,7 +153,7 @@ class BaseCoreClient(abc.ABC):
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
     def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
-        """check if an api extension is enabled."""
+        """Check if an api extension is enabled."""
         return any([isinstance(ext, extension) for ext in self.extensions])
 
     @abc.abstractmethod
@@ -182,7 +182,7 @@ class BaseCoreClient(abc.ABC):
     def post_search(
         self, search_request: schemas.STACSearch, **kwargs
     ) -> Dict[str, Any]:
-        """Cross catalog search (POST)
+        """Cross catalog search (POST).
 
         Called with `POST /search`.
 
@@ -208,7 +208,7 @@ class BaseCoreClient(abc.ABC):
         sortby: Optional[str] = None,
         **kwargs
     ) -> Dict[str, Any]:
-        """Cross catalog search (GET)
+        """Cross catalog search (GET).
 
         Called with `GET /search`.
 

@@ -1,4 +1,4 @@
-"""Error handling"""
+"""Error handling."""
 
 import logging
 from typing import Callable, Dict, Type
@@ -12,31 +12,31 @@ logger = logging.getLogger(__name__)
 
 
 class StacApiError(Exception):
-    """Generic API error"""
+    """Generic API error."""
 
     pass
 
 
 class ConflictError(StacApiError):
-    """Database conflict"""
+    """Database conflict."""
 
     pass
 
 
 class NotFoundError(StacApiError):
-    """Resource not found"""
+    """Resource not found."""
 
     pass
 
 
 class ForeignKeyError(StacApiError):
-    """Foreign key error (collection does not exist)"""
+    """Foreign key error (collection does not exist)."""
 
     pass
 
 
 class DatabaseError(StacApiError):
-    """Generic database errors"""
+    """Generic database errors."""
 
     pass
 
@@ -61,7 +61,7 @@ def exception_handler_factory(status_code: int) -> Callable:
     """
 
     def handler(request: Request, exc: Exception):
-        """i handle exceptions!!"""
+        """I handle exceptions!!."""
         logger.error(exc, exc_info=True)
         return JSONResponse(content={"detail": str(exc)}, status_code=status_code)
 

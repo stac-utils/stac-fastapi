@@ -1,4 +1,4 @@
-"""base api extension"""
+"""base api extension."""
 import abc
 
 import attr

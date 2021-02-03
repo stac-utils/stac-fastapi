@@ -1,4 +1,4 @@
-"""transactions extension client"""
+"""transactions extension client."""
 
 import json
 import logging
@@ -16,14 +16,14 @@ logger = logging.getLogger(__name__)
 
 @attr.s
 class TransactionsClient(BaseTransactionsClient):
-    """Transactions extension specific CRUD operations"""
+    """Transactions extension specific CRUD operations."""
 
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
     item_table: Type[database.Item] = attr.ib(default=database.Item)
 
     def create_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
-        """create item"""
+        """Create item."""
         data = self.item_table.from_schema(model)
         with self.session.writer.context_session() as session:
             session.add(data)
@@ -33,7 +33,7 @@ class TransactionsClient(BaseTransactionsClient):
     def create_collection(
         self, model: schemas.Collection, **kwargs
     ) -> schemas.Collection:
-        """create collection"""
+        """Create collection."""
         data = self.collection_table.from_schema(model)
         with self.session.writer.context_session() as session:
             session.add(data)
@@ -41,7 +41,7 @@ class TransactionsClient(BaseTransactionsClient):
             return schemas.Collection.from_orm(data)
 
     def update_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
-        """update item"""
+        """Update item."""
         with self.session.reader.context_session() as session:
             query = session.query(self.item_table).filter(
                 self.item_table.id == model.id
@@ -61,7 +61,7 @@ class TransactionsClient(BaseTransactionsClient):
     def update_collection(
         self, model: schemas.Collection, **kwargs
     ) -> schemas.Collection:
-        """update collection"""
+        """Update collection."""
         with self.session.reader.context_session() as session:
             query = session.query(self.collection_table).filter(
                 self.collection_table.id == model.id
@@ -75,7 +75,7 @@ class TransactionsClient(BaseTransactionsClient):
         return model
 
     def delete_item(self, id: str, **kwargs) -> schemas.Item:
-        """delete item"""
+        """Delete item."""
         with self.session.writer.context_session() as session:
             query = session.query(self.item_table).filter(self.item_table.id == id)
             data = query.first()
@@ -86,7 +86,7 @@ class TransactionsClient(BaseTransactionsClient):
             return schemas.Item.from_orm(data)
 
     def delete_collection(self, id: str, **kwargs) -> schemas.Collection:
-        """delete collection"""
+        """Delete collection."""
         with self.session.writer.context_session() as session:
             query = session.query(self.collection_table).filter(
                 self.collection_table.id == id
@@ -101,19 +101,19 @@ class TransactionsClient(BaseTransactionsClient):
 
 @attr.s
 class BulkTransactionsClient(BaseBulkTransactionsClient):
-    """postgres bulk transactions"""
+    """Postgres bulk transactions."""
 
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     debug: bool = attr.ib(default=False)
 
     def __attrs_post_init__(self):
-        """create sqlalchemy engine"""
+        """Create sqlalchemy engine."""
         self.engine = self.session.writer.cached_engine
 
     @staticmethod
     def _preprocess_item(item: schemas.Item) -> Dict:
-        """
-        preprocess items to match data model
+        """Preprocess items to match data model.
+
         # TODO: dedup with GetterDict logic (ref #58)
         """
         item = item.dict(exclude_none=True)
@@ -125,8 +125,8 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
     def bulk_item_insert(
         self, items: schemas.Items, chunk_size: Optional[int] = None, **kwargs
     ) -> str:
-        """
-        bulk item insertion using sqlalchemy core
+        """Bulk item insertion using sqlalchemy core.
+
         https://docs.sqlalchemy.org/en/13/faq/performance.html#i-m-inserting-400-000-rows-with-the-orm-and-it-s-really-slow
         """
         # Use items.items because schemas.Items is a model with an items key

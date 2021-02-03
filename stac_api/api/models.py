@@ -1,4 +1,4 @@
-"""api request/response models"""
+"""api request/response models."""
 
 import abc
 from typing import Dict, Optional, Type, Union
@@ -10,16 +10,7 @@ from pydantic.fields import UndefinedType
 
 
 def _create_request_model(model: Type[BaseModel]) -> Type[BaseModel]:
-    # """Create a pydantic model for validating a request body"""
-    """Create a pydantic model for va
-
-    Args:
-        model:
-
-    Returns:
-
-    """
-
+    """Create a pydantic model for validating request bodies."""
     fields = {}
     for (k, v) in model.__fields__.items():
         # TODO: Filter out fields based on which extensions are present
@@ -52,60 +43,60 @@ def _create_request_model(model: Type[BaseModel]) -> Type[BaseModel]:
 
 @attr.s  # type:ignore
 class APIRequest(abc.ABC):
-    """Generic API Request base class"""
+    """Generic API Request base class."""
 
     @abc.abstractmethod
     def kwargs(self) -> Dict:
-        """Transform api request params into format which matches the signature of the endpoint"""
+        """Transform api request params into format which matches the signature of the endpoint."""
         ...
 
 
 @attr.s  # type:ignore
 class CollectionUri(APIRequest):
-    """Delete collection"""
+    """Delete collection."""
 
     collectionId: str = attr.ib(default=Path(..., description="Collection ID"))
 
     def kwargs(self) -> Dict:
-        """kwargs"""
+        """kwargs."""
         return {"id": self.collectionId}
 
 
 @attr.s
 class ItemUri(CollectionUri):
-    """Delete item"""
+    """Delete item."""
 
     itemId: str = attr.ib(default=Path(..., description="Item ID"))
 
     def kwargs(self) -> Dict:
-        """kwargs"""
+        """kwargs."""
         return {"id": self.itemId}
 
 
 @attr.s
 class EmptyRequest(APIRequest):
-    """Empty request"""
+    """Empty request."""
 
     def kwargs(self) -> Dict:
-        """kwargs"""
+        """kwargs."""
         return {}
 
 
 @attr.s
 class ItemCollectionUri(CollectionUri):
-    """Get item collection"""
+    """Get item collection."""
 
     limit: int = attr.ib(default=10)
     token: str = attr.ib(default=None)
 
     def kwargs(self) -> Dict:
-        """kwargs"""
+        """kwargs."""
         return {"id": self.collectionId, "limit": self.limit, "token": self.token}
 
 
 @attr.s
 class SearchGetRequest(APIRequest):
-    """GET search request"""
+    """GET search request."""
 
     collections: Optional[str] = attr.ib(default=None)
     ids: Optional[str] = attr.ib(default=None)
@@ -118,7 +109,7 @@ class SearchGetRequest(APIRequest):
     sortby: Optional[str] = attr.ib(default=None)
 
     def kwargs(self) -> Dict:
-        """kwargs"""
+        """kwargs."""
         return {
             "collections": self.collections.split(",")
             if self.collections

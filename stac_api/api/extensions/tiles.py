@@ -1,4 +1,4 @@
-"""tiles extension"""
+"""tiles extension."""
 import attr
 from fastapi import FastAPI
 from starlette.requests import Request
@@ -13,7 +13,7 @@ from stac_api.models.ogc import TileSetResource
 
 @attr.s
 class TilesExtension(ApiExtension):
-    """Tiles Extension
+    """Tiles Extension.
 
     The TilesExtension mounts `titiler` onto the application.
 

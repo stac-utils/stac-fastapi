@@ -1,4 +1,4 @@
-"""API pydantic models"""
+"""API pydantic models."""
 
 import operator
 from dataclasses import dataclass
@@ -45,12 +45,13 @@ class Operator(str, AutoValueEnum):
 
     @DynamicClassAttribute
     def operator(self) -> Callable[[Any, Any], bool]:
-        """Return python operator"""
+        """Return python operator."""
         return getattr(operator, self._value_)
 
 
 class Queryables(str, AutoValueEnum):
-    """
+    """Queryable fields.
+
     Define an enum of queryable fields and their data type.  Queryable fields are explicitly defined for two reasons:
         1. So the caller knows which fields they can query by
         2. Because JSONB queries with sqlalchemy ORM require casting the type of the field at runtime
@@ -89,7 +90,7 @@ class QueryableTypes:
 
 
 class FieldsExtension(FieldsBase):
-    """FieldsExtension
+    """FieldsExtension.
 
     Attributes:
         include: set of fields to include.
@@ -101,9 +102,9 @@ class FieldsExtension(FieldsBase):
 
     @staticmethod
     def _get_field_dict(fields: Set[str]) -> Dict:
-        """
-        Internal method to reate a dictionary for advanced include or exclude of pydantic fields on model export
+        """Pydantic include/excludes notation.
 
+        Internal method to create a dictionary for advanced include or exclude of pydantic fields on model export
         Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
         """
         field_dict = {}
@@ -120,10 +121,10 @@ class FieldsExtension(FieldsBase):
 
     @property
     def filter_fields(self) -> Dict:
-        """
+        """Create pydantic include/exclude expression.
+
         Create dictionary of fields to include/exclude on model export based on the included and excluded fields passed
         to the API
-
         Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
         """
         # Include default set of fields
@@ -144,12 +145,12 @@ class FieldsExtension(FieldsBase):
 
 
 class Collection(CollectionBase):
-    """Collection model"""
+    """Collection model."""
 
     links: Optional[List[Link]]
 
     class Config:
-        """model config"""
+        """Model config."""
 
         orm_mode = True
         use_enum_values = True
@@ -157,13 +158,13 @@ class Collection(CollectionBase):
 
 
 class Item(ItemBase):
-    """Item model"""
+    """Item model."""
 
     geometry: Polygon
     links: Optional[List[Link]]
 
     class Config:
-        """model config"""
+        """Model config."""
 
         json_encoders = {datetime: lambda v: v.strftime(DATETIME_RFC339)}
         use_enum_values = True
@@ -172,13 +173,13 @@ class Item(ItemBase):
 
 
 class Items(BaseModel):
-    """Items model"""
+    """Items model."""
 
     items: List[Item]
 
 
 class STACSearch(Search):
-    """Search model"""
+    """Search model."""
 
     # Make collections optional, default to searching all collections if none are provided
     collections: Optional[List[str]] = None
@@ -190,7 +191,7 @@ class STACSearch(Search):
 
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:
-        """validate query fields"""
+        """Validate query fields."""
         if "query" in values and values["query"]:
             queryable_fields = Queryables.__members__.values()
             for field_name in values["query"]:
@@ -208,9 +209,7 @@ class STACSearch(Search):
 
     @root_validator
     def include_query_fields(cls, values: Dict) -> Dict:
-        """
-        Root validator to ensure query fields are included in the API response
-        """
+        """Root validator to ensure query fields are included in the API response."""
         if "query" in values and values["query"]:
             query_include = set(
                 [
@@ -227,9 +226,7 @@ class STACSearch(Search):
         return values
 
     def polygon(self) -> Optional[ShapelyPolygon]:
-        """
-        Convenience method to create a shapely polygon for the spatial query (either `intersects` or `bbox`)
-        """
+        """Create a shapely polygon for the spatial query (either `intersects` or `bbox`)."""
         if self.intersects:
             return shape(self.intersects)
         elif self.bbox:

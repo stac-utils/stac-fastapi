@@ -1,4 +1,4 @@
-"""fastapi app creation"""
+"""fastapi app creation."""
 from typing import Any, Dict, List, Optional, Type
 
 import attr
@@ -26,7 +26,7 @@ from stac_api.models import schemas
 
 @attr.s
 class StacApi:
-    """StacApi
+    """StacApi factory.
 
     Factory for creating a STAC-compliant FastAPI application.  After instantation, the application is accessible from
     the `StacApi.app` attribute.
@@ -193,12 +193,12 @@ class StacApi:
         return self.app.openapi_schema
 
     def add_health_check(self):
-        """add a health check"""
+        """Add a health check."""
         mgmt_router = APIRouter()
 
         @mgmt_router.get("/_mgmt/ping")
         async def ping():
-            """Liveliness/readiness probe"""
+            """Liveliness/readiness probe."""
             return {"message": "PONG"}
 
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])

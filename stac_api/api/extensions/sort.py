@@ -1,4 +1,4 @@
-"""sort extension"""
+"""sort extension."""
 import attr
 from fastapi import FastAPI
 
@@ -7,7 +7,7 @@ from stac_api.api.extensions.extension import ApiExtension
 
 @attr.s
 class SortExtension(ApiExtension):
-    """Sort Extension
+    """Sort Extension.
 
     The Sort extension adds the `sortby` parameter to the `/search` endpoint, allowing the caller to specify the sort
     order of the returned items.

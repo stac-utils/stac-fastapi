@@ -1,1 +1,1 @@
-"""stac_api"""
+"""stac_api."""

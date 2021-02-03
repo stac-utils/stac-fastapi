@@ -1,4 +1,4 @@
-"""fields extension"""
+"""fields extension."""
 from typing import Set
 
 import attr
@@ -9,7 +9,7 @@ from stac_api.api.extensions.extension import ApiExtension
 
 @attr.s
 class FieldsExtension(ApiExtension):
-    """Fields Extension
+    """Fields Extension.
 
     The Fields extension adds functionality to the `/search` endpoint which allows the caller to include or exclude
     specific from the API response.  Registering this extension with the application has the added effect of removing

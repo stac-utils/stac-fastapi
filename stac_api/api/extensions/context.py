@@ -1,4 +1,4 @@
-"""context extension"""
+"""context extension."""
 import attr
 from fastapi import FastAPI
 
@@ -7,7 +7,7 @@ from stac_api.api.extensions.extension import ApiExtension
 
 @attr.s
 class ContextExtension(ApiExtension):
-    """Context Extension
+    """Context Extension.
 
     The Context extension adds a JSON object to ItemCollection responses (`/search`, `/collections/{collectionId}/items`)
     which includes the number of items matched, returned, and the limit requested.

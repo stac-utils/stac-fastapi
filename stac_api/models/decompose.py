@@ -14,10 +14,7 @@ from stac_api.models.links import CollectionLinks, ItemLinks, filter_links
 
 
 def resolve_links(links: list, base_url: str) -> List[Dict]:
-    """
-    Convert relative links to absolute links using the specified base url.  It would be more appropriate to use a view,
-    but SQLAlchemy ORM doesn't support this as far as I know.
-    """
+    """Convert relative links to absolute links."""
     if isinstance(links[0], BaseModel):
         links = [link.dict() for link in links]
     filtered_links = filter_links(links)
@@ -27,7 +24,8 @@ def resolve_links(links: list, base_url: str) -> List[Dict]:
 
 
 class ItemGetter(GetterDict):
-    """
+    """Custom GetterDict.
+
     Custom GetterDict used internally by pydantic ORM mode when decomposing database model to pydantic model.  This
     object resolves structural differences between the two models, for example:
       - relative links stored in the database must be resolved absolute links and inferred links must be added
@@ -37,7 +35,7 @@ class ItemGetter(GetterDict):
 
     @staticmethod
     def decode_geom(geom: Union[ga.elements.WKBElement, str, Dict]) -> Dict:
-        """Decode geoalchemy type to geojson"""
+        """Decode geoalchemy type to geojson."""
         if isinstance(geom, ga.elements.WKBElement):
             return json.loads(json.dumps(ga.shape.to_shape(geom).__geo_interface__))
         elif isinstance(geom, str):
@@ -47,7 +45,7 @@ class ItemGetter(GetterDict):
         raise DatabaseError("Received unexpected geometry format from database")
 
     def __init__(self, obj: Any):
-        """Decompose orm model to pydantic model"""
+        """Decompose orm model to pydantic model."""
         properties = obj.properties.copy()
         for field in config.settings.indexed_fields:
             # Use getattr to accommodate extension namespaces
@@ -80,12 +78,13 @@ class ItemGetter(GetterDict):
 
 
 class CollectionGetter(GetterDict):
-    """
-    Custom GetterDict used internally by pydantic ORM mode when collection ORM model to pydantic model
+    """Custom GetterDict.
+
+    Used internally by pydantic ORM mode when collection ORM model to pydantic model
     """
 
     def __init__(self, obj: Any):
-        """Decompose orm model to pydantic model"""
+        """Decompose orm model to pydantic model."""
         # Create inferred links
         collection_links = CollectionLinks(
             collection_id=obj.id, base_url=obj.base_url
