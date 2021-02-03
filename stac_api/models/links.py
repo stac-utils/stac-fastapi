@@ -14,19 +14,19 @@ INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root"]
 
 
 def filter_links(links: List[Dict]) -> List[Dict]:
-    """Remove inferred links"""
+    """Remove inferred links."""
     return [link for link in links if link["rel"] not in INFERRED_LINK_RELS]
 
 
 @attr.s
 class BaseLinks:
-    """Create inferred links common to collections and items"""
+    """Create inferred links common to collections and items."""
 
     collection_id: str = attr.ib()
     base_url: str = attr.ib()
 
     def root(self) -> Link:
-        """Return the catalog root"""
+        """Return the catalog root."""
         return Link(
             rel=Relations.root, type=MimeTypes.json, href=urljoin(self.base_url, "/")
         )
@@ -34,7 +34,7 @@ class BaseLinks:
 
 @attr.s
 class CollectionLinks(BaseLinks):
-    """Create inferred links specific to collections"""
+    """Create inferred links specific to collections."""
 
     def self(self) -> Link:
         """Create the `self` link."""
@@ -59,13 +59,13 @@ class CollectionLinks(BaseLinks):
         )
 
     def create_links(self) -> List[Link]:
-        """Convenience method to return all inferred links"""
+        """Return all inferred links."""
         return [self.self(), self.parent(), self.item(), self.root()]
 
 
 @attr.s
 class ItemLinks(BaseLinks):
-    """Create inferred links specific to items"""
+    """Create inferred links specific to items."""
 
     item_id: str = attr.ib()
 
@@ -96,7 +96,7 @@ class ItemLinks(BaseLinks):
         )
 
     def tiles(self) -> Link:
-        """Create the `tiles` link"""
+        """Create the `tiles` link."""
         return Link(
             rel=Relations.alternate,
             type=MimeTypes.json,
@@ -108,7 +108,7 @@ class ItemLinks(BaseLinks):
         )
 
     def create_links(self) -> List[Link]:
-        """Convenience method to return all inferred links"""
+        """Return all inferred links."""
         links = [
             self.self(),
             self.parent(),
@@ -123,20 +123,20 @@ class ItemLinks(BaseLinks):
 
 @attr.s
 class TileLinks:
-    """Create inferred links specific to OGC Tiles API"""
+    """Create inferred links specific to OGC Tiles API."""
 
     base_url: str = attr.ib()
     collection_id: str = attr.ib()
     item_id: str = attr.ib()
 
     def __post_init__(self):
-        """post init"""
+        """Post init handler."""
         self.item_uri = urljoin(
             self.base_url, f"/collections/{self.collection_id}/items/{self.item_id}"
         )
 
     def tiles(self) -> OGCTileLink:
-        """Create tiles link"""
+        """Create tiles link."""
         return OGCTileLink(
             href=urljoin(
                 self.base_url,
@@ -149,7 +149,7 @@ class TileLinks:
         )
 
     def viewer(self) -> OGCTileLink:
-        """Create viewer link"""
+        """Create viewer link."""
         return OGCTileLink(
             href=urljoin(self.base_url, f"/titiler/viewer?url={self.item_uri}"),
             rel=Relations.alternate,
@@ -158,7 +158,7 @@ class TileLinks:
         )
 
     def tilejson(self) -> OGCTileLink:
-        """Create tilejson link"""
+        """Create tilejson link."""
         return OGCTileLink(
             href=urljoin(self.base_url, f"/titiler/tilejson.json?url={self.item_uri}"),
             rel=Relations.alternate,
@@ -167,7 +167,7 @@ class TileLinks:
         )
 
     def wmts(self) -> OGCTileLink:
-        """Create wmts capabilities link"""
+        """Create wmts capabilities link."""
         return OGCTileLink(
             href=urljoin(
                 self.base_url, f"/titiler/WMTSCapabilities.xml?url={self.item_uri}"
@@ -178,5 +178,5 @@ class TileLinks:
         )
 
     def create_links(self) -> List[OGCTileLink]:
-        """Convenience method to return all inferred links"""
+        """Return all inferred links."""
         return [self.tiles(), self.tilejson(), self.wmts(), self.viewer()]

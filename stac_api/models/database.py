@@ -18,14 +18,12 @@ BaseModel = declarative_base()
 
 
 class GeojsonGeometry(ga.Geometry):
-    """
-    Custom geoalchemy type which returns GeoJSON
-    """
+    """Custom geoalchemy type which returns GeoJSON."""
 
     from_text = "ST_GeomFromGeoJSON"
 
     def result_processor(self, dialect: str, coltype):
-        """Override default processer to return GeoJSON"""
+        """Override default processer to return GeoJSON."""
 
         def process(value: Optional[bytes]):
             if value is not None:
@@ -40,9 +38,7 @@ class GeojsonGeometry(ga.Geometry):
 
 
 class Collection(BaseModel):  # type:ignore
-    """
-    Collection orm model.
-    """
+    """Collection orm model."""
 
     __tablename__ = "collections"
     __table_args__ = {"schema": "data"}
@@ -63,19 +59,17 @@ class Collection(BaseModel):  # type:ignore
 
     @classmethod
     def get_database_model(cls, schema: schemas.Collection) -> dict:
-        """Decompose pydantic model to data model"""
+        """Decompose pydantic model to data model."""
         return schema.dict(exclude_none=True)
 
     @classmethod
     def from_schema(cls, schema: schemas.Collection) -> "Collection":
-        """Create orm model from pydantic model"""
+        """Create orm model from pydantic model."""
         return cls(**cls.get_database_model(schema))
 
 
 class Item(BaseModel):  # type:ignore
-    """
-    Item orm model.
-    """
+    """Item orm model."""
 
     __tablename__ = "items"
     __table_args__ = {"schema": "data"}
@@ -96,7 +90,7 @@ class Item(BaseModel):  # type:ignore
 
     @classmethod
     def get_database_model(cls, schema: schemas.Item) -> dict:
-        """Decompose pydantic model to data model"""
+        """Decompose pydantic model to data model."""
         indexed_fields = {}
         for field in config.settings.indexed_fields:
             # Use getattr to accommodate extension namespaces
@@ -128,12 +122,12 @@ class Item(BaseModel):  # type:ignore
 
     @classmethod
     def from_schema(cls, schema: schemas.Item) -> "Item":
-        """Create orm model from pydantic model"""
+        """Create orm model from pydantic model."""
         return cls(**cls.get_database_model(schema))
 
     @classmethod
     def get_field(cls, field_name):
-        """Get a model field"""
+        """Get a model field."""
         try:
             return getattr(cls, field_name)
         except AttributeError:
@@ -144,9 +138,7 @@ class Item(BaseModel):  # type:ignore
 
 
 class PaginationToken(BaseModel):  # type:ignore
-    """
-    Pagination orm model.
-    """
+    """Pagination orm model."""
 
     __tablename__ = "tokens"
     __table_args__ = {"schema": "data"}

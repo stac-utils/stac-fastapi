@@ -1,4 +1,4 @@
-"""arturo-stac-api"""
+"""arturo-stac-api."""
 
 from setuptools import find_packages, setup
 

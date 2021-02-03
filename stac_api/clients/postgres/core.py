@@ -31,7 +31,7 @@ NumType = Union[float, int]
 
 @attr.s
 class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
-    """Client for core endpoints defined by stac"""
+    """Client for core endpoints defined by stac."""
 
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     item_table: Type[database.Item] = attr.ib(default=database.Item)
@@ -41,14 +41,14 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     def _lookup_id(
         id: str, table: Type[database.BaseModel], session: SqlSession
     ) -> Type[database.BaseModel]:
-        """lookup row by id"""
+        """Lookup row by id."""
         row = session.query(table).filter(table.id == id).first()
         if not row:
             raise NotFoundError(f"{table.__name__} {id} not found")
         return row
 
     def landing_page(self, **kwargs) -> LandingPage:
-        """landing page"""
+        """Landing page."""
         landing_page = LandingPage(
             title="Arturo STAC API",
             description="Arturo raster datastore",
@@ -89,7 +89,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         return landing_page
 
     def conformance(self, **kwargs) -> ConformanceClasses:
-        """conformance classes"""
+        """Conformance classes."""
         return ConformanceClasses(
             conformsTo=[
                 "https://stacspec.org/STAC-api.html",
@@ -98,7 +98,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         )
 
     def all_collections(self, **kwargs) -> List[schemas.Collection]:
-        """Read all collections from the database"""
+        """Read all collections from the database."""
         with self.session.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
             response = []
@@ -108,7 +108,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             return response
 
     def get_collection(self, id: str, **kwargs) -> schemas.Collection:
-        """Get collection by id"""
+        """Get collection by id."""
         with self.session.reader.context_session() as session:
             collection = self._lookup_id(id, self.collection_table, session)
             # TODO: Don't do this
@@ -118,7 +118,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     def item_collection(
         self, id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
-        """Read an item collection from the database"""
+        """Read an item collection from the database."""
         with self.session.reader.context_session() as session:
             collection_children = (
                 session.query(self.item_table)
@@ -183,7 +183,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             )
 
     def get_item(self, id: str, **kwargs) -> schemas.Item:
-        """Get item by id"""
+        """Get item by id."""
         with self.session.reader.context_session() as session:
             item = self._lookup_id(id, self.item_table, session)
             item.base_url = str(kwargs["request"].base_url)
@@ -202,7 +202,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         sortby: Optional[str] = None,
         **kwargs,
     ) -> Dict[str, Any]:
-        """GET search catalog"""
+        """GET search catalog."""
         # Parse request parameters
         base_args = {
             "collections": collections,
@@ -262,7 +262,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     def post_search(
         self, search_request: schemas.STACSearch, **kwargs
     ) -> Dict[str, Any]:
-        """POST search catalog"""
+        """POST search catalog."""
         with self.session.reader.context_session() as session:
             token = (
                 self.get_token(search_request.token) if search_request.token else False
