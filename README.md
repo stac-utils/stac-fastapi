@@ -46,7 +46,6 @@ from stac_api.clients.postgres.session import Session
 from stac_api.config import ApiSettings
 
 settings = ApiSettings()
-session = Session(settings.reader_connection_string, settings.writer_connection_string)
 api = StacApi(
     settings=settings,
     client=CoreCrudClient(
