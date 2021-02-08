@@ -1,0 +1,85 @@
+site_name: arturo-stac-api
+site_description: Arturo's STAC compliant API implementation.
+
+# Repository
+repo_name: 'arturo-ai/arturo-stac-api'
+repo_url: 'https://github.com/arturo-ai/arturo-stac-api'
+edit_uri: 'blob/master/docs/src/'
+
+
+# Social links
+extra:
+  social:
+    - icon: 'fontawesome/brands/github'
+      link: 'https://github.com/arturo-ai'
+    - icon: 'fontawesome/brands/twitter'
+      link: 'https://twitter.com/arturo_ai'
+
+# Layout
+nav:
+  - Home: 'index.md'
+  - API:
+    - errors: api/stac_api/errors.md
+    - config: api/stac_api/config.md
+
+    - models:
+      - database: api/stac_api/models/database.md
+      - decompose: api/stac_api/models/decompose.md
+      - links: api/stac_api/models/links.md
+      - ogc: api/stac_api/models/ogc.md
+      - schemas: api/stac_api/models/schemas.md
+
+    - api:
+      - routes: api/stac_api/api/routes.md
+      - models: api/stac_api/api/models.md
+      - app: api/stac_api/api/app.md
+
+  - Development - Contributing: 'contributing.md'
+  - Release Notes: 'release-notes.md'
+
+plugins:
+  - search
+
+# Theme
+theme:
+  icon:
+    logo: 'material/home'
+    repo: 'fontawesome/brands/github'
+  name: 'material'
+  language: 'en'
+  font:
+    text: 'Nunito Sans'
+    code: 'Fira Code'
+
+extra_css:
+  - stylesheets/extra.css
+
+# These extensions are chosen to be a superset of Pandoc's Markdown.
+# This way, I can write in Pandoc's Markdown and have it be supported here.
+# https://pandoc.org/MANUAL.html
+markdown_extensions:
+    - admonition
+    - attr_list
+    - codehilite:
+        guess_lang: false
+    - def_list
+    - footnotes
+    - pymdownx.arithmatex
+    - pymdownx.betterem
+    - pymdownx.caret:
+        insert: false
+    - pymdownx.details
+    - pymdownx.emoji
+    - pymdownx.escapeall:
+        hardbreak: true
+        nbsp: true
+    - pymdownx.magiclink:
+        hide_protocol: true
+        repo_url_shortener: true
+    - pymdownx.smartsymbols
+    - pymdownx.superfences
+    - pymdownx.tasklist:
+        custom_checkbox: true
+    - pymdownx.tilde
+    - toc:
+        permalink: true
