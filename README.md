@@ -1,4 +1,26 @@
-# arturo-stac-api ![arturo-stac-api](https://github.com/arturo-ai/arturo-stac-api/workflows/arturo-stac-api/badge.svg)
+
+<p align="center">
+  <p align="center">Arturo's STAC compliant API implementation.</p>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arturo-ai/arturo-stac-api/actions?query=workflow%3Acicd" target="_blank">
+      <img src="https://github.com/arturo-ai/arturo-stac-api/workflows/arturo-stac-api/badge.svg" alt="Test">
+  </a>
+  <a href="https://codecov.io/gh/arturo-ai/arturo-stac-api" target="_blank">
+      <img src="https://codecov.io/gh/arturo-ai/arturo-stac-api/branch/master/graph/badge.svg" alt="Coverage">
+  </a>
+  <a href="https://pypi.org/project/arturo-stac-api" target="_blank">
+      <img src="https://img.shields.io/pypi/v/arturo-stac-api?color=%2334D058&label=pypi%20package" alt="Package version">
+  </a>
+  <a href="https://github.com/arturo-ai/arturo-stac-api/blob/master/LICENSE" target="_blank">
+      <img src="https://img.shields.io/github/license/arturo-ai/arturo-stac-api.svg" alt="Downloads">
+  </a>
+</p>
+
+---
+
+
 ---
 
 **Documentation**: coming soon...
