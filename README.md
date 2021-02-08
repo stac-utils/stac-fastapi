@@ -23,7 +23,7 @@
 
 ---
 
-**Documentation**: coming soon...
+**Documentation**: [https://arturo-ai.github.io/arturo-stac-api/](https://arturo-ai.github.io/arturo-stac-api/)
 
 **Source Code**: [https://github.com/arturo-ai/arturo-stac-api](https://github.com/arturo-ai/arturo-stac-api)
 
