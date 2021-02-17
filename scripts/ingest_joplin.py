@@ -14,7 +14,8 @@ def ingest_joplin_data():
     collection = r.json()
 
     r = requests.post(urljoin(app_host, "/collections"), json=collection)
-    r.raise_for_status()
+    if r.status_code not in (200, 409):
+        r.raise_for_status()
 
     r = requests.get(f"https://{bucket}.s3.amazonaws.com/joplin/index.geojson")
     index = r.json()
@@ -23,6 +24,8 @@ def ingest_joplin_data():
         r = requests.post(
             urljoin(app_host, f"/collections/{collection['id']}/items"), json=feat
         )
+        if r.status_code == 409:
+            continue
         r.raise_for_status()
 
 
