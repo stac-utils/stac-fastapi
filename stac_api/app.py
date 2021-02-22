@@ -15,9 +15,9 @@ from stac_api.clients.postgres.transactions import (
     TransactionsClient,
 )
 from stac_api.clients.tiles.ogc import TilesClient
-from stac_api.config import ApiSettings
+from stac_api.config import PostgresSettings
 
-settings = ApiSettings()
+settings = PostgresSettings()
 session = Session(settings.reader_connection_string, settings.writer_connection_string)
 api = StacApi(
     settings=settings,
