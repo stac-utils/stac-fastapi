@@ -35,12 +35,6 @@ class ApiSettings(BaseSettings):
     Attributes:
         environment: name of the environment (ex. dev/prod).
         debug: toggles debug mode.
-        postgres_user: postgres username.
-        postgres_pass: postgres password.
-        postgres_host_reader: hostname for the reader connection.
-        postgres_host_writer: hostname for the writer connection.
-        postgres_port: database port.
-        postgres_dbname: database name.
         forbidden_fields: set of fields defined by STAC but not included in the database.
         indexed_fields:
             set of fields which are usually in `item.properties` but are indexed as distinct columns in
@@ -49,12 +43,6 @@ class ApiSettings(BaseSettings):
 
     environment: str
     debug: bool = False
-    postgres_user: str
-    postgres_pass: str
-    postgres_host_reader: str
-    postgres_host_writer: str
-    postgres_port: str
-    postgres_dbname: str
 
     # Fields which are defined by STAC but not included in the database model
     forbidden_fields: Set[str] = {"type"}
@@ -67,6 +55,26 @@ class ApiSettings(BaseSettings):
 
         extra = "allow"
         env_file = ".env"
+
+
+class PostgresSettings(ApiSettings):
+    """Postgres-specific API settings.
+
+    Attributes:
+        postgres_user: postgres username.
+        postgres_pass: postgres password.
+        postgres_host_reader: hostname for the reader connection.
+        postgres_host_writer: hostname for the writer connection.
+        postgres_port: database port.
+        postgres_dbname: database name.
+    """
+
+    postgres_user: str
+    postgres_pass: str
+    postgres_host_reader: str
+    postgres_host_writer: str
+    postgres_port: str
+    postgres_dbname: str
 
     @property
     def reader_connection_string(self):

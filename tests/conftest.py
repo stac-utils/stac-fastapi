@@ -19,14 +19,14 @@ from stac_api.clients.postgres.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_api.config import ApiSettings, inject_settings
+from stac_api.config import PostgresSettings, inject_settings
 from stac_api.models import database
 from stac_api.models.schemas import Collection
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
-class TestSettings(ApiSettings):
+class TestSettings(PostgresSettings):
     class Config:
         env_file = ".env.test"
 
@@ -102,7 +102,7 @@ def postgres_bulk_transactions(db_session):
 @pytest.fixture
 def api_client(db_session):
     return StacApi(
-        settings=ApiSettings(),
+        settings=PostgresSettings(),
         client=CoreCrudClient(session=db_session),
         extensions=[
             TransactionExtension(client=TransactionsClient(session=db_session)),
