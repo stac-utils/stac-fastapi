@@ -22,6 +22,10 @@ from stac_api.clients.postgres.core import CoreCrudClient
 
 @attr.s
 class FakeRequest:
+    """Mock necessary methods of the request object
+
+    When the API is separated from the link creation, this likely won't be necessary.
+    """
     base_url: str = "http://localhost:8081"
     query_params: Dict = {}
 
@@ -79,11 +83,10 @@ class DynamicStacBackend(BaseBackend):
 
     def assets_for_point(self, lng: float, lat: float) -> List[str]:
         """Retrieve assets for point."""
-        # geom = {"type": "Point", "coordinates": [lng, lat]}
         bounds = [lng, lat, lng, lat]
         return self.get_assets(bounds)
 
-    def get_assets(self, bbox, **kwargs) -> List[str]:
+    def get_assets(self, bbox, **kwargs) -> List[Dict]:
         """Find assets."""
         print("get assets kwargs")
         print(kwargs)
@@ -99,7 +102,8 @@ class DynamicStacBackend(BaseBackend):
 
         print("feature_collection")
         print(feature_collection)
-        return [default_stac_accessor(f) for f in feature_collection["features"]]
+
+        return feature_collection["features"]
 
     @property
     def _quadkeys(self) -> List[str]:
@@ -139,8 +143,8 @@ class DynamicStacBackend(BaseBackend):
         def _reader(asset: str, x: int, y: int, z: int, **kwargs: Any) -> ImageData:
             # Take out reader_options for now because that's how I'm passing the
             # postgres client to self.get_assets
-            # with self.reader(asset, **self.reader_options) as src_dst:
-            with self.reader(asset) as src_dst:
+            # with self.reader(None, item=asset, **self.reader_options) as src_dst:
+            with self.reader(None, item=asset) as src_dst:
                 return src_dst.tile(x, y, z, **kwargs)
 
         return mosaic_reader(mosaic_assets, _reader, x, y, z, **kwargs)
