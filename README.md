@@ -34,6 +34,8 @@ Python library for building a STAC compliant FastAPI application.  It provides:
 to customize how the API interacts with their data through dependency injection.
 - A PostGIS implementation using [sqlalchemy](https://github.com/sqlalchemy/sqlalchemy)/[geoalchemy2](https://geoalchemy-2.readthedocs.io/en/latest/).
 
+Initially developed by [arturo-ai](https://github.com/arturo-ai).
+
 ```
 pip install arturo-stac-api
 ```
