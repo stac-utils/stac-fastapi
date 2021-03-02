@@ -43,6 +43,7 @@ class ApiSettings(BaseSettings):
 
     environment: str
     debug: bool = False
+    default_includes: Set[str] = None
 
     # Fields which are defined by STAC but not included in the database model
     forbidden_fields: Set[str] = {"type"}

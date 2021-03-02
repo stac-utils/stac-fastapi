@@ -85,7 +85,7 @@ class Item(BaseModel):  # type:ignore
         sa.VARCHAR(1024), sa.ForeignKey(Collection.id), nullable=False
     )
     parent_collection = sa.orm.relationship("Collection", back_populates="children")
-    datetime = sa.Column(sa.TIMESTAMP, nullable=False)
+    datetime = sa.Column(sa.TIMESTAMP(timezone=True), nullable=False)
     links = sa.Column(JSONB)
 
     @classmethod
