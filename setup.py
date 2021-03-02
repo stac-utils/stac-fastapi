@@ -17,7 +17,7 @@ install_requires = [
     "sqlalchemy",
     "geoalchemy2<0.8.0",
     "sqlakeyset",
-    "stac-pydantic>=1.3.5",
+    "stac-pydantic<=1.3.8",
     "pydantic[dotenv]",
     "titiler==0.1.0a12",
     "fastapi-utils",
