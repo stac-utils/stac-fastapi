@@ -46,7 +46,7 @@ setup(
     keywords="STAC FastAPI COG",
     author=u"Arturo Engineering",
     author_email="engineering@arturo.ai",
-    url="https://github.com/arturo-ai/arturo-stac-api",
+    url="https://github.com/stac-utils/arturo-stac-api",
     license="MIT",
     packages=find_packages(exclude=["alembic", "tests", "scripts"]),
     zip_safe=False,
