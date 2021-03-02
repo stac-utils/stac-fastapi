@@ -8,11 +8,11 @@ run_docker = docker run -it --rm \
 				--env APP_HOST=${APP_HOST} \
 				--env APP_PORT=${APP_PORT} \
 				--env-file .env.example \
-				arturo-ai/stac-api:latest
+				stac-utils/stac-api:latest
 
 .PHONY: image
 image:
-	docker build -t arturo-ai/stac-api:latest .
+	docker build -t stac-utils/stac-api:latest .
 
 .PHONY: docker-run
 docker-run: image

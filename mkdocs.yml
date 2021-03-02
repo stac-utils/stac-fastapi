@@ -2,8 +2,8 @@ site_name: arturo-stac-api
 site_description: Arturo's STAC compliant API implementation.
 
 # Repository
-repo_name: 'arturo-ai/arturo-stac-api'
-repo_url: 'https://github.com/arturo-ai/arturo-stac-api'
+repo_name: 'stac-utils/arturo-stac-api'
+repo_url: 'https://github.com/stac-utils/arturo-stac-api'
 edit_uri: 'blob/master/docs/src/'
 
 
@@ -11,9 +11,7 @@ edit_uri: 'blob/master/docs/src/'
 extra:
   social:
     - icon: 'fontawesome/brands/github'
-      link: 'https://github.com/arturo-ai'
-    - icon: 'fontawesome/brands/twitter'
-      link: 'https://twitter.com/arturo_ai'
+      link: 'https://github.com/stac-utils'
 
 # Layout
 nav:
