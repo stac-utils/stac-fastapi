@@ -1,12 +1,44 @@
 """bulk transactions extension."""
+import abc
+from typing import Optional
+
 import attr
 from fastapi import APIRouter, FastAPI
 
 from stac_api.models import schemas
 from stac_fastapi.api.models import _create_request_model
 from stac_fastapi.api.routes import create_endpoint_from_model
-from stac_fastapi.backend.client import BaseBulkTransactionsClient
 from stac_fastapi.extensions.core.extension import ApiExtension
+
+
+@attr.s  # type: ignore
+class BaseBulkTransactionsClient(abc.ABC):
+    """BulkTransactionsClient."""
+
+    @staticmethod
+    def _chunks(lst, n):
+        """Yield successive n-sized chunks from list.
+
+        https://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
+        """
+        for i in range(0, len(lst), n):
+            yield lst[i : i + n]
+
+    @abc.abstractmethod
+    def bulk_item_insert(
+        self, items: schemas.Items, chunk_size: Optional[int] = None, **kwargs
+    ) -> str:
+        """Bulk creation of items.
+
+        Args:
+            items: list of items.
+            chunk_size: number of items processed at a time.
+
+        Returns:
+            Message indicating the status of the insert.
+
+        """
+        raise NotImplementedError
 
 
 @attr.s
