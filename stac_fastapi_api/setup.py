@@ -6,17 +6,15 @@ from os.path import basename, splitext
 
 from setuptools import find_namespace_packages, setup
 
-name = "fastapi_stac"
+name = "stac_fastapi_api"
 description = (
     "API subpackage of fastapi-stac, a STAC compliant API layer build with FastAPI."
 )
 
 __version__ = load_source(
-    "fastapi_stac.api.version",
-    os.path.join(
-        os.path.dirname(__file__), "fastapi_stac/api/version.py"
-    ),  # type:ignore
-).__version__
+    "stac_fastapi.api.version",
+    os.path.join(os.path.dirname(__file__), "stac_fastapi/api/version.py"),
+).__version__  # type:ignore
 
 install_requires = [
     "attrs",
