@@ -111,36 +111,6 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
 
-@attr.s  # type: ignore
-class BaseBulkTransactionsClient(abc.ABC):
-    """BulkTransactionsClient."""
-
-    @staticmethod
-    def _chunks(lst, n):
-        """Yield successive n-sized chunks from list.
-
-        https://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
-        """
-        for i in range(0, len(lst), n):
-            yield lst[i : i + n]
-
-    @abc.abstractmethod
-    def bulk_item_insert(
-        self, items: schemas.Items, chunk_size: Optional[int] = None, **kwargs
-    ) -> str:
-        """Bulk creation of items.
-
-        Args:
-            items: list of items.
-            chunk_size: number of items processed at a time.
-
-        Returns:
-            Message indicating the status of the insert.
-
-        """
-        raise NotImplementedError
-
-
 @attr.s  # type:ignore
 class BaseCoreClient(abc.ABC):
     """Defines a pattern for implementing STAC api core endpoints.
