@@ -6,7 +6,7 @@ from os.path import basename, splitext
 
 from setuptools import find_namespace_packages, setup
 
-name = "stac_fastapi_api"
+name = "stac-fastapi-api"
 description = (
     "API subpackage of fastapi-stac, a STAC compliant API layer build with FastAPI."
 )

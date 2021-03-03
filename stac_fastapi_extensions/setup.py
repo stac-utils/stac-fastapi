@@ -6,7 +6,7 @@ from os.path import basename, splitext
 
 from setuptools import find_namespace_packages, setup
 
-name = "stac_fastapi_extensions"
+name = "stac-fastapi-extensions"
 description = "Extensions subpackage of fastapi-stac, contains abstract base classes for implementing STAC core and third party extensions."
 
 __version__ = load_source(

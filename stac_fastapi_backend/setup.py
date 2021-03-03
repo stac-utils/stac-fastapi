@@ -6,7 +6,7 @@ from os.path import basename, splitext
 
 from setuptools import find_namespace_packages, setup
 
-name = "stac_fastapi_backend"
+name = "stac-fastapi-backend"
 description = "Backend subpackage of fastapi-stac, contains abstract base classes for implementing STAC backends."
 
 __version__ = load_source(

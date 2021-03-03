@@ -4,7 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = "true"
 
 [packages]
-arturo-stac-api = {editable = "true", path = "."}
+stac-fastapi-backend = {editable = "true", path = "."}
 
 [dev-packages]
 pytest = "*"
