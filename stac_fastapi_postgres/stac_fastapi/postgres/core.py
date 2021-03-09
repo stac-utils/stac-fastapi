@@ -17,9 +17,9 @@ from stac_pydantic.api.extensions.paging import PaginationLink
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
 # TODO: move these
-from stac_api.errors import NotFoundError
 from stac_api.models import database, schemas
 from stac_api.models.links import CollectionLinks
+from stac_fastapi.api.errors import NotFoundError
 from stac_fastapi.backend.core import BaseCoreClient
 from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
 from stac_fastapi.postgres.session import Session

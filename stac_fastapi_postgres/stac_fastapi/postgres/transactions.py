@@ -7,8 +7,8 @@ from typing import Dict, Optional, Type
 import attr
 
 # TODO: move these
-from stac_api.errors import NotFoundError
 from stac_api.models import database, schemas
+from stac_fastapi.api.errors import NotFoundError
 from stac_fastapi.backend.core import BaseTransactionsClient
 
 # TODO: This import should come from `backend` module
