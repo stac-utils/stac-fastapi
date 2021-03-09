@@ -7,11 +7,10 @@ from fastapi.openapi.utils import get_openapi
 from stac_pydantic import ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 
-from stac_api.config import ApiSettings, inject_settings
+# TODO: move these
 from stac_api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_api.models import schemas
-from stac_fastapi.api.extensions import FieldsExtension
-from stac_fastapi.api.extensions.extension import ApiExtension
+from stac_fastapi.api.config import ApiSettings, inject_settings
 from stac_fastapi.api.models import (
     CollectionUri,
     EmptyRequest,
@@ -24,7 +23,9 @@ from stac_fastapi.api.routes import (
     create_endpoint_from_model,
     create_endpoint_with_depends,
 )
-from stac_fastapi.backend.client import BaseCoreClient
+from stac_fastapi.backend.core import BaseCoreClient
+from stac_fastapi.extensions.core import FieldsExtension
+from stac_fastapi.extensions.core.extension import ApiExtension
 
 
 @attr.s
