@@ -2,11 +2,14 @@
 import attr
 from fastapi import APIRouter, FastAPI
 
-from stac_api.api.extensions.extension import ApiExtension
-from stac_api.api.models import CollectionUri, ItemUri, _create_request_model
-from stac_api.api.routes import create_endpoint_from_model, create_endpoint_with_depends
-from stac_api.clients.base import BaseTransactionsClient
 from stac_api.models import schemas
+from stac_fastapi.api.models import CollectionUri, ItemUri, _create_request_model
+from stac_fastapi.api.routes import (
+    create_endpoint_from_model,
+    create_endpoint_with_depends,
+)
+from stac_fastapi.backend.core import BaseTransactionsClient
+from stac_fastapi.extensions.core.extension import ApiExtension
 
 
 @attr.s

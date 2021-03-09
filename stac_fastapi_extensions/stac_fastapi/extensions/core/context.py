@@ -2,7 +2,7 @@
 import attr
 from fastapi import FastAPI
 
-from stac_api.api.extensions.extension import ApiExtension
+from stac_fastapi.extensions.core.extension import ApiExtension
 
 
 @attr.s
