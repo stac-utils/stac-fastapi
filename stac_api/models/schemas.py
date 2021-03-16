@@ -21,10 +21,10 @@ from stac_pydantic.api.search import DATETIME_RFC339
 from stac_pydantic.shared import Link
 from stac_pydantic.utils import AutoValueEnum
 
+from stac_api.models.decompose import CollectionGetter, ItemGetter
+
 # from stac_api import config
 from stac_fastapi.api import config
-
-from stac_api.models.decompose import CollectionGetter, ItemGetter
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]

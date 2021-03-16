@@ -1,3 +1,6 @@
+"""stac_fastapi.types.errors module."""
+
+
 class StacApiError(Exception):
     """Generic API error."""
 

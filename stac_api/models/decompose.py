@@ -8,11 +8,11 @@ from pydantic import BaseModel
 from pydantic.utils import GetterDict
 from stac_pydantic.shared import DATETIME_RFC339
 
-# from stac_api import config
-from stac_fastapi.api import config
-
 from stac_api.errors import DatabaseError
 from stac_api.models.links import CollectionLinks, ItemLinks, filter_links
+
+# from stac_api import config
+from stac_fastapi.api import config
 
 
 def resolve_links(links: list, base_url: str) -> List[Dict]:

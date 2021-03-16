@@ -11,10 +11,10 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 from stac_pydantic.shared import DATETIME_RFC339
 
+from stac_api.models import schemas
+
 # from stac_api import config
 from stac_fastapi.api import config
-
-from stac_api.models import schemas
 
 BaseModel = declarative_base()
 

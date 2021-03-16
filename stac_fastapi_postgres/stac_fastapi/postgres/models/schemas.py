@@ -48,5 +48,3 @@ class Items(BaseModel):
     """Items model."""
 
     items: List[Item]
-
-

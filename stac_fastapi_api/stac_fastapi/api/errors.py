@@ -11,8 +11,8 @@ from starlette.responses import JSONResponse
 from stac_fastapi.types.errors import (
     ConflictError,
     DatabaseError,
+    ForeignKeyError,
     NotFoundError,
-    ForeignKeyError
 )
 
 logger = logging.getLogger(__name__)

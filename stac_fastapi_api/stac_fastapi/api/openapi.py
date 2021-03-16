@@ -5,6 +5,7 @@ from fastapi.openapi.utils import get_openapi
 from stac_fastapi.api.config import ApiExtensions
 from stac_fastapi.types.config import ApiSettings
 
+
 def config_openapi(app: FastAPI, settings: ApiSettings):
     """Config openapi."""
 

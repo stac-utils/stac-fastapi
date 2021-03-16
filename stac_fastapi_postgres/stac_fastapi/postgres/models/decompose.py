@@ -9,9 +9,9 @@ from pydantic.utils import GetterDict
 from stac_pydantic.shared import DATETIME_RFC339
 
 from stac_fastapi.api import config
-
-from stac_fastapi.types.errors import DatabaseError
 from stac_fastapi.postgres.models.links import CollectionLinks, ItemLinks, filter_links
+from stac_fastapi.types.errors import DatabaseError
+
 
 def resolve_links(links: list, base_url: str) -> List[Dict]:
     """Convert relative links to absolute links."""

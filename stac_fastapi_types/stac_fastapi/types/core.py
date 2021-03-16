@@ -4,11 +4,10 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
 import attr
-from stac_pydantic import ItemCollection, Item, Collection
+from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage, Search
 
 from stac_fastapi.types.extension import ApiExtension
-
 
 NumType = Union[float, int]
 
@@ -63,9 +62,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def create_collection(
-        self, model: Collection, **kwargs
-    ) -> Collection:
+    def create_collection(self, model: Collection, **kwargs) -> Collection:
         """Create a new collection.
 
         Called with `POST /collections`.
@@ -79,9 +76,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def update_collection(
-        self, model: Collection, **kwargs
-    ) -> Collection:
+    def update_collection(self, model: Collection, **kwargs) -> Collection:
         """Perform a complete update on an existing collection.
 
         Called with `PUT /collections`. It is expected that this item already exists.  The update should do a diff
@@ -148,9 +143,7 @@ class BaseCoreClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def post_search(
-        self, search_request: Search, **kwargs
-    ) -> Dict[str, Any]:
+    def post_search(self, search_request: Search, **kwargs) -> Dict[str, Any]:
         """Cross catalog search (POST).
 
         Called with `POST /search`.

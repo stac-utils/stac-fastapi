@@ -6,9 +6,11 @@ from stac_pydantic import Collection, Item
 
 from stac_fastapi.extensions.third_party.bulk_transactions import Items
 from stac_fastapi.postgres.core import CoreCrudClient
-from stac_fastapi.postgres.transactions import BulkTransactionsClient, TransactionsClient
+from stac_fastapi.postgres.transactions import (
+    BulkTransactionsClient,
+    TransactionsClient,
+)
 from stac_fastapi.types.errors import ConflictError, NotFoundError
-
 from tests.conftest import MockStarletteRequest
 
 

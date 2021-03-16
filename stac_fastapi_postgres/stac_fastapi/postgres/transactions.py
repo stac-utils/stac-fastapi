@@ -6,15 +6,14 @@ from typing import Dict, Optional, Type
 
 import attr
 
-from stac_fastapi.postgres.models import database, schemas
-from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.core import BaseTransactionsClient
-
 # TODO: This import should come from `backend` module
 from stac_fastapi.extensions.third_party.bulk_transactions import (
     BaseBulkTransactionsClient,
 )
+from stac_fastapi.postgres.models import database, schemas
 from stac_fastapi.postgres.session import Session
+from stac_fastapi.types.core import BaseTransactionsClient
+from stac_fastapi.types.errors import NotFoundError
 
 logger = logging.getLogger(__name__)
 

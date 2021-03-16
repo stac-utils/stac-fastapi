@@ -1,8 +1,6 @@
 """stac-fastapi api submodule."""
 import os
-from glob import glob
 from imp import load_source
-from os.path import basename, splitext
 
 from setuptools import find_namespace_packages, setup
 

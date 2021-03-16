@@ -16,13 +16,12 @@ from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.extensions.paging import PaginationLink
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
+from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
 from stac_fastapi.postgres.models import database, schemas
 from stac_fastapi.postgres.models.links import CollectionLinks
-
-from stac_fastapi.types.core import BaseCoreClient
-from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
 from stac_fastapi.postgres.session import Session
 from stac_fastapi.postgres.tokens import PaginationTokenClient
+from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.search import STACSearch
 
@@ -261,9 +260,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         resp["links"] = page_links
         return resp
 
-    def post_search(
-        self, search_request: STACSearch, **kwargs
-    ) -> Dict[str, Any]:
+    def post_search(self, search_request: STACSearch, **kwargs) -> Dict[str, Any]:
         """POST search catalog."""
         with self.session.reader.context_session() as session:
             token = (

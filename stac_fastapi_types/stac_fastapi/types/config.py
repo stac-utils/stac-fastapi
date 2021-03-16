@@ -1,9 +1,12 @@
+"""stac_fastapi.types.config module."""
 from typing import Set
 
 from pydantic import BaseSettings
 
+
 class ApiSettings(BaseSettings):
     """ApiSettings.
+
     Defines api configuration, potentially through environment variables.
     See https://pydantic-docs.helpmanual.io/usage/settings/.
     Attributes:

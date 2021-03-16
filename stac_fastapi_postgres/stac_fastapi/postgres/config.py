@@ -3,6 +3,7 @@ from typing import Set
 
 from stac_fastapi.types.config import ApiSettings
 
+
 class PostgresSettings(ApiSettings):
     """Postgres-specific API settings.
 
@@ -27,7 +28,6 @@ class PostgresSettings(ApiSettings):
 
     # Fields which are item properties but indexed as distinct fields in the database model
     indexed_fields: Set[str] = {"datetime"}
-
 
     @property
     def reader_connection_string(self):

@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Type
 import attr
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
-from stac_pydantic import ItemCollection, Item, Collection
+from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 
 from stac_fastapi.api.config import inject_settings
@@ -21,13 +21,13 @@ from stac_fastapi.api.routes import (
     create_endpoint_from_model,
     create_endpoint_with_depends,
 )
-from stac_fastapi.types.core import BaseCoreClient
-from stac_fastapi.types.config import ApiSettings
-from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.search import STACSearch
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
 from stac_fastapi.extensions.core import FieldsExtension
+from stac_fastapi.types.config import ApiSettings
+from stac_fastapi.types.core import BaseCoreClient
+from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.search import STACSearch
 
 
 @attr.s

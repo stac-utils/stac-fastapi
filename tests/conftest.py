@@ -3,10 +3,11 @@ import os
 from typing import Callable, Dict
 
 import pytest
-from starlette.testclient import TestClient
 from stac_pydantic import Collection
+from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
+from stac_fastapi.api.config import inject_settings
 from stac_fastapi.extensions.core import (
     ContextExtension,
     FieldsExtension,
@@ -14,14 +15,14 @@ from stac_fastapi.extensions.core import (
     SortExtension,
     TransactionExtension,
 )
-
+from stac_fastapi.postgres.config import PostgresSettings
 from stac_fastapi.postgres.core import CoreCrudClient
 from stac_fastapi.postgres.models import database
 from stac_fastapi.postgres.session import Session
-from stac_fastapi.postgres.transactions import BulkTransactionsClient, TransactionsClient
-from stac_fastapi.postgres.config import PostgresSettings
-
-from stac_fastapi.api.config import inject_settings
+from stac_fastapi.postgres.transactions import (
+    BulkTransactionsClient,
+    TransactionsClient,
+)
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 

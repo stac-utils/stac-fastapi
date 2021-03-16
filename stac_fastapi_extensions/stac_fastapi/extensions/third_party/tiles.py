@@ -14,6 +14,7 @@ from stac_fastapi.api.models import ItemUri
 from stac_fastapi.api.routes import create_endpoint_with_depends
 from stac_fastapi.types.extension import ApiExtension
 
+
 class OGCTileLink(Link):
     """OGC Tiles API - Link."""
 

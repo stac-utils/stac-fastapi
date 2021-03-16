@@ -1,4 +1,5 @@
-"""API pydantic models.
+"""stac_fastapi.types.search module.
+
 # TODO: replace with stac-pydantic
 """
 
@@ -21,6 +22,7 @@ from stac_fastapi.api import config
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
+
 
 class Operator(str, AutoValueEnum):
     """Defines the set of operators supported by the API."""
@@ -82,6 +84,7 @@ class QueryableTypes:
     maxzoom = sa.Integer
     dtype = sa.String
 
+
 class FieldsExtension(FieldsBase):
     """FieldsExtension.
 
@@ -135,6 +138,7 @@ class FieldsExtension(FieldsBase):
             "include": self._get_field_dict(include),
             "exclude": self._get_field_dict(self.exclude),
         }
+
 
 class STACSearch(Search):
     """Search model."""
