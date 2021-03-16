@@ -3,13 +3,13 @@ from typing import Callable
 
 import pytest
 
-from stac_api.clients.postgres.core import CoreCrudClient
-from stac_api.clients.postgres.transactions import (
-    BulkTransactionsClient,
-    TransactionsClient,
-)
-from stac_api.errors import ConflictError, NotFoundError
+# TODO: Move these
 from stac_api.models.schemas import Collection, Item, Items
+
+from stac_fastapi.postgres.core import CoreCrudClient
+from stac_fastapi.postgres.transactions import BulkTransactionsClient, TransactionsClient
+from stac_fastapi.api.errors import ConflictError, NotFoundError
+
 from tests.conftest import MockStarletteRequest
 
 

@@ -1,4 +1,6 @@
 """Postgres API configuration."""
+from typing import Set
+
 from stac_fastapi.api.config import ApiSettings
 
 

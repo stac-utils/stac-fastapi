@@ -5,23 +5,25 @@ from typing import Callable, Dict
 import pytest
 from starlette.testclient import TestClient
 
-from stac_api.api.app import StacApi
-from stac_api.api.extensions import (
+# TODO: move these
+from stac_api.models import database
+from stac_api.models.schemas import Collection
+
+from stac_fastapi.api.app import StacApi
+from stac_fastapi.extensions.core import (
     ContextExtension,
     FieldsExtension,
     QueryExtension,
     SortExtension,
     TransactionExtension,
 )
-from stac_api.clients.postgres.core import CoreCrudClient
-from stac_api.clients.postgres.session import Session
-from stac_api.clients.postgres.transactions import (
-    BulkTransactionsClient,
-    TransactionsClient,
-)
-from stac_api.config import PostgresSettings, inject_settings
-from stac_api.models import database
-from stac_api.models.schemas import Collection
+
+from stac_fastapi.postgres.core import CoreCrudClient
+from stac_fastapi.postgres.session import Session
+from stac_fastapi.postgres.transactions import BulkTransactionsClient, TransactionsClient
+from stac_fastapi.postgres.config import PostgresSettings
+
+from stac_fastapi.api.config import inject_settings
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 

@@ -3,13 +3,16 @@ from typing import Type
 import sqlalchemy as sa
 from starlette.testclient import TestClient
 
-from stac_api.api.app import StacApi
-from stac_api.api.extensions import TransactionExtension
-from stac_api.clients.postgres.core import CoreCrudClient, Session
-from stac_api.clients.postgres.transactions import TransactionsClient
-from stac_api.config import ApiSettings
+# TODO: move these
 from stac_api.models.database import Item
 from stac_api.models.schemas import Collection
+
+from stac_fastapi.api.app import StacApi
+from stac_fastapi.extensions.core import TransactionExtension
+from stac_fastapi.postgres.core import CoreCrudClient, Session
+from stac_fastapi.postgres.transactions import TransactionsClient
+from stac_fastapi.api.config import ApiSettings
+
 
 from ..conftest import MockStarletteRequest
 
