@@ -6,10 +6,9 @@ from typing import Dict, Optional, Type
 
 import attr
 
-# TODO: move these
-from stac_api.models import database, schemas
-from stac_fastapi.api.errors import NotFoundError
-from stac_fastapi.backend.core import BaseTransactionsClient
+from stac_fastapi.postgres.models import database, schemas
+from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.core import BaseTransactionsClient
 
 # TODO: This import should come from `backend` module
 from stac_fastapi.extensions.third_party.bulk_transactions import (

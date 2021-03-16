@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
-
-from stac_api.models.schemas import Item
+from stac_pydantic import Item
 
 from ..conftest import MockStarletteRequest
 

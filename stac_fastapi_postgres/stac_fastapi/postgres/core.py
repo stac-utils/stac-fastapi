@@ -16,14 +16,15 @@ from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.extensions.paging import PaginationLink
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
-# TODO: move these
-from stac_api.models import database, schemas
-from stac_api.models.links import CollectionLinks
-from stac_fastapi.api.errors import NotFoundError
-from stac_fastapi.backend.core import BaseCoreClient
+from stac_fastapi.postgres.models import database, schemas
+from stac_fastapi.postgres.models.links import CollectionLinks
+
+from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
 from stac_fastapi.postgres.session import Session
 from stac_fastapi.postgres.tokens import PaginationTokenClient
+from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.search import STACSearch
 
 logger = logging.getLogger(__name__)
 
@@ -240,7 +241,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             base_args["fields"] = {"include": includes, "exclude": excludes}
 
         # Do the request
-        search_request = schemas.STACSearch(**base_args)
+        search_request = STACSearch(**base_args)
         resp = self.post_search(search_request, request=kwargs["request"])
 
         # Pagination
@@ -261,7 +262,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         return resp
 
     def post_search(
-        self, search_request: schemas.STACSearch, **kwargs
+        self, search_request: STACSearch, **kwargs
     ) -> Dict[str, Any]:
         """POST search catalog."""
         with self.session.reader.context_session() as session:

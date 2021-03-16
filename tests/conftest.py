@@ -4,10 +4,7 @@ from typing import Callable, Dict
 
 import pytest
 from starlette.testclient import TestClient
-
-# TODO: move these
-from stac_api.models import database
-from stac_api.models.schemas import Collection
+from stac_pydantic import Collection
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import (
@@ -19,6 +16,7 @@ from stac_fastapi.extensions.core import (
 )
 
 from stac_fastapi.postgres.core import CoreCrudClient
+from stac_fastapi.postgres.models import database
 from stac_fastapi.postgres.session import Session
 from stac_fastapi.postgres.transactions import BulkTransactionsClient, TransactionsClient
 from stac_fastapi.postgres.config import PostgresSettings

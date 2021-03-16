@@ -6,16 +6,17 @@ from os.path import basename, splitext
 
 from setuptools import find_namespace_packages, setup
 
-name = "stac-fastapi-backend"
-description = "Backend subpackage of fastapi-stac, contains abstract base classes for implementing STAC backends."
+name = "stac-fastapi-types"
+description = "Shared types for fastapi-stac, contains abstract base classes for implementing STAC backends."
 
 __version__ = load_source(
-    "stac_fastapi.backend.version",
-    os.path.join(os.path.dirname(__file__), "stac_fastapi/backend/version.py"),
+    "stac_fastapi.types.version",
+    os.path.join(os.path.dirname(__file__), "stac_fastapi/types/version.py"),
 ).__version__  # type:ignore
 
 install_requires = [
     "attrs",
+    "fastapi",
     "pydantic[dotenv]",
     "stac-pydantic",
 ]

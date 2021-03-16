@@ -1,8 +1,7 @@
 """Postgres API configuration."""
 from typing import Set
 
-from stac_fastapi.api.config import ApiSettings
-
+from stac_fastapi.types.config import ApiSettings
 
 class PostgresSettings(ApiSettings):
     """Postgres-specific API settings.
@@ -22,6 +21,13 @@ class PostgresSettings(ApiSettings):
     postgres_host_writer: str
     postgres_port: str
     postgres_dbname: str
+
+    # Fields which are defined by STAC but not included in the database model
+    forbidden_fields: Set[str] = {"type"}
+
+    # Fields which are item properties but indexed as distinct fields in the database model
+    indexed_fields: Set[str] = {"datetime"}
+
 
     @property
     def reader_connection_string(self):

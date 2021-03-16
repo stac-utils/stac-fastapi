@@ -31,6 +31,7 @@ with open(
 
 setup(
     name=name,
+    python_requires=">=3.8",
     description=description,
     version=__version__,
     long_description=readme,
@@ -39,7 +40,7 @@ setup(
     author_email="engineering@arturo.ai",
     url="https://github.com/stac-utils/fastapi-stac.git",
     packages=find_namespace_packages(),
-    py_modules=[splitext(basename(path))[0] for path in glob("fastapi_stac/*.py")],
+    # py_modules=[splitext(basename(path))[0] for path in glob("fastapi_stac/*.py")],
     include_package_data=False,
     install_requires=install_requires,
     license="MIT",

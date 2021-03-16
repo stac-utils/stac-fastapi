@@ -4,11 +4,11 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
 import attr
-from stac_pydantic import ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage
+from stac_pydantic import ItemCollection, Item, Collection
+from stac_pydantic.api import ConformanceClasses, LandingPage, Search
 
-from stac_api.api.extensions.extension import ApiExtension
-from stac_api.models import schemas
+from stac_fastapi.types.extension import ApiExtension
+
 
 NumType = Union[float, int]
 
@@ -18,7 +18,7 @@ class BaseTransactionsClient(abc.ABC):
     """Defines a pattern for implementing the STAC transaction extension."""
 
     @abc.abstractmethod
-    def create_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
+    def create_item(self, model: Item, **kwargs) -> Item:
         """Create a new item.
 
         Called with `POST /collections/{collectionId}/items`.
@@ -33,7 +33,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def update_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
+    def update_item(self, model: Item, **kwargs) -> Item:
         """Perform a complete update on an existing item.
 
         Called with `PUT /collections/{collectionId}/items`. It is expected that this item already exists.  The update
@@ -49,7 +49,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def delete_item(self, id: str, **kwargs) -> schemas.Item:
+    def delete_item(self, id: str, **kwargs) -> Item:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collectionId}/items/{itemId}`
@@ -64,8 +64,8 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def create_collection(
-        self, model: schemas.Collection, **kwargs
-    ) -> schemas.Collection:
+        self, model: Collection, **kwargs
+    ) -> Collection:
         """Create a new collection.
 
         Called with `POST /collections`.
@@ -80,8 +80,8 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def update_collection(
-        self, model: schemas.Collection, **kwargs
-    ) -> schemas.Collection:
+        self, model: Collection, **kwargs
+    ) -> Collection:
         """Perform a complete update on an existing collection.
 
         Called with `PUT /collections`. It is expected that this item already exists.  The update should do a diff
@@ -97,7 +97,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def delete_collection(self, id: str, **kwargs) -> schemas.Collection:
+    def delete_collection(self, id: str, **kwargs) -> Collection:
         """Delete a collection.
 
         Called with `DELETE /collections/{collectionId}`
@@ -149,7 +149,7 @@ class BaseCoreClient(abc.ABC):
 
     @abc.abstractmethod
     def post_search(
-        self, search_request: schemas.STACSearch, **kwargs
+        self, search_request: Search, **kwargs
     ) -> Dict[str, Any]:
         """Cross catalog search (POST).
 
@@ -187,7 +187,7 @@ class BaseCoreClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_item(self, id: str, **kwargs) -> schemas.Item:
+    def get_item(self, id: str, **kwargs) -> Item:
         """Get item by id.
 
         Called with `GET /collections/{collectionId}/items/{itemId}`.
@@ -201,7 +201,7 @@ class BaseCoreClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def all_collections(self) -> List[schemas.Collection]:
+    def all_collections(self) -> List[Collection]:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -212,7 +212,7 @@ class BaseCoreClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_collection(self, id: str, **kwargs) -> schemas.Collection:
+    def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collectionId}`.

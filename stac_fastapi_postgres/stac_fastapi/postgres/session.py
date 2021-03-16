@@ -11,7 +11,7 @@ import sqlalchemy.exc
 from fastapi_utils.session import FastAPISessionMaker as _FastAPISessionMaker
 from sqlalchemy.orm import Session as SqlSession
 
-from stac_fastapi.api import errors
+from stac_fastapi.types import errors
 
 logger = logging.getLogger(__name__)
 

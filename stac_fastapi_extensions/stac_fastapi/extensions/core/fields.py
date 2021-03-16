@@ -4,7 +4,7 @@ from typing import Set
 import attr
 from fastapi import FastAPI
 
-from stac_fastapi.extensions.core.extension import ApiExtension
+from stac_fastapi.types.extension import ApiExtension
 
 
 @attr.s

@@ -1,14 +1,21 @@
 """bulk transactions extension."""
 import abc
-from typing import Optional
+from typing import List, Optional
 
 import attr
 from fastapi import APIRouter, FastAPI
+from pydantic import BaseModel
+from stac_pydantic import Item
 
-from stac_api.models import schemas
 from stac_fastapi.api.models import _create_request_model
 from stac_fastapi.api.routes import create_endpoint_from_model
-from stac_fastapi.extensions.core.extension import ApiExtension
+from stac_fastapi.types.extension import ApiExtension
+
+
+class Items(BaseModel):
+    """Items model."""
+
+    items: List[Item]
 
 
 @attr.s  # type: ignore
@@ -26,7 +33,7 @@ class BaseBulkTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def bulk_item_insert(
-        self, items: schemas.Items, chunk_size: Optional[int] = None, **kwargs
+        self, items: Items, chunk_size: Optional[int] = None, **kwargs
     ) -> str:
         """Bulk creation of items.
 
@@ -60,7 +67,7 @@ class BulkTransactionExtension(ApiExtension):
         Returns:
             None
         """
-        items_request_model = _create_request_model(schemas.Items)
+        items_request_model = _create_request_model(Items)
 
         router = APIRouter()
         router.add_api_route(

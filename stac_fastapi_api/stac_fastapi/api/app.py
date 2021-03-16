@@ -4,12 +4,10 @@ from typing import Any, Dict, List, Optional, Type
 import attr
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
-from stac_pydantic import ItemCollection
+from stac_pydantic import ItemCollection, Item, Collection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 
-# TODO: move these
-from stac_api.models import schemas
-from stac_fastapi.api.config import ApiSettings, inject_settings
+from stac_fastapi.api.config import inject_settings
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.models import (
     CollectionUri,
@@ -23,9 +21,13 @@ from stac_fastapi.api.routes import (
     create_endpoint_from_model,
     create_endpoint_with_depends,
 )
-from stac_fastapi.backend.core import BaseCoreClient
+from stac_fastapi.types.core import BaseCoreClient
+from stac_fastapi.types.config import ApiSettings
+from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.search import STACSearch
+
+# TODO: make this module not depend on `stac_fastapi.extensions`
 from stac_fastapi.extensions.core import FieldsExtension
-from stac_fastapi.extensions.core.extension import ApiExtension
 
 
 @attr.s
@@ -91,7 +93,7 @@ class StacApi:
         Returns:
             None
         """
-        search_request_model = _create_request_model(schemas.STACSearch)
+        search_request_model = _create_request_model(STACSearch)
         fields_ext = self.get_extension(FieldsExtension)
         router = APIRouter()
         router.add_api_route(
@@ -119,7 +121,7 @@ class StacApi:
         router.add_api_route(
             name="Get Item",
             path="/collections/{collectionId}/items/{itemId}",
-            response_model=schemas.Item,
+            response_model=Item,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -150,7 +152,7 @@ class StacApi:
         router.add_api_route(
             name="Get Collections",
             path="/collections",
-            response_model=List[schemas.Collection],
+            response_model=List[Collection],
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -161,7 +163,7 @@ class StacApi:
         router.add_api_route(
             name="Get Collection",
             path="/collections/{collectionId}",
-            response_model=schemas.Collection,
+            response_model=Collection,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -215,7 +217,6 @@ class StacApi:
             None
         """
         # inject settings
-        self.app.debug = self.settings.debug
         self.client.extensions = self.extensions
 
         fields_ext = self.get_extension(FieldsExtension)
