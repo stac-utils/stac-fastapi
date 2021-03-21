@@ -40,9 +40,7 @@ services:
       - "5439:5432"
 
   migration:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: stac-utils/stac-api
     environment:
       - ENVIRONMENT=development
       - POSTGRES_USER=username
@@ -50,10 +48,13 @@ services:
       - POSTGRES_DBNAME=postgis
       - POSTGRES_HOST=database
       - POSTGRES_PORT=5432
+    volumes:
+      - ./:/app
     command: >
       bash -c "sleep 10 && alembic upgrade head && python scripts/ingest_joplin.py"
     depends_on:
       - database
+      - app
 
 networks:
   default:
