@@ -1,5 +1,5 @@
 """stac_fastapi.types.config module."""
-from typing import Set
+from typing import Optional, Set
 
 from pydantic import BaseSettings
 
@@ -18,8 +18,15 @@ class ApiSettings(BaseSettings):
             the database.
     """
 
-    # TODO: Remove `default_includes` attribute so we can use `pydantic.BaseSettings` instead
-    default_includes: Set[str] = None
+    environment: str
+    debug: bool = False
+    default_includes: Optional[Set[str]] = None
+
+    # Fields which are defined by STAC but not included in the database model
+    forbidden_fields: Set[str] = {"type"}
+
+    # Fields which are item properties but indexed as distinct fields in the database model
+    indexed_fields: Set[str] = {"datetime"}
 
     class Config:
         """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
