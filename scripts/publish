@@ -1,0 +1,76 @@
+#!/bin/bash
+
+set -e
+
+if [[ -n "${CI}" ]]; then
+    set -x
+fi
+
+# Import shared variables
+SUBPACKAGE_DIRS=(
+    "stac_fastapi_types"
+    "stac_fastapi_extensions"
+    "stac_fastapi_api"
+    "stac_fastapi_postgres"
+    "stac_fastapi_server"
+)
+
+function usage() {
+    echo -n \
+        "Usage: $(basename "$0")
+Publish all stac-fastapi packages.
+
+Options:
+--test    Publish to test pypi. Requires a 'testpypi' repository
+          be defined in your .pypirc;
+          See https://packaging.python.org/guides/using-testpypi/#using-testpypi-with-pip
+"
+}
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+    case $key in
+
+        --help)
+        usage
+        exit 0
+        shift
+        ;;
+
+        --test)
+        TEST_PYPI="--repository testpypi"
+        shift
+        ;;
+
+        *)    # unknown option
+        POSITIONAL+=("$1") # save it in an array for later
+        shift # past argument
+        ;;
+    esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
+# Fail if this isn't CI and we aren't publishing to test pypi
+if [ -z "${TEST_PYPI}" ] && [ -z "${CI}" ]; then
+    echo "Only CI can publish to pypi"
+    exit 1
+fi
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+    for PACKAGE_DIR in "${SUBPACKAGE_DIRS[@]}"
+    do
+        echo ${PACKAGE_DIR}
+        pushd ./${PACKAGE_DIR}
+        rm -rf dist
+        python setup.py sdist bdist_wheel
+        twine upload ${TEST_PYPI} dist/*
+        popd
+
+    done
+
+    rm -rf dist
+    python setup.py sdist bdist_wheel
+    twine upload ${TEST_PYPI} dist/*
+fi
