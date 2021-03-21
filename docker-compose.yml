@@ -15,9 +15,9 @@ services:
       - POSTGRES_USER=username
       - POSTGRES_PASS=password
       - POSTGRES_DBNAME=postgis
-      - POSTGRES_HOST_READER=host.docker.internal
-      - POSTGRES_HOST_WRITER=host.docker.internal
-      - POSTGRES_PORT=5439
+      - POSTGRES_HOST_READER=database
+      - POSTGRES_HOST_WRITER=database
+      - POSTGRES_PORT=5432
       - WEB_CONCURRENCY=10
       - VSI_CACHE=TRUE
       - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
@@ -28,8 +28,6 @@ services:
       - ./:/app
     depends_on:
       - database
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   database:
     container_name: stac-db
@@ -50,11 +48,13 @@ services:
       - POSTGRES_USER=username
       - POSTGRES_PASS=password
       - POSTGRES_DBNAME=postgis
-      - POSTGRES_HOST=host.docker.internal
-      - POSTGRES_PORT=5439
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
     command: >
       bash -c "sleep 10 && alembic upgrade head && python scripts/ingest_joplin.py"
     depends_on:
       - database
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+
+networks:
+  default:
+    name: stac-fastapi-network
