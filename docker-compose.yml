@@ -3,6 +3,7 @@ version: '3'
 services:
   app:
     container_name: stac-api
+    image: stac-utils/stac-api
     build:
       context: .
       dockerfile: Dockerfile
@@ -17,6 +18,10 @@ services:
       - POSTGRES_HOST_READER=host.docker.internal
       - POSTGRES_HOST_WRITER=host.docker.internal
       - POSTGRES_PORT=5439
+      - WEB_CONCURRENCY=10
+      - VSI_CACHE=TRUE
+      - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
+      - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
     ports:
       - "8081:8081"
     volumes:
