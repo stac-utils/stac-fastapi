@@ -18,7 +18,7 @@ install_requires = [
     "attrs",
     "fastapi",
     "pydantic[dotenv]",
-    "stac-pydantic",
+    "stac-pydantic==1.3.8",
 ]
 
 with open(
