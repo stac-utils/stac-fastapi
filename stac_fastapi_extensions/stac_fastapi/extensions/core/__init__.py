@@ -1,5 +1,5 @@
 """stac_api.extensions.core module."""
-from stac_fastapi_extensions.stac_fastapi.extensions.third_party.tiles import (
+from stac_fastapi.extensions.third_party.tiles import (
     TilesExtension,
 )
 
