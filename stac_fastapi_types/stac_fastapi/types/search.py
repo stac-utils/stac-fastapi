@@ -161,21 +161,3 @@ class STACSearch(Search):
                         STACSearch,
                     )
         return values
-
-    @root_validator
-    def include_query_fields(cls, values: Dict) -> Dict:
-        """Root validator to ensure query fields are included in the API response."""
-        if "query" in values and values["query"]:
-            query_include = set(
-                [
-                    k.value
-                    if k in config.settings.indexed_fields
-                    else f"properties.{k.value}"
-                    for k in values["query"]
-                ]
-            )
-            if not values["field"].include:
-                values["field"].include = query_include
-            else:
-                values["field"].include.union(query_include)
-        return values

@@ -23,6 +23,7 @@ from stac_fastapi.postgres.models import database, schemas
 from stac_fastapi.postgres.models.links import CollectionLinks
 from stac_fastapi.postgres.session import Session
 from stac_fastapi.postgres.tokens import PaginationTokenClient
+from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.search import STACSearch
@@ -402,6 +403,20 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             response_features = []
             filter_kwargs = {}
             if self.extension_is_enabled(FieldsExtension):
+                if search_request.query is not None:
+                    query_include: Set[str] = set(
+                        [
+                            k
+                            if k in Settings.get().indexed_fields
+                            else f"properties.{k}"
+                            for k in search_request.query.keys()
+                        ]
+                    )
+                    if not search_request.field.include:
+                        search_request.field.include = query_include
+                    else:
+                        search_request.field.include.union(query_include)
+
                 filter_kwargs = search_request.field.filter_fields
 
             xvals = []

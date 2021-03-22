@@ -21,10 +21,6 @@ class ApiSettings(BaseSettings):
     # TODO: Remove `default_includes` attribute so we can use `pydantic.BaseSettings` instead
     default_includes: Optional[Set[str]] = None
 
-
-    # Fields which are item properties but indexed as distinct fields in the database model
-    indexed_fields: Set[str] = {"datetime"}
-
     class Config:
         """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
 
