@@ -95,14 +95,14 @@ class FieldsExtension(FieldsBase):
     exclude: Optional[Set[str]] = set()
 
     @staticmethod
-    def _get_field_dict(fields: Set[str]) -> Dict:
+    def _get_field_dict(fields: Optional[Set[str]]) -> Dict:
         """Pydantic include/excludes notation.
 
         Internal method to create a dictionary for advanced include or exclude of pydantic fields on model export
         Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
         """
         field_dict = {}
-        for field in fields:
+        for field in fields or []:
             if "." in field:
                 parent, key = field.split(".")
                 if parent not in field_dict:
