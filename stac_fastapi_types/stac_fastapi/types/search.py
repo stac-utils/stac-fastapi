@@ -121,17 +121,12 @@ class FieldsExtension(FieldsBase):
         to the API
         Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
         """
-        # Include default set of fields
-        include = config.settings.default_includes
-        # If only include is specified, add fields to default set
-        if self.include and not self.exclude:
-            include = include.union(self.include)
-        # If both include + exclude specified, find the difference between sets but don't remove any default fields
-        # If we remove default fields we will get a validation error
-        elif self.include and self.exclude:
-            include = include.union(self.include) - (
-                self.exclude - config.settings.default_includes
-            )
+
+        # Always include default_includes, even if they
+        # exist in the exclude list.
+        include = (self.include or set()) - (self.exclude or set())
+        include |= Settings.get().default_includes or set()
+
         return {
             "include": self._get_field_dict(include),
             "exclude": self._get_field_dict(self.exclude),
