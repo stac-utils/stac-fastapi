@@ -7,7 +7,7 @@ from fastapi.openapi.utils import get_openapi
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 
-from stac_fastapi.api.config import inject_settings
+from stac_fastapi.types.config import Settings
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.models import (
     CollectionUri,
@@ -223,7 +223,7 @@ class StacApi:
         if fields_ext:
             self.settings.default_includes = fields_ext.default_includes
 
-        inject_settings(self.settings)
+        Settings.set(self.settings)
 
         self.register_core()
         # register extensions

@@ -18,8 +18,8 @@ from stac_fastapi.postgres.transactions import (
     TransactionsClient,
 )
 
-settings = ApiSettings()
-session = Session.create_from_settings(PostgresSettings())
+settings = PostgresSettings()
+session = Session.create_from_settings(settings)
 api = StacApi(
     settings=settings,
     extensions=[

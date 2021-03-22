@@ -18,12 +18,9 @@ class ApiSettings(BaseSettings):
             the database.
     """
 
-    environment: str
-    debug: bool = False
+    # TODO: Remove `default_includes` attribute so we can use `pydantic.BaseSettings` instead
     default_includes: Optional[Set[str]] = None
 
-    # Fields which are defined by STAC but not included in the database model
-    forbidden_fields: Set[str] = {"type"}
 
     # Fields which are item properties but indexed as distinct fields in the database model
     indexed_fields: Set[str] = {"datetime"}
@@ -33,3 +30,16 @@ class ApiSettings(BaseSettings):
 
         extra = "allow"
         env_file = ".env"
+
+class Settings:
+    _instance: Optional[ApiSettings] = None
+
+    @classmethod
+    def set(cls, base_settings: ApiSettings):
+        cls._instance = base_settings
+
+    @classmethod
+    def get(cls) -> ApiSettings:
+        if cls._instance is None:
+            raise ValueError('Settings have not yet been set.')
+        return cls._instance

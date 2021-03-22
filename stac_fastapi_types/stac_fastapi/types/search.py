@@ -16,7 +16,7 @@ from stac_pydantic.api import Search
 from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
 from stac_pydantic.utils import AutoValueEnum
 
-from stac_fastapi.api import config
+from stac_fastapi.types.config import Settings
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]

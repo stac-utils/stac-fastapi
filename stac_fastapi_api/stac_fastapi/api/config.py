@@ -24,17 +24,3 @@ class AddOns(enum.Enum):
 
     tiles = "tiles"
     bulk_transaction = "bulk-transaction"
-
-
-settings: Optional[BaseSettings] = None
-
-
-def inject_settings(base_settings: BaseSettings):
-    """Inject settings to global scope.
-
-    Attributes:
-        base_settings: api settings.
-
-    """
-    global settings
-    settings = base_settings

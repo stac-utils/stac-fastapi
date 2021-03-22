@@ -7,7 +7,7 @@ from stac_pydantic import Collection
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.api.config import inject_settings
+from stac_fastapi.types.config import Settings
 from stac_fastapi.extensions.core import (
     ContextExtension,
     FieldsExtension,
@@ -33,7 +33,7 @@ class TestSettings(PostgresSettings):
 
 
 settings = TestSettings()
-inject_settings(settings)
+Settings.set(settings)
 
 
 @pytest.fixture(autouse=True)
