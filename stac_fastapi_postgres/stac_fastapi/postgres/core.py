@@ -2,14 +2,14 @@
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Set, Type, Union
 from urllib.parse import urlencode, urljoin
 
 import attr
 import geoalchemy2 as ga
+import sqlalchemy as sa
 from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import shape
-import sqlalchemy as sa
 from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession

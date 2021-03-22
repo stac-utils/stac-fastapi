@@ -7,7 +7,6 @@ from stac_pydantic import Collection
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.types.config import Settings
 from stac_fastapi.extensions.core import (
     ContextExtension,
     FieldsExtension,
@@ -23,6 +22,7 @@ from stac_fastapi.postgres.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
+from stac_fastapi.types.config import Settings
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 

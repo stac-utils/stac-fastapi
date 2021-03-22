@@ -1,6 +1,7 @@
 """arturo-stac-api."""
 import os
 from imp import load_source
+
 from setuptools import find_packages, setup
 
 with open("README.md") as f:
@@ -9,13 +10,12 @@ with open("README.md") as f:
 # Get version from stac-fastapi-api
 __version__ = load_source(
     "stac_fastapi.api.version",
-    os.path.join(os.path.dirname(__file__), "stac_fastapi_api/stac_fastapi/api/version.py"),
+    os.path.join(
+        os.path.dirname(__file__), "stac_fastapi_api/stac_fastapi/api/version.py"
+    ),
 ).__version__  # type:ignore
 
-install_requires = [
-    "stac-fastapi-api",
-    "stac-fastapi-extensions"
-]
+install_requires = ["stac-fastapi-api", "stac-fastapi-extensions"]
 
 extra_reqs = {
     "postgres": ["stac-fastapi-postgres"],

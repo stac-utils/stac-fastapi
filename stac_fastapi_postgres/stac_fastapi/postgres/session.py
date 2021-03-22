@@ -50,6 +50,7 @@ class Session:
 
     @classmethod
     def create_from_settings(cls, settings: PostgresSettings) -> "Session":
+        """Create a Session object from settings."""
         return cls(
             reader_conn_string=settings.reader_connection_string,
             writer_conn_string=settings.writer_connection_string,

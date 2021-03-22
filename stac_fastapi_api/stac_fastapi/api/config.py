@@ -1,8 +1,5 @@
 """Application settings."""
 import enum
-from typing import Optional
-
-from pydantic import BaseSettings
 
 
 # TODO: Move to stac-pydantic

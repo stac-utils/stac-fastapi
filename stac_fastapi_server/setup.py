@@ -5,9 +5,7 @@ from imp import load_source
 from setuptools import find_namespace_packages, setup
 
 name = "stac-fastapi-server"
-description = (
-    "Standalone FastAPI server to serve stac-fastapi, a STAC compliant API layer build with FastAPI."
-)
+description = "Standalone FastAPI server to serve stac-fastapi, a STAC compliant API layer build with FastAPI."
 
 __version__ = load_source(
     "stac_fastapi.server.version",

@@ -27,15 +27,20 @@ class ApiSettings(BaseSettings):
         extra = "allow"
         env_file = ".env"
 
+
 class Settings:
+    """Holds the global instance of settings."""
+
     _instance: Optional[ApiSettings] = None
 
     @classmethod
     def set(cls, base_settings: ApiSettings):
+        """Set the global settings."""
         cls._instance = base_settings
 
     @classmethod
     def get(cls) -> ApiSettings:
+        """Get the settings. If they have not yet been set, throws an exception."""
         if cls._instance is None:
-            raise ValueError('Settings have not yet been set.')
+            raise ValueError("Settings have not yet been set.")
         return cls._instance

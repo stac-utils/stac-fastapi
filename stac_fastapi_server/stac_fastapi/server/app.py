@@ -1,5 +1,4 @@
 """FastAPI application."""
-from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import (
     FieldsExtension,
@@ -7,11 +6,9 @@ from stac_fastapi.extensions.core import (
     SortExtension,
     TransactionExtension,
 )
-from stac_fastapi.extensions.third_party import (
-    BulkTransactionExtension
-)
-from stac_fastapi.postgres.core import CoreCrudClient
+from stac_fastapi.extensions.third_party import BulkTransactionExtension
 from stac_fastapi.postgres.config import PostgresSettings
+from stac_fastapi.postgres.core import CoreCrudClient
 from stac_fastapi.postgres.session import Session
 from stac_fastapi.postgres.transactions import (
     BulkTransactionsClient,
@@ -27,7 +24,7 @@ api = StacApi(
         BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
         FieldsExtension(),
         QueryExtension(),
-        SortExtension()
+        SortExtension(),
     ],
     client=CoreCrudClient(session=session),
 )
