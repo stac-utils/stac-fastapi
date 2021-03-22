@@ -7,6 +7,8 @@ from urllib.parse import urlencode, urljoin
 
 import attr
 import geoalchemy2 as ga
+from shapely.geometry import Polygon as ShapelyPolygon
+from shapely.geometry import shape
 import sqlalchemy as sa
 from sqlakeyset import get_page
 from sqlalchemy import func
@@ -318,7 +320,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
             else:
                 # Spatial query
-                poly = search_request.polygon()
+                poly = None
+                if search_request.intersects is not None:
+                    poly = shape(search_request.intersects)
+                elif search_request.bbox:
+                    poly = ShapelyPolygon.from_bounds(*search_request.bbox)
+
                 if poly:
                     filter_geom = ga.shape.from_shape(poly, srid=4326)
                     query = query.filter(

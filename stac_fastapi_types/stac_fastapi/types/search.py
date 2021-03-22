@@ -12,8 +12,6 @@ from typing import Any, Callable, Dict, List, Optional, Set, Union
 import sqlalchemy as sa
 from pydantic import Field, ValidationError, root_validator
 from pydantic.error_wrappers import ErrorWrapper
-from shapely.geometry import Polygon as ShapelyPolygon
-from shapely.geometry import shape
 from stac_pydantic.api import Search
 from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
 from stac_pydantic.utils import AutoValueEnum
@@ -186,12 +184,3 @@ class STACSearch(Search):
             else:
                 values["field"].include.union(query_include)
         return values
-
-    def polygon(self) -> Optional[ShapelyPolygon]:
-        """Create a shapely polygon for the spatial query (either `intersects` or `bbox`)."""
-        if self.intersects:
-            return shape(self.intersects)
-        elif self.bbox:
-            return ShapelyPolygon.from_bounds(*self.bbox)
-        else:
-            return None
