@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 from stac_pydantic.shared import DATETIME_RFC339
 
-from stac_fastapi.postgres.models import schemas
+from stac_fastapi.sqlalchemy.models import schemas
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.search import QueryableTypes
 

@@ -8,7 +8,11 @@ from pydantic import BaseModel
 from pydantic.utils import GetterDict
 from stac_pydantic.shared import DATETIME_RFC339
 
-from stac_fastapi.postgres.models.links import CollectionLinks, ItemLinks, filter_links
+from stac_fastapi.sqlalchemy.models.links import (
+    CollectionLinks,
+    ItemLinks,
+    filter_links,
+)
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.errors import DatabaseError
 

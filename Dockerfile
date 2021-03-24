@@ -28,9 +28,9 @@ COPY ./stac_fastapi_api /app/stac_fastapi_api
 WORKDIR /app/stac_fastapi_api
 RUN pipenv install --deploy --ignore-pipfile ${install_dev_dependencies:+--dev}
 
-# Install stac_api.postgres.
-COPY ./stac_fastapi_postgres /app/stac_fastapi_postgres
-WORKDIR /app/stac_fastapi_postgres
+# Install stac_api.sqlalchemy.
+COPY ./stac_fastapi_sqlalchemy /app/stac_fastapi_sqlalchemy
+WORKDIR /app/stac_fastapi_sqlalchemy
 RUN pipenv install --deploy --ignore-pipfile ${install_dev_dependencies:+--dev}
 
 # Install stac_api.server.

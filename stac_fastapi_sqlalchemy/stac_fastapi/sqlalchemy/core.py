@@ -19,10 +19,10 @@ from stac_pydantic.api.extensions.paging import PaginationLink
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
 from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
-from stac_fastapi.postgres.models import database, schemas
-from stac_fastapi.postgres.models.links import CollectionLinks
-from stac_fastapi.postgres.session import Session
-from stac_fastapi.postgres.tokens import PaginationTokenClient
+from stac_fastapi.sqlalchemy.models import database, schemas
+from stac_fastapi.sqlalchemy.models.links import CollectionLinks
+from stac_fastapi.sqlalchemy.session import Session
+from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError

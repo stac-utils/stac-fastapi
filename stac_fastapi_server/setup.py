@@ -14,7 +14,7 @@ __version__ = load_source(
 
 install_requires = [
     "stac-fastapi-api",
-    "stac-fastapi-postgres",
+    "stac-fastapi-sqlalchemy",
 ]
 
 with open(

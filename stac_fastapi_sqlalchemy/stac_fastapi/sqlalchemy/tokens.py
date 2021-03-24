@@ -8,8 +8,8 @@ from typing import Type
 import attr
 from sqlalchemy.orm import Session as SqlSession
 
-from stac_fastapi.postgres.models import database
-from stac_fastapi.postgres.session import Session
+from stac_fastapi.sqlalchemy.models import database
+from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.types.errors import DatabaseError
 
 logger = logging.getLogger(__name__)

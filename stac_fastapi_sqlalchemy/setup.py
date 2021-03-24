@@ -6,12 +6,12 @@ from os.path import basename, splitext
 
 from setuptools import find_namespace_packages, setup
 
-name = "stac-fastapi-postgres"
-description = "Postgres subpackage of fastapi-stac, contains a postgres backend implementation using sqlalchemy."
+name = "stac-sqlalchemy-postgres"
+description = "Sqlalchemy subpackage of fastapi-stac, contains a postgres backend implementation using sqlalchemy."
 
 __version__ = load_source(
-    "stac_fastapi.postgres.version",
-    os.path.join(os.path.dirname(__file__), "stac_fastapi/postgres/version.py"),
+    "stac_fastapi.sqlalchemy.version",
+    os.path.join(os.path.dirname(__file__), "stac_fastapi/sqlalchemy/version.py"),
 ).__version__  # type:ignore
 
 install_requires = [

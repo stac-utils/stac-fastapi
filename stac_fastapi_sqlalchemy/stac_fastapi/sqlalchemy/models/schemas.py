@@ -10,7 +10,7 @@ from stac_pydantic import Item as ItemBase
 from stac_pydantic.api.search import DATETIME_RFC339
 from stac_pydantic.shared import Link
 
-from stac_fastapi.postgres.models.decompose import CollectionGetter, ItemGetter
+from stac_fastapi.sqlalchemy.models.decompose import CollectionGetter, ItemGetter
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]

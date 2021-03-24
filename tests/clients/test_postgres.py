@@ -5,8 +5,8 @@ import pytest
 from stac_pydantic import Collection, Item
 
 from stac_fastapi.extensions.third_party.bulk_transactions import Items
-from stac_fastapi.postgres.core import CoreCrudClient
-from stac_fastapi.postgres.transactions import (
+from stac_fastapi.sqlalchemy.core import CoreCrudClient
+from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )

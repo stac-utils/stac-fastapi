@@ -7,10 +7,10 @@ from stac_fastapi.extensions.core import (
     TransactionExtension,
 )
 from stac_fastapi.extensions.third_party import BulkTransactionExtension
-from stac_fastapi.postgres.config import PostgresSettings
-from stac_fastapi.postgres.core import CoreCrudClient
-from stac_fastapi.postgres.session import Session
-from stac_fastapi.postgres.transactions import (
+from stac_fastapi.sqlalchemy.config import PostgresSettings
+from stac_fastapi.sqlalchemy.core import CoreCrudClient
+from stac_fastapi.sqlalchemy.session import Session
+from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )

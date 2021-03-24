@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from fastapi_utils.session import FastAPISessionMaker as _FastAPISessionMaker
 from sqlalchemy.orm import Session as SqlSession
 
-from stac_fastapi.postgres.config import PostgresSettings
+from stac_fastapi.sqlalchemy.config import PostgresSettings
 from stac_fastapi.types import errors
 
 logger = logging.getLogger(__name__)

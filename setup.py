@@ -18,7 +18,7 @@ __version__ = load_source(
 install_requires = ["stac-fastapi-api", "stac-fastapi-extensions"]
 
 extra_reqs = {
-    "postgres": ["stac-fastapi-postgres"],
+    "sqlalchemy": ["stac-fastapi-sqlalchemy"],
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit", "requests"],
     "docs": ["mkdocs", "mkdocs-material"],
 }
