@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from fastapi_utils.session import FastAPISessionMaker as _FastAPISessionMaker
 from sqlalchemy.orm import Session as SqlSession
 
-from stac_fastapi.sqlalchemy.config import PostgresSettings
+from stac_fastapi.sqlalchemy.config import SqlalchemySettings
 from stac_fastapi.types import errors
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class Session:
         )
 
     @classmethod
-    def create_from_settings(cls, settings: PostgresSettings) -> "Session":
+    def create_from_settings(cls, settings: SqlalchemySettings) -> "Session":
         """Create a Session object from settings."""
         return cls(
             reader_conn_string=settings.reader_connection_string,

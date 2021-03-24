@@ -14,7 +14,7 @@ from stac_fastapi.extensions.core import (
     SortExtension,
     TransactionExtension,
 )
-from stac_fastapi.sqlalchemy.config import PostgresSettings
+from stac_fastapi.sqlalchemy.config import SqlalchemySettings
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
@@ -27,7 +27,7 @@ from stac_fastapi.types.config import Settings
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
-class TestSettings(PostgresSettings):
+class TestSettings(SqlalchemySettings):
     class Config:
         env_file = ".env.test"
 
@@ -103,7 +103,7 @@ def postgres_bulk_transactions(db_session):
 @pytest.fixture
 def api_client(db_session):
     return StacApi(
-        settings=PostgresSettings(),
+        settings=SqlalchemySettings(),
         client=CoreCrudClient(session=db_session),
         extensions=[
             TransactionExtension(client=TransactionsClient(session=db_session)),

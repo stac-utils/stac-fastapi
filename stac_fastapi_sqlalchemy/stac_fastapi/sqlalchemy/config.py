@@ -4,7 +4,7 @@ from typing import Set
 from stac_fastapi.types.config import ApiSettings
 
 
-class PostgresSettings(ApiSettings):
+class SqlalchemySettings(ApiSettings):
     """Postgres-specific API settings.
 
     Attributes:
