@@ -2,12 +2,14 @@
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Set, Type, Union
 from urllib.parse import urlencode, urljoin
 
 import attr
 import geoalchemy2 as ga
 import sqlalchemy as sa
+from shapely.geometry import Polygon as ShapelyPolygon
+from shapely.geometry import shape
 from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
@@ -21,6 +23,7 @@ from stac_fastapi.postgres.models import database, schemas
 from stac_fastapi.postgres.models.links import CollectionLinks
 from stac_fastapi.postgres.session import Session
 from stac_fastapi.postgres.tokens import PaginationTokenClient
+from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.search import STACSearch
@@ -318,7 +321,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
             else:
                 # Spatial query
-                poly = search_request.polygon()
+                poly = None
+                if search_request.intersects is not None:
+                    poly = shape(search_request.intersects)
+                elif search_request.bbox:
+                    poly = ShapelyPolygon.from_bounds(*search_request.bbox)
+
                 if poly:
                     filter_geom = ga.shape.from_shape(poly, srid=4326)
                     query = query.filter(
@@ -395,6 +403,20 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             response_features = []
             filter_kwargs = {}
             if self.extension_is_enabled(FieldsExtension):
+                if search_request.query is not None:
+                    query_include: Set[str] = set(
+                        [
+                            k
+                            if k in Settings.get().indexed_fields
+                            else f"properties.{k}"
+                            for k in search_request.query.keys()
+                        ]
+                    )
+                    if not search_request.field.include:
+                        search_request.field.include = query_include
+                    else:
+                        search_request.field.include.union(query_include)
+
                 filter_kwargs = search_request.field.filter_fields
 
             xvals = []

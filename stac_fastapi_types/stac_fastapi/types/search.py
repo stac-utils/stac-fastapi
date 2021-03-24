@@ -12,13 +12,11 @@ from typing import Any, Callable, Dict, List, Optional, Set, Union
 import sqlalchemy as sa
 from pydantic import Field, ValidationError, root_validator
 from pydantic.error_wrappers import ErrorWrapper
-from shapely.geometry import Polygon as ShapelyPolygon
-from shapely.geometry import shape
 from stac_pydantic.api import Search
 from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
 from stac_pydantic.utils import AutoValueEnum
 
-from stac_fastapi.api import config
+from stac_fastapi.types.config import Settings
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
@@ -97,14 +95,14 @@ class FieldsExtension(FieldsBase):
     exclude: Optional[Set[str]] = set()
 
     @staticmethod
-    def _get_field_dict(fields: Set[str]) -> Dict:
+    def _get_field_dict(fields: Optional[Set[str]]) -> Dict:
         """Pydantic include/excludes notation.
 
         Internal method to create a dictionary for advanced include or exclude of pydantic fields on model export
         Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
         """
         field_dict = {}
-        for field in fields:
+        for field in fields or []:
             if "." in field:
                 parent, key = field.split(".")
                 if parent not in field_dict:
@@ -123,17 +121,12 @@ class FieldsExtension(FieldsBase):
         to the API
         Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
         """
-        # Include default set of fields
-        include = config.settings.default_includes
-        # If only include is specified, add fields to default set
-        if self.include and not self.exclude:
-            include = include.union(self.include)
-        # If both include + exclude specified, find the difference between sets but don't remove any default fields
-        # If we remove default fields we will get a validation error
-        elif self.include and self.exclude:
-            include = include.union(self.include) - (
-                self.exclude - config.settings.default_includes
-            )
+
+        # Always include default_includes, even if they
+        # exist in the exclude list.
+        include = (self.include or set()) - (self.exclude or set())
+        include |= Settings.get().default_includes or set()
+
         return {
             "include": self._get_field_dict(include),
             "exclude": self._get_field_dict(self.exclude),
@@ -168,30 +161,3 @@ class STACSearch(Search):
                         STACSearch,
                     )
         return values
-
-    @root_validator
-    def include_query_fields(cls, values: Dict) -> Dict:
-        """Root validator to ensure query fields are included in the API response."""
-        if "query" in values and values["query"]:
-            query_include = set(
-                [
-                    k.value
-                    if k in config.settings.indexed_fields
-                    else f"properties.{k.value}"
-                    for k in values["query"]
-                ]
-            )
-            if not values["field"].include:
-                values["field"].include = query_include
-            else:
-                values["field"].include.union(query_include)
-        return values
-
-    def polygon(self) -> Optional[ShapelyPolygon]:
-        """Create a shapely polygon for the spatial query (either `intersects` or `bbox`)."""
-        if self.intersects:
-            return shape(self.intersects)
-        elif self.bbox:
-            return ShapelyPolygon.from_bounds(*self.bbox)
-        else:
-            return None

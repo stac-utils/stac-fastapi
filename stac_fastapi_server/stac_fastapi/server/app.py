@@ -1,24 +1,22 @@
 """FastAPI application."""
-from stac_api.api.app import StacApi
-from stac_api.api.extensions import (
-    BulkTransactionExtension,
+from stac_fastapi.api.app import StacApi
+from stac_fastapi.extensions.core import (
     FieldsExtension,
     QueryExtension,
     SortExtension,
-    TilesExtension,
     TransactionExtension,
 )
-from stac_api.clients.postgres.core import CoreCrudClient
-from stac_api.clients.postgres.session import Session
-from stac_api.clients.postgres.transactions import (
+from stac_fastapi.extensions.third_party import BulkTransactionExtension
+from stac_fastapi.postgres.config import PostgresSettings
+from stac_fastapi.postgres.core import CoreCrudClient
+from stac_fastapi.postgres.session import Session
+from stac_fastapi.postgres.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_api.clients.tiles.ogc import TilesClient
-from stac_api.config import PostgresSettings
 
 settings = PostgresSettings()
-session = Session(settings.reader_connection_string, settings.writer_connection_string)
+session = Session.create_from_settings(settings)
 api = StacApi(
     settings=settings,
     extensions=[
@@ -27,7 +25,6 @@ api = StacApi(
         FieldsExtension(),
         QueryExtension(),
         SortExtension(),
-        TilesExtension(TilesClient(session=session)),
     ],
     client=CoreCrudClient(session=session),
 )

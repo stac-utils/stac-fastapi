@@ -15,10 +15,7 @@ __version__ = load_source(
 ).__version__  # type:ignore
 
 install_requires = [
-    "attrs",
-    "fastapi",
-    "pydantic[dotenv]",
-    "stac-pydantic",
+    "stac-fastapi-types",
 ]
 
 with open(

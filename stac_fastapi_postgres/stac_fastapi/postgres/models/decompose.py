@@ -8,8 +8,8 @@ from pydantic import BaseModel
 from pydantic.utils import GetterDict
 from stac_pydantic.shared import DATETIME_RFC339
 
-from stac_fastapi.api import config
 from stac_fastapi.postgres.models.links import CollectionLinks, ItemLinks, filter_links
+from stac_fastapi.types.config import Settings
 from stac_fastapi.types.errors import DatabaseError
 
 
@@ -47,7 +47,7 @@ class ItemGetter(GetterDict):
     def __init__(self, obj: Any):
         """Decompose orm model to pydantic model."""
         properties = obj.properties.copy()
-        for field in config.settings.indexed_fields:
+        for field in Settings.get().indexed_fields:
             # Use getattr to accommodate extension namespaces
             field_value = getattr(obj, field.split(":")[-1])
             if field == "datetime":

@@ -7,10 +7,10 @@ from typing import Iterator
 import attr
 import psycopg2
 import sqlalchemy as sa
-import sqlalchemy.exc
 from fastapi_utils.session import FastAPISessionMaker as _FastAPISessionMaker
 from sqlalchemy.orm import Session as SqlSession
 
+from stac_fastapi.postgres.config import PostgresSettings
 from stac_fastapi.types import errors
 
 logger = logging.getLogger(__name__)
@@ -46,6 +46,14 @@ class Session:
         return cls(
             reader_conn_string=os.environ["READER_CONN_STRING"],
             writer_conn_string=os.environ["WRITER_CONN_STRING"],
+        )
+
+    @classmethod
+    def create_from_settings(cls, settings: PostgresSettings) -> "Session":
+        """Create a Session object from settings."""
+        return cls(
+            reader_conn_string=settings.reader_connection_string,
+            writer_conn_string=settings.writer_connection_string,
         )
 
     def __attrs_post_init__(self):

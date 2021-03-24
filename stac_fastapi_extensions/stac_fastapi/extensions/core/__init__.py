@@ -1,7 +1,5 @@
 """stac_api.extensions.core module."""
-from stac_fastapi_extensions.stac_fastapi.extensions.third_party.tiles import (
-    TilesExtension,
-)
+from stac_fastapi.extensions.third_party.tiles import TilesExtension
 
 from .context import ContextExtension
 from .fields import FieldsExtension

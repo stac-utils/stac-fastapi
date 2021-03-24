@@ -1,5 +1,5 @@
 """stac_fastapi.types.config module."""
-from typing import Set
+from typing import Optional, Set
 
 from pydantic import BaseSettings
 
@@ -19,10 +19,28 @@ class ApiSettings(BaseSettings):
     """
 
     # TODO: Remove `default_includes` attribute so we can use `pydantic.BaseSettings` instead
-    default_includes: Set[str] = None
+    default_includes: Optional[Set[str]] = None
 
     class Config:
         """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
 
         extra = "allow"
         env_file = ".env"
+
+
+class Settings:
+    """Holds the global instance of settings."""
+
+    _instance: Optional[ApiSettings] = None
+
+    @classmethod
+    def set(cls, base_settings: ApiSettings):
+        """Set the global settings."""
+        cls._instance = base_settings
+
+    @classmethod
+    def get(cls) -> ApiSettings:
+        """Get the settings. If they have not yet been set, throws an exception."""
+        if cls._instance is None:
+            raise ValueError("Settings have not yet been set.")
+        return cls._instance

@@ -1,4 +1,4 @@
-"""stac-fastapi extensions submodule."""
+"""stac-fastapi postgres submodule."""
 import os
 from glob import glob
 from imp import load_source
@@ -15,11 +15,10 @@ __version__ = load_source(
 ).__version__  # type:ignore
 
 install_requires = [
-    "attrs",
-    "stac-pydantic<=1.3.8",
+    "stac-fastapi-types",
     "sqlakeyset",
     "geoalchemy2<0.8.0",
-    "sqlalchemy",
+    "sqlalchemy==1.3.23",
     "shapely",
     "psycopg2-binary",
 ]

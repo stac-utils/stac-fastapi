@@ -7,7 +7,6 @@ from fastapi.openapi.utils import get_openapi
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 
-from stac_fastapi.api.config import inject_settings
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.models import (
     CollectionUri,
@@ -24,7 +23,7 @@ from stac_fastapi.api.routes import (
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
 from stac_fastapi.extensions.core import FieldsExtension
-from stac_fastapi.types.config import ApiSettings
+from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import STACSearch
@@ -223,7 +222,7 @@ class StacApi:
         if fields_ext:
             self.settings.default_includes = fields_ext.default_includes
 
-        inject_settings(self.settings)
+        Settings.set(self.settings)
 
         self.register_core()
         # register extensions
