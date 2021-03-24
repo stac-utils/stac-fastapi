@@ -121,7 +121,6 @@ class FieldsExtension(FieldsBase):
         to the API
         Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
         """
-
         # Always include default_includes, even if they
         # exist in the exclude list.
         include = (self.include or set()) - (self.exclude or set())
