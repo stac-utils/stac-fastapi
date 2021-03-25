@@ -1,8 +1,3 @@
-
-<p align="center">
-  <p align="center">sta.</p>
-</p>
-
 <p align="center">
   <a href="https://github.com/stac-utils/stac-fastapi/actions?query=workflow%3Acicd" target="_blank">
       <img src="https://github.com/stac-utils/stac-fastapi/workflows/stac-fastapi/badge.svg" alt="Test">
@@ -14,9 +9,6 @@
       <img src="https://img.shields.io/github/license/stac-utils/stac-fastapi.svg" alt="Downloads">
   </a>
 </p>
-
----
-
 
 ---
 
