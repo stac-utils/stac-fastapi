@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f0c8c889a393e1ccb1e362cf949a35540f55fbca51bc7a3a7f17db306b0c1ced"
+            "sha256": "4a0d78dbd87d95acd48387f61fecfdc70a08899723fb987c5b1c73f5511a8812"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -84,10 +84,6 @@
                 "sha256:587825ed60b1711daea4832cf37524dfd404325b7db5e25ebe88c495c9f807a0"
             ],
             "version": "==0.15.0"
-        },
-        "stac-fastapi-backend": {
-            "editable": "true",
-            "path": "."
         },
         "stac-fastapi-types": {
             "editable": true,
