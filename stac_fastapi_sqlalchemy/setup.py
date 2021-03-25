@@ -1,4 +1,4 @@
-"""stac-fastapi postgres submodule."""
+"""stac-fastapi sqlalchemy submodule."""
 import os
 from glob import glob
 from imp import load_source
@@ -6,7 +6,7 @@ from os.path import basename, splitext
 
 from setuptools import find_namespace_packages, setup
 
-name = "stac-sqlalchemy-postgres"
+name = "stac-sqlalchemy-sqlalchemy"
 description = "Sqlalchemy subpackage of fastapi-stac, contains a postgres backend implementation using sqlalchemy."
 
 __version__ = load_source(
