@@ -2,17 +2,15 @@
 APP_HOST ?= 0.0.0.0
 APP_PORT ?= 8080
 EXTERNAL_APP_PORT ?= ${APP_PORT}
-run_docker = docker run -it --rm \
+run_docker = docker-compose run --rm \
 				-p ${EXTERNAL_APP_PORT}:${APP_PORT} \
-				-v $(shell pwd):/app \
-				--env APP_HOST=${APP_HOST} \
-				--env APP_PORT=${APP_PORT} \
-				--env-file .env.example \
-				stac-utils/stac-api:latest
+				-e APP_HOST=${APP_HOST} \
+				-e APP_PORT=${APP_PORT} \
+				app
 
 .PHONY: image
 image:
-	docker build -t stac-utils/stac-api:latest .
+	docker-compose build app
 
 .PHONY: docker-run
 docker-run: image

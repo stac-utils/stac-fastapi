@@ -2,14 +2,15 @@ import uuid
 from typing import Callable
 
 import pytest
+from stac_pydantic import Collection, Item
 
-from stac_api.clients.postgres.core import CoreCrudClient
-from stac_api.clients.postgres.transactions import (
+from stac_fastapi.extensions.third_party.bulk_transactions import Items
+from stac_fastapi.sqlalchemy.core import CoreCrudClient
+from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_api.errors import ConflictError, NotFoundError
-from stac_api.models.schemas import Collection, Item, Items
+from stac_fastapi.types.errors import ConflictError, NotFoundError
 from tests.conftest import MockStarletteRequest
 
 

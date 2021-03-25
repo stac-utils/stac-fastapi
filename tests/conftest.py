@@ -3,36 +3,37 @@ import os
 from typing import Callable, Dict
 
 import pytest
+from stac_pydantic import Collection
 from starlette.testclient import TestClient
 
-from stac_api.api.app import StacApi
-from stac_api.api.extensions import (
+from stac_fastapi.api.app import StacApi
+from stac_fastapi.extensions.core import (
     ContextExtension,
     FieldsExtension,
     QueryExtension,
     SortExtension,
     TransactionExtension,
 )
-from stac_api.clients.postgres.core import CoreCrudClient
-from stac_api.clients.postgres.session import Session
-from stac_api.clients.postgres.transactions import (
+from stac_fastapi.sqlalchemy.config import SqlalchemySettings
+from stac_fastapi.sqlalchemy.core import CoreCrudClient
+from stac_fastapi.sqlalchemy.models import database
+from stac_fastapi.sqlalchemy.session import Session
+from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_api.config import PostgresSettings, inject_settings
-from stac_api.models import database
-from stac_api.models.schemas import Collection
+from stac_fastapi.types.config import Settings
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
-class TestSettings(PostgresSettings):
+class TestSettings(SqlalchemySettings):
     class Config:
         env_file = ".env.test"
 
 
 settings = TestSettings()
-inject_settings(settings)
+Settings.set(settings)
 
 
 @pytest.fixture(autouse=True)
@@ -102,7 +103,7 @@ def postgres_bulk_transactions(db_session):
 @pytest.fixture
 def api_client(db_session):
     return StacApi(
-        settings=PostgresSettings(),
+        settings=SqlalchemySettings(),
         client=CoreCrudClient(session=db_session),
         extensions=[
             TransactionExtension(client=TransactionsClient(session=db_session)),
