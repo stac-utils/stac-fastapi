@@ -231,10 +231,6 @@
             "editable": "true",
             "path": "."
         },
-        "stac-fastapi-postgres": {
-            "editable": true,
-            "path": "."
-        },
         "stac-pydantic": {
             "hashes": [
                 "sha256:64f264dff149cc969860a44c632721769eb316fa91bf281b645470282666473f",
