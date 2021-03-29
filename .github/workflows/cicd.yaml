@@ -1,4 +1,4 @@
-name: arturo-stac-api
+name: stac-fastapi
 on:
   push:
     branches: [ master ]

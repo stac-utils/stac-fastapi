@@ -20,7 +20,7 @@ install_requires = ["stac-fastapi-api", "stac-fastapi-extensions"]
 extra_reqs = {
     "sqlalchemy": ["stac-fastapi-sqlalchemy"],
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit", "requests"],
-    "docs": ["mkdocs", "mkdocs-material"],
+    "docs": ["mkdocs", "mkdocs-material", "pdocs"],
 }
 
 
