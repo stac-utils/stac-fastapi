@@ -18,6 +18,8 @@ install_requires = [
     "stac-fastapi-types",
 ]
 
+extras = {"tiles": ["titiler==0.2.*"]}
+
 with open(
     os.path.join(os.path.abspath(os.path.dirname(__file__)), "README.md")
 ) as readme_file:
@@ -36,6 +38,7 @@ setup(
     py_modules=[splitext(basename(path))[0] for path in glob("stac_fastapi/*.py")],
     include_package_data=False,
     install_requires=install_requires,
+    extras_require=extras,
     license="MIT",
     keywords=["stac", "fastapi", "imagery", "raster", "catalog", "STAC"],
 )
