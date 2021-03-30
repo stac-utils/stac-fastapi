@@ -35,7 +35,6 @@ jobs:
 
       - name: update API docs
         run: |
-          python -m pip install git+https://github.com/timothycrosley/pdocs
           pdocs as_markdown \
             --output_dir docs/api/ \
             --exclude_source \
