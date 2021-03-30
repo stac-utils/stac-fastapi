@@ -6,8 +6,6 @@ from urllib.parse import urljoin
 import attr
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
-from stac_fastapi.extensions.third_party.tiles import OGCTileLink
-
 # These can be inferred from the item/collection so they aren't included in the database
 # Instead they are dynamically generated when querying the database using the classes defined below
 INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root"]
@@ -119,64 +117,3 @@ class ItemLinks(BaseLinks):
         # TODO: Don't always append tiles link
         links.append(self.tiles())
         return links
-
-
-@attr.s
-class TileLinks:
-    """Create inferred links specific to OGC Tiles API."""
-
-    base_url: str = attr.ib()
-    collection_id: str = attr.ib()
-    item_id: str = attr.ib()
-
-    def __post_init__(self):
-        """Post init handler."""
-        self.item_uri = urljoin(
-            self.base_url, f"/collections/{self.collection_id}/items/{self.item_id}"
-        )
-
-    def tiles(self) -> OGCTileLink:
-        """Create tiles link."""
-        return OGCTileLink(
-            href=urljoin(
-                self.base_url,
-                f"/titiler/tiles/{{z}}/{{x}}/{{y}}.png?url={self.item_uri}",
-            ),
-            rel=Relations.item,
-            title="tiles",
-            type=MimeTypes.png,
-            templated=True,
-        )
-
-    def viewer(self) -> OGCTileLink:
-        """Create viewer link."""
-        return OGCTileLink(
-            href=urljoin(self.base_url, f"/titiler/viewer?url={self.item_uri}"),
-            rel=Relations.alternate,
-            type=MimeTypes.html,
-            title="viewer",
-        )
-
-    def tilejson(self) -> OGCTileLink:
-        """Create tilejson link."""
-        return OGCTileLink(
-            href=urljoin(self.base_url, f"/titiler/tilejson.json?url={self.item_uri}"),
-            rel=Relations.alternate,
-            type=MimeTypes.json,
-            title="tilejson",
-        )
-
-    def wmts(self) -> OGCTileLink:
-        """Create wmts capabilities link."""
-        return OGCTileLink(
-            href=urljoin(
-                self.base_url, f"/titiler/WMTSCapabilities.xml?url={self.item_uri}"
-            ),
-            rel=Relations.alternate,
-            type=MimeTypes.xml,
-            title="WMTS Capabilities",
-        )
-
-    def create_links(self) -> List[OGCTileLink]:
-        """Return all inferred links."""
-        return [self.tiles(), self.tilejson(), self.wmts(), self.viewer()]
