@@ -5,8 +5,8 @@ Issues and pull requests are more than welcome.
 **dev install**
 
 ```bash
-$ git clone https://github.com/arturo-ai/arturo-stac-api.git
-$ cd arturo-stac-api
+$ git clone https://github.com/stac-utils/stac-fastapi.git
+$ cd stac-fastapi
 $ pip install -e .[dev]
 ```
 
@@ -21,8 +21,8 @@ $ pre-commit install
 ### Docs
 
 ```bash
-$ git clone https://github.com/arturo-ai/arturo-stac-api.git
-$ cd arturo-stac-api
+$ git clone https://github.com/stac-utils/stac-fastapi.git
+$ cd stac-fastapi
 $ pip install -e .["docs"]
 ```
 
@@ -41,16 +41,7 @@ $ pdocs as_markdown \
   --output_dir docs/api/ \
   --exclude_source \
   --overwrite \
-  stac_api.errors \
-  stac_api.config \
-  stac_api.models.database \
-  stac_api.models.decompose \
-  stac_api.models.links \
-  stac_api.models.ogc \
-  stac_api.models.schemas \
-  stac_api.api.routes \
-  stac_api.api.models \
-  stac_api.api.app
+  stac_fastapi
 
 # deploy
 $ mkdocs gh-deploy

@@ -1,9 +1,9 @@
-site_name: arturo-stac-api
-site_description: Arturo's STAC compliant API implementation.
+site_name: stac-fastapi
+site_description: STAC FastAPI.
 
 # Repository
-repo_name: 'arturo-ai/arturo-stac-api'
-repo_url: 'https://github.com/arturo-ai/arturo-stac-api'
+repo_name: 'stac-utils/stac-fastapi'
+repo_url: 'https://github.com/stac-utils/stac-fastapi'
 edit_uri: 'blob/master/docs/src/'
 
 
@@ -11,29 +11,52 @@ edit_uri: 'blob/master/docs/src/'
 extra:
   social:
     - icon: 'fontawesome/brands/github'
-      link: 'https://github.com/arturo-ai'
-    - icon: 'fontawesome/brands/twitter'
-      link: 'https://twitter.com/arturo_ai'
+      link: 'https://github.com/stac-utils'
 
 # Layout
 nav:
   - Home: 'index.md'
   - API:
-    - errors: api/stac_api/errors.md
-    - config: api/stac_api/config.md
-
-    - models:
-      - database: api/stac_api/models/database.md
-      - decompose: api/stac_api/models/decompose.md
-      - links: api/stac_api/models/links.md
-      - ogc: api/stac_api/models/ogc.md
-      - schemas: api/stac_api/models/schemas.md
-
-    - api:
-      - routes: api/stac_api/api/routes.md
-      - models: api/stac_api/api/models.md
-      - app: api/stac_api/api/app.md
-
+    - stac_fastapi.api:
+      - app: api/stac_fastapi/api/app.md
+      - config: api/stac_fastapi/api/config.md
+      - errors: api/stac_fastapi/api/errors.md
+      - middleware: api/stac_fastapi/api/middleware.md
+      - models: api/stac_fastapi/api/models.md
+      - openapi: api/stac_fastapi/api/openapi.md
+      - routes: api/stac_fastapi/api/routes.md
+    - stac_fastapi.extensions:
+      - core:
+          - context: api/stac_fastapi/extensions/core/context.md
+          - fields: api/stac_fastapi/extensions/core/fields.md
+          - query: api/stac_fastapi/extensions/core/query.md
+          - sort: api/stac_fastapi/extensions/core/sort.md
+          - transaction: api/stac_fastapi/extensions/core/transaction.md
+      - third_party:
+          - bulk_transactions: api/stac_fastapi/extensions/third_party/bulk_transactions.md
+          - tiles: api/stac_fastapi/extensions/third_party/tiles.md
+    - stac_fastapi.server:
+      - app: api/stac_fastapi/server/app.md
+    - stac_fastapi.sqlalchemy:
+      - models:
+          - database: api/stac_fastapi/sqlalchemy/models/database.md
+          - decompose: api/stac_fastapi/sqlalchemy/models/decompose.md
+          - links: api/stac_fastapi/sqlalchemy/models/links.md
+          - schemas: api/stac_fastapi/sqlalchemy/models/schemas.md
+      - config: api/stac_fastapi/sqlalchemy/config.md
+      - core: api/stac_fastapi/sqlalchemy/core.md
+      - session: api/stac_fastapi/sqlalchemy/session.md
+      - tokens: api/stac_fastapi/sqlalchemy/tokens.md
+      - transactions: api/stac_fastapi/sqlalchemy/transactions.md
+      - version: api/stac_fastapi/sqlalchemy/version.md
+    - stac_fastapi.types:
+      - core: api/stac_fastapi/types/core.md
+      - config: api/stac_fastapi/types/config.md
+      - errors: api/stac_fastapi/types/errors.md
+      - extension: api/stac_fastapi/types/extension.md
+      - index: api/stac_fastapi/types/index.md
+      - search: api/stac_fastapi/types/search.md
+      - version: api/stac_fastapi/types/version.md
   - Development - Contributing: 'contributing.md'
   - Release Notes: 'release-notes.md'
 

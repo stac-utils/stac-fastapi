@@ -28,7 +28,8 @@ target_metadata = None
 
 def get_connection_url() -> str:
     """
-    Get connection URL from environment variables (see `.env.example`)
+    Get connection URL from environment variables
+    (see environment variables set in docker-compose)
     """
     postgres_user = os.environ["POSTGRES_USER"]
     postgres_pass = os.environ["POSTGRES_PASS"]
