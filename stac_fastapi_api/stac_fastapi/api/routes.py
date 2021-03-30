@@ -85,7 +85,7 @@ def create_async_endpoint(
             request_data: request_model = Depends(),  # type:ignore
         ):
             """Endpoint."""
-            resp = func(
+            resp = await func(
                 request=request, **request_data.kwargs()  # type:ignore
             )
             return resp
@@ -97,7 +97,7 @@ def create_async_endpoint(
             request_data: request_model,  # type:ignore
         ):
             """Endpoint."""
-            resp = func(request_data, request=request)
+            resp = await func(request_data, request=request)
             return resp
 
     return _endpoint
