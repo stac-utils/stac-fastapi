@@ -1,6 +1,6 @@
 """tiles extension."""
 import abc
-from typing import List, Optional, Union
+from typing import Callable, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
@@ -12,7 +12,7 @@ from starlette.requests import Request
 from starlette.responses import HTMLResponse, RedirectResponse
 
 from stac_fastapi.api.models import ItemUri
-from stac_fastapi.api.routes import create_endpoint_with_depends
+from stac_fastapi.api.routes import create_endpoint
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
 
@@ -165,6 +165,7 @@ class TilesExtension(ApiExtension):
 
     client: BaseTilesClient = attr.ib()
     route_prefix: str = attr.ib(default="/titiler")
+    endpoint_factory: Callable = attr.ib(default=create_endpoint)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -202,6 +203,6 @@ class TilesExtension(ApiExtension):
             response_model_exclude_none=True,
             response_model_exclude_unset=True,
             methods=["GET"],
-            endpoint=create_endpoint_with_depends(self.client.get_item_tiles, ItemUri),
+            endpoint=self.endpoint_factory(self.client.get_item_tiles, ItemUri),
             tags=["OGC Tiles"],
         )
