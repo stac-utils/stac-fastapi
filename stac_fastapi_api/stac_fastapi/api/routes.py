@@ -9,7 +9,7 @@ from stac_fastapi.api.models import APIRequest
 
 
 def create_endpoint(
-    func: Callable, request_model: Type[Union[APIRequest, BaseModel]]
+    func: Callable, request_model: Union[Type[APIRequest], Type[BaseModel]]
 ) -> Callable:
     """Create a FastAPI endpoint.
 
@@ -57,7 +57,7 @@ def create_endpoint(
 
 
 def create_async_endpoint(
-    func: Callable, request_model: Type[Union[APIRequest, BaseModel]]
+    func: Callable, request_model: Union[Type[APIRequest], Type[BaseModel]]
 ) -> Callable:
     """Create a FastAPI endpoint.
 
