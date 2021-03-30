@@ -31,7 +31,7 @@ def create_endpoint(
     Returns:
         callable: fastapi route which may be added to a router/application
     """
-    if isinstance(request_model, APIRequest):
+    if issubclass(request_model, APIRequest):
 
         def _endpoint(
             request: Request,
@@ -78,7 +78,7 @@ def create_async_endpoint(
     Returns:
         callable: fastapi route which may be added to a router/application
     """
-    if isinstance(request_model, APIRequest):
+    if issubclass(request_model, APIRequest):
 
         async def _endpoint(
             request: Request,
