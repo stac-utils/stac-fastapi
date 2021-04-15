@@ -27,8 +27,7 @@ def create_endpoint_from_model(
     """
 
     def _endpoint(
-        request: Request,
-        request_data: request_model,  # type:ignore
+        request: Request, request_data: request_model,  # type:ignore
     ):
         """Endpoint."""
         resp = func(request_data, request=request)
@@ -38,8 +37,7 @@ def create_endpoint_from_model(
 
 
 def create_endpoint_with_depends(
-    func: Callable,
-    request_model: Type[APIRequest],
+    func: Callable, request_model: Type[APIRequest],
 ) -> Callable:
     """Create a FastAPI endpoint from an `APIRequest` (dataclass).
 
@@ -56,8 +54,7 @@ def create_endpoint_with_depends(
     """
 
     def _endpoint(
-        request: Request,
-        request_data: request_model = Depends(),  # type:ignore
+        request: Request, request_data: request_model = Depends(),  # type:ignore
     ):
         """Endpoint."""
         resp = func(

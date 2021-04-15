@@ -10,16 +10,30 @@ with open("README.md") as f:
 # Get version from stac-fastapi-api
 __version__ = load_source(
     "stac_fastapi.api.version",
-    os.path.join(
-        os.path.dirname(__file__), "stac_fastapi_api/stac_fastapi/api/version.py"
-    ),
+    os.path.join(os.path.dirname(__file__), "stac_fastapi/api/version.py"),
 ).__version__  # type:ignore
 
-install_requires = ["stac-fastapi-api", "stac-fastapi-extensions"]
+install_requires = [
+    "fastapi",
+    "attrs",
+    "shapely",
+    "pydantic[dotenv]",
+    "stac_pydantic==1.3.8",
+    "titiler",
+]
 
 extra_reqs = {
-    "sqlalchemy": ["stac-fastapi-sqlalchemy"],
+    "sqlalchemy": [
+        "sqlakeyset",
+        "geoalchemy2<0.8.0",
+        "sqlalchemy==1.3.23",
+        "shapely",
+        "psycopg2-binary",
+        "alembic",
+        "fastapi-utils",
+    ],
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit", "requests"],
+    "tiles": ["titiler==0.2.*"],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
 }
 

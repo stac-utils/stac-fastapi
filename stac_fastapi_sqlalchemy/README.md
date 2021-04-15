@@ -1,1 +1,0 @@
-# stac-fastapi sqlalchemy
