@@ -24,9 +24,7 @@ def tiles_extension_app(postgres_core, postgres_transactions, load_test_data):
     api = StacApi(
         settings=settings,
         client=postgres_core,
-        extensions=[
-            TilesExtension(TilesClient(postgres_core)),
-        ],
+        extensions=[TilesExtension(TilesClient(postgres_core))],
     )
     with TestClient(api.app) as test_app:
         yield test_app

@@ -113,7 +113,8 @@ class BaseTilesClient(abc.ABC):
             id: stac item id
 
         Returns:
-            A TileSetResource, or a redirect to another endpoint which returns a TileSetResource.
+            A TileSetResource, or a redirect to another endpoint
+            which returns a TileSetResource.
         """
         ...
 
@@ -122,7 +123,8 @@ class BaseTilesClient(abc.ABC):
 class TilesClient(BaseTilesClient):
     """Defines the default Tiles extension used by the application.
 
-    This extension should work with any backend that implements the `BaseCoreClient.get_item` method.  If the accept
+    This extension should work with any backend that implements
+    the `BaseCoreClient.get_item` method.  If the accept
     header is `text/html`, the endpoint will redirect to titiler's web viewer.
     """
 
