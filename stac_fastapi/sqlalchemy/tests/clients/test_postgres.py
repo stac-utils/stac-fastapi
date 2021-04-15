@@ -3,6 +3,7 @@ from typing import Callable
 
 import pytest
 from stac_pydantic import Collection, Item
+from tests.conftest import MockStarletteRequest
 
 from stac_fastapi.extensions.third_party.bulk_transactions import Items
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
@@ -11,7 +12,6 @@ from stac_fastapi.sqlalchemy.transactions import (
     TransactionsClient,
 )
 from stac_fastapi.types.errors import ConflictError, NotFoundError
-from tests.conftest import MockStarletteRequest
 
 
 def test_create_collection(

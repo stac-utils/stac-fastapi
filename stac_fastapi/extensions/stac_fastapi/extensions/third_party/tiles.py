@@ -44,7 +44,8 @@ class TileLinks:
     def __attrs_post_init__(self):
         """Post init handler."""
         self.item_uri = urljoin(
-            self.base_url, f"/collections/{self.collection_id}/items/{self.item_id}",
+            self.base_url,
+            f"/collections/{self.collection_id}/items/{self.item_id}",
         )
 
     def tiles(self) -> OGCTileLink:
@@ -64,7 +65,8 @@ class TileLinks:
         """Create viewer link."""
         return OGCTileLink(
             href=urljoin(
-                self.base_url, f"{self.route_prefix}/viewer?url={self.item_uri}",
+                self.base_url,
+                f"{self.route_prefix}/viewer?url={self.item_uri}",
             ),
             rel=Relations.alternate,
             type=MimeTypes.html,
@@ -75,7 +77,8 @@ class TileLinks:
         """Create tilejson link."""
         return OGCTileLink(
             href=urljoin(
-                self.base_url, f"{self.route_prefix}/tilejson.json?url={self.item_uri}",
+                self.base_url,
+                f"{self.route_prefix}/tilejson.json?url={self.item_uri}",
             ),
             rel=Relations.alternate,
             type=MimeTypes.json,
