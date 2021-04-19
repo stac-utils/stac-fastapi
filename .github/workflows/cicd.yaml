@@ -47,13 +47,25 @@ jobs:
         run: |
           python -m pip install --upgrade pipenv wheel
 
-      - name: Install dependencies
+      - name: Install core api
         run: |
-          pipenv install --deploy --dev
+          pip install ./stac_fastapi/api[dev]
+
+      - name: Install types
+        run: |
+          pip install ./stac_fastapi/types[dev]
+
+      - name: Install Extensions
+        run: |
+          pip install ./stac_fastapi/extensions[dev,tiles]
+
+      - name: Install sqlalchemy stac-fastapi
+        run: |
+          pip install ./stac_fastapi/sqlalchemy[dev,server]
 
       - name: Run migration
         run: |
-          pipenv run alembic upgrade head
+          cd stac_fastapi/sqlalchemy && alembic upgrade head
         env:
           POSTGRES_USER: username
           POSTGRES_PASS: password
