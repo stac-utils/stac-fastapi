@@ -1,6 +1,6 @@
 """FastAPI application using PGStac."""
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.api.routes import create_async_endpoint
+from stac_fastapi.api.routes import create_endpoint
 from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.db import connect_to_db, close_db_connection
 from stac_fastapi.pgstac.core import CoreCrudClient
@@ -20,13 +20,13 @@ settings = Settings()
 api = StacApi(
     settings=settings,
     extensions=[
-        TransactionExtension(client=TransactionsClient, endpoint_factory=create_async_endpoint),
+        TransactionExtension(client=TransactionsClient, endpoint_factory=create_endpoint),
         QueryExtension(),
         SortExtension(),
         FieldsExtension()
     ],
     client=CoreCrudClient(),
-    endpoint_factory=create_async_endpoint,
+    endpoint_factory=create_endpoint,
     search_request_model=PgstacSearch,
 )
 app = api.app

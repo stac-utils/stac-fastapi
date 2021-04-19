@@ -16,10 +16,7 @@ from stac_fastapi.api.models import (
     SearchGetRequest,
     _create_request_model,
 )
-from stac_fastapi.api.routes import (
-    create_endpoint_from_model,
-    create_endpoint_with_depends,
-)
+from stac_fastapi.api.routes import create_endpoint
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
 from stac_fastapi.extensions.core import FieldsExtension
@@ -102,7 +99,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_endpoint_with_depends(
+            endpoint=create_endpoint(
                 self.client.landing_page, EmptyRequest
             ),
         )
@@ -113,7 +110,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_endpoint_with_depends(
+            endpoint=create_endpoint(
                 self.client.conformance, EmptyRequest
             ),
         )
@@ -124,7 +121,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_endpoint_with_depends(self.client.get_item, ItemUri),
+            endpoint=create_endpoint(self.client.get_item, ItemUri),
         )
         router.add_api_route(
             name="Search",
@@ -133,7 +130,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=create_endpoint_from_model(
+            endpoint=create_endpoint(
                 self.client.post_search, search_request_model
             ),
         ),
@@ -144,7 +141,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_endpoint_with_depends(
+            endpoint=create_endpoint(
                 self.client.get_search, SearchGetRequest
             ),
         )
@@ -155,7 +152,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_endpoint_with_depends(
+            endpoint=create_endpoint(
                 self.client.all_collections, EmptyRequest
             ),
         )
@@ -166,7 +163,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_endpoint_with_depends(
+            endpoint=create_endpoint(
                 self.client.get_collection, CollectionUri
             ),
         )
@@ -177,7 +174,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_endpoint_with_depends(
+            endpoint=create_endpoint(
                 self.client.item_collection, ItemCollectionUri
             ),
         )
@@ -190,7 +187,7 @@ class StacApi:
 
         # TODO: parametrize
         openapi_schema = get_openapi(
-            title="Arturo STAC API", version="0.1", routes=self.app.routes
+            title="STAC FASTAPI", version="0.1", routes=self.app.routes
         )
 
         self.app.openapi_schema = openapi_schema

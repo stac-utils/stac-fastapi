@@ -9,7 +9,7 @@ from enum import auto
 from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 
-from pydantic import Field, ValidationError, root_validator
+from pydantic import Field, ValidationError, root_validator, validator
 from pydantic.error_wrappers import ErrorWrapper
 from stac_pydantic.api import Search
 from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
@@ -91,17 +91,23 @@ class FieldsExtension(FieldsBase):
         }
 
 
-class STACSearch(Search):
+class PgstacSearch(Search):
     """Search model."""
 
     # Make collections optional, default to searching all collections if none are provided
     collections: Optional[List[str]] = None
+    ids: Optional[List[str]] = None
     # Override default field extension to include default fields and pydantic includes/excludes factory
-    field: FieldsExtension = Field(FieldsExtension(), alias="fields")
+    field: FieldsExtension = Field(FieldsExtension(), alias="field")
     # Override query extension with supported operators
     query: Optional[Dict[str, Dict[Operator, Any]]]
     token: Optional[str] = None
+    datetime: Optional[str] = None
 
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:
         return values
+
+    @validator("datetime")
+    def validate_datetime(cls, v):
+        return v

@@ -23,3 +23,14 @@ docker-shell:
 .PHONY: test
 test:
 	$(run_docker) pytest
+
+.PHONY: pybase
+pybase:
+	pip install wheel && \
+	pip install -e ./stac_fastapi/api[dev] && \
+	pip install -e ./stac_fastapi/types[dev] && \
+	pip install -e ./stac_fastapi/extensions[dev,tiles]
+
+.PHONY: pgstac
+pgstac: pybase
+	pip install -e ./stac_fastapi/pgstac[dev,server]
