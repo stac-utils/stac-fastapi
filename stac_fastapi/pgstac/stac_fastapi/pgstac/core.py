@@ -72,7 +72,7 @@ class CoreCrudClient(BaseCoreClient):
                 ),
             ],
         )
-        collections = await self.all_collections(request=request)
+        collections = await self.all_collections_func(request=request)
         for coll in collections:
             coll_link = CollectionLinks(
                 collection_id=coll.id, request=request
