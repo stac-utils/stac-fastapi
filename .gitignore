@@ -123,3 +123,6 @@ build.out
 
 # pdocs
 docs/api/*
+
+# Direnv
+.envrc

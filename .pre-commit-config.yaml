@@ -1,19 +1,19 @@
 repos:
     - repo: https://github.com/PyCQA/isort
-      rev: 5.4.2
+      rev: 5.8.0
       hooks:
         - id: isort
           language_version: python3.8
     -
         repo: https://github.com/psf/black
-        rev: stable
+        rev: 20.8b1
         hooks:
             - id: black
               args: ['--safe']
               language_version: python3.8
     -
-        repo: https://github.com/pre-commit/pre-commit-hooks
-        rev: v2.4.0
+        repo: https://gitlab.com/pycqa/flake8
+        rev: 3.9.0
         hooks:
             - id: flake8
               language_version: python3.8
@@ -25,15 +25,18 @@ repos:
     -
         repo: https://github.com/chewse/pre-commit-mirrors-pydocstyle
         # 2.1.1
-        rev: 22d3ccf6cf91ffce3b16caa946c155778f0cb20f
+        rev: v2.1.1
         hooks:
             - id: pydocstyle
               language_version: python3.8
+              exclude: '.*(test|alembic|scripts).*'
               args: [
                  # Check for docstring presence only
                  '--select=D1',
+
+              ]
                  # Don't require docstrings for tests
-                 '--match=(?!test).*\.py']
+                 # '--match=(?!test).*\.py']
 #    -
 #        repo: https://github.com/pre-commit/mirrors-mypy
 #        rev: v0.770
@@ -43,11 +46,12 @@ repos:
 #                args: [--no-strict-optional, --ignore-missing-imports]
     -
         repo: https://github.com/PyCQA/pydocstyle
-        rev: 5.1.1
+        rev: 6.0.0
         hooks:
           - id: pydocstyle
             language_version: python3.8
-            args: [
+            exclude: '.*(test|alembic|scripts).*'
+            #args: [
                 # Don't require docstrings for tests
-                '--match=(?!test|alembic|scripts).*\.py',
-            ]
+                #'--match=(?!test|alembic|scripts).*\.py',
+            #]

@@ -2,8 +2,8 @@ version: '3'
 
 services:
   app:
-    container_name: stac-api
-    image: stac-utils/stac-api
+    container_name: stac-fastapi
+    image: stac-utils/stac-fastapi
     build:
       context: .
       dockerfile: Dockerfile
@@ -40,7 +40,7 @@ services:
       - "5439:5432"
 
   migration:
-    image: stac-utils/stac-api
+    image: stac-utils/stac-fastapi
     environment:
       - ENVIRONMENT=development
       - POSTGRES_USER=username
