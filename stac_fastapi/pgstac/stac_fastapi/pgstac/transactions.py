@@ -14,19 +14,25 @@ from stac_fastapi.pgstac.models import schemas
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_pydantic import Collection, Item, ItemCollection
-from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
+from stac_fastapi.pgstac.models.links import (
+    CollectionLinks,
+    ItemLinks,
+    PagingLinks,
+)
+from fastapi.responses import ORJSONResponse
 
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
+
 
 @attr.s
 class TransactionsClient(BaseTransactionsClient):
     """Transactions extension specific CRUD operations."""
 
-    async def create_item(self, item: schemas.Item = None, **kwargs) -> Item:
+    async def create_item(item: schemas.Item = None, **kwargs) -> Item:
         """Create item."""
         request = kwargs["request"]
-        pool = request.app.state.readpool
+        pool = request.app.state.writepool
         async with pool.acquire() as conn:
             q, p = render(
                 """
@@ -34,93 +40,71 @@ class TransactionsClient(BaseTransactionsClient):
                 """,
                 item=item.json(),
             )
-            outitem = await conn.fetch(q, *p)
-            logger.info(outitem)
-            feature = Item.construct(**outitem)
-            feature.links = await ItemLinks(
-                collection_id=feature.collection,
-                item_id=feature.id,
-                request=request,
-            ).get_links(extra_links=feature.links)
-            logger.info(feature)
-        return feature
+            await conn.fetch(q, *p)
+
+        return item
 
     async def create_collection(
-        self, collection: schemas.Collection, **kwargs
+        collection: schemas.Collection, **kwargs
     ) -> schemas.Collection:
         """Create collection."""
+        logger.info(kwargs)
         request = kwargs["request"]
-        pool = request.app.state.readpool
+
+        pool = request.app.state.writepool
         async with pool.acquire() as conn:
             q, p = render(
                 """
-                SELECT * FROM create_collections(:collection::text::jsonb);
+                SELECT * FROM create_collection(:collection::text::jsonb);
                 """,
                 collection=collection.json(),
             )
-            out = await conn.fetch(q, *p)
-            logger.info(out)
-            newcollection = out[0]
-        return newcollection
+            await conn.fetchval(q, *p)
+
+        return collection
 
     async def update_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
         """Update item."""
         return await self.create_item(model, **kwargs)
 
     async def update_collection(
-        self, model: schemas.Collection, **kwargs
+        self, request_data: schemas.Collection, **kwargs
     ) -> schemas.Collection:
         """Update collection."""
-        return await self.create_collection(model, **kwargs)
+        return await self.create_collection(request_data, **kwargs)
 
-    async def delete_item(self, id: str, **kwargs) -> schemas.Item:
-        """Delete item."""
+    async def delete_item(id: str, **kwargs) -> schemas.Collection:
+        """Delete collection."""
         request = kwargs["request"]
-        pool = request.app.state.readpool
+        pool = request.app.state.writepool
         async with pool.acquire() as conn:
             q, p = render(
                 """
                 DELETE FROM items WHERE id = :id
-                RETURNING *
                 """,
                 id=id,
             )
-            feature = await conn.fetchval(q, *p)
-            logger.info(feature)
-            feature = Item.construct(**feature)
-            feature.links = await ItemLinks(
-                collection_id=feature.collection,
-                item_id=feature.id,
-                request=request,
-            ).get_links()
-        return feature
+            result = await conn.execute(q, *p)
+            if result == "DELETE 0":
+                raise NotFoundError
+            logger.info(result)
 
-    async def delete_collection(self, id: str, **kwargs) -> schemas.Collection:
+        return ORJSONResponse({"pgresponse": result})
+
+    async def delete_collection(id: str, **kwargs) -> schemas.Collection:
         """Delete collection."""
         request = kwargs["request"]
-        pool = request.app.state.readpool
+        pool = request.app.state.writepool
         async with pool.acquire() as conn:
             q, p = render(
                 """
                 DELETE FROM collections WHERE id = :id
-                RETURNING *
                 """,
                 id=id,
             )
-            collection = await conn.fetchval(q, *p)
+            result = await conn.execute(q, *p)
+            if result == "DELETE 0":
+                raise NotFoundError
+            logger.info(result)
 
-        return feature
-
-
-
-@attr.s
-class BulkTransactionsClient(BaseBulkTransactionsClient):
-    """Postgres bulk transactions."""
-
-    def bulk_item_insert(
-        self, items: schemas.Items, chunk_size: Optional[int] = None, **kwargs
-    ) -> str:
-        """
-        """
-        # Use items.items because schemas.Items is a model with an items key
-        return None
+        return ORJSONResponse({"pgresponse": result})

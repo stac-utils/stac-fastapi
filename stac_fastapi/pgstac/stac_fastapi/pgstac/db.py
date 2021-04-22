@@ -35,7 +35,8 @@ async def connect_to_db(app: FastAPI) -> None:
         max_size=settings.db_max_conn_size,
         max_queries=settings.db_max_queries,
         max_inactive_connection_lifetime=settings.db_max_inactive_conn_lifetime,
-        init=con_init
+        init=con_init,
+        server_settings={'search_path': 'pgstac,public', 'application_name': 'pgstac-reader'},
     )
     logger.info("Connection to read pool established")
     logger.info(
@@ -48,9 +49,11 @@ async def connect_to_db(app: FastAPI) -> None:
         max_size=settings.db_max_conn_size,
         max_queries=settings.db_max_queries,
         max_inactive_connection_lifetime=settings.db_max_inactive_conn_lifetime,
-        init=con_init
+        init=con_init,
+        server_settings={'search_path': 'pgstac,public', 'application_name': 'pgstac-writer'},
     )
     logger.info("Connection to write pool established")
+
 
 
 async def close_db_connection(app: FastAPI) -> None:

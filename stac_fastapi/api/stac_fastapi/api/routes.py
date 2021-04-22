@@ -67,7 +67,6 @@ def create_endpoint(
                 request_data: request_model = Depends(),  # type:ignore
             ):
                 """Endpoint."""
-                logger.info(f"in apirequest submodel request:{request} request_data:{request_data}")
                 resp = await func(
                     request=request, **request_data.kwargs()  # type:ignore
                 )
@@ -80,7 +79,6 @@ def create_endpoint(
                 request_data: request_model,  # type:ignore
             ):
                 """Endpoint."""
-                logger.info(f"in apirequest submodel request:{request} request_data:{request_data}")
                 resp = await func(request_data, request=request)
                 return resp
 
