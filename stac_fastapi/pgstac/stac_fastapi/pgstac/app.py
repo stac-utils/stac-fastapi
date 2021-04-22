@@ -4,7 +4,7 @@ from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.db import connect_to_db, close_db_connection
 from stac_fastapi.pgstac.core import CoreCrudClient
 from stac_fastapi.pgstac.transactions import TransactionsClient
-import uvicorn
+from mangum import Mangum
 
 from stac_fastapi.extensions.core import (
     FieldsExtension,
@@ -37,4 +37,7 @@ async def shutdown_event():
     await close_db_connection(app)
 
 if __name__ == "__main__":
+    import uvicorn
     uvicorn.run("stac_fastapi.pgstac.app:app", host="0.0.0.0", port=8000, log_level="info", reload=True)
+
+handler = Mangum(app)

@@ -25,6 +25,7 @@ install_requires = [
     "asyncpg",
     "buildpg",
     "shapely",
+    "mangum",
 ]
 
 extra_reqs = {
