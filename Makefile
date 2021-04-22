@@ -23,3 +23,18 @@ docker-shell:
 .PHONY: test
 test:
 	$(run_docker) pytest
+
+.PHONY: pybase-install
+pybase-install:
+	pip install wheel && \
+	pip install -e ./stac_fastapi/api[dev] && \
+	pip install -e ./stac_fastapi/types[dev] && \
+	pip install -e ./stac_fastapi/extensions[dev,tiles]
+
+.PHONY: pgstac-install
+pgstac-install: pybase-install
+	pip install -e ./stac_fastapi/pgstac[dev,server]
+
+.PHONY: sqlalchemy-install
+sqlalchemy-install: pybase-install
+	pip install -e ./stac_fastapi/sqlalchemy[dev,server]

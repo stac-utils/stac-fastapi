@@ -4,10 +4,7 @@ from fastapi import APIRouter, FastAPI
 from stac_pydantic import Collection, Item
 
 from stac_fastapi.api.models import CollectionUri, ItemUri, _create_request_model
-from stac_fastapi.api.routes import (
-    create_endpoint_from_model,
-    create_endpoint_with_depends,
-)
+from stac_fastapi.api.routes import create_endpoint
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
 
@@ -53,7 +50,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=create_endpoint_from_model(
+            endpoint=create_endpoint(
                 self.client.create_item, item_request_model
             ),
         )
@@ -64,7 +61,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_endpoint_from_model(
+            endpoint=create_endpoint(
                 self.client.update_item, item_request_model
             ),
         )
@@ -75,7 +72,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=create_endpoint_with_depends(self.client.delete_item, ItemUri),
+            endpoint=create_endpoint(self.client.delete_item, ItemUri),
         )
         router.add_api_route(
             name="Create Collection",
@@ -84,7 +81,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=create_endpoint_from_model(
+            endpoint=create_endpoint(
                 self.client.create_collection, collection_request_model
             ),
         )
@@ -95,7 +92,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_endpoint_from_model(
+            endpoint=create_endpoint(
                 self.client.update_collection, collection_request_model
             ),
         )
@@ -106,7 +103,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=create_endpoint_with_depends(
+            endpoint=create_endpoint(
                 self.client.delete_collection, CollectionUri
             ),
         )
