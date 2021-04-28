@@ -14,6 +14,7 @@ jobs:
   build:
     name: Deploy docs
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout master
         uses: actions/checkout@v2
@@ -40,7 +41,14 @@ jobs:
             --exclude_source \
             --overwrite \
             stac_fastapi
-
+        env:
+          POSTGRES_USER: username
+          POSTGRES_PASS: password
+          POSTGRES_DBNAME: postgis
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_HOST_READER: localhost
+          POSTGRES_HOST_WRITER: localhost
 
       - name: Deploy docs
         run: mkdocs gh-deploy --force
