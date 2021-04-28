@@ -26,12 +26,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install stac_fastapi_types/
-          python -m pip install stac_fastapi_extensions/
-          python -m pip install stac_fastapi_api/
-          python -m pip install stac_fastapi_sqlalchemy/
-          python -m pip install stac_fastapi_server/
-          python -m pip install -e .["docs"]
+          python -m pip install -e \
+            stac_fastapi/api \
+            stac_fastapi/types \
+            stac_fastapi/extensions \
+            stac_fastapi/sqlalchemy
+          python -m pip install mkdocs mkdocs-material pdocs
 
       - name: update API docs
         run: |
