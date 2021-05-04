@@ -3,23 +3,15 @@
 import json
 import logging
 from typing import Dict, Optional, Type
-from buildpg import render
-import attr
 
-# TODO: This import should come from `backend` module
-from stac_fastapi.extensions.third_party.bulk_transactions import (
-    BaseBulkTransactionsClient,
-)
+import attr
+from buildpg import render
+from fastapi.responses import ORJSONResponse
+from stac_pydantic import Item
+
 from stac_fastapi.pgstac.models import schemas
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_pydantic import Collection, Item, ItemCollection
-from stac_fastapi.pgstac.models.links import (
-    CollectionLinks,
-    ItemLinks,
-    PagingLinks,
-)
-from fastapi.responses import ORJSONResponse
 
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)

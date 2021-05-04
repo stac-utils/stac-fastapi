@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Type
 
 import attr
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.openapi.utils import get_openapi
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
@@ -187,7 +188,7 @@ class StacApi:
 
         # TODO: parametrize
         openapi_schema = get_openapi(
-            title="STAC FASTAPI", version="0.1", routes=self.app.routes
+            title="STAC FastAPI", version="0.1", routes=self.app.routes
         )
 
         self.app.openapi_schema = openapi_schema
@@ -234,3 +235,6 @@ class StacApi:
 
         # customize openapi
         self.app.openapi = self.customize_openapi
+
+        # add gzip middleware
+        self.app.add_middleware(GZipMiddleware)
