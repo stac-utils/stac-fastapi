@@ -60,16 +60,16 @@ class BaseLinks:
 
     @property
     def base_url(self):
-        """get the base url."""
+        """Get the base url."""
         return str(self.request.base_url)
 
     @property
     def url(self):
-        """get the current request url"""
+        """Get the current request url"""
         return str(self.request.url)
 
     def resolve(self, url):
-        """resolve url to the current request url"""
+        """Resolve url to the current request url"""
         return urljoin(str(self.base_url), str(url))
 
     def link_self(self) -> Link:
@@ -117,7 +117,7 @@ class PagingLinks(BaseLinks):
     prev: str = attr.ib(kw_only=True, default=None)
 
     def link_next(self) -> PaginationLink:
-        """create link for next page"""
+        """Create link for next page"""
         if self.next is not None:
             method = self.request.method
             if method == "GET":
@@ -141,7 +141,7 @@ class PagingLinks(BaseLinks):
                 )
 
     def link_prev(self) -> PaginationLink:
-        """create link for previous page"""
+        """Create link for previous page"""
         if self.prev is not None:
             method = self.request.method
             if method == "GET":
@@ -211,7 +211,7 @@ class ItemLinks(CollectionLinksBase):
     item_id: str = attr.ib()
 
     def link_self(self) -> Link:
-        """create the self link"""
+        """Create the self link"""
         return Link(
             rel=Relations.self,
             type=MimeTypes.geojson,
