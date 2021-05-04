@@ -77,8 +77,6 @@ class BulkTransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=create_endpoint(
-                self.client.bulk_item_insert, items_request_model
-            ),
+            endpoint=create_endpoint(self.client.bulk_item_insert, items_request_model),
         )
         app.include_router(router, tags=["Bulk Transaction Extension"])

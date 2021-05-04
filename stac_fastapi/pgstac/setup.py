@@ -59,7 +59,7 @@ setup(
     install_requires=install_requires,
     tests_require=extra_reqs["dev"],
     extras_require=extra_reqs,
-    entry_points = {
-        'console_scripts': ['stac-fastapi-pgstac=stac_fastapi.pgstac.app:run']
-    }
+    entry_points={
+        "console_scripts": ["stac-fastapi-pgstac=stac_fastapi.pgstac.app:run"]
+    },
 )

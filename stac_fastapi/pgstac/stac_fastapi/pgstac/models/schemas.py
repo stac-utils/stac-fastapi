@@ -10,7 +10,6 @@ from stac_pydantic import Item as ItemBase
 from stac_pydantic.api.search import DATETIME_RFC339
 from stac_pydantic.shared import Link
 
-
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
 

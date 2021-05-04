@@ -1,21 +1,25 @@
 """link helpers."""
 
+import logging
 from abc import get_cache_token
-from typing import Dict, List, Optional, Union
-from urllib.parse import quote, urljoin
-from urllib.parse import urlparse, ParseResult, parse_qs, urlencode, unquote
-
 from pathlib import Path
-from starlette.requests import Request
+from typing import Dict, List, Optional, Union
+from urllib.parse import (
+    ParseResult,
+    parse_qs,
+    quote,
+    unquote,
+    urlencode,
+    urljoin,
+    urlparse,
+)
 
 import attr
-from stac_pydantic.shared import Link, MimeTypes, Relations
 from stac_pydantic.api.extensions.paging import PaginationLink
-
+from stac_pydantic.shared import Link, MimeTypes, Relations
+from starlette.requests import Request
 
 from stac_fastapi.extensions.third_party.tiles import OGCTileLink
-
-import logging
 
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
@@ -31,6 +35,7 @@ def filter_links(links: List[Dict]) -> List[Dict]:
 
 
 def merge_params(url: str, newparams: Dict) -> str:
+    """Merge url parameters."""
     u = urlparse(url)
     params = parse_qs(u.query)
     params.update(newparams)
@@ -55,13 +60,16 @@ class BaseLinks:
 
     @property
     def base_url(self):
+        """get the base url."""
         return str(self.request.base_url)
 
     @property
     def url(self):
+        """get the current request url"""
         return str(self.request.url)
 
     def resolve(self, url):
+        """resolve url to the current request url"""
         return urljoin(str(self.base_url), str(url))
 
     def link_self(self) -> Link:
@@ -70,9 +78,7 @@ class BaseLinks:
 
     def link_root(self) -> Link:
         """Return the catalog root."""
-        return Link(
-            rel=Relations.root, type=MimeTypes.json, href=self.base_url
-        )
+        return Link(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
 
     def create_links(self) -> List[Union[PaginationLink, Link]]:
         """Return all inferred links."""
@@ -87,6 +93,10 @@ class BaseLinks:
     async def get_links(
         self, extra_links: List[Union[PaginationLink, Link]] = []
     ) -> List[Union[PaginationLink, Link]]:
+        """
+        Get the links object for a stac resource by iterating through
+        available methods on this class that start with link_
+        """
         if self.request.method == "POST":
             self.request.postbody = await self.request.json()
         # join passed in links with generated links
@@ -95,7 +105,7 @@ class BaseLinks:
         if extra_links is not None and len(extra_links) >= 1:
             for link in extra_links:
                 if link.rel not in INFERRED_LINK_RELS:
-                    link.href=self.resolve(link.href)
+                    link.href = self.resolve(link.href)
                     links.append(link)
         return links
 
@@ -107,10 +117,11 @@ class PagingLinks(BaseLinks):
     prev: str = attr.ib(kw_only=True, default=None)
 
     def link_next(self) -> PaginationLink:
+        """create link for next page"""
         if self.next is not None:
             method = self.request.method
             if method == "GET":
-                href=merge_params(self.url, {'token':f"next:{self.next}"})
+                href = merge_params(self.url, {"token": f"next:{self.next}"})
                 link = PaginationLink(
                     rel=Relations.next,
                     type=MimeTypes.json,
@@ -130,10 +141,11 @@ class PagingLinks(BaseLinks):
                 )
 
     def link_prev(self) -> PaginationLink:
+        """create link for previous page"""
         if self.prev is not None:
             method = self.request.method
             if method == "GET":
-                href=merge_params(self.url, {'token':f"prev:{self.prev}"})
+                href = merge_params(self.url, {"token": f"prev:{self.prev}"})
                 return PaginationLink(
                     rel=Relations.previous,
                     type=MimeTypes.json,
@@ -159,6 +171,7 @@ class CollectionLinksBase(BaseLinks):
     collection_id: str = attr.ib()
 
     def collection_link(self, rel=Relations.collection) -> Link:
+        """create a link to a collection"""
         return Link(
             rel=rel,
             type=MimeTypes.json,
@@ -198,6 +211,7 @@ class ItemLinks(CollectionLinksBase):
     item_id: str = attr.ib()
 
     def link_self(self) -> Link:
+        """create the self link"""
         return Link(
             rel=Relations.self,
             type=MimeTypes.geojson,
@@ -257,9 +271,7 @@ class TileLinks:
     def link_viewer(self) -> OGCTileLink:
         """Create viewer link."""
         return OGCTileLink(
-            href=urljoin(
-                self.base_url, f"/titiler/viewer?url={self.item_uri}"
-            ),
+            href=urljoin(self.base_url, f"/titiler/viewer?url={self.item_uri}"),
             rel=Relations.alternate,
             type=MimeTypes.html,
             title="viewer",
@@ -268,9 +280,7 @@ class TileLinks:
     def link_tilejson(self) -> OGCTileLink:
         """Create tilejson link."""
         return OGCTileLink(
-            href=urljoin(
-                self.base_url, f"/titiler/tilejson.json?url={self.item_uri}"
-            ),
+            href=urljoin(self.base_url, f"/titiler/tilejson.json?url={self.item_uri}"),
             rel=Relations.alternate,
             type=MimeTypes.json,
             title="tilejson",

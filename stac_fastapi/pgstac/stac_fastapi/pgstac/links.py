@@ -1,21 +1,25 @@
 """link helpers."""
 
+import logging
 from abc import get_cache_token
-from typing import Dict, List, Optional, Union
-from urllib.parse import quote, urljoin
-from urllib.parse import urlparse, ParseResult, parse_qs, urlencode, unquote
-
 from pathlib import Path
-from starlette.requests import Request
+from typing import Dict, List, Optional, Union
+from urllib.parse import (
+    ParseResult,
+    parse_qs,
+    quote,
+    unquote,
+    urlencode,
+    urljoin,
+    urlparse,
+)
 
 import attr
-from stac_pydantic.shared import Link, MimeTypes, Relations
 from stac_pydantic.api.extensions.paging import PaginationLink
-
+from stac_pydantic.shared import Link, MimeTypes, Relations
+from starlette.requests import Request
 
 from stac_fastapi.extensions.third_party.tiles import OGCTileLink
-
-import logging
 
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
@@ -70,9 +74,7 @@ class BaseLinks:
 
     def link_root(self) -> Link:
         """Return the catalog root."""
-        return Link(
-            rel=Relations.root, type=MimeTypes.json, href=self.base_url
-        )
+        return Link(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
 
     def create_links(self) -> List[Union[PaginationLink, Link]]:
         """Return all inferred links."""
@@ -95,7 +97,7 @@ class BaseLinks:
         if extra_links is not None and len(extra_links) >= 1:
             for link in extra_links:
                 if link.rel not in INFERRED_LINK_RELS:
-                    link.href=self.resolve(link.href)
+                    link.href = self.resolve(link.href)
                     links.append(link)
         return links
 
@@ -110,7 +112,7 @@ class PagingLinks(BaseLinks):
         if self.next is not None:
             method = self.request.method
             if method == "GET":
-                href=merge_params(self.url, {'token':f"next:{self.next}"})
+                href = merge_params(self.url, {"token": f"next:{self.next}"})
                 link = PaginationLink(
                     rel=Relations.next,
                     type=MimeTypes.json,
@@ -133,7 +135,7 @@ class PagingLinks(BaseLinks):
         if self.prev is not None:
             method = self.request.method
             if method == "GET":
-                href=merge_params(self.url, {'token':f"prev:{self.prev}"})
+                href = merge_params(self.url, {"token": f"prev:{self.prev}"})
                 return PaginationLink(
                     rel=Relations.previous,
                     type=MimeTypes.json,
@@ -257,9 +259,7 @@ class TileLinks:
     def link_viewer(self) -> OGCTileLink:
         """Create viewer link."""
         return OGCTileLink(
-            href=urljoin(
-                self.base_url, f"/titiler/viewer?url={self.item_uri}"
-            ),
+            href=urljoin(self.base_url, f"/titiler/viewer?url={self.item_uri}"),
             rel=Relations.alternate,
             type=MimeTypes.html,
             title="viewer",
@@ -268,9 +268,7 @@ class TileLinks:
     def link_tilejson(self) -> OGCTileLink:
         """Create tilejson link."""
         return OGCTileLink(
-            href=urljoin(
-                self.base_url, f"/titiler/tilejson.json?url={self.item_uri}"
-            ),
+            href=urljoin(self.base_url, f"/titiler/tilejson.json?url={self.item_uri}"),
             rel=Relations.alternate,
             type=MimeTypes.json,
             title="tilejson",

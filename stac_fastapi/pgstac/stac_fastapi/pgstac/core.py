@@ -1,26 +1,23 @@
 """Item crud client."""
 import logging
+import re
 from datetime import datetime
+from time import time
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
-import re
-import orjson
+
 import attr
+import orjson
 from buildpg import render
+from fastapi.responses import ORJSONResponse
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.shared import Link, MimeTypes, Relations
 
-from stac_fastapi.pgstac.models.links import (
-    CollectionLinks,
-    ItemLinks,
-    PagingLinks,
-)
+from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
+from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.pgstac.types.search import PgstacSearch
-from time import time
-from fastapi.responses import ORJSONResponse
 
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
@@ -126,11 +123,11 @@ class CoreCrudClient(BaseCoreClient):
                 id=id,
             )
             collection = await conn.fetchval(q, *p)
-        links = await CollectionLinks(
-            collection_id=id, request=request
-        ).get_links()
+        links = await CollectionLinks(collection_id=id, request=request).get_links()
         collection["links"] = links
-        return ORJSONResponse(Collection.construct(**collection).dict(exclude_none=True))
+        return ORJSONResponse(
+            Collection.construct(**collection).dict(exclude_none=True)
+        )
 
     async def search_base(
         self, search_request: PgstacSearch, **kwargs
@@ -187,12 +184,16 @@ class CoreCrudClient(BaseCoreClient):
             if len(include) == 0:
                 include = None
             feature = feature.dict(
-                exclude=exclude, include=include, exclude_none=True,
+                exclude=exclude,
+                include=include,
+                exclude_none=True,
             )
             cleaned_features.append(feature)
         collection.features = cleaned_features
         collection.links = await PagingLinks(
-            request=request, next=next, prev=prev,
+            request=request,
+            next=next,
+            prev=prev,
         ).get_links()
         return collection
 
@@ -295,9 +296,7 @@ class CoreCrudClient(BaseCoreClient):
                 sort_param.append(
                     {
                         "field": sortparts.group(2).strip(),
-                        "direction": "desc"
-                        if sortparts.group(1) == "-"
-                        else "asc",
+                        "direction": "desc" if sortparts.group(1) == "-" else "asc",
                     }
                 )
             base_args["sortby"] = sort_param
@@ -320,6 +319,4 @@ class CoreCrudClient(BaseCoreClient):
         # Do the request
         search_request = PgstacSearch(**base_args)
         logger.info(search_request)
-        return await self.post_search(
-            search_request, request=kwargs["request"]
-        )
+        return await self.post_search(search_request, request=kwargs["request"])

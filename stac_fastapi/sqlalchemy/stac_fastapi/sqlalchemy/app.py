@@ -14,7 +14,6 @@ from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
-from mangum import Mangum
 
 settings = SqlalchemySettings()
 session = Session.create_from_settings(settings)
@@ -22,9 +21,7 @@ api = StacApi(
     settings=settings,
     extensions=[
         TransactionExtension(client=TransactionsClient(session=session)),
-        BulkTransactionExtension(
-            client=BulkTransactionsClient(session=session)
-        ),
+        BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
         FieldsExtension(),
         QueryExtension(),
         SortExtension(),
@@ -48,5 +45,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-
-handler = Mangum(app)

@@ -50,9 +50,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=create_endpoint(
-                self.client.create_item, item_request_model
-            ),
+            endpoint=create_endpoint(self.client.create_item, item_request_model),
         )
         router.add_api_route(
             name="Update Item",
@@ -61,9 +59,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_endpoint(
-                self.client.update_item, item_request_model
-            ),
+            endpoint=create_endpoint(self.client.update_item, item_request_model),
         )
         router.add_api_route(
             name="Delete Item",
@@ -103,8 +99,6 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=create_endpoint(
-                self.client.delete_collection, CollectionUri
-            ),
+            endpoint=create_endpoint(self.client.delete_collection, CollectionUri),
         )
         app.include_router(router, tags=["Transaction Extension"])

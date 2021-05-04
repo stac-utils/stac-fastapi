@@ -61,7 +61,7 @@ setup(
     install_requires=install_requires,
     tests_require=extra_reqs["dev"],
     extras_require=extra_reqs,
-    entry_points = {
-        'console_scripts': ['stac-fastapi-sqlalchemy=stac_fastapi.sqlalchemy.app:run']
-    }
+    entry_points={
+        "console_scripts": ["stac-fastapi-sqlalchemy=stac_fastapi.sqlalchemy.app:run"]
+    },
 )
