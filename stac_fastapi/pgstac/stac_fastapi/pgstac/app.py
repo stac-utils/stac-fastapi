@@ -1,16 +1,15 @@
 """FastAPI application using PGStac."""
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.pgstac.config import Settings
-from stac_fastapi.pgstac.db import connect_to_db, close_db_connection
-from stac_fastapi.pgstac.core import CoreCrudClient
-from stac_fastapi.pgstac.transactions import TransactionsClient
-
 from stac_fastapi.extensions.core import (
     FieldsExtension,
     QueryExtension,
     SortExtension,
     TransactionExtension,
 )
+from stac_fastapi.pgstac.config import Settings
+from stac_fastapi.pgstac.core import CoreCrudClient
+from stac_fastapi.pgstac.db import close_db_connection, connect_to_db
+from stac_fastapi.pgstac.transactions import TransactionsClient
 
 settings = Settings()
 
@@ -29,7 +28,7 @@ app = api.app
 
 @app.on_event("startup")
 async def startup_event():
-    """ Connect to database on startup """
+    """Connect to database on startup"""
     await connect_to_db(app)
 
 
