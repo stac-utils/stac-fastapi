@@ -25,13 +25,13 @@ install_requires = [
     "asyncpg",
     "buildpg",
     "shapely",
-    "mangum",
 ]
 
 extra_reqs = {
     "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit", "requests"],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
     "server": ["uvicorn[standard]>=0.12.0,<0.14.0"],
+    "awslambda": ["mangum"],
 }
 
 
