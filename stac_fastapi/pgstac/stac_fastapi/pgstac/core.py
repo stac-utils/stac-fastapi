@@ -99,6 +99,7 @@ class CoreCrudClient(BaseCoreClient):
         return [Collection.construct(**c) for c in collections]
 
     async def all_collections(self, **kwargs) -> ORJSONResponse:
+        """Get all collections."""
         collections = await self.all_collections_func(**kwargs)
         return ORJSONResponse([c.dict(exclude_none=True) for c in collections])
 
@@ -248,7 +249,6 @@ class CoreCrudClient(BaseCoreClient):
         Returns:
             ItemCollection containing items which match the search criteria.
         """
-
         collection = await self.search_base(search_request, **kwargs)
         return ORJSONResponse(collection.dict(exclude_none=True))
 

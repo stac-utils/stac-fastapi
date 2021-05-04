@@ -1,18 +1,8 @@
 """link helpers."""
 
 import logging
-from abc import get_cache_token
-from pathlib import Path
-from typing import Dict, List, Optional, Union
-from urllib.parse import (
-    ParseResult,
-    parse_qs,
-    quote,
-    unquote,
-    urlencode,
-    urljoin,
-    urlparse,
-)
+from typing import Dict, List, Union
+from urllib.parse import ParseResult, parse_qs, unquote, urlencode, urljoin, urlparse
 
 import attr
 from stac_pydantic.api.extensions.paging import PaginationLink
@@ -65,11 +55,11 @@ class BaseLinks:
 
     @property
     def url(self):
-        """Get the current request url"""
+        """Get the current request url."""
         return str(self.request.url)
 
     def resolve(self, url):
-        """Resolve url to the current request url"""
+        """Resolve url to the current request url."""
         return urljoin(str(self.base_url), str(url))
 
     def link_self(self) -> Link:
@@ -94,8 +84,10 @@ class BaseLinks:
         self, extra_links: List[Union[PaginationLink, Link]] = []
     ) -> List[Union[PaginationLink, Link]]:
         """
+        Generate all the links.
+
         Get the links object for a stac resource by iterating through
-        available methods on this class that start with link_
+        available methods on this class that start with link_.
         """
         if self.request.method == "POST":
             self.request.postbody = await self.request.json()
@@ -112,12 +104,13 @@ class BaseLinks:
 
 @attr.s
 class PagingLinks(BaseLinks):
+    """Create links for paging."""
 
     next: str = attr.ib(kw_only=True, default=None)
     prev: str = attr.ib(kw_only=True, default=None)
 
     def link_next(self) -> PaginationLink:
-        """Create link for next page"""
+        """Create link for next page."""
         if self.next is not None:
             method = self.request.method
             if method == "GET":
@@ -141,7 +134,7 @@ class PagingLinks(BaseLinks):
                 )
 
     def link_prev(self) -> PaginationLink:
-        """Create link for previous page"""
+        """Create link for previous page."""
         if self.prev is not None:
             method = self.request.method
             if method == "GET":
@@ -171,7 +164,7 @@ class CollectionLinksBase(BaseLinks):
     collection_id: str = attr.ib()
 
     def collection_link(self, rel=Relations.collection) -> Link:
-        """create a link to a collection"""
+        """Create a link to a collection."""
         return Link(
             rel=rel,
             type=MimeTypes.json,
@@ -211,7 +204,7 @@ class ItemLinks(CollectionLinksBase):
     item_id: str = attr.ib()
 
     def link_self(self) -> Link:
-        """Create the self link"""
+        """Create the self link."""
         return Link(
             rel=Relations.self,
             type=MimeTypes.geojson,

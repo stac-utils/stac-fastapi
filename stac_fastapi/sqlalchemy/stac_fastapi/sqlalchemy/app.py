@@ -32,6 +32,7 @@ app = api.app
 
 
 def run():
+    """Run the app with uvicorn."""
     import uvicorn
 
     uvicorn.run(

@@ -28,16 +28,18 @@ app = api.app
 
 @app.on_event("startup")
 async def startup_event():
-    """Connect to database on startup"""
+    """Connect to database on startup."""
     await connect_to_db(app)
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
+    """Close database connection."""
     await close_db_connection(app)
 
 
 def run():
+    """Run app from command line using uvicorn if available."""
     try:
         import uvicorn
 
@@ -57,6 +59,7 @@ if __name__ == "__main__":
 
 
 def create_handler(app):
+    """Create a handler to use with AWS Lambda if mangum available."""
     try:
         from mangum import Mangum
 

@@ -16,7 +16,8 @@ logger.setLevel(logging.INFO)
 def create_endpoint(
     func: Callable, request_model: Union[Type[APIRequest], Type[BaseModel]]
 ) -> Callable:
-    """Create a FastAPI endpoint.
+    """
+    Create a FastAPI endpoint.
 
     This endpoint executes code in an external threadpool which is then awaited by the event loop.
     https://fastapi.tiangolo.com/async/#path-operation-functions
@@ -36,7 +37,6 @@ def create_endpoint(
     Returns:
         callable: fastapi route which may be added to a router/application
     """
-
     if not inspect.iscoroutinefunction(func):
         if issubclass(request_model, APIRequest):
 

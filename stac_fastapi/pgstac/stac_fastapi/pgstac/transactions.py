@@ -1,8 +1,6 @@
 """transactions extension client."""
 
-import json
 import logging
-from typing import Dict, Optional, Type
 
 import attr
 from buildpg import render

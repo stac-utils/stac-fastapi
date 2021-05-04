@@ -1,18 +1,20 @@
+"""Database connection handling."""
 import logging
 
 import orjson
 from buildpg import asyncpg
+from fastapi import FastAPI
 
 from stac_fastapi.pgstac.config import Settings
 
 settings = Settings()
 
-from fastapi import FastAPI
 
 logger = logging.getLogger(__name__)
 
 
 async def con_init(conn):
+    """Use orjson for json returns."""
     await conn.set_type_codec(
         "json",
         encoder=orjson.dumps,
@@ -69,6 +71,8 @@ async def close_db_connection(app: FastAPI) -> None:
 
 
 class DB:
+    """DB class that can be used with context manager."""
+
     pool = None
 
     def __init__(
@@ -77,6 +81,7 @@ class DB:
         kwargs=None,
         write: bool = False,
     ):
+        """Init."""
         if self.pool is None:
             if write is False:
                 self.pool = kwargs["request"].app.state.readpool
@@ -84,8 +89,10 @@ class DB:
                 self.pool = kwargs["request"].app.state.writepool
 
     async def __aenter__(self):
+        """Aenter."""
         self.connection = self.pool.acquire()
         return self.connection
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Aexit."""
         await self.pool.release()

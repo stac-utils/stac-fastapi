@@ -4,13 +4,11 @@
 """
 
 import operator
-from dataclasses import dataclass
 from enum import auto
 from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 
-from pydantic import Field, ValidationError, root_validator, validator
-from pydantic.error_wrappers import ErrorWrapper
+from pydantic import Field, root_validator, validator
 from stac_pydantic.api import Search
 from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
 from stac_pydantic.utils import AutoValueEnum
@@ -106,8 +104,10 @@ class PgstacSearch(Search):
 
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:
+        """Pgstac does not require the base validator for query fields."""
         return values
 
     @validator("datetime")
     def validate_datetime(cls, v):
+        """Pgstac does not require the base validator for datetime."""
         return v
