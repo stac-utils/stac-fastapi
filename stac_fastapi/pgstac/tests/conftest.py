@@ -5,9 +5,9 @@ import time
 from typing import Callable, Dict
 
 import asyncpg
-import pypgstac
 import pytest
 from httpx import AsyncClient
+from pypgstac import pypgstac
 from stac_pydantic import Collection, Item
 
 from stac_fastapi.api.app import StacApi
