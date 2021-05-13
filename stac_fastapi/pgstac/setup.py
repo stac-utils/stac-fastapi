@@ -28,7 +28,7 @@ install_requires = [
 ]
 
 extra_reqs = {
-    "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit", "requests"],
+    "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit", "requests", "pypgstac==0.1.6"],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
     "server": ["uvicorn[standard]>=0.12.0,<0.14.0"],
     "awslambda": ["mangum"],

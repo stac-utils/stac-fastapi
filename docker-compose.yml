@@ -31,7 +31,7 @@ services:
 
   database:
     container_name: stac-db
-    image: postgis/postgis:12-3.0
+    image: bitner/pgstac:0.1.7
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
@@ -39,7 +39,7 @@ services:
     ports:
       - "5439:5432"
 
-  migration:
+  sqlalchemy-migration:
     image: stac-utils/stac-fastapi
     environment:
       - ENVIRONMENT=development

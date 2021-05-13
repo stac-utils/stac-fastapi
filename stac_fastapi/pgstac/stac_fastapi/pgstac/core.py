@@ -69,13 +69,14 @@ class CoreCrudClient(BaseCoreClient):
             ],
         )
         collections = await self.all_collections_func(request=request)
-        for coll in collections:
-            coll_link = CollectionLinks(
-                collection_id=coll.id, request=request
-            ).link_self()
-            coll_link.rel = Relations.child
-            coll_link.title = coll.title
-            landing_page.links.append(coll_link)
+        if collections:
+            for coll in collections:
+                coll_link = CollectionLinks(
+                    collection_id=coll.id, request=request
+                ).link_self()
+                coll_link.rel = Relations.child
+                coll_link.title = coll.title
+                landing_page.links.append(coll_link)
         return ORJSONResponse(landing_page.dict(exclude_none=True))
 
     async def conformance(self, **kwargs) -> ConformanceClasses:
@@ -96,7 +97,9 @@ class CoreCrudClient(BaseCoreClient):
                 SELECT * FROM all_collections();
                 """
             )
-        return [Collection.construct(**c) for c in collections]
+        if collections is not None and len(collections)>0:
+            return [Collection.construct(**c) for c in collections]
+        return None
 
     async def all_collections(self, **kwargs) -> ORJSONResponse:
         """Get all collections."""
@@ -124,6 +127,8 @@ class CoreCrudClient(BaseCoreClient):
                 id=id,
             )
             collection = await conn.fetchval(q, *p)
+        if collection is None:
+            raise NotFoundError
         links = await CollectionLinks(collection_id=id, request=request).get_links()
         collection["links"] = links
         return ORJSONResponse(
@@ -170,27 +175,28 @@ class CoreCrudClient(BaseCoreClient):
         cleaned_features = []
         if collection.features is None or len(collection.features) == 0:
             raise NotFoundError("No features found")
+
+
         for feature in collection.features:
             feature = Item.construct(**feature)
-            links = await ItemLinks(
-                collection_id=feature.collection,
-                item_id=feature.id,
-                request=request,
-            ).get_links()
-            feature.links = links
-            exclude = search_request.field.exclude
-            if len(exclude) == 0:
-                exclude = None
-            include = search_request.field.include
-            if len(include) == 0:
-                include = None
-            feature = feature.dict(
-                exclude=exclude,
-                include=include,
-                exclude_none=True,
-            )
+            if 'links' not in search_request.fields.exclude:
+                links = await ItemLinks(
+                    collection_id=feature.collection,
+                    item_id=feature.id,
+                    request=request,
+                ).get_links()
+                feature.links = links
+                exclude = search_request.fields.exclude
+                if len(exclude) == 0:
+                    exclude = None
+                include = search_request.fields.include
+                if len(include) == 0:
+                    include = None
+                feature = feature.dict(
+                    exclude_none=True,
+                )
             cleaned_features.append(feature)
-        collection.features = cleaned_features
+            collection.features = cleaned_features
         collection.links = await PagingLinks(
             request=request,
             next=next,

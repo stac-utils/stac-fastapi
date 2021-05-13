@@ -10,6 +10,7 @@ from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.core import CoreCrudClient
 from stac_fastapi.pgstac.db import close_db_connection, connect_to_db
 from stac_fastapi.pgstac.transactions import TransactionsClient
+from stac_fastapi.pgstac.types.search import PgstacSearch
 
 settings = Settings()
 
@@ -22,6 +23,7 @@ api = StacApi(
         FieldsExtension(),
     ],
     client=CoreCrudClient(),
+    search_request_model=PgstacSearch,
 )
 app = api.app
 

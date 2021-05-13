@@ -1,16 +1,19 @@
 """Database connection handling."""
 import logging
+import os
+from buildpg.logic import Not
 
 import orjson
-from buildpg import asyncpg
+from asyncpg import exceptions
+from buildpg import asyncpg, render
 from fastapi import FastAPI
+from stac_fastapi.types.errors import ConflictError, NotFoundError, ForeignKeyError, DatabaseError
 
 from stac_fastapi.pgstac.config import Settings
-
 settings = Settings()
 
-
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 async def con_init(conn):
@@ -30,36 +33,14 @@ async def con_init(conn):
 
 
 async def connect_to_db(app: FastAPI) -> None:
+    settings = app.state.settings
     """Connect."""
-    logger.info(f"Connecting  read pool to {settings.reader_connection_string}")
-    app.state.readpool = await asyncpg.create_pool(
-        settings.reader_connection_string,
-        min_size=settings.db_min_conn_size,
-        max_size=settings.db_max_conn_size,
-        max_queries=settings.db_max_queries,
-        max_inactive_connection_lifetime=settings.db_max_inactive_conn_lifetime,
-        init=con_init,
-        server_settings={
-            "search_path": "pgstac,public",
-            "application_name": "pgstac-reader",
-        },
+    logger.info(
+        f"Connecting  read pool to {settings.reader_connection_string}"
     )
-    logger.info("Connection to read pool established")
-    logger.info(f"Connecting write pool to {settings.writer_connection_string}")
-
-    app.state.writepool = await asyncpg.create_pool(
-        settings.writer_connection_string,
-        min_size=settings.db_min_conn_size,
-        max_size=settings.db_max_conn_size,
-        max_queries=settings.db_max_queries,
-        max_inactive_connection_lifetime=settings.db_max_inactive_conn_lifetime,
-        init=con_init,
-        server_settings={
-            "search_path": "pgstac,public",
-            "application_name": "pgstac-writer",
-        },
-    )
-    logger.info("Connection to write pool established")
+    db = DB()
+    app.state.readpool = await db.create_pool(settings.reader_connection_string)
+    app.state.writepool = await db.create_pool(settings.reader_connection_string)
 
 
 async def close_db_connection(app: FastAPI) -> None:
@@ -70,29 +51,81 @@ async def close_db_connection(app: FastAPI) -> None:
     logger.info("Connections closed")
 
 
+async def dbfunc(pool, func, arg):
+    try:
+        if isinstance(arg, str):
+            async with pool.acquire() as conn:
+                q, p = render(
+                    f"""
+                        SELECT * FROM {func}(:item::text);
+                        """,
+                    item=arg,
+                )
+                return await conn.fetchval(q, *p)
+        else:
+            async with pool.acquire() as conn:
+                q, p = render(
+                    f"""
+                        SELECT * FROM {func}(:item::text::jsonb);
+                        """,
+                    item=arg.json(),
+                )
+                return await conn.fetchval(q, *p)
+    except exceptions.UniqueViolationError:
+        raise ConflictError
+    except exceptions.NoDataFoundError:
+        raise NotFoundError
+    except exceptions.NotNullViolationError:
+        raise DatabaseError
+    except exceptions.ForeignKeyViolationError:
+        raise ForeignKeyError
+
+
 class DB:
     """DB class that can be used with context manager."""
 
     pool = None
+    write = False
 
-    def __init__(
-        self,
-        pool=None,
-        kwargs=None,
-        write: bool = False,
-    ):
+    def __init__(self, connection_string: str = None):
         """Init."""
-        if self.pool is None:
-            if write is False:
-                self.pool = kwargs["request"].app.state.readpool
-            else:
-                self.pool = kwargs["request"].app.state.writepool
+        self.connection_string = connection_string
+
+    async def create_pool(self, connection_string: str):
+        """Create a connection pool."""
+        pool = await asyncpg.create_pool(
+            connection_string,
+            min_size=settings.db_min_conn_size,
+            max_size=settings.db_max_conn_size,
+            max_queries=settings.db_max_queries,
+            max_inactive_connection_lifetime=settings.db_max_inactive_conn_lifetime,
+            init=con_init,
+            server_settings={
+                "search_path": "pgstac,public",
+                "application_name": "pgstac",
+            },
+        )
+        logger.info("Connection to pool established")
+        return pool
+
+    # async def get_pool(self, write: bool = False):
+    #     """Get a connection pool."""
+    #     if write or self.write:
+    #         self.pool = await self.create_pool(
+    #             settings.writer_connection_string
+    #         )
+    #     else:
+    #         self.pool = await self.create_pool(
+    #             settings.reader_connection_string
+    #         )
+    #     return self.pool
 
     async def __aenter__(self):
         """Aenter."""
-        self.connection = self.pool.acquire()
+        self.pool = await self.create_pool(self.connection_string)
+        self.connection = await self.pool.acquire()
         return self.connection
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Aexit."""
-        await self.pool.release()
+        await self.pool.close()

@@ -26,7 +26,7 @@ from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.search import STACSearch
+from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 
 logger = logging.getLogger(__name__)
 
@@ -243,7 +243,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             base_args["fields"] = {"include": includes, "exclude": excludes}
 
         # Do the request
-        search_request = STACSearch(**base_args)
+        search_request = SQLAlchemySTACSearch(**base_args)
         resp = self.post_search(search_request, request=kwargs["request"])
 
         # Pagination
@@ -263,7 +263,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         resp["links"] = page_links
         return resp
 
-    def post_search(self, search_request: STACSearch, **kwargs) -> Dict[str, Any]:
+    def post_search(self, search_request: SQLAlchemySTACSearch, **kwargs) -> Dict[str, Any]:
         """POST search catalog."""
         with self.session.reader.context_session() as session:
             token = (

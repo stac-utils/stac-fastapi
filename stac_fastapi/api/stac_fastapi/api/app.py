@@ -6,7 +6,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.openapi.utils import get_openapi
 from stac_pydantic import Collection, Item, ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage
+from stac_pydantic.api import ConformanceClasses, LandingPage, search
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.models import (
@@ -58,6 +58,7 @@ class StacApi:
         default=attr.Factory(lambda: DEFAULT_STATUS_CODES)
     )
     app: FastAPI = attr.ib(default=attr.Factory(FastAPI))
+    search_request_model = attr.ib(default=STACSearch)
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -90,7 +91,8 @@ class StacApi:
         Returns:
             None
         """
-        search_request_model = _create_request_model(STACSearch)
+        search_request_model = _create_request_model(self.search_request_model)
+
         fields_ext = self.get_extension(FieldsExtension)
         router = APIRouter()
         router.add_api_route(
@@ -207,6 +209,7 @@ class StacApi:
             self.settings.default_includes = fields_ext.default_includes
 
         Settings.set(self.settings)
+        self.app.state.settings = self.settings
 
         self.register_core()
         # register extensions

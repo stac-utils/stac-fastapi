@@ -14,6 +14,7 @@ from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
+from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 
 settings = SqlalchemySettings()
 session = Session.create_from_settings(settings)
@@ -27,6 +28,7 @@ api = StacApi(
         SortExtension(),
     ],
     client=CoreCrudClient(session=session),
+    search_request_model=SQLAlchemySTACSearch,
 )
 app = api.app
 

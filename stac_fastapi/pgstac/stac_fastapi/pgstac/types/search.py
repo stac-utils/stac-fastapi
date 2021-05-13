@@ -96,7 +96,7 @@ class PgstacSearch(Search):
     collections: Optional[List[str]] = None
     ids: Optional[List[str]] = None
     # Override default field extension to include default fields and pydantic includes/excludes factory
-    field: FieldsExtension = Field(FieldsExtension(), alias="field")
+    fields: FieldsExtension = Field(FieldsExtension())
     # Override query extension with supported operators
     query: Optional[Dict[str, Dict[Operator, Any]]]
     token: Optional[str] = None

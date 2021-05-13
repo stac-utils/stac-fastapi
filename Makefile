@@ -20,9 +20,13 @@ docker-run: image
 docker-shell:
 	$(run_docker) /bin/bash
 
-.PHONY: test
-test:
-	$(run_docker) pytest
+.PHONY: test-sqlalchemy
+test-sqlalchemy:
+	$(run_docker) /bin/bash -c 'export && cd /app/stac_fastapi/sqlalchemy/tests/ && pytest'
+
+.PHONY: test-pgstac
+test-sqlalchemy:
+	$(run_docker) /bin/bash -c 'export && cd /app/stac_fastapi/pgstac/tests/ && pytest'
 
 .PHONY: pybase-install
 pybase-install:
