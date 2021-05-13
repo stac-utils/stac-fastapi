@@ -51,7 +51,7 @@ services:
     volumes:
       - ./:/app
     command: >
-      bash -c "sleep 10 && alembic upgrade head && python scripts/ingest_joplin.py"
+      bash -c "sleep 10 && alembic upgrade head && python /app/scripts/ingest_joplin.py"
     depends_on:
       - database
       - app
