@@ -4,10 +4,9 @@ import os
 import time
 from typing import Callable, Dict
 
-import docker
 import pypgstac
 import pytest
-from dockerctx import get_open_port, new_container, pg_ready
+# from dockerctx import get_open_port, new_container, pg_ready
 from httpx import AsyncClient
 from stac_pydantic import Collection, Item
 
@@ -20,17 +19,15 @@ from stac_fastapi.extensions.core import (
 )
 from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.core import CoreCrudClient
-from stac_fastapi.pgstac.db import close_db_connection, connect_to_db
+from stac_fastapi.pgstac.db import close_db_connection, connect_to_db, DB
 from stac_fastapi.pgstac.transactions import TransactionsClient
 from stac_fastapi.pgstac.types.search import PgstacSearch
+from pypgstac import pypgstac
+import asyncpg
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
-os.environ["postgres_user"] = "testuser"
-os.environ["postgres_pass"] = "testpw"
-os.environ["postgres_host_reader"] = "localhost"
-os.environ["postgres_host_writer"] = "localhost"
-os.environ["postgres_dbname"] = "testdb"
+settings = Settings(testing=True)
 
 
 @pytest.fixture(scope="session")
@@ -38,69 +35,100 @@ def event_loop():
     return asyncio.get_event_loop()
 
 
+# @pytest.fixture(scope="session")
+# def pgport():
+#     port = get_open_port()
+#     os.environ["postgres_port"] = str(port)
+#     return port
+
+
+# def pgready(pgport):
+#     st = time.time()
+#     print("Testing if PG is ready...")
+#     ready = pg_ready(
+#         "localhost",
+#         pgport,
+#         dbuser="testuser",
+#         dbpass="testpw",
+#         dbname="testdb",
+#     )
+#     if ready:
+#         print(f"PG is ready ({time.time() - st})")
+#     return ready
+
+
+# @pytest.fixture(autouse=True)
+# def pg(pgport):
+#     st = time.time()
+#     print(f"creating db instance on port {pgport}")
+#     with new_container(
+#         f"bitner/pgstac:{pypgstac.__version__}",
+#         ports={"5432/tcp": pgport},
+#         environment=[
+#             "POSTGRES_USER=testuser",
+#             "POSTGRES_PASSWORD=testpw",
+#             "POSTGRES_DB=testdb",
+#         ],
+#         ready_test=lambda: pgready(pgport),
+#         docker_api_version="1.41",
+#     ) as container:
+#         print(
+#             f"{container.name} {container.status} in {time.time() -st} seconds"
+#         )
+#         yield container
+
 @pytest.fixture(scope="session")
-def pgport():
-    port = get_open_port()
-    os.environ["postgres_port"] = str(port)
-    return port
+async def pg():
+    print(f'Connecting to write database {settings.writer_connection_string}')
+    os.environ['orig_postgres_dbname'] = settings.postgres_dbname
+    conn = await asyncpg.connect(dsn=settings.writer_connection_string)
+    try:
+        await conn.execute('CREATE DATABASE pgstactestdb;')
+        await conn.execute('ALTER DATABASE pgstactestdb SET search_path to pgstac, public;')
+    except asyncpg.exceptions.DuplicateDatabaseError:
+        await conn.execute('DROP DATABASE pgstactestdb;')
+        await conn.execute('CREATE DATABASE pgstactestdb;')
+        await conn.execute('ALTER DATABASE pgstactestdb SET search_path to pgstac, public;')
+    await conn.close()
+    print('migrating...')
+    os.environ["postgres_dbname"] = "pgstactestdb"
+    conn = await asyncpg.connect(dsn=settings.testing_connection_string)
+    val = await conn.fetchval('SELECT true')
+    print(val)
+    await conn.close()
+    version = await pypgstac.run_migration(dsn=settings.testing_connection_string)
+    print(f"PGStac Migrated to {version}")
 
+    yield settings.testing_connection_string
 
-@pytest.fixture(scope="session")
-def dockerimage():
-    print("pulling docker image for pgstac")
-    client = docker.from_env()
-    image = client.images.get(f"bitner/pgstac:{pypgstac.__version__}")
-    return image
-
-
-def pgready(pgport):
-    st = time.time()
-    print("Testing if PG is ready...")
-    ready = pg_ready(
-        "localhost",
-        pgport,
-        dbuser="testuser",
-        dbpass="testpw",
-        dbname="testdb",
-    )
-    if ready:
-        print(f"PG is ready ({time.time() - st})")
-    return ready
-
+    print('Getting rid of test database')
+    os.environ['postgres_dbname'] = os.environ['orig_postgres_dbname']
+    conn = await asyncpg.connect(dsn=settings.writer_connection_string)
+    await conn.execute('DROP DATABASE pgstactestdb;')
+    await conn.close()
 
 @pytest.fixture(autouse=True)
-def pg(pgport, dockerimage):
-    st = time.time()
-    print(f"creating db instance on port {pgport}")
-    with new_container(
-        dockerimage,
-        ports={"5432/tcp": pgport},
-        environment=[
-            "POSTGRES_USER=testuser",
-            "POSTGRES_PASSWORD=testpw",
-            "POSTGRES_DB=testdb",
-        ],
-        ready_test=lambda: pgready(pgport),
-        docker_api_version="1.41",
-    ) as container:
-        print(
-            f"{container.name} {container.status} in {time.time() -st} seconds"
-        )
-        yield container
+async def pgstac(pg):
+    print(f"{os.environ['postgres_dbname']}")
+    yield
+    print(f"Truncating Data")
+    conn = await asyncpg.connect(dsn=settings.testing_connection_string)
+    await conn.execute('TRUNCATE items CASCADE; TRUNCATE collections CASCADE;')
+    await conn.close()
 
 
-@pytest.fixture(autouse=True, scope="session")
-def settings(pgport):
-    settings = Settings()
-    print(settings)
-    print(settings.reader_connection_string)
-    return settings
+
+# @pytest.fixture(autouse=True, scope="session")
+# def settings(pgport):
+#     settings = Settings()
+#     print(settings)
+#     print(settings.reader_connection_string)
+#     return settings
 
 
-@pytest.fixture()
-def api_client(settings, pg):
+@pytest.fixture(scope="session")
+def api_client(pg):
     print("creating client with settings")
-    print(settings)
     api = StacApi(
         settings=settings,
         extensions=[
@@ -117,7 +145,7 @@ def api_client(settings, pg):
 
 
 @pytest.mark.asyncio
-@pytest.fixture()
+@pytest.fixture(scope="session")
 async def app(api_client):
     st = time.time()
     app = api_client.app

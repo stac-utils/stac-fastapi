@@ -9,8 +9,10 @@ from buildpg import asyncpg, render
 from fastapi import FastAPI
 from stac_fastapi.types.errors import ConflictError, NotFoundError, ForeignKeyError, DatabaseError
 
-from stac_fastapi.pgstac.config import Settings
-settings = Settings()
+# from stac_fastapi.pgstac.config import Settings
+# settings = Settings()
+# if app.state.testing:
+#     settings.reader_connection_string = settings.writer_connection_string = settings.testing_connection_string
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -34,13 +36,18 @@ async def con_init(conn):
 
 async def connect_to_db(app: FastAPI) -> None:
     settings = app.state.settings
+    if app.state.settings.testing:
+        readpool = writepool = settings.testing_connection_string
+    else:
+        readpool = settings.reader_connection_string
+        writepool = settings.writer_connection_string
     """Connect."""
     logger.info(
-        f"Connecting  read pool to {settings.reader_connection_string}"
+        f"Creating Connection Pools {readpool} {writepool}"
     )
     db = DB()
-    app.state.readpool = await db.create_pool(settings.reader_connection_string)
-    app.state.writepool = await db.create_pool(settings.reader_connection_string)
+    app.state.readpool = await db.create_pool(readpool, settings)
+    app.state.writepool = await db.create_pool(writepool, settings)
 
 
 async def close_db_connection(app: FastAPI) -> None:
@@ -91,7 +98,7 @@ class DB:
         """Init."""
         self.connection_string = connection_string
 
-    async def create_pool(self, connection_string: str):
+    async def create_pool(self, connection_string: str, settings):
         """Create a connection pool."""
         pool = await asyncpg.create_pool(
             connection_string,

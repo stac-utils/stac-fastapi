@@ -25,8 +25,11 @@ test-sqlalchemy:
 	$(run_docker) /bin/bash -c 'export && cd /app/stac_fastapi/sqlalchemy/tests/ && pytest'
 
 .PHONY: test-pgstac
-test-sqlalchemy:
+test-pgstac: pgstac-install
 	$(run_docker) /bin/bash -c 'export && cd /app/stac_fastapi/pgstac/tests/ && pytest'
+
+.PHONY: test
+test: test-sqlalchemy test-pgstac
 
 .PHONY: pybase-install
 pybase-install:
