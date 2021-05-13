@@ -1,19 +1,10 @@
 import uuid
 from typing import Callable
-import json
 
 import pytest
 from stac_pydantic import Collection, Item
 
 # from tests.conftest import MockStarletteRequest
-from stac_fastapi.api.app import StacApi
-
-from stac_fastapi.extensions.third_party.bulk_transactions import Items
-from stac_fastapi.pgstac.core import CoreCrudClient
-from stac_fastapi.pgstac.transactions import (
-    TransactionsClient,
-)
-from stac_fastapi.types.errors import ConflictError, NotFoundError
 
 
 @pytest.mark.asyncio
@@ -30,19 +21,15 @@ async def test_create_collection(app_client, load_test_data: Callable):
     resp = await app_client.get(f"/collections/{post_coll.id}")
     assert resp.status_code == 200
     get_coll = Collection.parse_obj(resp.json())
-    assert post_coll.dict(exclude={"links"}) == get_coll.dict(
-        exclude={"links"}
-    )
+    assert post_coll.dict(exclude={"links"}) == get_coll.dict(exclude={"links"})
 
 
 @pytest.mark.asyncio
-async def test_update_collection(
-    app_client, load_test_data, load_test_collection
-):
+async def test_update_collection(app_client, load_test_data, load_test_collection):
     in_coll = load_test_collection
     in_coll.keywords.append("newkeyword")
 
-    resp = await app_client.put(f"/collections", json=in_coll.dict())
+    resp = await app_client.put("/collections", json=in_coll.dict())
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{in_coll.id}")
@@ -67,9 +54,7 @@ async def test_delete_collection(
 
 
 @pytest.mark.asyncio
-async def test_create_item(
-    app_client, load_test_data: Callable, load_test_collection
-):
+async def test_create_item(app_client, load_test_data: Callable, load_test_collection):
     coll = load_test_collection
 
     in_json = load_test_data("test_item.json")
@@ -99,9 +84,7 @@ async def test_update_item(
 
     item.properties.description = "Update Test"
 
-    resp = await app_client.put(
-        f"/collections/{coll.id}/items", json=item.dict()
-    )
+    resp = await app_client.put(f"/collections/{coll.id}/items", json=item.dict())
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
@@ -128,9 +111,7 @@ async def test_delete_item(
 
 
 @pytest.mark.asyncio
-async def test_get_collection_items(
-    app_client, load_test_collection, load_test_item
-):
+async def test_get_collection_items(app_client, load_test_collection, load_test_item):
     coll = load_test_collection
     item = load_test_item
 

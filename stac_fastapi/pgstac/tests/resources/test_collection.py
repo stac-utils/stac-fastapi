@@ -18,19 +18,15 @@ async def test_create_collection(app_client, load_test_data: Callable):
     resp = await app_client.get(f"/collections/{post_coll.id}")
     assert resp.status_code == 200
     get_coll = Collection.parse_obj(resp.json())
-    assert post_coll.dict(exclude={"links"}) == get_coll.dict(
-        exclude={"links"}
-    )
+    assert post_coll.dict(exclude={"links"}) == get_coll.dict(exclude={"links"})
 
 
 @pytest.mark.asyncio
-async def test_update_collection(
-    app_client, load_test_data, load_test_collection
-):
+async def test_update_collection(app_client, load_test_data, load_test_collection):
     in_coll = load_test_collection
     in_coll.keywords.append("newkeyword")
 
-    resp = await app_client.put(f"/collections", json=in_coll.dict())
+    resp = await app_client.put("/collections", json=in_coll.dict())
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{in_coll.id}")
@@ -55,17 +51,15 @@ async def test_delete_collection(
 
 
 @pytest.mark.asyncio
-async def test_create_collection_conflict(
-    app_client, load_test_data: Callable
-):
+async def test_create_collection_conflict(app_client, load_test_data: Callable):
     in_json = load_test_data("test_collection.json")
-    in_coll = Collection.parse_obj(in_json)
+    Collection.parse_obj(in_json)
     resp = await app_client.post(
         "/collections",
         json=in_json,
     )
     assert resp.status_code == 200
-    post_coll = Collection.parse_obj(resp.json())
+    Collection.parse_obj(resp.json())
     resp = await app_client.post(
         "/collections",
         json=in_json,
@@ -77,7 +71,7 @@ async def test_create_collection_conflict(
 async def test_delete_missing_collection(
     app_client,
 ):
-    resp = await app_client.delete(f"/collections/test-collection")
+    resp = await app_client.delete("/collections")
     assert resp.status_code == 404
 
 
@@ -86,7 +80,7 @@ async def test_update_new_collection(app_client, load_test_collection):
     in_coll = load_test_collection
     in_coll.id = "test-updatenew"
 
-    resp = await app_client.put(f"/collections", json=in_coll.dict())
+    resp = await app_client.put("/collections", json=in_coll.dict())
     assert resp.status_code == 404
 
 
@@ -94,5 +88,5 @@ async def test_update_new_collection(app_client, load_test_collection):
 async def test_collection_not_found(
     app_client,
 ):
-    resp = await app_client.get(f"/collections/test-collection")
+    resp = await app_client.get("/collections")
     assert resp.status_code == 404

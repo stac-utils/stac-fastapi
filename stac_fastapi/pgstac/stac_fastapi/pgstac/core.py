@@ -97,7 +97,7 @@ class CoreCrudClient(BaseCoreClient):
                 SELECT * FROM all_collections();
                 """
             )
-        if collections is not None and len(collections)>0:
+        if collections is not None and len(collections) > 0:
             return [Collection.construct(**c) for c in collections]
         return None
 
@@ -176,10 +176,9 @@ class CoreCrudClient(BaseCoreClient):
         if collection.features is None or len(collection.features) == 0:
             raise NotFoundError("No features found")
 
-
         for feature in collection.features:
             feature = Item.construct(**feature)
-            if 'links' not in search_request.fields.exclude:
+            if "links" not in search_request.fields.exclude:
                 links = await ItemLinks(
                     collection_id=feature.collection,
                     item_id=feature.id,

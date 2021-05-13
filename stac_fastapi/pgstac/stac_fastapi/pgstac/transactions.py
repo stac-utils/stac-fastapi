@@ -3,14 +3,12 @@
 import logging
 
 import attr
-from buildpg import render
 from fastapi.responses import ORJSONResponse
 from stac_pydantic import Item
 
-from stac_fastapi.pgstac.models import schemas
 from stac_fastapi.pgstac.db import dbfunc
+from stac_fastapi.pgstac.models import schemas
 from stac_fastapi.types.core import BaseTransactionsClient
-from stac_fastapi.types.errors import NotFoundError
 
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
@@ -24,14 +22,14 @@ class TransactionsClient(BaseTransactionsClient):
         """Create item."""
         request = kwargs["request"]
         pool = request.app.state.writepool
-        ret = await dbfunc(pool, "create_item", item)
+        await dbfunc(pool, "create_item", item)
         return ORJSONResponse(item.dict())
 
     async def update_item(item: schemas.Item = None, **kwargs) -> Item:
         """Update item."""
         request = kwargs["request"]
         pool = request.app.state.writepool
-        ret = await dbfunc(pool, "update_item", item)
+        await dbfunc(pool, "update_item", item)
         return ORJSONResponse(item.dict())
 
     async def create_collection(
@@ -40,7 +38,7 @@ class TransactionsClient(BaseTransactionsClient):
         """Create collection."""
         request = kwargs["request"]
         pool = request.app.state.writepool
-        ret = await dbfunc(pool, "create_collection", collection)
+        await dbfunc(pool, "create_collection", collection)
         return ORJSONResponse(collection.dict())
 
     async def update_collection(
@@ -49,19 +47,19 @@ class TransactionsClient(BaseTransactionsClient):
         """Update collection."""
         request = kwargs["request"]
         pool = request.app.state.writepool
-        ret = await dbfunc(pool, "update_collection", collection)
+        await dbfunc(pool, "update_collection", collection)
         return ORJSONResponse(collection.dict())
 
     async def delete_item(id: str, **kwargs) -> schemas.Collection:
         """Delete collection."""
         request = kwargs["request"]
         pool = request.app.state.writepool
-        ret = await dbfunc(pool, "delete_item", id)
+        await dbfunc(pool, "delete_item", id)
         return ORJSONResponse({"deleted item": id})
 
     async def delete_collection(id: str, **kwargs) -> schemas.Collection:
         """Delete collection."""
         request = kwargs["request"]
         pool = request.app.state.writepool
-        ret = await dbfunc(pool, "delete_collection", id)
+        await dbfunc(pool, "delete_collection", id)
         return ORJSONResponse({"deleted collection": id})

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+
 import pytest
 
 STAC_CORE_ROUTES = [
@@ -26,10 +27,7 @@ STAC_TRANSACTION_ROUTES = [
 async def test_core_router(api_client):
     core_routes = set(STAC_CORE_ROUTES)
     api_routes = set(
-        [
-            f"{list(route.methods)[0]} {route.path}"
-            for route in api_client.app.routes
-        ]
+        [f"{list(route.methods)[0]} {route.path}" for route in api_client.app.routes]
     )
     assert not core_routes - api_routes
 
@@ -38,30 +36,26 @@ async def test_core_router(api_client):
 async def test_transactions_router(api_client):
     transaction_routes = set(STAC_TRANSACTION_ROUTES)
     api_routes = set(
-        [
-            f"{list(route.methods)[0]} {route.path}"
-            for route in api_client.app.routes
-        ]
+        [f"{list(route.methods)[0]} {route.path}" for route in api_client.app.routes]
     )
     assert not transaction_routes - api_routes
 
 
 @pytest.mark.asyncio
-async def test_app_transaction_extension(app_client, load_test_data, load_test_collection):
+async def test_app_transaction_extension(
+    app_client, load_test_data, load_test_collection
+):
     coll = load_test_collection
     item = load_test_data("test_item.json")
-    resp = await app_client.post(
-        f"/collections/{coll.id}/items", json=item
-    )
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
     assert resp.status_code == 200
+
 
 @pytest.mark.asyncio
 async def test_app_query_extension(load_test_data, app_client, load_test_collection):
     coll = load_test_collection
     item = load_test_data("test_item.json")
-    resp = await app_client.post(
-        f"/collections/{coll.id}/items", json=item
-    )
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
     assert resp.status_code == 200
 
     params = {"query": {"proj:epsg": {"eq": item["properties"]["proj:epsg"]}}}
@@ -78,9 +72,7 @@ async def test_app_sort_extension(load_test_data, app_client, load_test_collecti
     item_date = datetime.strptime(
         first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%SZ"
     )
-    resp = await app_client.post(
-        f"/collections/{coll.id}/items", json=first_item
-    )
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=first_item)
     assert resp.status_code == 200
 
     second_item = load_test_data("test_item.json")
@@ -89,9 +81,7 @@ async def test_app_sort_extension(load_test_data, app_client, load_test_collecti
     second_item["properties"]["datetime"] = another_item_date.strftime(
         "%Y-%m-%dT%H:%M:%SZ"
     )
-    resp = await app_client.post(
-        f"/collections/{coll.id}/items", json=second_item
-    )
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=second_item)
     assert resp.status_code == 200
 
     params = {

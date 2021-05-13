@@ -1,13 +1,17 @@
 """Database connection handling."""
 import logging
-import os
-from buildpg.logic import Not
 
 import orjson
 from asyncpg import exceptions
 from buildpg import asyncpg, render
 from fastapi import FastAPI
-from stac_fastapi.types.errors import ConflictError, NotFoundError, ForeignKeyError, DatabaseError
+
+from stac_fastapi.types.errors import (
+    ConflictError,
+    DatabaseError,
+    ForeignKeyError,
+    NotFoundError,
+)
 
 # from stac_fastapi.pgstac.config import Settings
 # settings = Settings()
@@ -35,16 +39,14 @@ async def con_init(conn):
 
 
 async def connect_to_db(app: FastAPI) -> None:
+    """Connect to Database."""
     settings = app.state.settings
     if app.state.settings.testing:
         readpool = writepool = settings.testing_connection_string
     else:
         readpool = settings.reader_connection_string
         writepool = settings.writer_connection_string
-    """Connect."""
-    logger.info(
-        f"Creating Connection Pools {readpool} {writepool}"
-    )
+    logger.info(f"Creating Connection Pools {readpool} {writepool}")
     db = DB()
     app.state.readpool = await db.create_pool(readpool, settings)
     app.state.writepool = await db.create_pool(writepool, settings)
@@ -59,6 +61,7 @@ async def close_db_connection(app: FastAPI) -> None:
 
 
 async def dbfunc(pool, func, arg):
+    """Wrap PLPGSQL Functions."""
     try:
         if isinstance(arg, str):
             async with pool.acquire() as conn:

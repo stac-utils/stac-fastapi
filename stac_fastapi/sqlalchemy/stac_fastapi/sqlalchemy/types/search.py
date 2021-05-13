@@ -3,6 +3,7 @@
 # TODO: replace with stac-pydantic
 """
 
+import logging
 import operator
 from dataclasses import dataclass
 from enum import auto
@@ -18,7 +19,6 @@ from stac_pydantic.utils import AutoValueEnum
 
 from stac_fastapi.types.config import Settings
 
-import logging
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
@@ -149,7 +149,7 @@ class SQLAlchemySTACSearch(Search):
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:
         """Validate query fields."""
-        logger.debug(f'Validating SQLAlchemySTACSearch {cls} {values}')
+        logger.debug(f"Validating SQLAlchemySTACSearch {cls} {values}")
         if "query" in values and values["query"]:
             queryable_fields = Queryables.__members__.values()
             for field_name in values["query"]:

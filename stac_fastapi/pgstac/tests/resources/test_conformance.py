@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.mark.asyncio
 async def test_landing_page(app_client):
     """Test landing page"""
