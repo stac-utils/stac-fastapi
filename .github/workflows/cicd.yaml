@@ -15,8 +15,8 @@ jobs:
         image: bitner/pgstac:0.1.7
         env:
           POSTGRES_USER: username
-          POSTGRES_PASS: password
-          POSTGRES_DBNAME: postgis
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: postgis
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
           ALLOW_IP_RANGE: 0.0.0.0/0
