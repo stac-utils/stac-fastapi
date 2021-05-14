@@ -2,8 +2,8 @@
 from typing import Any, Dict, List, Optional, Type
 
 import attr
+from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
-from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.openapi.utils import get_openapi
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
@@ -226,4 +226,4 @@ class StacApi:
         self.app.openapi = self.customize_openapi
 
         # add gzip middleware
-        self.app.add_middleware(GZipMiddleware)
+        self.app.add_middleware(BrotliMiddleware)

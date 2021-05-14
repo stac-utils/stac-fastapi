@@ -25,6 +25,7 @@ install_requires = [
     "asyncpg",
     "buildpg",
     "shapely",
+    "brotli_asgi",
 ]
 
 extra_reqs = {
