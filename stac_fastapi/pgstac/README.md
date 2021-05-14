@@ -48,7 +48,7 @@ pip install -e \
 ```
 
 ## Local Development
-Use docker-compose to deploy the application with a PGStac database:
+Use docker-compose to deploy the application with a PGStac database. The docker-compose environment will run stac-fastapi/sqlalchemy on port 8081 and stac-fastapi/pgstac on port 8082.
 ```bash
 docker-compose build
 docker-compose up
