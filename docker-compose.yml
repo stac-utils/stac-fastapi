@@ -1,8 +1,8 @@
 version: '3'
 
 services:
-  app:
-    container_name: stac-fastapi
+  app-sqlalchemy:
+    container_name: stac-fastapi-sqlalchemy
     image: stac-utils/stac-fastapi
     build:
       context: .
@@ -28,6 +28,38 @@ services:
       - ./:/app
     depends_on:
       - database
+    command:
+      python -m stac_fastapi.sqlalchemy.app
+
+  app-pgstac:
+    container_name: stac-fastapi-pgstac
+    image: stac-utils/stac-fastapi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8082
+      - RELOAD=true
+      - ENVIRONMENT=local
+      - POSTGRES_USER=username
+      - POSTGRES_PASS=password
+      - POSTGRES_DBNAME=postgis
+      - POSTGRES_HOST_READER=database
+      - POSTGRES_HOST_WRITER=database
+      - POSTGRES_PORT=5432
+      - WEB_CONCURRENCY=10
+      - VSI_CACHE=TRUE
+      - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
+      - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./:/app
+    depends_on:
+      - database
+    command:
+      stac-fastapi-pgstac
 
   database:
     container_name: stac-db
@@ -51,10 +83,10 @@ services:
     volumes:
       - ./:/app
     command: >
-      bash -c "sleep 10 && alembic upgrade head && python scripts/ingest_joplin.py"
+      bash -c "sleep 10 && cd stac_fastapi/sqlalchemy && alembic upgrade head && python scripts/ingest_joplin.py"
     depends_on:
       - database
-      - app
+      - app-sqlalchemy
 
 networks:
   default:

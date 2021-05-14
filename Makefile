@@ -6,11 +6,11 @@ run_docker = docker-compose run --rm \
 				-p ${EXTERNAL_APP_PORT}:${APP_PORT} \
 				-e APP_HOST=${APP_HOST} \
 				-e APP_PORT=${APP_PORT} \
-				app
+				app-sqlalchemy
 
 .PHONY: image
 image:
-	docker-compose build app
+	docker-compose build
 
 .PHONY: docker-run
 docker-run: image

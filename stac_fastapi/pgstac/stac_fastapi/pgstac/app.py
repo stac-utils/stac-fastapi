@@ -47,10 +47,10 @@ def run():
 
         uvicorn.run(
             "stac_fastapi.pgstac.app:app",
-            host="0.0.0.0",
-            port=8000,
+            host=settings.app_host,
+            port=settings.app_port,
             log_level="info",
-            reload=True,
+            reload=settings.reload,
         )
     except ImportError:
         raise RuntimeError("Uvicorn must be installed in order to use command")
