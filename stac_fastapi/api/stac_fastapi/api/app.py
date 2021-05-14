@@ -225,5 +225,5 @@ class StacApi:
         # customize openapi
         self.app.openapi = self.customize_openapi
 
-        # add gzip middleware
+        # add compression middleware
         self.app.add_middleware(BrotliMiddleware)
