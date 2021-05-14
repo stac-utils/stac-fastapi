@@ -104,6 +104,8 @@ class CoreCrudClient(BaseCoreClient):
     async def all_collections(self, **kwargs) -> ORJSONResponse:
         """Get all collections."""
         collections = await self.all_collections_func(**kwargs)
+        if collections is None or len(collections) < 1:
+            raise NotFoundError
         return ORJSONResponse([c.dict(exclude_none=True) for c in collections])
 
     async def get_collection(self, id: str, **kwargs) -> ORJSONResponse:

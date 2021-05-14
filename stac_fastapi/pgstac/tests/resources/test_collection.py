@@ -72,7 +72,7 @@ async def test_delete_missing_collection(
     app_client,
 ):
     resp = await app_client.delete("/collections")
-    assert resp.status_code == 404
+    assert resp.status_code == 405
 
 
 @pytest.mark.asyncio
