@@ -95,13 +95,13 @@ class StacApi:
         """
 
         # Registering the custom pydantic models
-        if hasattr(settings, "custom_models"):
-            item_class = settings.custom_models["pydantic"]["item"] if settings.custom_models["pydantic"]["item"] else Item
+        if hasattr(self.settings, "custom_models"):
+            item_class = self.settings.custom_models["pydantic"]["item"] if self.settings.custom_models["pydantic"]["item"] else Item
         else:
             item_class = Item
 
-        if hasattr(settings, "custom_models"):
-            collection_class = settings.custom_models["pydantic"]["collection"] if settings.custom_models["pydantic"]["collection"] else Collection
+        if hasattr(self.settings, "custom_models"):
+            collection_class = self.settings.custom_models["pydantic"]["collection"] if self.settings.custom_models["pydantic"]["collection"] else Collection
         else:
             collection_class = Collection
 
