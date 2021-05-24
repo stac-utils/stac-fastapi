@@ -4,8 +4,23 @@ from typing import Callable, Type
 from fastapi import Depends
 from pydantic import BaseModel
 from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from stac_fastapi.api.models import APIRequest
+
+
+def response_class():
+    """Use OrJSON if possible for serialization performance, falling back on starlette's implementation of JSON"""
+    try:
+        import orjson
+
+        class OrjsonResponse(JSONResponse):
+            def render(self, content: Any) -> bytes:
+                return orjson.dumps(content)
+
+        return OrjsonResponse
+    except ImportError:
+        return JSONResponse
 
 
 # TODO: Only use one endpoint factory
@@ -32,7 +47,7 @@ def create_endpoint_from_model(
     ):
         """Endpoint."""
         resp = func(request_data, request=request)
-        return resp
+        return response_class()(resp.dict())
 
     return _endpoint
 
@@ -63,6 +78,6 @@ def create_endpoint_with_depends(
         resp = func(
             request=request, **request_data.kwargs()  # type:ignore
         )
-        return resp
+        return response_class()(resp.dict())
 
     return _endpoint

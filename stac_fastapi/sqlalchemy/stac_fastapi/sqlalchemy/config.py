@@ -1,5 +1,5 @@
 """Postgres API configuration."""
-from typing import Set
+from typing import Set, Dict, Any
 
 from stac_fastapi.types.config import ApiSettings
 
@@ -22,6 +22,8 @@ class SqlalchemySettings(ApiSettings):
     postgres_host_writer: str
     postgres_port: str
     postgres_dbname: str
+
+    custom_models: Dict[str, Any]
 
     # Fields which are defined by STAC but not included in the database model
     forbidden_fields: Set[str] = {"type"}

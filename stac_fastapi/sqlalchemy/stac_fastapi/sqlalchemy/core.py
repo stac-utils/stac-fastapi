@@ -38,8 +38,11 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     """Client for core endpoints defined by stac."""
 
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
+
     item_table: Type[database.Item] = attr.ib(default=database.Item)
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
+
+
 
     @staticmethod
     def _lookup_id(
@@ -113,11 +116,17 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
     def get_collection(self, id: str, **kwargs) -> schemas.Collection:
         """Get collection by id."""
+        settings = Settings.get()
+        if hasattr(settings, "custom_models"):
+            collection_class = settings.custom_models["pydantic"]["collection"] if settings.custom_models["pydantic"]["collection"] else schemas.Collection
+        else:
+            collection_class = schemas.Collection
+
         with self.session.reader.context_session() as session:
             collection = self._lookup_id(id, self.collection_table, session)
             # TODO: Don't do this
             collection.base_url = str(kwargs["request"].base_url)
-            return schemas.Collection.from_orm(collection)
+            return collection_class.from_orm(collection)
 
     def item_collection(
         self, id: str, limit: int = 10, token: str = None, **kwargs
@@ -186,12 +195,18 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 links=links,
             )
 
-    def get_item(self, id: str, **kwargs) -> schemas.Item:
+    def get_item(self, collection_id: str, item_id: str, **kwargs) -> schemas.Item:
         """Get item by id."""
+        settings = Settings.get()
+        if hasattr(settings, "custom_models"):
+            item_class = settings.custom_models["pydantic"]["item"] if settings.custom_models["pydantic"]["item"] else schemas.Item
+        else:
+            item_class = schemas.Item
+
         with self.session.reader.context_session() as session:
-            item = self._lookup_id(id, self.item_table, session)
+            item = self._lookup_id(item_id, self.item_table, session)
             item.base_url = str(kwargs["request"].base_url)
-            return schemas.Item.from_orm(item)
+            return item_class.from_orm(item)
 
     def get_search(
         self,

@@ -1,9 +1,10 @@
 """fastapi app creation."""
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
+from starlette.responses import JSONResponse
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 
@@ -92,12 +93,25 @@ class StacApi:
         Returns:
             None
         """
+
+        # Registering the custom pydantic models
+        if hasattr(settings, "custom_models"):
+            item_class = settings.custom_models["pydantic"]["item"] if settings.custom_models["pydantic"]["item"] else Item
+        else:
+            item_class = Item
+
+        if hasattr(settings, "custom_models"):
+            collection_class = settings.custom_models["pydantic"]["collection"] if settings.custom_models["pydantic"]["collection"] else Collection
+        else:
+            collection_class = Collection
+
         search_request_model = _create_request_model(STACSearch)
         fields_ext = self.get_extension(FieldsExtension)
         router = APIRouter()
         router.add_api_route(
             name="Landing Page",
             path="/",
+            response_class=JSONResponse,
             response_model=LandingPage,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -109,6 +123,7 @@ class StacApi:
         router.add_api_route(
             name="Conformance Classes",
             path="/conformance",
+            response_class=JSONResponse,
             response_model=ConformanceClasses,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -120,7 +135,8 @@ class StacApi:
         router.add_api_route(
             name="Get Item",
             path="/collections/{collectionId}/items/{itemId}",
-            response_model=Item,
+            response_class=JSONResponse,
+            response_model=item_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -129,6 +145,7 @@ class StacApi:
         router.add_api_route(
             name="Search",
             path="/search",
+            response_class=JSONResponse,
             response_model=ItemCollection if not fields_ext else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -140,6 +157,7 @@ class StacApi:
         router.add_api_route(
             name="Search",
             path="/search",
+            response_class=JSONResponse,
             response_model=ItemCollection if not fields_ext else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -151,7 +169,8 @@ class StacApi:
         router.add_api_route(
             name="Get Collections",
             path="/collections",
-            response_model=List[Collection],
+            response_class=JSONResponse,
+            response_model=List[collection_class],
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -162,7 +181,8 @@ class StacApi:
         router.add_api_route(
             name="Get Collection",
             path="/collections/{collectionId}",
-            response_model=Collection,
+            response_class=JSONResponse,
+            response_model=collection_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -173,6 +193,7 @@ class StacApi:
         router.add_api_route(
             name="Get ItemCollection",
             path="/collections/{collectionId}/items",
+            response_class=JSONResponse,
             response_model=ItemCollection,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,

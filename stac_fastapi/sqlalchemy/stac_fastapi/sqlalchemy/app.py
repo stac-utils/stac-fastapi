@@ -15,7 +15,48 @@ from stac_fastapi.sqlalchemy.transactions import (
     TransactionsClient,
 )
 
-settings = SqlalchemySettings()
+from stac_fastapi.sqlalchemy.models import database, schemas
+import sqlalchemy as sa
+
+
+# Pydantic model extensions (which define responses and documentation)
+class ScientificCitationItem(schemas.Item):
+    sci_doi: str = "default_doi"
+    sci_citation: str = "default_citation"
+    sci_publications: str = "publication1, publication2, publication3"
+
+class ScientificCitationCollection(schemas.Collection):
+    sci_doi: str = "default_doi"
+    sci_citation: str = "default_citation"
+    sci_publications: str = "publication1, publication2, publication3"
+
+"""SqlAlchemy model extensions (which define database interactions)
+    These classes are currently not used, as they result in errors without
+    modifications to the database and joplin ingest; provided here as
+    demonstration of a possible customization strategy for this backend
+"""
+class ScientificCitationItemDB(database.Item):
+    sci_doi = sa.Column(sa.VARCHAR(300))
+    sci_citation = sa.Column(sa.VARCHAR(300))
+    sci_publications = sa.Column(sa.VARCHAR(300))
+
+class ScientificCitationCollectionDB(database.Collection):
+    sci_doi = sa.Column(sa.VARCHAR(300))
+    sci_citation = sa.Column(sa.VARCHAR(300))
+    sci_publications = sa.Column(sa.VARCHAR(300))
+
+custom_models = {
+    "pydantic": {
+        "item": ScientificCitationItem,
+        "collection": ScientificCitationCollection
+    },
+    "sqlalchemy": {
+        "item": ScientificCitationItemDB,
+        "collection": ScientificCitationCollectionDB
+    }
+}
+
+settings = SqlalchemySettings(custom_models=custom_models)
 session = Session.create_from_settings(settings)
 api = StacApi(
     settings=settings,
@@ -26,6 +67,6 @@ api = StacApi(
         QueryExtension(),
         SortExtension(),
     ],
-    client=CoreCrudClient(session=session),
+    client=CoreCrudClient(session=session)
 )
 app = api.app
