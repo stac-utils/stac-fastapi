@@ -19,16 +19,25 @@ from stac_fastapi.sqlalchemy.models import database, schemas
 import sqlalchemy as sa
 
 
+def triple_underscore_to_colon(string: str) -> str:
+    return string.replace("___", ":")
+
 # Pydantic model extensions (which define responses and documentation)
 class ScientificCitationItem(schemas.Item):
-    sci_doi: str = "default_doi"
-    sci_citation: str = "default_citation"
-    sci_publications: str = "publication1, publication2, publication3"
+    sci___doi: str = "default_doi"
+    sci___citation: str = "default_citation"
+    sci___publications: str = "publication1, publication2, publication3"
+
+    class Config:
+        alias_generator = triple_underscore_to_colon
 
 class ScientificCitationCollection(schemas.Collection):
-    sci_doi: str = "default_doi"
-    sci_citation: str = "default_citation"
-    sci_publications: str = "publication1, publication2, publication3"
+    sci___doi: str = "default_doi"
+    sci___citation: str = "default_citation"
+    sci___publications: str = "publication1, publication2, publication3"
+
+    class Config:
+        alias_generator = triple_underscore_to_colon
 
 """SqlAlchemy model extensions (which define database interactions)
     These classes are currently not used, as they result in errors without
