@@ -47,7 +47,7 @@ def create_endpoint_from_model(
     ):
         """Endpoint."""
         resp = func(request_data, request=request)
-        return response_class()(resp.dict(by_alias=True))
+        return response_class()(resp.dict(by_alias=True, exclude_none=True))
 
     return _endpoint
 
@@ -78,6 +78,6 @@ def create_endpoint_with_depends(
         resp = func(
             request=request, **request_data.kwargs()  # type:ignore
         )
-        return response_class()(resp.dict(by_alias=True))
+        return response_class()(resp.dict(by_alias=True, exclude_none=True))
 
     return _endpoint
