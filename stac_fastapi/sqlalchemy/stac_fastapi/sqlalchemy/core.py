@@ -186,10 +186,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 links=links,
             )
 
-    def get_item(self, id: str, **kwargs) -> schemas.Item:
+    def get_item(self, item_id: str, collection_id: str, **kwargs) -> schemas.Item:
         """Get item by id."""
         with self.session.reader.context_session() as session:
-            item = self._lookup_id(id, self.item_table, session)
+            item = self._lookup_id(item_id, self.item_table, session)
             item.base_url = str(kwargs["request"].base_url)
             return schemas.Item.from_orm(item)
 

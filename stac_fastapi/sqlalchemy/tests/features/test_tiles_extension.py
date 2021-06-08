@@ -30,7 +30,9 @@ def tiles_extension_app(postgres_core, postgres_transactions, load_test_data):
         yield test_app
 
     # Cleanup test data
-    postgres_transactions.delete_item(item.id, request=MockStarletteRequest)
+    postgres_transactions.delete_item(
+        item.id, item.collection, request=MockStarletteRequest
+    )
     postgres_transactions.delete_collection(coll.id, request=MockStarletteRequest)
 
 

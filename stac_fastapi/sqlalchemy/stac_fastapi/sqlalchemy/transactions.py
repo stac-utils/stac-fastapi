@@ -78,10 +78,10 @@ class TransactionsClient(BaseTransactionsClient):
             query.update(data)
         return model
 
-    def delete_item(self, id: str, **kwargs) -> schemas.Item:
+    def delete_item(self, item_id: str, collection_id: str, **kwargs) -> schemas.Item:
         """Delete item."""
         with self.session.writer.context_session() as session:
-            query = session.query(self.item_table).filter(self.item_table.id == id)
+            query = session.query(self.item_table).filter(self.item_table.id == item_id)
             data = query.first()
             if not data:
                 raise NotFoundError(f"Item {id} not found")
