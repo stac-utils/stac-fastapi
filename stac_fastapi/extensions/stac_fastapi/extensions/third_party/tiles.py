@@ -108,7 +108,7 @@ class BaseTilesClient(abc.ABC):
 
     @abc.abstractmethod
     def get_item_tiles(
-        self, id: str, **kwargs
+        self, item_id: str, collection_id: str, **kwargs
     ) -> Union[RedirectResponse, TileSetResource]:
         """Get OGC TileSet resource for a stac item.
 
@@ -135,7 +135,7 @@ class TilesClient(BaseTilesClient):
     route_prefix: str = attr.ib(default="/titiler")
 
     def get_item_tiles(
-        self, id: str, **kwargs
+        self, item_id: str, collection_id: str, **kwargs
     ) -> Union[RedirectResponse, TileSetResource]:
         """Get OGC TileSet resource for a stac item."""
         item = self.client.get_item(id, **kwargs)
