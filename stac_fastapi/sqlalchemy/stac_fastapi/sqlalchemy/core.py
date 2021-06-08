@@ -42,7 +42,6 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     item_table: Type[database.Item] = attr.ib(default=database.Item)
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
 
-
     @staticmethod
     def _lookup_id(
         id: str, table: Type[database.BaseModel], session: SqlSession
