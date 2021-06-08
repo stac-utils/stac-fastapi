@@ -45,7 +45,7 @@ class TileLinks:
         """Post init handler."""
         self.item_uri = urljoin(
             self.base_url,
-            f"/collections/{self.collection_id}/items/{self.item_id}",
+            f"collections/{self.collection_id}/items/{self.item_id}",
         )
 
     def tiles(self) -> OGCTileLink:
@@ -108,7 +108,7 @@ class BaseTilesClient(abc.ABC):
 
     @abc.abstractmethod
     def get_item_tiles(
-        self, id: str, **kwargs
+        self, item_id: str, collection_id: str, **kwargs
     ) -> Union[RedirectResponse, TileSetResource]:
         """Get OGC TileSet resource for a stac item.
 
@@ -135,10 +135,10 @@ class TilesClient(BaseTilesClient):
     route_prefix: str = attr.ib(default="/titiler")
 
     def get_item_tiles(
-        self, id: str, **kwargs
+        self, item_id: str, collection_id: str, **kwargs
     ) -> Union[RedirectResponse, TileSetResource]:
         """Get OGC TileSet resource for a stac item."""
-        item = self.client.get_item(id, **kwargs)
+        item = self.client.get_item(item_id, collection_id, **kwargs)
         resource = TileSetResource(
             extent=SpatialExtent(bbox=[list(item.bbox)]),
             title=f"Tiled layer of {item.collection}/{item.id}",

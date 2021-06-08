@@ -48,7 +48,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def delete_item(self, id: str, **kwargs) -> Item:
+    def delete_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collectionId}/items/{itemId}`
@@ -180,7 +180,7 @@ class BaseCoreClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_item(self, id: str, **kwargs) -> Item:
+    def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id.
 
         Called with `GET /collections/{collectionId}/items/{itemId}`.
