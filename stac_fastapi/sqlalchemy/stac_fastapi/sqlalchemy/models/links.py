@@ -25,9 +25,7 @@ class BaseLinks:
 
     def root(self) -> Link:
         """Return the catalog root."""
-        return Link(
-            rel=Relations.root, type=MimeTypes.json, href=self.base_url
-        )
+        return Link(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
 
 
 @attr.s
@@ -44,9 +42,7 @@ class CollectionLinks(BaseLinks):
 
     def parent(self) -> Link:
         """Create the `parent` link."""
-        return Link(
-            rel=Relations.parent, type=MimeTypes.json, href=self.base_url
-        )
+        return Link(rel=Relations.parent, type=MimeTypes.json, href=self.base_url)
 
     def item(self) -> Link:
         """Create the `item` link."""
