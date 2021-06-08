@@ -48,17 +48,17 @@ class CollectionLinks(BaseLinks):
             rel=Relations.parent, type=MimeTypes.json, href=urljoin(self.base_url, "/")
         )
 
-    def item(self) -> Link:
-        """Create the `item` link."""
+    def items(self) -> Link:
+        """Create the `items` link."""
         return Link(
-            rel=Relations.item,
+            rel="items",
             type=MimeTypes.geojson,
             href=urljoin(self.base_url, f"/collections/{self.collection_id}/items"),
         )
 
     def create_links(self) -> List[Link]:
         """Return all inferred links."""
-        return [self.self(), self.parent(), self.item(), self.root()]
+        return [self.self(), self.parent(), self.items(), self.root()]
 
 
 @attr.s
