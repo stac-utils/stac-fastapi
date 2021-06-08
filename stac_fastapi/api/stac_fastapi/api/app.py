@@ -99,7 +99,7 @@ class StacApi:
             name="Landing Page",
             path="/",
             response_model=LandingPage,
-            response_model_exclude_unset=True,
+            response_model_exclude_unset=False,
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=create_endpoint_with_depends(
