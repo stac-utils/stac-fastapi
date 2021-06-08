@@ -66,19 +66,19 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     rel=Relations.docs,
                     type=MimeTypes.html,
                     title="OpenAPI docs",
-                    href=urljoin(str(kwargs["request"].base_url), "/docs"),
+                    href=urljoin(str(kwargs["request"].base_url), "docs"),
                 ),
                 Link(
                     rel=Relations.conformance,
                     type=MimeTypes.json,
                     title="STAC/WFS3 conformance classes implemented by this server",
-                    href=urljoin(str(kwargs["request"].base_url), "/conformance"),
+                    href=urljoin(str(kwargs["request"].base_url), "conformance"),
                 ),
                 Link(
                     rel=Relations.search,
                     type=MimeTypes.geojson,
                     title="STAC search",
-                    href=urljoin(str(kwargs["request"].base_url), "/search"),
+                    href=urljoin(str(kwargs["request"].base_url), "search"),
                 ),
             ],
         )
