@@ -190,7 +190,6 @@ class StacApi:
         if self.app.openapi_schema:
             return self.app.openapi_schema
 
-        # TODO: parametrize
         openapi_schema = get_openapi(
             title=self.title, version=self.version, routes=self.app.routes
         )
