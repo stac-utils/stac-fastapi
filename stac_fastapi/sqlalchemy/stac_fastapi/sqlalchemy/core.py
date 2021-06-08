@@ -36,7 +36,6 @@ NumType = Union[float, int]
 @attr.s
 class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     """Client for core endpoints defined by stac."""
-
     landing_page_id: str = attr.ib(default="stac-api")
     title: str = attr.ib(default="Arturo STAC API")
     description: str = attr.ib(default="Arturo raster datastore")
@@ -58,8 +57,6 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         """Landing page."""
         base_url = str(kwargs["request"].base_url)
         landing_page = LandingPage(
-            title=self.title,
-            description=self.description,
             id=self.landing_page_id,
             title=self.title,
             description=self.description,
