@@ -138,7 +138,7 @@ class TilesClient(BaseTilesClient):
         self, item_id: str, collection_id: str, **kwargs
     ) -> Union[RedirectResponse, TileSetResource]:
         """Get OGC TileSet resource for a stac item."""
-        item = self.client.get_item(id, **kwargs)
+        item = self.client.get_item(item_id, collection_id, **kwargs)
         resource = TileSetResource(
             extent=SpatialExtent(bbox=[list(item.bbox)]),
             title=f"Tiled layer of {item.collection}/{item.id}",

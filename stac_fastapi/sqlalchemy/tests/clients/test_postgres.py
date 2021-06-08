@@ -111,7 +111,9 @@ def test_create_item(
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
     item = Item.parse_obj(load_test_data("test_item.json"))
     postgres_transactions.create_item(item, request=MockStarletteRequest)
-    resp = postgres_core.get_item(item.id, request=MockStarletteRequest)
+    resp = postgres_core.get_item(
+        item.id, item.collection, request=MockStarletteRequest
+    )
     assert item.dict(
         exclude={"links": ..., "properties": {"created", "updated"}}
     ) == resp.dict(exclude={"links": ..., "properties": {"created", "updated"}})
@@ -146,7 +148,9 @@ def test_update_item(
     item.properties.foo = "bar"
     postgres_transactions.update_item(item, request=MockStarletteRequest)
 
-    updated_item = postgres_core.get_item(item.id, request=MockStarletteRequest)
+    updated_item = postgres_core.get_item(
+        item.id, item.collection, request=MockStarletteRequest
+    )
     assert updated_item.properties.foo == "bar"
 
 
@@ -161,10 +165,12 @@ def test_delete_item(
     item = Item.parse_obj(load_test_data("test_item.json"))
     postgres_transactions.create_item(item, request=MockStarletteRequest)
 
-    postgres_transactions.delete_item(item.id, request=MockStarletteRequest)
+    postgres_transactions.delete_item(
+        item.id, item.collection, request=MockStarletteRequest
+    )
 
     with pytest.raises(NotFoundError):
-        postgres_core.get_item(item.id, request=MockStarletteRequest)
+        postgres_core.get_item(item.id, item.collection, request=MockStarletteRequest)
 
 
 def test_bulk_item_insert(
@@ -186,7 +192,9 @@ def test_bulk_item_insert(
     postgres_bulk_transactions.bulk_item_insert(Items(items=items))
 
     for item in items:
-        postgres_transactions.delete_item(item["id"], request=MockStarletteRequest)
+        postgres_transactions.delete_item(
+            item["id"], item["collection"], request=MockStarletteRequest
+        )
 
 
 def test_bulk_item_insert_chunked(
@@ -208,4 +216,6 @@ def test_bulk_item_insert_chunked(
     postgres_bulk_transactions.bulk_item_insert(Items(items=items), chunk_size=2)
 
     for item in items:
-        postgres_transactions.delete_item(item["id"], request=MockStarletteRequest)
+        postgres_transactions.delete_item(
+            item["id"], item["collection"], request=MockStarletteRequest
+        )
