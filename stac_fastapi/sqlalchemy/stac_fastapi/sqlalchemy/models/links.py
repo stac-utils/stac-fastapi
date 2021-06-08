@@ -25,9 +25,7 @@ class BaseLinks:
 
     def root(self) -> Link:
         """Return the catalog root."""
-        return Link(
-            rel=Relations.root, type=MimeTypes.json, href=urljoin(self.base_url, "/")
-        )
+        return Link(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
 
 
 @attr.s
@@ -39,21 +37,19 @@ class CollectionLinks(BaseLinks):
         return Link(
             rel=Relations.self,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"/collections/{self.collection_id}"),
+            href=urljoin(self.base_url, f"collections/{self.collection_id}"),
         )
 
     def parent(self) -> Link:
         """Create the `parent` link."""
-        return Link(
-            rel=Relations.parent, type=MimeTypes.json, href=urljoin(self.base_url, "/")
-        )
+        return Link(rel=Relations.parent, type=MimeTypes.json, href=self.base_url)
 
     def items(self) -> Link:
         """Create the `items` link."""
         return Link(
             rel="items",
             type=MimeTypes.geojson,
-            href=urljoin(self.base_url, f"/collections/{self.collection_id}/items"),
+            href=urljoin(self.base_url, f"collections/{self.collection_id}/items"),
         )
 
     def create_links(self) -> List[Link]:
@@ -73,7 +69,7 @@ class ItemLinks(BaseLinks):
             rel=Relations.self,
             type=MimeTypes.geojson,
             href=urljoin(
-                self.base_url, f"/collections/{self.collection_id}/items/{self.item_id}"
+                self.base_url, f"collections/{self.collection_id}/items/{self.item_id}"
             ),
         )
 
@@ -82,7 +78,7 @@ class ItemLinks(BaseLinks):
         return Link(
             rel=Relations.parent,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"/collections/{self.collection_id}"),
+            href=urljoin(self.base_url, f"collections/{self.collection_id}"),
         )
 
     def collection(self) -> Link:
@@ -90,7 +86,7 @@ class ItemLinks(BaseLinks):
         return Link(
             rel=Relations.collection,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"/collections/{self.collection_id}"),
+            href=urljoin(self.base_url, f"collections/{self.collection_id}"),
         )
 
     def tiles(self) -> Link:
@@ -101,7 +97,7 @@ class ItemLinks(BaseLinks):
             title="tiles",
             href=urljoin(
                 self.base_url,
-                f"/collections/{self.collection_id}/items/{self.item_id}/tiles",
+                f"collections/{self.collection_id}/items/{self.item_id}/tiles",
             ),
         )
 
