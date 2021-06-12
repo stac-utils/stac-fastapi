@@ -38,6 +38,8 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     """Client for core endpoints defined by stac."""
 
     landing_page_id: str = attr.ib(default="stac-api")
+    title: str = attr.ib(default="Arturo STAC API")
+    description: str = attr.ib(default="Arturo raster datastore")
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     item_table: Type[database.Item] = attr.ib(default=database.Item)
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
@@ -57,8 +59,8 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         base_url = str(kwargs["request"].base_url)
         landing_page = LandingPage(
             id=self.landing_page_id,
-            title="Arturo STAC API",
-            description="Arturo raster datastore",
+            title=self.title,
+            description=self.description,
             links=[
                 Link(
                     rel=Relations.self,

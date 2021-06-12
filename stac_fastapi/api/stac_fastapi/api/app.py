@@ -60,6 +60,8 @@ class StacApi:
         default=attr.Factory(lambda: DEFAULT_STATUS_CODES)
     )
     app: FastAPI = attr.ib(default=attr.Factory(FastAPI))
+    title: str = attr.ib(default="Arturo STAC API")
+    version: str = attr.ib(default="0.1")
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -188,9 +190,8 @@ class StacApi:
         if self.app.openapi_schema:
             return self.app.openapi_schema
 
-        # TODO: parametrize
         openapi_schema = get_openapi(
-            title="Arturo STAC API", version="0.1", routes=self.app.routes
+            title=self.title, version=self.version, routes=self.app.routes
         )
 
         self.app.openapi_schema = openapi_schema
