@@ -4,12 +4,13 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
 import attr
-from stac_pydantic import Collection, Item, ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage, Search
+from stac_pydantic.api import Search
 
+from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.extension import ApiExtension
 
 NumType = Union[float, int]
+StacType = Dict[str, Any]
 
 
 @attr.s  # type:ignore
@@ -17,13 +18,13 @@ class BaseTransactionsClient(abc.ABC):
     """Defines a pattern for implementing the STAC transaction extension."""
 
     @abc.abstractmethod
-    def create_item(self, model: Item, **kwargs) -> Item:
+    def create_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
         """Create a new item.
 
         Called with `POST /collections/{collectionId}/items`.
 
         Args:
-            model: the item
+            item: the item
 
         Returns:
             The item that was created.
@@ -32,7 +33,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def update_item(self, model: Item, **kwargs) -> Item:
+    def update_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
         """Perform a complete update on an existing item.
 
         Called with `PUT /collections/{collectionId}/items`. It is expected that this item already exists.  The update
@@ -40,7 +41,7 @@ class BaseTransactionsClient(abc.ABC):
         by the transactions extension.
 
         Args:
-            model: the item (must be complete)
+            item: the item (must be complete)
 
         Returns:
             The updated item.
@@ -48,13 +49,16 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def delete_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
+    def delete_item(
+        self, item_id: str, collection_id: str, **kwargs
+    ) -> stac_types.Item:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collectionId}/items/{itemId}`
 
         Args:
-            id: id of the item.
+            item_id: id of the item.
+            collection_id: id of the collection.
 
         Returns:
             The deleted item.
@@ -62,13 +66,15 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def create_collection(self, model: Collection, **kwargs) -> Collection:
+    def create_collection(
+        self, collection: stac_types.Collection, **kwargs
+    ) -> stac_types.Collection:
         """Create a new collection.
 
         Called with `POST /collections`.
 
         Args:
-            model: the collection
+            collection: the collection
 
         Returns:
             The collection that was created.
@@ -76,7 +82,9 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def update_collection(self, model: Collection, **kwargs) -> Collection:
+    def update_collection(
+        self, collection: stac_types.Collection, **kwargs
+    ) -> stac_types.Collection:
         """Perform a complete update on an existing collection.
 
         Called with `PUT /collections`. It is expected that this item already exists.  The update should do a diff
@@ -84,7 +92,7 @@ class BaseTransactionsClient(abc.ABC):
         transactions extension.
 
         Args:
-            model: the collection (must be complete)
+            collection: the collection (must be complete)
 
         Returns:
             The updated collection.
@@ -92,13 +100,13 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def delete_collection(self, id: str, **kwargs) -> Collection:
+    def delete_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
         """Delete a collection.
 
         Called with `DELETE /collections/{collectionId}`
 
         Args:
-            id: id of the collection.
+            collection_id: id of the collection.
 
         Returns:
             The deleted collection.
@@ -121,7 +129,7 @@ class BaseCoreClient(abc.ABC):
         return any([isinstance(ext, extension) for ext in self.extensions])
 
     @abc.abstractmethod
-    def landing_page(self, **kwargs) -> LandingPage:
+    def landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
 
         Called with `GET /`.
@@ -132,7 +140,7 @@ class BaseCoreClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def conformance(self, **kwargs) -> ConformanceClasses:
+    def conformance(self, **kwargs) -> stac_types.Conformance:
         """Conformance classes.
 
         Called with `GET /conformance`.
@@ -143,7 +151,9 @@ class BaseCoreClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def post_search(self, search_request: Search, **kwargs) -> Dict[str, Any]:
+    def post_search(
+        self, search_request: Search, **kwargs
+    ) -> stac_types.ItemCollection:
         """Cross catalog search (POST).
 
         Called with `POST /search`.
@@ -169,7 +179,7 @@ class BaseCoreClient(abc.ABC):
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> stac_types.ItemCollection:
         """Cross catalog search (GET).
 
         Called with `GET /search`.
@@ -180,13 +190,14 @@ class BaseCoreClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
+    def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac_types.Item:
         """Get item by id.
 
         Called with `GET /collections/{collectionId}/items/{itemId}`.
 
         Args:
-            id: Id of the item.
+            item_id: Id of the item.
+            collection_id: Id of the collection.
 
         Returns:
             Item.
@@ -194,7 +205,7 @@ class BaseCoreClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def all_collections(self) -> List[Collection]:
+    def all_collections(self) -> List[stac_types.Collection]:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -205,13 +216,13 @@ class BaseCoreClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_collection(self, id: str, **kwargs) -> Collection:
+    def get_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collectionId}`.
 
         Args:
-            id: Id of the collection.
+            collection_id: Id of the collection.
 
         Returns:
             Collection.
@@ -220,14 +231,14 @@ class BaseCoreClient(abc.ABC):
 
     @abc.abstractmethod
     def item_collection(
-        self, id: str, limit: int = 10, token: str = None, **kwargs
-    ) -> ItemCollection:
+        self, collection_id: str, limit: int = 10, token: str = None, **kwargs
+    ) -> stac_types.ItemCollection:
         """Get all items from a specific collection.
 
         Called with `GET /collections/{collectionId}/items`
 
         Args:
-            id: id of the collection.
+            collection_id: id of the collection.
             limit: number of items to return.
             token: pagination token.
 
