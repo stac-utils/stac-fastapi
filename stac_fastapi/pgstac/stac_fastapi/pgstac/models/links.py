@@ -185,7 +185,7 @@ class CollectionLinks(CollectionLinksBase):
         return Link(
             rel=Relations.parent,
             type=MimeTypes.json,
-            href=urljoin(self.base_url),
+            href=self.base_url,
         )
 
     def link_items(self) -> Link:
