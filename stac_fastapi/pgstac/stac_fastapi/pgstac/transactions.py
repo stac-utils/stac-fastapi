@@ -57,7 +57,7 @@ class TransactionsClient(BaseTransactionsClient):
         request = kwargs["request"]
         pool = request.app.state.writepool
         await dbfunc(pool, "delete_item", item_id)
-        return ORJSONResponse({"deleted item": id})
+        return ORJSONResponse({"deleted item": item_id})
 
     async def delete_collection(id: str, **kwargs) -> schemas.Collection:
         """Delete collection."""
