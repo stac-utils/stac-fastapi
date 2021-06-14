@@ -1,7 +1,4 @@
-"""stac_fastapi.types.search module.
-
-# TODO: replace with stac-pydantic
-"""
+"""stac_fastapi.types.search module."""
 
 import operator
 from enum import auto
