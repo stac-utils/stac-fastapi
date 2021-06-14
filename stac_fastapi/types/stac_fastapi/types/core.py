@@ -2,12 +2,15 @@
 import abc
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
+from urllib.parse import urljoin
 
 import attr
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage, Search
+from stac_pydantic.share import Link, MimeTypes, Relations
 
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.links import CollectionLinks
 
 NumType = Union[float, int]
 
@@ -114,13 +117,15 @@ class BaseCoreClient(abc.ABC):
         extensions: list of registered api extensions.
     """
 
+    landing_page_id: str = attr.ib(default="stac-api")
+    title: str = attr.ib(default="Arturo STAC API")
+    description: str = attr.ib(default="Arturo raster datastore")
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
     def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
         """Check if an api extension is enabled."""
         return any([isinstance(ext, extension) for ext in self.extensions])
 
-    @abc.abstractmethod
     def landing_page(self, **kwargs) -> LandingPage:
         """Landing page.
 
@@ -129,7 +134,51 @@ class BaseCoreClient(abc.ABC):
         Returns:
             API landing page, serving as an entry point to the API.
         """
-        ...
+        base_url = str(kwargs["request"].base_url)
+        landing_page = LandingPage(
+            id=self.landing_page_id,
+            title=self.title,
+            description=self.description,
+            links=[
+                Link(
+                    rel=Relations.self,
+                    type=MimeTypes.json,
+                    href=base_url,
+                ),
+                Link(
+                    rel="data",
+                    type=MimeTypes.json,
+                    href=urljoin(base_url, "collections"),
+                ),
+                Link(
+                    rel=Relations.docs,
+                    type=MimeTypes.html,
+                    title="OpenAPI docs",
+                    href=urljoin(str(base_url), "docs"),
+                ),
+                Link(
+                    rel=Relations.conformance,
+                    type=MimeTypes.json,
+                    title="STAC/WFS3 conformance classes implemented by this server",
+                    href=urljoin(str(base_url), "conformance"),
+                ),
+                Link(
+                    rel=Relations.search,
+                    type=MimeTypes.geojson,
+                    title="STAC search",
+                    href=urljoin(str(base_url), "search"),
+                ),
+            ],
+        )
+        collections = self.all_collections(request=kwargs["request"])
+        for coll in collections:
+            coll_link = CollectionLinks(
+                collection_id=coll.id, base_url=str(base_url)
+            ).self()
+            coll_link.rel = Relations.child
+            coll_link.title = coll.title
+            landing_page.links.append(coll_link)
+        return landing_page
 
     @abc.abstractmethod
     def conformance(self, **kwargs) -> ConformanceClasses:

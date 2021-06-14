@@ -1,3 +1,4 @@
+# encoding: utf-8
 """link helpers."""
 
 from typing import Dict, List
