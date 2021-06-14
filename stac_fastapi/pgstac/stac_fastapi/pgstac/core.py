@@ -228,7 +228,9 @@ class CoreCrudClient(BaseCoreClient):
         collection.links = links
         return ORJSONResponse(collection.dict(exclude_none=True))
 
-    async def get_item(self, id: str, **kwargs) -> ORJSONResponse:
+    async def get_item(
+        self, item_id: str, collection_id: str, **kwargs
+    ) -> ORJSONResponse:
         """Get item by id.
 
         Called with `GET /collections/{collectionId}/items/{itemId}`.
@@ -239,7 +241,7 @@ class CoreCrudClient(BaseCoreClient):
         Returns:
             Item.
         """
-        req = PgstacSearch(ids=[id], limit=1)
+        req = PgstacSearch(ids=[item_id], limit=1)
         collection = await self.search_base(req, **kwargs)
         return ORJSONResponse(collection.features[0])
 
