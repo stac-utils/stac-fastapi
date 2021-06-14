@@ -63,7 +63,7 @@ services:
 
   database:
     container_name: stac-db
-    image: bitner/pgstac:0.1.7
+    image: bitner/pgstac:0.2.4
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
