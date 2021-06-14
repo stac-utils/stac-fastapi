@@ -185,13 +185,13 @@ class CollectionLinks(CollectionLinksBase):
         return Link(
             rel=Relations.parent,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, "/"),
+            href=urljoin(self.base_url),
         )
 
-    def link_item(self) -> Link:
+    def link_items(self) -> Link:
         """Create the `item` link."""
         return Link(
-            rel=Relations.item,
+            rel="items",
             type=MimeTypes.geojson,
             href=self.resolve(f"/collections/{self.collection_id}/items"),
         )

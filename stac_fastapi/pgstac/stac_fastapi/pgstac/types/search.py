@@ -101,6 +101,7 @@ class PgstacSearch(Search):
     query: Optional[Dict[str, Dict[Operator, Any]]]
     token: Optional[str] = None
     datetime: Optional[str] = None
+    sortby: Any
 
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:
