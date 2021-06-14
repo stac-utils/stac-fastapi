@@ -37,6 +37,9 @@ NumType = Union[float, int]
 class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     """Client for core endpoints defined by stac."""
 
+    landing_page_id: str = attr.ib(default="stac-api")
+    title: str = attr.ib(default="Arturo STAC API")
+    description: str = attr.ib(default="Arturo raster datastore")
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     item_table: Type[database.Item] = attr.ib(default=database.Item)
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
@@ -53,39 +56,46 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
     def landing_page(self, **kwargs) -> LandingPage:
         """Landing page."""
+        base_url = str(kwargs["request"].base_url)
         landing_page = LandingPage(
-            title="Arturo STAC API",
-            description="Arturo raster datastore",
+            id=self.landing_page_id,
+            title=self.title,
+            description=self.description,
             links=[
                 Link(
                     rel=Relations.self,
                     type=MimeTypes.json,
-                    href=str(kwargs["request"].base_url),
+                    href=base_url,
+                ),
+                Link(
+                    rel="data",
+                    type=MimeTypes.json,
+                    href=urljoin(base_url, "collections"),
                 ),
                 Link(
                     rel=Relations.docs,
                     type=MimeTypes.html,
                     title="OpenAPI docs",
-                    href=urljoin(str(kwargs["request"].base_url), "/docs"),
+                    href=urljoin(str(base_url), "docs"),
                 ),
                 Link(
                     rel=Relations.conformance,
                     type=MimeTypes.json,
                     title="STAC/WFS3 conformance classes implemented by this server",
-                    href=urljoin(str(kwargs["request"].base_url), "/conformance"),
+                    href=urljoin(str(base_url), "conformance"),
                 ),
                 Link(
                     rel=Relations.search,
                     type=MimeTypes.geojson,
                     title="STAC search",
-                    href=urljoin(str(kwargs["request"].base_url), "/search"),
+                    href=urljoin(str(base_url), "search"),
                 ),
             ],
         )
         collections = self.all_collections(request=kwargs["request"])
         for coll in collections:
             coll_link = CollectionLinks(
-                collection_id=coll.id, base_url=str(kwargs["request"].base_url)
+                collection_id=coll.id, base_url=str(base_url)
             ).self()
             coll_link.rel = Relations.child
             coll_link.title = coll.title
@@ -186,10 +196,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 links=links,
             )
 
-    def get_item(self, id: str, **kwargs) -> schemas.Item:
+    def get_item(self, item_id: str, collection_id: str, **kwargs) -> schemas.Item:
         """Get item by id."""
         with self.session.reader.context_session() as session:
-            item = self._lookup_id(id, self.item_table, session)
+            item = self._lookup_id(item_id, self.item_table, session)
             item.base_url = str(kwargs["request"].base_url)
             return schemas.Item.from_orm(item)
 

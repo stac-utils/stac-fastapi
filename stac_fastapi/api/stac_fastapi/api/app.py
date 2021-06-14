@@ -59,6 +59,8 @@ class StacApi:
     )
     app: FastAPI = attr.ib(default=attr.Factory(FastAPI))
     search_request_model = attr.ib(default=STACSearch)
+    title: str = attr.ib(default="Arturo STAC API")
+    version: str = attr.ib(default="0.1")
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -99,7 +101,7 @@ class StacApi:
             name="Landing Page",
             path="/",
             response_model=LandingPage,
-            response_model_exclude_unset=True,
+            response_model_exclude_unset=False,
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=create_endpoint(self.client.landing_page, EmptyRequest),
@@ -174,9 +176,8 @@ class StacApi:
         if self.app.openapi_schema:
             return self.app.openapi_schema
 
-        # TODO: parametrize
         openapi_schema = get_openapi(
-            title="STAC FastAPI", version="0.1", routes=self.app.routes
+            title=self.title, version=self.version, routes=self.app.routes
         )
 
         self.app.openapi_schema = openapi_schema

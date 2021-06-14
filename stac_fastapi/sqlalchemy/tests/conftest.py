@@ -48,7 +48,9 @@ def cleanup(postgres_core: CoreCrudClient, postgres_transactions: TransactionsCl
                 coll.id, limit=100, request=MockStarletteRequest
             )
             for feat in items.features:
-                postgres_transactions.delete_item(feat.id, request=MockStarletteRequest)
+                postgres_transactions.delete_item(
+                    feat.id, feat.collection, request=MockStarletteRequest
+                )
 
             # Delete the collection
             postgres_transactions.delete_collection(
