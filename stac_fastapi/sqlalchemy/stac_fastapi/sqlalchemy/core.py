@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Type, Union
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode
 
 import attr
 import geoalchemy2 as ga
@@ -14,13 +14,12 @@ from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic import ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage
+from stac_pydantic.api import ConformanceClasses
 from stac_pydantic.api.extensions.paging import PaginationLink
-from stac_pydantic.shared import Link, MimeTypes, Relations
+from stac_pydantic.shared import Relations
 
 from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
 from stac_fastapi.sqlalchemy.models import database, schemas
-from stac_fastapi.sqlalchemy.models.links import CollectionLinks
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
 from stac_fastapi.types.config import Settings
@@ -37,9 +36,6 @@ NumType = Union[float, int]
 class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     """Client for core endpoints defined by stac."""
 
-    landing_page_id: str = attr.ib(default="stac-api")
-    title: str = attr.ib(default="Arturo STAC API")
-    description: str = attr.ib(default="Arturo raster datastore")
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     item_table: Type[database.Item] = attr.ib(default=database.Item)
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
@@ -53,54 +49,6 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         if not row:
             raise NotFoundError(f"{table.__name__} {id} not found")
         return row
-
-    def landing_page(self, **kwargs) -> LandingPage:
-        """Landing page."""
-        base_url = str(kwargs["request"].base_url)
-        landing_page = LandingPage(
-            id=self.landing_page_id,
-            title=self.title,
-            description=self.description,
-            links=[
-                Link(
-                    rel=Relations.self,
-                    type=MimeTypes.json,
-                    href=base_url,
-                ),
-                Link(
-                    rel="data",
-                    type=MimeTypes.json,
-                    href=urljoin(base_url, "collections"),
-                ),
-                Link(
-                    rel=Relations.docs,
-                    type=MimeTypes.html,
-                    title="OpenAPI docs",
-                    href=urljoin(str(base_url), "docs"),
-                ),
-                Link(
-                    rel=Relations.conformance,
-                    type=MimeTypes.json,
-                    title="STAC/WFS3 conformance classes implemented by this server",
-                    href=urljoin(str(base_url), "conformance"),
-                ),
-                Link(
-                    rel=Relations.search,
-                    type=MimeTypes.geojson,
-                    title="STAC search",
-                    href=urljoin(str(base_url), "search"),
-                ),
-            ],
-        )
-        collections = self.all_collections(request=kwargs["request"])
-        for coll in collections:
-            coll_link = CollectionLinks(
-                collection_id=coll.id, base_url=str(base_url)
-            ).self()
-            coll_link.rel = Relations.child
-            coll_link.title = coll.title
-            landing_page.links.append(coll_link)
-        return landing_page
 
     def conformance(self, **kwargs) -> ConformanceClasses:
         """Conformance classes."""
