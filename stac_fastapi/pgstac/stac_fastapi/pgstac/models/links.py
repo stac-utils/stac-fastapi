@@ -86,7 +86,7 @@ class BaseLinks:
         available methods on this class that start with link_.
         """
         if self.request.method == "POST":
-            self.request.postbody = await self.request.body()
+            self.request.postbody = await self.request.json()
         # join passed in links with generated links
         # and update relative paths
         links = self.create_links()
