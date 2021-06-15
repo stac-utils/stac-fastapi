@@ -97,7 +97,7 @@ async def test_update_item(
 
 @pytest.mark.asyncio
 async def test_delete_item(
-    app_client, load_test_data: Callable, load_test_collection, load_test_item
+    app_client, load_test_collection, load_test_item
 ):
     coll = load_test_collection
     item = load_test_item
