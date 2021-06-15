@@ -4,7 +4,7 @@ from typing import Dict, Union
 
 import attr
 import orjson
-from asyncpg import exceptions
+from asyncpg import exceptions, pool
 from buildpg import asyncpg, render
 from fastapi import FastAPI
 
@@ -51,7 +51,7 @@ async def close_db_connection(app: FastAPI) -> None:
     await app.state.writepool.close()
 
 
-async def dbfunc(pool: asyncpg.pool, func: str, arg: Union[str, Dict]):
+async def dbfunc(pool: pool, func: str, arg: Union[str, Dict]):
     """Wrap PLPGSQL Functions.
 
     Keyword arguments:
