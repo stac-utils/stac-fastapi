@@ -94,8 +94,8 @@ class DB:
     """DB class that can be used with context manager."""
 
     connection_string = attr.ib(default=None)
-    _pool = attr.ib()
-    _connection = attr.ib()
+    _pool = attr.ib(default=None)
+    _connection = attr.ib(default=None)
 
     async def create_pool(self, connection_string: str, settings):
         """Create a connection pool."""
