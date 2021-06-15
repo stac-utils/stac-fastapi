@@ -41,9 +41,7 @@ async def test_update_collection(app_client, load_test_collection):
 
 
 @pytest.mark.asyncio
-async def test_delete_collection(
-    app_client, load_test_collection
-):
+async def test_delete_collection(app_client, load_test_collection):
     in_coll = load_test_collection
 
     resp = await app_client.delete(f"/collections/{in_coll.id}")
@@ -76,9 +74,7 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
 
 
 @pytest.mark.asyncio
-async def test_update_item(
-    app_client, load_test_collection, load_test_item
-):
+async def test_update_item(app_client, load_test_collection, load_test_item):
     coll = load_test_collection
     item = load_test_item
 
@@ -96,9 +92,7 @@ async def test_update_item(
 
 
 @pytest.mark.asyncio
-async def test_delete_item(
-    app_client, load_test_collection, load_test_item
-):
+async def test_delete_item(app_client, load_test_collection, load_test_item):
     coll = load_test_collection
     item = load_test_item
 
