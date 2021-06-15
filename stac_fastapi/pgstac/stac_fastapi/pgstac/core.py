@@ -1,8 +1,6 @@
 """Item crud client."""
-import logging
 import re
 from datetime import datetime
-from time import time
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
@@ -18,9 +16,6 @@ from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingL
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-
-logger = logging.getLogger("uvicorn")
-logger.setLevel(logging.INFO)
 
 NumType = Union[float, int]
 
@@ -68,7 +63,7 @@ class CoreCrudClient(BaseCoreClient):
                 ),
             ],
         )
-        collections = await self.all_collections_func(request=request)
+        collections = await self._all_collections_func(request=request)
         if collections:
             for coll in collections:
                 coll_link = CollectionLinks(
@@ -88,7 +83,7 @@ class CoreCrudClient(BaseCoreClient):
             ]
         )
 
-    async def all_collections_func(self, **kwargs) -> List[Dict]:
+    async def _all_collections_func(self, **kwargs) -> List[Dict]:
         """Read all collections from the database."""
         pool = kwargs["request"].app.state.readpool
         async with pool.acquire() as conn:
@@ -103,7 +98,7 @@ class CoreCrudClient(BaseCoreClient):
 
     async def all_collections(self, **kwargs) -> ORJSONResponse:
         """Get all collections."""
-        collections = await self.all_collections_func(**kwargs)
+        collections = await self._all_collections_func(**kwargs)
         if collections is None or len(collections) < 1:
             raise NotFoundError
         return ORJSONResponse([c.dict(exclude_none=True) for c in collections])
@@ -137,7 +132,7 @@ class CoreCrudClient(BaseCoreClient):
             Collection.construct(**collection).dict(exclude_none=True)
         )
 
-    async def search_base(
+    async def _search_base(
         self, search_request: PgstacSearch, **kwargs
     ) -> Dict[str, Any]:
         """Cross catalog search (POST).
@@ -151,16 +146,10 @@ class CoreCrudClient(BaseCoreClient):
             ItemCollection containing items which match the search criteria.
         """
         request = kwargs["request"]
-        logger.info(request)
-        url = str(request.url)
-        logger.info(url)
         pool = request.app.state.readpool
 
         # pool = kwargs["request"].app.state.readpool
         req = search_request.json(exclude_none=True)
-        logger.info(f"Search Request: {req}")
-
-        st = time()
 
         async with pool.acquire() as conn:
             q, p = render(
@@ -170,7 +159,6 @@ class CoreCrudClient(BaseCoreClient):
                 req=req,
             )
             items = await conn.fetchval(q, *p)
-        logger.info(f"Search took {time() - st} seconds")
         next = items.pop("next", None)
         prev = items.pop("prev", None)
         collection = ItemCollection.construct(**items)
@@ -221,7 +209,7 @@ class CoreCrudClient(BaseCoreClient):
             An ItemCollection.
         """
         req = PgstacSearch(collections=[id], limit=limit, token=token)
-        collection = await self.search_base(req, **kwargs)
+        collection = await self._search_base(req, **kwargs)
         links = await CollectionLinks(
             collection_id=id, request=kwargs["request"]
         ).get_links(extra_links=collection.links)
@@ -242,7 +230,7 @@ class CoreCrudClient(BaseCoreClient):
             Item.
         """
         req = PgstacSearch(ids=[item_id], limit=1)
-        collection = await self.search_base(req, **kwargs)
+        collection = await self._search_base(req, **kwargs)
         return ORJSONResponse(collection.features[0])
 
     async def post_search(
@@ -258,7 +246,7 @@ class CoreCrudClient(BaseCoreClient):
         Returns:
             ItemCollection containing items which match the search criteria.
         """
-        collection = await self.search_base(search_request, **kwargs)
+        collection = await self._search_base(search_request, **kwargs)
         return ORJSONResponse(collection.dict(exclude_none=True))
 
     async def get_search(
@@ -281,7 +269,6 @@ class CoreCrudClient(BaseCoreClient):
         Returns:
             ItemCollection containing items which match the search criteria.
         """
-        logger.info("in get search")
         # Parse request parameters
         base_args = {
             "collections": collections,
@@ -291,11 +278,9 @@ class CoreCrudClient(BaseCoreClient):
             "token": token,
             "query": orjson.loads(query) if query else query,
         }
-        logger.info(f"right after base args was set {base_args}")
         if datetime:
             base_args["datetime"] = datetime
 
-        logger.info(f"right after datetime was set {base_args}")
         if sortby:
             # https://github.com/radiantearth/stac-spec/tree/master/api-spec/extensions/sort#http-get-or-post-form
             sort_param = []
@@ -310,8 +295,6 @@ class CoreCrudClient(BaseCoreClient):
                 )
             base_args["sortby"] = sort_param
 
-        logger.info(base_args)
-
         if fields:
             includes = set()
             excludes = set()
@@ -324,8 +307,6 @@ class CoreCrudClient(BaseCoreClient):
                     includes.add(field)
             base_args["fields"] = {"include": includes, "exclude": excludes}
 
-        logger.info(base_args)
         # Do the request
         search_request = PgstacSearch(**base_args)
-        logger.info(search_request)
         return await self.post_search(search_request, request=kwargs["request"])

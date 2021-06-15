@@ -1,6 +1,5 @@
 """route factories."""
 import inspect
-import logging
 from typing import Callable, Type, Union
 
 from fastapi import Depends
@@ -8,9 +7,6 @@ from pydantic import BaseModel
 from starlette.requests import Request
 
 from stac_fastapi.api.models import APIRequest
-
-logger = logging.getLogger("uvicorn")
-logger.setLevel(logging.INFO)
 
 
 def create_endpoint(

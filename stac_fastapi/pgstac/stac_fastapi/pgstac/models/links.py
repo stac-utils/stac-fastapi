@@ -1,6 +1,5 @@
 """link helpers."""
 
-import logging
 from typing import Dict, List, Union
 from urllib.parse import ParseResult, parse_qs, unquote, urlencode, urljoin, urlparse
 
@@ -10,9 +9,6 @@ from stac_pydantic.shared import Link, MimeTypes, Relations
 from starlette.requests import Request
 
 from stac_fastapi.extensions.third_party.tiles import OGCTileLink
-
-logger = logging.getLogger("uvicorn")
-logger.setLevel(logging.INFO)
 
 # These can be inferred from the item/collection so they aren't included in the database
 # Instead they are dynamically generated when querying the database using the classes defined below

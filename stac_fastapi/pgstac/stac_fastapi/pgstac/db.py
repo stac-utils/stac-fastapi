@@ -1,6 +1,8 @@
 """Database connection handling."""
-import logging
 
+from typing import Dict, Union
+
+import attr
 import orjson
 from asyncpg import exceptions
 from buildpg import asyncpg, render
@@ -12,14 +14,6 @@ from stac_fastapi.types.errors import (
     ForeignKeyError,
     NotFoundError,
 )
-
-# from stac_fastapi.pgstac.config import Settings
-# settings = Settings()
-# if app.state.testing:
-#     settings.reader_connection_string = settings.writer_connection_string = settings.testing_connection_string
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 async def con_init(conn):
@@ -46,7 +40,6 @@ async def connect_to_db(app: FastAPI) -> None:
     else:
         readpool = settings.reader_connection_string
         writepool = settings.writer_connection_string
-    logger.info(f"Creating Connection Pools {readpool} {writepool}")
     db = DB()
     app.state.readpool = await db.create_pool(readpool, settings)
     app.state.writepool = await db.create_pool(writepool, settings)
@@ -54,14 +47,19 @@ async def connect_to_db(app: FastAPI) -> None:
 
 async def close_db_connection(app: FastAPI) -> None:
     """Close connection."""
-    logger.info("Closing connections to database")
     await app.state.readpool.close()
     await app.state.writepool.close()
-    logger.info("Connections closed")
 
 
-async def dbfunc(pool, func, arg):
-    """Wrap PLPGSQL Functions."""
+async def dbfunc(pool: asyncpg.pool, func: str, arg: Union[str, Dict]):
+    """Wrap PLPGSQL Functions.
+
+    Keyword arguments:
+    pool -- the asyncpg pool to use to connect to the database
+    func -- the name of the PostgreSQL function to call
+    arg -- the argument to the PostgreSQL function as either a string
+    or a dict that will be converted into jsonb
+    """
     try:
         if isinstance(arg, str):
             async with pool.acquire() as conn:
@@ -81,25 +79,23 @@ async def dbfunc(pool, func, arg):
                     item=arg.json(),
                 )
                 return await conn.fetchval(q, *p)
-    except exceptions.UniqueViolationError:
-        raise ConflictError
-    except exceptions.NoDataFoundError:
-        raise NotFoundError
-    except exceptions.NotNullViolationError:
-        raise DatabaseError
-    except exceptions.ForeignKeyViolationError:
-        raise ForeignKeyError
+    except exceptions.UniqueViolationError as e:
+        raise ConflictError from e
+    except exceptions.NoDataFoundError as e:
+        raise NotFoundError from e
+    except exceptions.NotNullViolationError as e:
+        raise DatabaseError from e
+    except exceptions.ForeignKeyViolationError as e:
+        raise ForeignKeyError from e
 
 
+@attr.s
 class DB:
     """DB class that can be used with context manager."""
 
-    pool = None
-    write = False
-
-    def __init__(self, connection_string: str = None):
-        """Init."""
-        self.connection_string = connection_string
+    connection_string = attr.ib(default=None)
+    _pool = attr.ib()
+    _connection = attr.ib()
 
     async def create_pool(self, connection_string: str, settings):
         """Create a connection pool."""
@@ -115,27 +111,4 @@ class DB:
                 "application_name": "pgstac",
             },
         )
-        logger.info("Connection to pool established")
         return pool
-
-    # async def get_pool(self, write: bool = False):
-    #     """Get a connection pool."""
-    #     if write or self.write:
-    #         self.pool = await self.create_pool(
-    #             settings.writer_connection_string
-    #         )
-    #     else:
-    #         self.pool = await self.create_pool(
-    #             settings.reader_connection_string
-    #         )
-    #     return self.pool
-
-    async def __aenter__(self):
-        """Aenter."""
-        self.pool = await self.create_pool(self.connection_string)
-        self.connection = await self.pool.acquire()
-        return self.connection
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Aexit."""
-        await self.pool.close()
