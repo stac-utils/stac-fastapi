@@ -25,7 +25,7 @@ async def test_create_collection(app_client, load_test_data: Callable):
 
 
 @pytest.mark.asyncio
-async def test_update_collection(app_client, load_test_data, load_test_collection):
+async def test_update_collection(app_client, load_test_collection):
     in_coll = load_test_collection
     in_coll.keywords.append("newkeyword")
 
