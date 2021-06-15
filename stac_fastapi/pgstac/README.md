@@ -26,7 +26,7 @@ Stac FastAPI using the [PGStac](https://github.com/stac-utils/pgstac) backend.
 
 [PGStac](https://github.com/stac-utils/pgstac) is a separately managed PostgreSQL database that is designed for enhanced performance to be able to scale Stac FastAPI to be able to efficiently handle hundreds of millions of records. [PGStac](https://github.com/stac-utils/pgstac) automatically includes indexes on Item id, Collection id, Item Geometry, Item Datetime, and an Index for equality checks on any key in Item Properties. Additional indexes may be added to Item Properties to speed up the use of order, <, <=, >, and >= queries.
 
-Stac FastAPI acts as the front end validating any requests and data that is sent to the [PGStac](https://github.com/stac-utils/pgstac) backend and adds in Link items on data return relative to the service host. All other processing and search is provided directly using PGStac procedural sql / plpgsql functions on the database.
+Stac FastAPI acts as the HTTP interface validating any requests and data that is sent to the [PGStac](https://github.com/stac-utils/pgstac) backend and adds in Link items on data return relative to the service host. All other processing and search is provided directly using PGStac procedural sql / plpgsql functions on the database.
 
 PGStac stores all collection and item records as jsonb fields exactly as they come in allowing for any custom fields to be stored and retrieved transparently.
 
