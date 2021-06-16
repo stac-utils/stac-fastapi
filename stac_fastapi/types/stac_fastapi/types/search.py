@@ -4,12 +4,10 @@
 """
 
 import operator
-from dataclasses import dataclass
 from enum import auto
 from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 
-import sqlalchemy as sa
 from pydantic import Field, ValidationError, root_validator
 from pydantic.error_wrappers import ErrorWrapper
 from stac_pydantic.api import Search
@@ -63,24 +61,6 @@ class Queryables(str, AutoValueEnum):
     maxzoom = "cog:maxzoom"
     dtype = "cog:dtype"
     foo = "foo"
-
-
-@dataclass
-class QueryableTypes:
-    """Defines a set of queryable fields.
-
-    # TODO: Let the user define these in a config file
-    # TODO: There is a much better way of defining this field <> type mapping than two enums with same keys
-    """
-
-    orientation = sa.String
-    gsd = sa.Float
-    epsg = sa.Integer
-    height = sa.Integer
-    width = sa.Integer
-    minzoom = sa.Integer
-    maxzoom = sa.Integer
-    dtype = sa.String
 
 
 class FieldsExtension(FieldsBase):
