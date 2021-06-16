@@ -10,7 +10,7 @@ services:
     environment:
       - APP_HOST=0.0.0.0
       - APP_PORT=8081
-      - RELOAD=true
+      - RELOAD=false
       - ENVIRONMENT=local
       - POSTGRES_USER=username
       - POSTGRES_PASS=password
@@ -40,7 +40,7 @@ services:
     environment:
       - APP_HOST=0.0.0.0
       - APP_PORT=8082
-      - RELOAD=true
+      - RELOAD=false
       - ENVIRONMENT=local
       - POSTGRES_USER=username
       - POSTGRES_PASS=password
