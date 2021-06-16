@@ -22,10 +22,13 @@ services:
       - VSI_CACHE=TRUE
       - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
       - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
+      - DB_MIN_CONN_SIZE=1
+      - DB_MAX_CONN_SIZE=1
     ports:
       - "8081:8081"
     volumes:
-      - ./:/app
+      - ./stac_fastapi:/app/stac_fastapi
+      - ./scripts:/app/scripts
     depends_on:
       - database
     command:
@@ -52,10 +55,13 @@ services:
       - VSI_CACHE=TRUE
       - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
       - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
+      - DB_MIN_CONN_SIZE=1
+      - DB_MAX_CONN_SIZE=1
     ports:
       - "8082:8082"
     volumes:
-      - ./:/app
+      - ./stac_fastapi:/app/stac_fastapi
+      - ./scripts:/app/scripts
     depends_on:
       - database
     command:
@@ -70,6 +76,7 @@ services:
       - POSTGRES_DB=postgis
     ports:
       - "5439:5432"
+    command: postgres -N 500
 
   sqlalchemy-migration:
     image: stac-utils/stac-fastapi
@@ -81,9 +88,10 @@ services:
       - POSTGRES_HOST=database
       - POSTGRES_PORT=5432
     volumes:
-      - ./:/app
+      - ./stac_fastapi:/app/stac_fastapi
+      - ./scripts:/app/scripts
     command: >
-      bash -c "sleep 10 && cd stac_fastapi/sqlalchemy && alembic upgrade head && python scripts/ingest_joplin.py"
+      bash -c "sleep 10 && cd stac_fastapi/sqlalchemy && alembic upgrade head && python /app/scripts/ingest_joplin.py"
     depends_on:
       - database
       - app-sqlalchemy

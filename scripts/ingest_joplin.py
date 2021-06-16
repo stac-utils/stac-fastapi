@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 import requests
 
 bucket = "arturo-stac-api-test-data"
-app_host = "http://app:8081"
+app_host = "http://app-sqlalchemy:8081"
 
 
 def ingest_joplin_data(data_dir=Path.cwd() / "tests" / "data" / "joplin"):
