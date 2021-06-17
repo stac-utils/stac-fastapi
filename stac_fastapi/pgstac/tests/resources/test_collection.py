@@ -85,8 +85,8 @@ async def test_update_new_collection(app_client, load_test_collection):
 
 
 @pytest.mark.asyncio
-async def test_collection_not_found(
+async def test_nocollections(
     app_client,
 ):
     resp = await app_client.get("/collections")
-    assert resp.status_code == 404
+    assert resp.status_code == 200
