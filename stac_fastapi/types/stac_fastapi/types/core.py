@@ -243,7 +243,7 @@ class BaseCoreClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def all_collections(self) -> List[Collection]:
+    def all_collections(self, **kwargs) -> List[Collection]:
         """Get all available collections.
 
         Called with `GET /collections`.
