@@ -76,7 +76,7 @@ async def dbfunc(pool: pool, func: str, arg: Union[str, Dict]):
                     f"""
                         SELECT * FROM {func}(:item::text::jsonb);
                         """,
-                    item=arg.json(),
+                    item=arg.json(exclude_unset=True),
                 )
                 return await conn.fetchval(q, *p)
     except exceptions.UniqueViolationError as e:
