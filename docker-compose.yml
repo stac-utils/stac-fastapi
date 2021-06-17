@@ -91,10 +91,28 @@ services:
       - ./stac_fastapi:/app/stac_fastapi
       - ./scripts:/app/scripts
     command: >
-      bash -c "sleep 10 && cd stac_fastapi/sqlalchemy && alembic upgrade head && python /app/scripts/ingest_joplin.py"
+      bash -c "sleep 10 && cd stac_fastapi/sqlalchemy && alembic upgrade head && python /app/scripts/ingest_joplin.py http://app-sqlalchemy:8081"
     depends_on:
       - database
       - app-sqlalchemy
+
+  pgstac-loadjoplin:
+    image: stac-utils/stac-fastapi
+    environment:
+      - ENVIRONMENT=development
+      - POSTGRES_USER=username
+      - POSTGRES_PASS=password
+      - POSTGRES_DBNAME=postgis
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+    volumes:
+      - ./stac_fastapi:/app/stac_fastapi
+      - ./scripts:/app/scripts
+    command: >
+      bash -c "sleep 10 && python /app/scripts/ingest_joplin.py http://app-pgstac:8082"
+    depends_on:
+      - database
+      - app-pgstac
 
 networks:
   default:

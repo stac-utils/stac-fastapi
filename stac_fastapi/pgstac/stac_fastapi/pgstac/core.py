@@ -41,7 +41,7 @@ class CoreCrudClient(BaseCoreClient):
                 Link(
                     rel=Relations.self,
                     type=MimeTypes.json,
-                    href=str(kwargs["request"].base_url),
+                    href=str(base_url),
                 ),
                 Link(
                     rel=Relations.docs,
@@ -60,6 +60,11 @@ class CoreCrudClient(BaseCoreClient):
                     type=MimeTypes.geojson,
                     title="STAC search",
                     href=urljoin(base_url, "/search"),
+                ),
+                Link(
+                    rel="data",
+                    type=MimeTypes.json,
+                    href=urljoin(base_url, "/collections"),
                 ),
             ],
         )
@@ -85,22 +90,30 @@ class CoreCrudClient(BaseCoreClient):
 
     async def _all_collections_func(self, **kwargs) -> List[Dict]:
         """Read all collections from the database."""
-        pool = kwargs["request"].app.state.readpool
+        request = kwargs["request"]
+        pool = request.app.state.readpool
+
         async with pool.acquire() as conn:
             collections = await conn.fetchval(
                 """
                 SELECT * FROM all_collections();
                 """
             )
+        linked_collections = []
         if collections is not None and len(collections) > 0:
-            return [Collection.construct(**c) for c in collections]
-        return None
+            for c in collections:
+                coll = Collection.construct(**c)
+                coll.links = await CollectionLinks(
+                    collection_id=coll.id, request=request
+                ).get_links()
+                linked_collections.append(coll)
+        return linked_collections
 
     async def all_collections(self, **kwargs) -> ORJSONResponse:
         """Get all collections."""
         collections = await self._all_collections_func(**kwargs)
         if collections is None or len(collections) < 1:
-            raise NotFoundError
+            return ORJSONResponse([])
         return ORJSONResponse([c.dict(exclude_none=True) for c in collections])
 
     async def get_collection(self, id: str, **kwargs) -> ORJSONResponse:
