@@ -12,11 +12,11 @@ jobs:
 
     services:
       db_service:
-        image: kartoza/postgis:latest
+        image: bitner/pgstac:0.1.7
         env:
           POSTGRES_USER: username
-          POSTGRES_PASS: password
-          POSTGRES_DBNAME: postgis
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: postgis
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
           ALLOW_IP_RANGE: 0.0.0.0/0
@@ -63,6 +63,10 @@ jobs:
         run: |
           pip install ./stac_fastapi/sqlalchemy[dev,server]
 
+      - name: Install pgstac stac-fastapi
+        run: |
+          pip install ./stac_fastapi/pgstac[dev,server]
+
       - name: Run migration
         run: |
           cd stac_fastapi/sqlalchemy && alembic upgrade head
@@ -75,7 +79,19 @@ jobs:
 
       - name: Run test suite
         run: |
-          pipenv run pytest -svvv
+          cd stac_fastapi/sqlalchemy && pipenv run pytest -svvv
+        env:
+          ENVIRONMENT: testing
+          POSTGRES_USER: username
+          POSTGRES_PASS: password
+          POSTGRES_DBNAME: postgis
+          POSTGRES_HOST_READER: localhost
+          POSTGRES_HOST_WRITER: localhost
+          POSTGRES_PORT: 5432
+
+      - name: Run test suite
+        run: |
+          cd stac_fastapi/pgstac && pipenv run pytest -svvv
         env:
           ENVIRONMENT: testing
           POSTGRES_USER: username

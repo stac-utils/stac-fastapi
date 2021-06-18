@@ -21,6 +21,10 @@ class ApiSettings(BaseSettings):
     # TODO: Remove `default_includes` attribute so we can use `pydantic.BaseSettings` instead
     default_includes: Optional[Set[str]] = None
 
+    app_host: str = "0.0.0.0"
+    app_port: int = 8000
+    reload: bool = True
+
     class Config:
         """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
 

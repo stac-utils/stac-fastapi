@@ -12,8 +12,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from stac_pydantic.shared import DATETIME_RFC339
 
 from stac_fastapi.sqlalchemy.models import schemas
+from stac_fastapi.sqlalchemy.types.search import Queryables, QueryableTypes
 from stac_fastapi.types.config import Settings
-from stac_fastapi.types.search import QueryableTypes
 
 BaseModel = declarative_base()
 
@@ -134,7 +134,7 @@ class Item(BaseModel):  # type:ignore
         except AttributeError:
             # Use a JSONB field
             return cls.properties[(field_name)].cast(
-                getattr(QueryableTypes, field_name.name)
+                getattr(QueryableTypes, Queryables(field_name).name)
             )
 
 
