@@ -12,7 +12,7 @@ from starlette.requests import Request
 from starlette.responses import HTMLResponse, RedirectResponse
 
 from stac_fastapi.api.models import ItemUri
-from stac_fastapi.api.routes import create_endpoint_with_depends
+from stac_fastapi.api.routes import create_endpoint
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
 
@@ -207,6 +207,6 @@ class TilesExtension(ApiExtension):
             response_model_exclude_none=True,
             response_model_exclude_unset=True,
             methods=["GET"],
-            endpoint=create_endpoint_with_depends(self.client.get_item_tiles, ItemUri),
+            endpoint=create_endpoint(self.client.get_item_tiles, ItemUri),
             tags=["OGC Tiles"],
         )

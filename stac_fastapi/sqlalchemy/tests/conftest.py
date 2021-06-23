@@ -22,6 +22,7 @@ from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
+from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
@@ -114,6 +115,7 @@ def api_client(db_session):
             FieldsExtension(),
             QueryExtension(),
         ],
+        search_request_model=SQLAlchemySTACSearch,
     )
 
 

@@ -1,15 +1,21 @@
 """Ingest sample data during docker-compose"""
 import json
+import sys
 from pathlib import Path
 from urllib.parse import urljoin
 
 import requests
 
-bucket = "arturo-stac-api-test-data"
-app_host = "http://app:8081"
+workingdir = Path(__file__).parent.absolute()
+joplindata = workingdir.parent / "stac_fastapi" / "testdata" / "joplin"
+
+app_host = sys.argv[1]
+
+if not app_host:
+    raise Exception("You must include full path/port to stac instance")
 
 
-def ingest_joplin_data(data_dir=Path.cwd() / "tests" / "data" / "joplin"):
+def ingest_joplin_data(app_host: str = app_host, data_dir: Path = joplindata):
     """ingest data."""
 
     with open(data_dir / "collection.json") as f:
