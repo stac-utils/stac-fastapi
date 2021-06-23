@@ -43,7 +43,8 @@ class Collection(Catalog):
     providers: List[Dict[str, Any]]
     extent: Dict[str, Any]
     summaries: Dict[str, Any]
-    assets: Dict[str, Any]
+    # TODO: Support collection-level assets
+    # assets: Dict[str, Any]
 
 
 class Item(TypedDict):

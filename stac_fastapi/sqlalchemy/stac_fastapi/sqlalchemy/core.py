@@ -19,13 +19,14 @@ from stac_pydantic.shared import Relations
 
 from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
 from stac_fastapi.sqlalchemy.models import database, schemas
+from stac_fastapi.sqlalchemy.models.links import CollectionLinks, resolve_links
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
 from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Conformance
+from stac_fastapi.types.stac import Collection, Conformance
 
 logger = logging.getLogger(__name__)
 
@@ -408,3 +409,34 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             "links": links,
             "bbox": bbox,
         }
+
+    @staticmethod
+    def _create_collection_from_db(
+        collection_db_model: database.BaseModel, base_url: str
+    ) -> Collection:
+        """Transform an instance of the collection database model to a valid STAC collection."""
+        collection_links = CollectionLinks(
+            collection_id=collection_db_model.id, base_url=base_url
+        ).create_links()
+
+        db_links = collection_db_model.links
+        if db_links:
+            collection_links += resolve_links(
+                collection_db_model.links, collection_db_model.base_url
+            )
+
+        stac_extensions = collection_db_model.stac_extensions or []
+
+        return Collection(
+            id=collection_db_model.id,
+            stac_extensions=stac_extensions,
+            stac_version=collection_db_model.stac_version,
+            title=collection_db_model.title,
+            description=collection_db_model.description,
+            keywords=collection_db_model.keywords,
+            license=collection_db_model.license,
+            providers=collection_db_model.providers,
+            summaries=collection_db_model.summaries,
+            extent=collection_db_model.extent,
+            links=collection_links,
+        )
