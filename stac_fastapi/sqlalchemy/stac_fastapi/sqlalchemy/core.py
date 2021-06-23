@@ -60,23 +60,23 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             ]
         )
 
-    def all_collections(self, **kwargs) -> List[schemas.Collection]:
+    def all_collections(self, **kwargs) -> List[Collection]:
         """Read all collections from the database."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
-            response = []
-            for collection in collections:
-                collection.base_url = str(kwargs["request"].base_url)
-                response.append(schemas.Collection.from_orm(collection))
+            response = [
+                self._create_collection_from_db(collection, base_url)
+                for collection in collections
+            ]
             return response
 
     def get_collection(self, id: str, **kwargs) -> schemas.Collection:
         """Get collection by id."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             collection = self._lookup_id(id, self.collection_table, session)
-            # TODO: Don't do this
-            collection.base_url = str(kwargs["request"].base_url)
-            return schemas.Collection.from_orm(collection)
+            return self._create_collection_from_db(collection, base_url)
 
     def item_collection(
         self, id: str, limit: int = 10, token: str = None, **kwargs
