@@ -14,7 +14,6 @@ from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic import ItemCollection
-from stac_pydantic.api import ConformanceClasses
 from stac_pydantic.api.extensions.paging import PaginationLink
 from stac_pydantic.shared import Relations
 
@@ -26,6 +25,7 @@ from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.stac import Conformance
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +50,9 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             raise NotFoundError(f"{table.__name__} {id} not found")
         return row
 
-    def conformance(self, **kwargs) -> ConformanceClasses:
+    def conformance(self, **kwargs) -> Conformance:
         """Conformance classes."""
-        return ConformanceClasses(
+        return Conformance(
             conformsTo=[
                 "https://stacspec.org/STAC-api.html",
                 "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
