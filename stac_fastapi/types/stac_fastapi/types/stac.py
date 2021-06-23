@@ -1,22 +1,31 @@
+"""STAC types."""
 from typing import Any, Dict, List, Optional, TypedDict, Union
 
 NumType = Union[float, int]
 
 
 class LandingPage(TypedDict):
+    """STAC Landing Page."""
+
     stac_version: str
+    stac_extensions: Optional[List[str]]
     id: str
     title: str
     description: str
-    conformsTo: List[str]
+    # TODO: Implement conformance classes in landing page (https://github.com/stac-utils/stac-fastapi/issues/159)
+    # conformsTo: List[str]
     links: List[Dict[str, Any]]
 
 
 class Conformance(TypedDict):
+    """STAC Conformance Classes."""
+
     conformsTo: List[str]
 
 
 class Catalog(TypedDict):
+    """STAC Catalog."""
+
     type: str
     stac_version: str
     stac_extensions: Optional[List[str]]
@@ -27,6 +36,8 @@ class Catalog(TypedDict):
 
 
 class Collection(Catalog):
+    """STAC Collection."""
+
     keywords: List[str]
     license: str
     providers: List[Dict[str, Any]]
@@ -36,6 +47,8 @@ class Collection(Catalog):
 
 
 class Item(TypedDict):
+    """STAC Item."""
+
     type: str
     stac_version: str
     stac_extensions: Optional[List[str]]
@@ -49,6 +62,8 @@ class Item(TypedDict):
 
 
 class ItemCollection(TypedDict):
+    """STAC Item Collection."""
+
     stac_version: str
     stac_extensions: Optional[List[str]]
     type: str

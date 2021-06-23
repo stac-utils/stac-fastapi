@@ -5,10 +5,9 @@ from typing import Any, Dict, List, Optional, Type, Union
 from urllib.parse import urljoin
 
 import attr
-from stac_pydantic.api import LandingPage, Search
-from stac_pydantic.shared import Link, MimeTypes, Relations
+from stac_pydantic.api import Search
+from stac_pydantic.shared import MimeTypes, Relations
 
-from stac_fastapi.sqlalchemy.models.links import CollectionLinks
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.extension import ApiExtension
 
@@ -134,7 +133,7 @@ class BaseCoreClient(abc.ABC):
         """Check if an api extension is enabled."""
         return any([isinstance(ext, extension) for ext in self.extensions])
 
-    def landing_page(self, **kwargs) -> LandingPage:
+    def landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
 
         Called with `GET /`.
@@ -143,49 +142,51 @@ class BaseCoreClient(abc.ABC):
             API landing page, serving as an entry point to the API.
         """
         base_url = str(kwargs["request"].base_url)
-        landing_page = LandingPage(
+        landing_page = stac_types.LandingPage(
             id=self.landing_page_id,
             title=self.title,
             description=self.description,
             links=[
-                Link(
-                    rel=Relations.self,
-                    type=MimeTypes.json,
-                    href=base_url,
-                ),
-                Link(
-                    rel="data",
-                    type=MimeTypes.json,
-                    href=urljoin(base_url, "collections"),
-                ),
-                Link(
-                    rel=Relations.docs,
-                    type=MimeTypes.html,
-                    title="OpenAPI docs",
-                    href=urljoin(str(base_url), "docs"),
-                ),
-                Link(
-                    rel=Relations.conformance,
-                    type=MimeTypes.json,
-                    title="STAC/WFS3 conformance classes implemented by this server",
-                    href=urljoin(str(base_url), "conformance"),
-                ),
-                Link(
-                    rel=Relations.search,
-                    type=MimeTypes.geojson,
-                    title="STAC search",
-                    href=urljoin(str(base_url), "search"),
-                ),
+                {
+                    "rel": Relations.self.value,
+                    "type": MimeTypes.json,
+                    "href": base_url,
+                },
+                {
+                    "rel": "data",
+                    "type": MimeTypes.json,
+                    "href": urljoin(base_url, "collections"),
+                },
+                {
+                    "rel": Relations.docs.value,
+                    "type": MimeTypes.json,
+                    "title": "OpenAPI docs",
+                    "href": urljoin(base_url, "docs"),
+                },
+                {
+                    "rel": Relations.conformance.value,
+                    "type": MimeTypes.json,
+                    "title": "STAC/WFS3 conformance classes implemented by this server",
+                    "href": base_url,
+                },
+                {
+                    "rel": Relations.search.value,
+                    "type": MimeTypes.json,
+                    "title": "STAC search",
+                    "href": urljoin(base_url, "search"),
+                },
             ],
         )
         collections = self.all_collections(request=kwargs["request"])
-        for coll in collections:
-            coll_link = CollectionLinks(
-                collection_id=coll.id, base_url=str(base_url)
-            ).self()
-            coll_link.rel = Relations.child
-            coll_link.title = coll.title
-            landing_page.links.append(coll_link)
+        for collection in collections:
+            landing_page["links"].append(
+                {
+                    "rel": Relations.child.value,
+                    "type": MimeTypes.json.value,
+                    "title": collection.title,
+                    "href": urljoin(base_url, f"collections/{collection.id}"),
+                }
+            )
         return landing_page
 
     @abc.abstractmethod
@@ -227,7 +228,7 @@ class BaseCoreClient(abc.ABC):
         token: Optional[str] = None,
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> stac_types.ItemCollection:
         """Cross catalog search (GET).
 
