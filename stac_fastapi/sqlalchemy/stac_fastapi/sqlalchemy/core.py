@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic.shared import DATETIME_RFC339, Relations
 
 from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
-from stac_fastapi.sqlalchemy.models import database, schemas
+from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.models.links import (
     CollectionLinks,
     ItemLinks,
@@ -73,7 +73,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             ]
             return response
 
-    def get_collection(self, id: str, **kwargs) -> schemas.Collection:
+    def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
@@ -151,7 +151,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 context=context_obj,
             )
 
-    def get_item(self, item_id: str, collection_id: str, **kwargs) -> schemas.Item:
+    def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
