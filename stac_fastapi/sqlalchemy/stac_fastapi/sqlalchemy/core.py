@@ -13,20 +13,22 @@ from shapely.geometry import shape
 from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
-from stac_pydantic import ItemCollection
-from stac_pydantic.api.extensions.paging import PaginationLink
-from stac_pydantic.shared import Relations
+from stac_pydantic.shared import DATETIME_RFC339, Relations
 
 from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
 from stac_fastapi.sqlalchemy.models import database, schemas
-from stac_fastapi.sqlalchemy.models.links import CollectionLinks, resolve_links
+from stac_fastapi.sqlalchemy.models.links import (
+    CollectionLinks,
+    ItemLinks,
+    resolve_links,
+)
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
 from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Collection, Conformance
+from stac_fastapi.types.stac import Collection, Conformance, Item, ItemCollection
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +84,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         self, id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
         """Read an item collection from the database."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             collection_children = (
                 session.query(self.item_table)
@@ -112,27 +115,28 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             links = []
             if page.next:
                 links.append(
-                    PaginationLink(
-                        rel=Relations.next,
-                        type="application/geo+json",
-                        href=f"{kwargs['request'].base_url}collections/{id}/items?token={page.next}&limit={limit}",
-                        method="GET",
-                    )
+                    {
+                        "rel": Relations.next.value,
+                        "type": "application/geo+json",
+                        "href": f"{kwargs['request'].base_url}collections/{id}/items?token={page.next}&limit={limit}",
+                        "method": "GET",
+                    }
                 )
             if page.previous:
                 links.append(
-                    PaginationLink(
-                        rel=Relations.previous,
-                        type="application/geo+json",
-                        href=f"{kwargs['request'].base_url}collections/{id}/items?token={page.previous}&limit={limit}",
-                        method="GET",
-                    )
+                    {
+                        "rel": Relations.previous.value,
+                        "type": "application/geo+json",
+                        "href": f"{kwargs['request'].base_url}collections/{id}/items?token={page.previous}&limit={limit}",
+                        "method": "GET",
+                    }
                 )
 
             response_features = []
             for item in page:
-                item.base_url = str(kwargs["request"].base_url)
-                response_features.append(schemas.Item.from_orm(item))
+                response_features.append(
+                    self._create_item_from_db(item, base_url=base_url)
+                )
 
             context_obj = None
             if self.extension_is_enabled(ContextExtension):
@@ -140,17 +144,19 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
             return ItemCollection(
                 type="FeatureCollection",
-                context=context_obj,
+                stac_version=response_features[0]["stac_version"],
+                stac_extensions=response_features[0]["stac_extensions"],
                 features=response_features,
                 links=links,
+                context=context_obj,
             )
 
     def get_item(self, item_id: str, collection_id: str, **kwargs) -> schemas.Item:
         """Get item by id."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             item = self._lookup_id(item_id, self.item_table, session)
-            item.base_url = str(kwargs["request"].base_url)
-            return schemas.Item.from_orm(item)
+            return self._create_item_from_db(item, base_url=base_url)
 
     def get_search(
         self,
@@ -224,8 +230,9 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
     def post_search(
         self, search_request: SQLAlchemySTACSearch, **kwargs
-    ) -> Dict[str, Any]:
+    ) -> ItemCollection:
         """POST search catalog."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             token = (
                 self.get_token(search_request.token) if search_request.token else False
@@ -340,25 +347,25 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             links = []
             if page.next:
                 links.append(
-                    PaginationLink(
-                        rel=Relations.next,
-                        type="application/geo+json",
-                        href=f"{kwargs['request'].base_url}search",
-                        method="POST",
-                        body={"token": page.next},
-                        merge=True,
-                    )
+                    {
+                        "rel": Relations.next.value,
+                        "type": "application/geo+json",
+                        "href": f"{kwargs['request'].base_url}search",
+                        "method": "POST",
+                        "body": {"token": page.next},
+                        "merge": True,
+                    }
                 )
             if page.previous:
                 links.append(
-                    PaginationLink(
-                        rel=Relations.previous,
-                        type="application/geo+json",
-                        href=f"{kwargs['request'].base_url}search",
-                        method="POST",
-                        body={"token": page.previous},
-                        merge=True,
-                    )
+                    {
+                        "rel": Relations.previous.value,
+                        "type": "application/geo+json",
+                        "href": f"{kwargs['request'].base_url}search",
+                        "method": "POST",
+                        "body": {"token": page.previous},
+                        "merge": True,
+                    }
                 )
 
             response_features = []
@@ -378,21 +385,13 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     else:
                         search_request.field.include.union(query_include)
 
+                # TODO: Enable filter extension
                 filter_kwargs = search_request.field.filter_fields
 
-            xvals = []
-            yvals = []
             for item in page:
-                item.base_url = str(kwargs["request"].base_url)
-                item_model = schemas.Item.from_orm(item)
-                xvals += [item_model.bbox[0], item_model.bbox[2]]
-                yvals += [item_model.bbox[1], item_model.bbox[3]]
-                response_features.append(item_model.to_dict(**filter_kwargs))
-
-        try:
-            bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
-        except ValueError:
-            bbox = None
+                response_features.append(
+                    self._create_item_from_db(item, base_url=base_url)
+                )
 
         context_obj = None
         if self.extension_is_enabled(ContextExtension):
@@ -402,13 +401,14 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 "matched": count,
             }
 
-        return {
-            "type": "FeatureCollection",
-            "context": context_obj,
-            "features": response_features,
-            "links": links,
-            "bbox": bbox,
-        }
+        return ItemCollection(
+            type="FeatureCollection",
+            stac_version=response_features[0]["stac_version"],
+            stac_extensions=response_features[0]["stac_extensions"],
+            features=response_features,
+            links=links,
+            context=context_obj,
+        )
 
     @staticmethod
     def _create_collection_from_db(
@@ -421,9 +421,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
         db_links = collection_db_model.links
         if db_links:
-            collection_links += resolve_links(
-                collection_db_model.links, collection_db_model.base_url
-            )
+            collection_links += resolve_links(db_links, collection_db_model.base_url)
 
         stac_extensions = collection_db_model.stac_extensions or []
 
@@ -439,4 +437,40 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             summaries=collection_db_model.summaries,
             extent=collection_db_model.extent,
             links=collection_links,
+        )
+
+    @staticmethod
+    def _create_item_from_db(item_db_model: database.BaseModel, base_url: str) -> Item:
+        properties = item_db_model.properties.copy()
+        indexed_fields = Settings.get().indexed_fields
+        for field in indexed_fields:
+            # Use getattr to accommodate extension namespaces
+            field_value = getattr(item_db_model, field.split(":")[-1])
+            if field == "datetime":
+                field_value = field_value.strftime(DATETIME_RFC339)
+            properties[field] = field_value
+
+        item_id = item_db_model.id
+        collection_id = item_db_model.collection_id
+        item_links = ItemLinks(
+            collection_id=collection_id, item_id=item_id, base_url=base_url
+        ).create_links()
+
+        db_links = item_db_model.links
+        if db_links:
+            item_links += resolve_links(db_links, base_url)
+
+        stac_extensions = item_db_model.stac_extensions or []
+
+        return Item(
+            type="Feature",
+            stac_version=item_db_model.stac_version,
+            stac_extensions=stac_extensions,
+            id=item_db_model.id,
+            collection=item_db_model.collection_id,
+            geometry=item_db_model.geometry,
+            bbox=item_db_model.bbox,
+            properties=properties,
+            links=item_links,
+            assets=item_db_model.assets,
         )

@@ -70,3 +70,4 @@ class ItemCollection(TypedDict):
     type: str
     features: List[Item]
     links: List[Dict[str, Any]]
+    context: Optional[Dict[str, int]]
