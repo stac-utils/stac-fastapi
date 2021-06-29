@@ -34,6 +34,16 @@ class Serializer(abc.ABC):
         """Transform stac to database model."""
         ...
 
+    @classmethod
+    def row_to_dict(cls, db_model: database.BaseModel):
+        """Transform a database model to it's dictionary representation."""
+        d = {}
+        for column in db_model.__table__.columns:
+            value = getattr(db_model, column.name)
+            if value:
+                d[column.name] = value
+        return d
+
 
 class ItemSerializer(Serializer):
     """Serialization methods for STAC items."""

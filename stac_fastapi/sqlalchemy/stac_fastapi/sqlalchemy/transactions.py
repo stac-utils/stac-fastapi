@@ -2,21 +2,17 @@
 
 import json
 import logging
-from datetime import datetime
 from typing import Dict, Optional, Type
 
 import attr
-import geoalchemy2 as ga
-from shapely.geometry import shape
-from stac_pydantic.shared import DATETIME_RFC339
 
 # TODO: This import should come from `backend` module
 from stac_fastapi.extensions.third_party.bulk_transactions import (
     BaseBulkTransactionsClient,
 )
+from stac_fastapi.sqlalchemy import serializers
 from stac_fastapi.sqlalchemy.models import database, schemas
 from stac_fastapi.sqlalchemy.session import Session
-from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.stac import Collection, Item
@@ -31,27 +27,32 @@ class TransactionsClient(BaseTransactionsClient):
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
     item_table: Type[database.Item] = attr.ib(default=database.Item)
+    item_serializer: Type[serializers.Serializer] = attr.ib(
+        default=serializers.ItemSerializer
+    )
+    collection_serializer: Type[serializers.Serializer] = attr.ib(
+        default=serializers.CollectionSerializer
+    )
 
-    def create_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
+    def create_item(self, model: schemas.Item, **kwargs) -> Item:
         """Create item."""
-        data = self.item_table.from_schema(model)
+        base_url = str(kwargs["request"].base_url)
+        data = self.item_serializer.stac_to_db(model.dict(exclude_none=True))
         with self.session.writer.context_session() as session:
             session.add(data)
-            data.base_url = str(kwargs["request"].base_url)
-            return schemas.Item.from_orm(data)
+            return self.item_serializer.db_to_stac(data, base_url)
 
-    def create_collection(
-        self, model: schemas.Collection, **kwargs
-    ) -> schemas.Collection:
+    def create_collection(self, model: schemas.Collection, **kwargs) -> Collection:
         """Create collection."""
-        data = self._create_collection_db_model(model.dict(exclude_none=True))
+        base_url = str(kwargs["request"].base_url)
+        data = self.collection_serializer.stac_to_db(model.dict(exclude_none=True))
         with self.session.writer.context_session() as session:
             session.add(data)
-            data.base_url = str(kwargs["request"].base_url)
-            return model
+            return self.collection_serializer.db_to_stac(data, base_url=base_url)
 
-    def update_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
+    def update_item(self, model: schemas.Item, **kwargs) -> Item:
         """Update item."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             query = session.query(self.item_table).filter(
                 self.item_table.id == model.id
@@ -59,44 +60,45 @@ class TransactionsClient(BaseTransactionsClient):
             if not query.scalar():
                 raise NotFoundError(f"Item {model.id} not found")
             # SQLAlchemy orm updates don't seem to like geoalchemy types
-            data = self.item_table.get_database_model(model)
-            data.pop("geometry", None)
-            query.update(data)
+            db_model = self.item_serializer.stac_to_db(
+                model.dict(exclude={"geometry"}, exclude_none=True)
+            )
+            query.update(self.item_serializer.row_to_dict(db_model))
 
-            response = self.item_table.from_schema(model)
-            response.base_url = str(kwargs["request"].base_url)
-            return schemas.Item.from_orm(response)
-        return model
+            return self.item_serializer.db_to_stac(db_model, base_url)
 
-    def update_collection(
-        self, model: schemas.Collection, **kwargs
-    ) -> schemas.Collection:
+    def update_collection(self, model: schemas.Collection, **kwargs) -> Collection:
         """Update collection."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             query = session.query(self.collection_table).filter(
                 self.collection_table.id == model.id
             )
             if not query.scalar():
                 raise NotFoundError(f"Item {model.id} not found")
-            # SQLAlchemy orm updates don't seem to like geoalchemy types
-            data = self.collection_table.get_database_model(model)
-            data.pop("geometry", None)
-            query.update(data)
-        return model
 
-    def delete_item(self, item_id: str, collection_id: str, **kwargs) -> schemas.Item:
+            # SQLAlchemy orm updates don't seem to like geoalchemy types
+            db_model = self.collection_serializer.stac_to_db(
+                model.dict(exclude={"geometry"}, exclude_none=True)
+            )
+            query.update(self.collection_serializer.row_to_dict(db_model))
+
+            return self.collection_serializer.db_to_stac(db_model, base_url)
+
+    def delete_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Delete item."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.writer.context_session() as session:
             query = session.query(self.item_table).filter(self.item_table.id == item_id)
             data = query.first()
             if not data:
                 raise NotFoundError(f"Item {id} not found")
             query.delete()
-            data.base_url = str(kwargs["request"].base_url)
-            return schemas.Item.from_orm(data)
+            return self.item_serializer.db_to_stac(data, base_url=base_url)
 
-    def delete_collection(self, id: str, **kwargs) -> schemas.Collection:
+    def delete_collection(self, id: str, **kwargs) -> Collection:
         """Delete collection."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.writer.context_session() as session:
             query = session.query(self.collection_table).filter(
                 self.collection_table.id == id
@@ -105,43 +107,7 @@ class TransactionsClient(BaseTransactionsClient):
             if not data:
                 raise NotFoundError(f"Collection {id} not found")
             query.delete()
-            data.base_url = str(kwargs["request"].base_url)
-            return schemas.Collection.from_orm(data)
-
-    @staticmethod
-    def _create_collection_db_model(collection: Collection) -> database.Collection:
-        """Transform a collection into an instance of the database ORM model."""
-        return database.Collection(**dict(collection))
-
-    @staticmethod
-    def _create_item_db_model(item: Item) -> database.Item:
-        """Transform a item into an instance of the database ORM model."""
-        indexed_fields = {}
-        for field in Settings.get().indexed_fields:
-            # Use getattr to accommodate extension namespaces
-            field_value = item["properties"][field]
-            if field == "datetime":
-                field_value = datetime.strptime(field_value, DATETIME_RFC339)
-            indexed_fields[field.split(":")[-1]] = field_value
-
-            # TODO: Exclude indexed fields from the properties jsonb field to prevent duplication
-
-            now = datetime.utcnow().strftime(DATETIME_RFC339)
-            if not item["properties"]["created"]:
-                item["properties"]["created"] = now
-            item["properties"]["updated"] = now
-
-        return database.Item(
-            id=item["id"],
-            collection_id=item["collection"],
-            stac_version=item["stac_version"],
-            stac_extensions=item["stac_extensions"],
-            geometry=ga.shape.from_shape(shape(item["geometry"]), 4326),
-            bbox=item["bbox"],
-            properties=item["properties"],
-            assets=item["assets"],
-            **indexed_fields,
-        )
+            return self.collection_serializer.db_to_stac(data, base_url=base_url)
 
 
 @attr.s
