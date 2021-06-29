@@ -2,9 +2,13 @@
 
 import json
 import logging
+from datetime import datetime
 from typing import Dict, Optional, Type
 
 import attr
+import geoalchemy2 as ga
+from shapely.geometry import shape
+from stac_pydantic.shared import DATETIME_RFC339
 
 # TODO: This import should come from `backend` module
 from stac_fastapi.extensions.third_party.bulk_transactions import (
@@ -12,8 +16,10 @@ from stac_fastapi.extensions.third_party.bulk_transactions import (
 )
 from stac_fastapi.sqlalchemy.models import database, schemas
 from stac_fastapi.sqlalchemy.session import Session
+from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.stac import Collection, Item
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +44,11 @@ class TransactionsClient(BaseTransactionsClient):
         self, model: schemas.Collection, **kwargs
     ) -> schemas.Collection:
         """Create collection."""
-        data = self.collection_table.from_schema(model)
+        data = self._create_collection_db_model(model.dict(exclude_none=True))
         with self.session.writer.context_session() as session:
             session.add(data)
             data.base_url = str(kwargs["request"].base_url)
-            return schemas.Collection.from_orm(data)
+            return model
 
     def update_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
         """Update item."""
@@ -101,6 +107,41 @@ class TransactionsClient(BaseTransactionsClient):
             query.delete()
             data.base_url = str(kwargs["request"].base_url)
             return schemas.Collection.from_orm(data)
+
+    @staticmethod
+    def _create_collection_db_model(collection: Collection) -> database.Collection:
+        """Transform a collection into an instance of the database ORM model."""
+        return database.Collection(**dict(collection))
+
+    @staticmethod
+    def _create_item_db_model(item: Item) -> database.Item:
+        """Transform a item into an instance of the database ORM model."""
+        indexed_fields = {}
+        for field in Settings.get().indexed_fields:
+            # Use getattr to accommodate extension namespaces
+            field_value = item["properties"][field]
+            if field == "datetime":
+                field_value = datetime.strptime(field_value, DATETIME_RFC339)
+            indexed_fields[field.split(":")[-1]] = field_value
+
+            # TODO: Exclude indexed fields from the properties jsonb field to prevent duplication
+
+            now = datetime.utcnow().strftime(DATETIME_RFC339)
+            if not item["properties"]["created"]:
+                item["properties"]["created"] = now
+            item["properties"]["updated"] = now
+
+        return database.Item(
+            id=item["id"],
+            collection_id=item["collection"],
+            stac_version=item["stac_version"],
+            stac_extensions=item["stac_extensions"],
+            geometry=ga.shape.from_shape(shape(item["geometry"]), 4326),
+            bbox=item["bbox"],
+            properties=item["properties"],
+            assets=item["assets"],
+            **indexed_fields,
+        )
 
 
 @attr.s
