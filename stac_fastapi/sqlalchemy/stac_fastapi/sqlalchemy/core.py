@@ -2,7 +2,7 @@
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, Type, Union
+from typing import List, Optional, Set, Type, Union
 from urllib.parse import urlencode
 
 import attr
@@ -13,15 +13,11 @@ from shapely.geometry import shape
 from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
-from stac_pydantic.shared import DATETIME_RFC339, Relations
+from stac_pydantic.shared import Relations
 
 from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
+from stac_fastapi.sqlalchemy import serializers
 from stac_fastapi.sqlalchemy.models import database
-from stac_fastapi.sqlalchemy.models.links import (
-    CollectionLinks,
-    ItemLinks,
-    resolve_links,
-)
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
 from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
@@ -42,6 +38,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     item_table: Type[database.Item] = attr.ib(default=database.Item)
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
+    item_serializer: Type[serializers.Serializer] = attr.ib(
+        default=serializers.ItemSerializer
+    )
+    collection_serializer: Type[serializers.Serializer] = attr.ib(
+        default=serializers.CollectionSerializer
+    )
 
     @staticmethod
     def _lookup_id(
@@ -68,7 +70,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         with self.session.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
             response = [
-                self._create_collection_from_db(collection, base_url)
+                self.collection_serializer.db_to_stac(collection, base_url=base_url)
                 for collection in collections
             ]
             return response
@@ -78,7 +80,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             collection = self._lookup_id(id, self.collection_table, session)
-            return self._create_collection_from_db(collection, base_url)
+            return self.collection_serializer.db_to_stac(collection, base_url)
 
     def item_collection(
         self, id: str, limit: int = 10, token: str = None, **kwargs
@@ -135,7 +137,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             response_features = []
             for item in page:
                 response_features.append(
-                    self._create_item_from_db(item, base_url=base_url)
+                    self.item_serializer.db_to_stac(item, base_url=base_url)
                 )
 
             context_obj = None
@@ -156,7 +158,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             item = self._lookup_id(item_id, self.item_table, session)
-            return self._create_item_from_db(item, base_url=base_url)
+            return self.item_serializer.db_to_stac(item, base_url=base_url)
 
     def get_search(
         self,
@@ -170,7 +172,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> ItemCollection:
         """GET search catalog."""
         # Parse request parameters
         base_args = {
@@ -214,14 +216,14 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         # Pagination
         page_links = []
         for link in resp["links"]:
-            if link.rel == Relations.next or link.rel == Relations.previous:
+            if link["rel"] == Relations.next or link["rel"] == Relations.previous:
                 query_params = dict(kwargs["request"].query_params)
-                if link.body and link.merge:
-                    query_params.update(link.body)
-                link.method = "GET"
-                link.href = f"{link.href}?{urlencode(query_params)}"
-                link.body = None
-                link.merge = False
+                if link["body"] and link["merge"]:
+                    query_params.update(link["body"])
+                link["method"] = "GET"
+                link["href"] = f"{link['body']}?{urlencode(query_params)}"
+                link["body"] = None
+                link["merge"] = False
                 page_links.append(link)
             else:
                 page_links.append(link)
@@ -390,7 +392,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
             for item in page:
                 response_features.append(
-                    self._create_item_from_db(item, base_url=base_url)
+                    self.item_serializer.db_to_stac(item, base_url=base_url)
                 )
 
         context_obj = None
@@ -408,69 +410,4 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             features=response_features,
             links=links,
             context=context_obj,
-        )
-
-    @staticmethod
-    def _create_collection_from_db(
-        collection_db_model: database.BaseModel, base_url: str
-    ) -> Collection:
-        """Transform an instance of the collection database model to a valid STAC collection."""
-        collection_links = CollectionLinks(
-            collection_id=collection_db_model.id, base_url=base_url
-        ).create_links()
-
-        db_links = collection_db_model.links
-        if db_links:
-            collection_links += resolve_links(db_links, collection_db_model.base_url)
-
-        stac_extensions = collection_db_model.stac_extensions or []
-
-        return Collection(
-            id=collection_db_model.id,
-            stac_extensions=stac_extensions,
-            stac_version=collection_db_model.stac_version,
-            title=collection_db_model.title,
-            description=collection_db_model.description,
-            keywords=collection_db_model.keywords,
-            license=collection_db_model.license,
-            providers=collection_db_model.providers,
-            summaries=collection_db_model.summaries,
-            extent=collection_db_model.extent,
-            links=collection_links,
-        )
-
-    @staticmethod
-    def _create_item_from_db(item_db_model: database.BaseModel, base_url: str) -> Item:
-        properties = item_db_model.properties.copy()
-        indexed_fields = Settings.get().indexed_fields
-        for field in indexed_fields:
-            # Use getattr to accommodate extension namespaces
-            field_value = getattr(item_db_model, field.split(":")[-1])
-            if field == "datetime":
-                field_value = field_value.strftime(DATETIME_RFC339)
-            properties[field] = field_value
-
-        item_id = item_db_model.id
-        collection_id = item_db_model.collection_id
-        item_links = ItemLinks(
-            collection_id=collection_id, item_id=item_id, base_url=base_url
-        ).create_links()
-
-        db_links = item_db_model.links
-        if db_links:
-            item_links += resolve_links(db_links, base_url)
-
-        stac_extensions = item_db_model.stac_extensions or []
-
-        return Item(
-            type="Feature",
-            stac_version=item_db_model.stac_version,
-            stac_extensions=stac_extensions,
-            id=item_db_model.id,
-            collection=item_db_model.collection_id,
-            geometry=item_db_model.geometry,
-            bbox=item_db_model.bbox,
-            properties=properties,
-            links=item_links,
-            assets=item_db_model.assets,
         )
