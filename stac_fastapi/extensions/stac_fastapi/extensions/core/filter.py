@@ -37,7 +37,11 @@ class FilterExtension(ApiExtension):
     """
 
     client: BaseFiltersClient = attr.ib()
-    conformance_classes: List[str] = attr.ib()
+    conformance_classes: List[str] = attr.ib(default=[
+        "https://api.stacspec.org/v1.0.0-beta.2/item-search#filter",
+        "https://api.stacspec.org/v1.0.0-beta.2/item-search#filter:simple-cql",
+        "https://api.stacspec.org/v1.0.0-beta.2/item-search#filter:item-search-filter"
+    ])
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from stac_fastapi.types.extension import ApiExtension
 
+from typing import List
 
 @attr.s
 class SortExtension(ApiExtension):
@@ -14,6 +15,8 @@ class SortExtension(ApiExtension):
 
     https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#sort
     """
+
+    conformance_classes: List[str] = attr.ib(default=["https://api.stacspec.org/v1.0.0-beta.2/item-search#sort"])
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

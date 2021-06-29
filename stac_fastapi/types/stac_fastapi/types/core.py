@@ -15,18 +15,16 @@ from stac_fastapi.types.extension import ApiExtension
 NumType = Union[float, int]
 
 
-@attrs.s
+@attr.s
 class BaseFiltersClient(abc.ABC):
     """Defines a pattern for implementing the STAC filter extension"""
 
     @abc.abstractmethod
-    def get_queryables(self, collection_id: Optional[str]):
+    def get_queryables(self, collection_id: Optional[str], **kwargs) -> Dict[str, Any]:
         """
         Get the queryables available for the given collection_id.
         If collection_id is None, returns the intersection of all
         queryables over all collections.
-        :param collection_id:
-        :return:
         """
 
 

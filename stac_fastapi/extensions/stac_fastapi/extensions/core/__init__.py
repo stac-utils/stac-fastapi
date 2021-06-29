@@ -6,10 +6,12 @@ from .fields import FieldsExtension
 from .query import QueryExtension
 from .sort import SortExtension
 from .transaction import TransactionExtension
+from .filter import FilterExtension
 
 __all__ = (
     "ContextExtension",
     "FieldsExtension",
+    "FilterExtension",
     "QueryExtension",
     "SortExtension",
     "TilesExtension",

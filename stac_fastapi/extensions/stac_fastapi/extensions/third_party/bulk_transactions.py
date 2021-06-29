@@ -57,6 +57,7 @@ class BulkTransactionExtension(ApiExtension):
     """
 
     client: BaseBulkTransactionsClient = attr.ib()
+    conformance_classes: List[str] = attr.ib(default=list())
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

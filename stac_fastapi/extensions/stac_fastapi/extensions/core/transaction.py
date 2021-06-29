@@ -8,6 +8,8 @@ from stac_fastapi.api.routes import create_endpoint
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
 
+from typing import List
+
 
 @attr.s
 class TransactionExtension(ApiExtension):
@@ -29,6 +31,8 @@ class TransactionExtension(ApiExtension):
     """
 
     client: BaseTransactionsClient = attr.ib()
+    conformance_classes: List[str] = attr.ib(default=list())
+
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

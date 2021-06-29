@@ -1,5 +1,5 @@
 """fields extension."""
-from typing import Set
+from typing import Set, List
 
 import attr
 from fastapi import FastAPI
@@ -20,6 +20,7 @@ class FieldsExtension(ApiExtension):
 
     Attributes:
         default_includes (set): defines the default set of included fields.
+        conformance_classes (list): Defines the list of conformance classes for the extension
 
     """
 
@@ -36,6 +37,8 @@ class FieldsExtension(ApiExtension):
             }
         )
     )
+
+    conformance_classes: List[str] = attr.ib(default=["https://api.stacspec.org/v1.0.0-beta.2/item-search#fields"])
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

@@ -4,6 +4,8 @@ from fastapi import FastAPI
 
 from stac_fastapi.types.extension import ApiExtension
 
+from typing import List
+
 
 @attr.s
 class ContextExtension(ApiExtension):
@@ -14,6 +16,8 @@ class ContextExtension(ApiExtension):
 
     https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#context
     """
+
+    conformance_classes: List[str] = attr.ib(default=["https://api.stacspec.org/v1.0.0-beta.2/item-search#context"])
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
