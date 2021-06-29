@@ -20,15 +20,5 @@ RUN mkdir -p /install && \
     pip install -e ./stac_fastapi/api[dev]   && \
     pip install -e ./stac_fastapi/types[dev]  && \
     pip install -e ./stac_fastapi/extensions[dev,tiles]  && \
-    pip install -e ./stac_fastapi/sqlalchemy[dev,server]
-
-# FROM base
-# COPY --from=builder /install /usr/local
-
-WORKDIR /app/stac_fastapi/sqlalchemy
-ENV APP_HOST=0.0.0.0
-ENV APP_PORT=80
-ENV RELOAD="true"
-
-CMD if [ "$RELOAD" ]; then uvicorn stac_fastapi.sqlalchemy.app:app --host=${APP_HOST} --port=${APP_PORT} --reload ; \
-    else gunicorn stac_fastapi.sqlalchemy.app:app --preload -k uvicorn.workers.UvicornWorker --bind ${APP_HOST}:${APP_PORT} --log-level info; fi
+    pip install -e ./stac_fastapi/sqlalchemy[dev,server] && \
+    pip install -e ./stac_fastapi/pgstac[dev,server]

@@ -1,16 +1,11 @@
-"""stac_fastapi.types.search module.
-
-# TODO: replace with stac-pydantic
-"""
+"""stac_fastapi.types.search module."""
 
 import operator
 from enum import auto
 from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 
-
-from pydantic import Field, root_validator
-
+from pydantic import Field, root_validator, validator
 from stac_pydantic.api import Search
 from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
 from stac_pydantic.utils import AutoValueEnum
@@ -91,18 +86,26 @@ class FieldsExtension(FieldsBase):
         }
 
 
-class STACSearch(Search):
+class PgstacSearch(Search):
     """Search model."""
 
     # Make collections optional, default to searching all collections if none are provided
     collections: Optional[List[str]] = None
+    ids: Optional[List[str]] = None
     # Override default field extension to include default fields and pydantic includes/excludes factory
-    field: FieldsExtension = Field(FieldsExtension(), alias="fields")
+    fields: FieldsExtension = Field(FieldsExtension())
     # Override query extension with supported operators
     query: Optional[Dict[str, Dict[Operator, Any]]]
     token: Optional[str] = None
+    datetime: Optional[str] = None
+    sortby: Any
 
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:
-        """Validate query fields (placeholder)."""
+        """Pgstac does not require the base validator for query fields."""
         return values
+
+    @validator("datetime")
+    def validate_datetime(cls, v):
+        """Pgstac does not require the base validator for datetime."""
+        return v
