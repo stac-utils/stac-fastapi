@@ -9,37 +9,44 @@ with open("README.md") as f:
 
 # Get version from stac-fastapi-api
 __version__ = load_source(
-    "stac_fastapi.sqlalchemy.version",
-    os.path.join(os.path.dirname(__file__), "stac_fastapi/sqlalchemy/version.py"),
+    "stac_fastapi.pgstac.version",
+    os.path.join(os.path.dirname(__file__), "stac_fastapi/pgstac/version.py"),
 ).__version__  # type:ignore
 
 install_requires = [
     "fastapi",
     "attrs",
+    "orjson",
     "pydantic[dotenv]",
     "stac_pydantic==1.3.8",
     "stac-fastapi.types",
     "stac-fastapi.api",
     "stac-fastapi.extensions",
-    "sqlakeyset",
-    "geoalchemy2<0.8.0",
-    "sqlalchemy==1.3.23",
+    "asyncpg",
+    "buildpg",
     "shapely",
-    "psycopg2-binary",
-    "alembic",
-    "fastapi-utils",
+    "brotli_asgi",
 ]
 
 extra_reqs = {
-    "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit", "requests"],
+    "dev": [
+        "pytest",
+        "pytest-cov",
+        "pytest-asyncio",
+        "pre-commit",
+        "requests",
+        "pypgstac==0.2.4",
+        "httpx",
+    ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
     "server": ["uvicorn[standard]>=0.12.0,<0.14.0"],
+    "awslambda": ["mangum"],
 }
 
 
 setup(
-    name="stac-fastapi.sqlalchemy",
-    description="An implementation of STAC API based on the FastAPI framework.",
+    name="stac-fastapi.pgstac",
+    description="An implementation of STAC API based on the FastAPI framework and using the pgstac backend.",
     long_description=desc,
     long_description_content_type="text/markdown",
     version=__version__,
@@ -52,8 +59,8 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],
     keywords="STAC FastAPI COG",
-    author=u"Arturo Engineering",
-    author_email="engineering@arturo.ai",
+    author=u"David Bitner",
+    author_email="david@developmentseed.org",
     url="https://github.com/stac-utils/stac-fastapi",
     license="MIT",
     packages=find_namespace_packages(exclude=["alembic", "tests", "scripts"]),
@@ -62,6 +69,6 @@ setup(
     tests_require=extra_reqs["dev"],
     extras_require=extra_reqs,
     entry_points={
-        "console_scripts": ["stac-fastapi-sqlalchemy=stac_fastapi.sqlalchemy.app:run"]
+        "console_scripts": ["stac-fastapi-pgstac=stac_fastapi.pgstac.app:run"]
     },
 )

@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from stac_pydantic import Item
 
 from stac_fastapi.api.models import _create_request_model
-from stac_fastapi.api.routes import create_endpoint_from_model
+from stac_fastapi.api.routes import create_endpoint
 from stac_fastapi.types.extension import ApiExtension
 
 
@@ -77,8 +77,6 @@ class BulkTransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=create_endpoint_from_model(
-                self.client.bulk_item_insert, items_request_model
-            ),
+            endpoint=create_endpoint(self.client.bulk_item_insert, items_request_model),
         )
         app.include_router(router, tags=["Bulk Transaction Extension"])
