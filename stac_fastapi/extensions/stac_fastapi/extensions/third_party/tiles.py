@@ -172,7 +172,6 @@ class TilesExtension(ApiExtension):
     route_prefix: str = attr.ib(default="/titiler")
     conformance_classes: List[str] = attr.ib(default=list())
 
-
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
 

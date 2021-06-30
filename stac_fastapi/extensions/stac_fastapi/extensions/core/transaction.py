@@ -1,4 +1,6 @@
 """transaction extension."""
+from typing import List
+
 import attr
 from fastapi import APIRouter, FastAPI
 from stac_pydantic import Collection, Item
@@ -7,8 +9,6 @@ from stac_fastapi.api.models import CollectionUri, ItemUri, _create_request_mode
 from stac_fastapi.api.routes import create_endpoint
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
-
-from typing import List
 
 
 @attr.s
@@ -32,7 +32,6 @@ class TransactionExtension(ApiExtension):
 
     client: BaseTransactionsClient = attr.ib()
     conformance_classes: List[str] = attr.ib(default=list())
-
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

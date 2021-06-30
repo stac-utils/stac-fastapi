@@ -1,10 +1,9 @@
 """base api extension."""
 import abc
+from typing import List
 
 import attr
 from fastapi import FastAPI
-
-from typing import List
 
 
 @attr.s

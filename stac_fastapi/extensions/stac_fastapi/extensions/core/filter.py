@@ -1,12 +1,7 @@
 # encoding: utf-8
-"""
+"""Filter Extension."""
 
-"""
-__author__ = 'Richard Smith'
-__date__ = '29 Jun 2021'
-__copyright__ = 'Copyright 2018 United Kingdom Research and Innovation'
-__license__ = 'BSD - see LICENSE file in top-level package directory'
-__contact__ = 'richard.d.smith@stfc.ac.uk'
+from typing import List
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -15,8 +10,6 @@ from stac_fastapi.api.models import CollectionUri, EmptyRequest
 from stac_fastapi.api.routes import create_endpoint
 from stac_fastapi.types.core import BaseFiltersClient
 from stac_fastapi.types.extension import ApiExtension
-
-from typing import List
 
 
 @attr.s
@@ -37,11 +30,13 @@ class FilterExtension(ApiExtension):
     """
 
     client: BaseFiltersClient = attr.ib()
-    conformance_classes: List[str] = attr.ib(default=[
-        "https://api.stacspec.org/v1.0.0-beta.2/item-search#filter",
-        "https://api.stacspec.org/v1.0.0-beta.2/item-search#filter:simple-cql",
-        "https://api.stacspec.org/v1.0.0-beta.2/item-search#filter:item-search-filter"
-    ])
+    conformance_classes: List[str] = attr.ib(
+        default=[
+            "https://api.stacspec.org/v1.0.0-beta.2/item-search#filter",
+            "https://api.stacspec.org/v1.0.0-beta.2/item-search#filter:simple-cql",
+            "https://api.stacspec.org/v1.0.0-beta.2/item-search#filter:item-search-filter",
+        ]
+    )
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -52,7 +47,6 @@ class FilterExtension(ApiExtension):
         Returns:
             None
         """
-
         router = APIRouter()
         router.add_api_route(
             name="Queryables",
