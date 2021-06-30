@@ -8,6 +8,7 @@ import attr
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage, Search
 from stac_pydantic.shared import Link, MimeTypes, Relations
+from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.sqlalchemy.models.links import CollectionLinks
 from stac_fastapi.types.extension import ApiExtension
@@ -117,9 +118,10 @@ class BaseCoreClient(abc.ABC):
         extensions: list of registered api extensions.
     """
 
-    landing_page_id: str = attr.ib(default="stac-api")
-    title: str = attr.ib(default="Arturo STAC API")
-    description: str = attr.ib(default="Arturo raster datastore")
+    stac_version: str = attr.ib(default=STAC_VERSION)
+    landing_page_id: str = attr.ib(default="stac-fastapi")
+    title: str = attr.ib(default="stac-fastapi")
+    description: str = attr.ib(default="stac-fastapi")
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
     def extension_is_enabled(self, extension: str) -> bool:
@@ -155,6 +157,7 @@ class BaseCoreClient(abc.ABC):
             title=self.title,
             description=self.description,
             conformsTo=self.list_conformance_classes(),
+            stac_version=self.stac_version,
             links=[
                 Link(
                     rel=Relations.self,

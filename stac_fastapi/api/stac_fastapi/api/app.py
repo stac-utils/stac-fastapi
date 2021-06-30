@@ -7,6 +7,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
+from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.models import (
@@ -58,9 +59,11 @@ class StacApi:
         default=attr.Factory(lambda: DEFAULT_STATUS_CODES)
     )
     app: FastAPI = attr.ib(default=attr.Factory(FastAPI))
+    title: str = attr.ib(default="stac-fastapi")
+    api_version: str = attr.ib(default="0.1")
+    stac_version: str = attr.ib(default=STAC_VERSION)
+    description: str = attr.ib(default="stac-fastapi")
     search_request_model = attr.ib(default=STACSearch)
-    title: str = attr.ib(default="Arturo STAC API")
-    version: str = attr.ib(default="0.1")
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -177,7 +180,7 @@ class StacApi:
             return self.app.openapi_schema
 
         openapi_schema = get_openapi(
-            title=self.title, version=self.version, routes=self.app.routes
+            title=self.title, version=self.api_version, routes=self.app.routes
         )
 
         self.app.openapi_schema = openapi_schema
@@ -204,6 +207,9 @@ class StacApi:
         """
         # inject settings
         self.client.extensions = self.extensions
+        self.client.stac_version = self.stac_version
+        self.client.title = self.title
+        self.client.description = self.description
 
         fields_ext = self.get_extension(FieldsExtension)
         if fields_ext:
