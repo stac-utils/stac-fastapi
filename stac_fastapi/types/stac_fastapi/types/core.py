@@ -15,19 +15,6 @@ from stac_fastapi.types.extension import ApiExtension
 NumType = Union[float, int]
 
 
-@attr.s
-class BaseFiltersClient(abc.ABC):
-    """Defines a pattern for implementing the STAC filter extension"""
-
-    @abc.abstractmethod
-    def get_queryables(self, collection_id: Optional[str], **kwargs) -> Dict[str, Any]:
-        """
-        Get the queryables available for the given collection_id.
-        If collection_id is None, returns the intersection of all
-        queryables over all collections.
-        """
-
-
 @attr.s  # type:ignore
 class BaseTransactionsClient(abc.ABC):
     """Defines a pattern for implementing the STAC transaction extension."""
@@ -135,9 +122,24 @@ class BaseCoreClient(abc.ABC):
     description: str = attr.ib(default="Arturo raster datastore")
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
-    def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
+    def extension_is_enabled(self, extension: str) -> bool:
         """Check if an api extension is enabled."""
-        return any([isinstance(ext, extension) for ext in self.extensions])
+        return any([type(ext).__name__ == extension for ext in self.extensions])
+
+    def list_conformance_classes(self):
+        """
+        Return a list of conformance classes, including implemented extensions
+        """
+        base_conformance = [
+            "https://stacspec.org/STAC-api.html",
+            "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
+        ]
+
+        for extension in self.extensions:
+            extension_classes = getattr(extension, 'conformance_classes', [])
+            base_conformance.extend(extension_classes)
+
+        return base_conformance
 
     def landing_page(self, **kwargs) -> LandingPage:
         """Landing page.
@@ -152,6 +154,7 @@ class BaseCoreClient(abc.ABC):
             id=self.landing_page_id,
             title=self.title,
             description=self.description,
+            conformsTo=self.list_conformance_classes(),
             links=[
                 Link(
                     rel=Relations.self,
@@ -183,6 +186,18 @@ class BaseCoreClient(abc.ABC):
                 ),
             ],
         )
+
+        if self.extension_is_enabled('FilterExtension'):
+            landing_page.links.append(
+                Link(
+                    rel="http://www.opengis.net/def/rel/ogc/1.0/queryables",
+                    type=MimeTypes.geojson,
+                    title='Filter Queryables',
+                    href=urljoin(str(base_url), "queryables")
+                )
+            )
+
+
         collections = self.all_collections(request=kwargs["request"])
         for coll in collections:
             coll_link = CollectionLinks(
@@ -220,17 +235,17 @@ class BaseCoreClient(abc.ABC):
 
     @abc.abstractmethod
     def get_search(
-        self,
-        collections: Optional[List[str]] = None,
-        ids: Optional[List[str]] = None,
-        bbox: Optional[List[NumType]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
-        limit: Optional[int] = 10,
-        query: Optional[str] = None,
-        token: Optional[str] = None,
-        fields: Optional[List[str]] = None,
-        sortby: Optional[str] = None,
-        **kwargs
+            self,
+            collections: Optional[List[str]] = None,
+            ids: Optional[List[str]] = None,
+            bbox: Optional[List[NumType]] = None,
+            datetime: Optional[Union[str, datetime]] = None,
+            limit: Optional[int] = 10,
+            query: Optional[str] = None,
+            token: Optional[str] = None,
+            fields: Optional[List[str]] = None,
+            sortby: Optional[str] = None,
+            **kwargs
     ) -> Dict[str, Any]:
         """Cross catalog search (GET).
 
@@ -282,7 +297,7 @@ class BaseCoreClient(abc.ABC):
 
     @abc.abstractmethod
     def item_collection(
-        self, id: str, limit: int = 10, token: str = None, **kwargs
+            self, id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
         """Get all items from a specific collection.
 
@@ -297,3 +312,30 @@ class BaseCoreClient(abc.ABC):
             An ItemCollection.
         """
         ...
+
+
+@attr.s
+class BaseFiltersClient(abc.ABC):
+    """Defines a pattern for implementing the STAC filter extension"""
+
+    def get_queryables(self, collection_id: Optional[str] = None, **kwargs) -> Dict[str, Any]:
+        """
+        Get the queryables available for the given collection_id.
+        If collection_id is None, returns the intersection of all
+        queryables over all collections.
+
+        This base implementation returns a blank queryable schema. This is not allowed
+        under OGC CQL but it is allowed by the STAC API Filter Extension
+
+        https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
+        """
+
+        return {
+            "$schema": "https://json-schema.org/draft/2019-09/schema",
+            "$id": "https://example.org/queryables",
+            "type": "object",
+            "title": "Queryables for Example STAC API",
+            "description": "Queryable names for the example STAC API Item Search filter.",
+            "properties": {
+            }
+        }

@@ -18,7 +18,6 @@ from stac_pydantic.api import ConformanceClasses
 from stac_pydantic.api.extensions.paging import PaginationLink
 from stac_pydantic.shared import Relations
 
-from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
 from stac_fastapi.sqlalchemy.models import database, schemas
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
@@ -89,7 +88,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 .order_by(self.item_table.datetime.desc(), self.item_table.id)
             )
             count = None
-            if self.extension_is_enabled(ContextExtension):
+            if self.extension_is_enabled('ContextExtension'):
                 count_query = collection_children.statement.with_only_columns(
                     [func.count()]
                 ).order_by(None)
@@ -134,7 +133,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 response_features.append(schemas.Item.from_orm(item))
 
             context_obj = None
-            if self.extension_is_enabled(ContextExtension):
+            if self.extension_is_enabled('ContextExtension'):
                 context_obj = {"returned": len(page), "limit": limit, "matched": count}
 
             return ItemCollection(
@@ -266,7 +265,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 )
                 items = query.filter(id_filter).order_by(self.item_table.id)
                 page = get_page(items, per_page=search_request.limit, page=token)
-                if self.extension_is_enabled(ContextExtension):
+                if self.extension_is_enabled('ContextExtension'):
                     count = len(search_request.ids)
                 page.next = (
                     self.insert_token(keyset=page.paging.bookmark_next)
@@ -318,7 +317,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                         for (op, value) in expr.items():
                             query = query.filter(op.operator(field, value))
 
-                if self.extension_is_enabled(ContextExtension):
+                if self.extension_is_enabled('ContextExtension'):
                     count_query = query.statement.with_only_columns(
                         [func.count()]
                     ).order_by(None)
@@ -362,7 +361,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
             response_features = []
             filter_kwargs = {}
-            if self.extension_is_enabled(FieldsExtension):
+            if self.extension_is_enabled('FieldsExtension'):
                 if search_request.query is not None:
                     query_include: Set[str] = set(
                         [
@@ -394,7 +393,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             bbox = None
 
         context_obj = None
-        if self.extension_is_enabled(ContextExtension):
+        if self.extension_is_enabled('ContextExtension'):
             context_obj = {
                 "returned": len(page),
                 "limit": search_request.limit,
