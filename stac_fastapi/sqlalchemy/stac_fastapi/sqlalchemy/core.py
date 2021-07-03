@@ -14,6 +14,7 @@ from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic.shared import Relations
+from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
 from stac_fastapi.sqlalchemy import serializers
@@ -144,10 +145,16 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             if self.extension_is_enabled(ContextExtension):
                 context_obj = {"returned": len(page), "limit": limit, "matched": count}
 
+            # TODO: test this
+            if not response_features:
+                stac_extensions = self.extensions
+            else:
+                stac_extensions = response_features[0]["stac_extensions"]
+
             return ItemCollection(
                 type="FeatureCollection",
-                stac_version=response_features[0]["stac_version"],
-                stac_extensions=response_features[0]["stac_extensions"],
+                stac_version=STAC_VERSION,
+                stac_extensions=stac_extensions,
                 features=response_features,
                 links=links,
                 context=context_obj,
@@ -371,7 +378,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 )
 
             response_features = []
-            filter_kwargs = {}
+            # filter_kwargs = {}
             if self.extension_is_enabled(FieldsExtension):
                 if search_request.query is not None:
                     query_include: Set[str] = set(
@@ -388,7 +395,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                         search_request.field.include.union(query_include)
 
                 # TODO: Enable filter extension
-                filter_kwargs = search_request.field.filter_fields
+                # filter_kwargs = search_request.field.filter_fields
 
             for item in page:
                 response_features.append(
@@ -403,10 +410,16 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 "matched": count,
             }
 
+        # TODO: test this
+        if not response_features:
+            stac_extensions = self.extensions
+        else:
+            stac_extensions = response_features[0]["stac_extensions"]
+
         return ItemCollection(
             type="FeatureCollection",
-            stac_version=response_features[0]["stac_version"],
-            stac_extensions=response_features[0]["stac_extensions"],
+            stac_version=STAC_VERSION,
+            stac_extensions=stac_extensions,
             features=response_features,
             links=links,
             context=context_obj,

@@ -42,19 +42,19 @@ def cleanup(postgres_core: CoreCrudClient, postgres_transactions: TransactionsCl
     yield
     collections = postgres_core.all_collections(request=MockStarletteRequest)
     for coll in collections:
-        if coll.id.split("-")[0] == "test":
+        if coll["id"].split("-")[0] == "test":
             # Delete the items
             items = postgres_core.item_collection(
-                coll.id, limit=100, request=MockStarletteRequest
+                coll["id"], limit=100, request=MockStarletteRequest
             )
-            for feat in items.features:
+            for feat in items["features"]:
                 postgres_transactions.delete_item(
-                    feat.id, feat.collection, request=MockStarletteRequest
+                    feat["id"], feat["collection"], request=MockStarletteRequest
                 )
 
             # Delete the collection
             postgres_transactions.delete_collection(
-                coll.id, request=MockStarletteRequest
+                coll["id"], request=MockStarletteRequest
             )
 
 

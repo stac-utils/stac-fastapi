@@ -61,7 +61,7 @@ class TransactionsClient(BaseTransactionsClient):
                 raise NotFoundError(f"Item {model.id} not found")
             # SQLAlchemy orm updates don't seem to like geoalchemy types
             db_model = self.item_serializer.stac_to_db(
-                model.dict(exclude={"geometry"}, exclude_none=True)
+                model.dict(exclude_none=True), exclude_geometry=True
             )
             query.update(self.item_serializer.row_to_dict(db_model))
 
@@ -79,7 +79,7 @@ class TransactionsClient(BaseTransactionsClient):
 
             # SQLAlchemy orm updates don't seem to like geoalchemy types
             db_model = self.collection_serializer.stac_to_db(
-                model.dict(exclude={"geometry"}, exclude_none=True)
+                model.dict(exclude_none=True)
             )
             query.update(self.collection_serializer.row_to_dict(db_model))
 

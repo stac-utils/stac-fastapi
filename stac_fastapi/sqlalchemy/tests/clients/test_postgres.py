@@ -21,13 +21,12 @@ def test_create_collection(
 ):
     data = Collection.parse_obj(load_test_data("test_collection.json"))
     resp = postgres_transactions.create_collection(data, request=MockStarletteRequest)
-    assert data.dict(exclude={"links"}) == resp.dict(exclude={"links"})
+    assert data.dict(exclude={"links"}) == Collection(**resp).dict(exclude={"links"})
     coll = postgres_core.get_collection(data.id, request=MockStarletteRequest)
-    assert coll.id == data.id
+    assert coll["id"] == data.id
 
 
 def test_create_collection_already_exists(
-    postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
@@ -50,7 +49,7 @@ def test_update_collection(
     postgres_transactions.update_collection(data, request=MockStarletteRequest)
 
     coll = postgres_core.get_collection(data.id, request=MockStarletteRequest)
-    assert "new keyword" in coll.keywords
+    assert "new keyword" in coll["keywords"]
 
 
 def test_delete_collection(
@@ -66,7 +65,7 @@ def test_delete_collection(
     )
 
     with pytest.raises(NotFoundError):
-        postgres_core.get_collection(deleted.id, request=MockStarletteRequest)
+        postgres_core.get_collection(deleted["id"], request=MockStarletteRequest)
 
 
 def test_get_collection(
@@ -77,8 +76,8 @@ def test_get_collection(
     data = Collection.parse_obj(load_test_data("test_collection.json"))
     postgres_transactions.create_collection(data, request=MockStarletteRequest)
     coll = postgres_core.get_collection(data.id, request=MockStarletteRequest)
-    assert data.dict(exclude={"links"}) == coll.dict(exclude={"links"})
-    assert coll.id == data.id
+    assert data.dict(exclude={"links"}) == Collection(**coll).dict(exclude={"links"})
+    assert coll["id"] == data.id
 
 
 def test_get_collection_items(
@@ -96,10 +95,10 @@ def test_get_collection_items(
         postgres_transactions.create_item(item, request=MockStarletteRequest)
 
     fc = postgres_core.item_collection(coll.id, request=MockStarletteRequest)
-    assert len(fc.features) == 5
+    assert len(fc["features"]) == 5
 
-    for item in fc.features:
-        assert item.collection == coll.id
+    for item in fc["features"]:
+        assert item["collection"] == coll.id
 
 
 def test_create_item(
@@ -116,11 +115,10 @@ def test_create_item(
     )
     assert item.dict(
         exclude={"links": ..., "properties": {"created", "updated"}}
-    ) == resp.dict(exclude={"links": ..., "properties": {"created", "updated"}})
+    ) == Item(**resp).dict(exclude={"links": ..., "properties": {"created", "updated"}})
 
 
 def test_create_item_already_exists(
-    postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
@@ -151,7 +149,7 @@ def test_update_item(
     updated_item = postgres_core.get_item(
         item.id, item.collection, request=MockStarletteRequest
     )
-    assert updated_item.properties.foo == "bar"
+    assert updated_item["properties"]["foo"] == "bar"
 
 
 def test_delete_item(

@@ -26,7 +26,9 @@ class Serializer(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def stac_to_db(cls, stac_data: TypedDict) -> database.BaseModel:
+    def stac_to_db(
+        cls, stac_data: TypedDict, exclude_geometry: bool = False
+    ) -> database.BaseModel:
         """Transform stac to database model."""
         ...
 
@@ -82,7 +84,9 @@ class ItemSerializer(Serializer):
         )
 
     @classmethod
-    def stac_to_db(cls, stac_data: TypedDict) -> database.Item:
+    def stac_to_db(
+        cls, stac_data: TypedDict, exclude_geometry: bool = False
+    ) -> database.Item:
         """Transform stac item to database model."""
         indexed_fields = {}
         for field in Settings.get().indexed_fields:
@@ -95,7 +99,7 @@ class ItemSerializer(Serializer):
             # TODO: Exclude indexed fields from the properties jsonb field to prevent duplication
 
             now = datetime.utcnow().strftime(DATETIME_RFC339)
-            if not stac_data["properties"]["created"]:
+            if "created" not in stac_data["properties"]:
                 stac_data["properties"]["created"] = now
             stac_data["properties"]["updated"] = now
 
@@ -104,7 +108,9 @@ class ItemSerializer(Serializer):
             collection_id=stac_data["collection"],
             stac_version=stac_data["stac_version"],
             stac_extensions=stac_data["stac_extensions"],
-            geometry=ga.shape.from_shape(shape(stac_data["geometry"]), 4326),
+            geometry=None
+            if exclude_geometry
+            else ga.shape.from_shape(shape(stac_data["geometry"]), 4326),
             bbox=stac_data["bbox"],
             properties=stac_data["properties"],
             assets=stac_data["assets"],
@@ -143,6 +149,8 @@ class CollectionSerializer(Serializer):
         )
 
     @classmethod
-    def stac_to_db(cls, stac_data: TypedDict) -> database.Collection:
+    def stac_to_db(
+        cls, stac_data: TypedDict, exclude_geometry: bool = False
+    ) -> database.Collection:
         """Transform stac collection to database model."""
         return database.Collection(**dict(stac_data))
