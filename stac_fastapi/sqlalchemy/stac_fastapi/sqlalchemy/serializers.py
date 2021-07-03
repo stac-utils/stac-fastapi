@@ -9,13 +9,9 @@ from shapely.geometry import shape
 from stac_pydantic.shared import DATETIME_RFC339
 
 from stac_fastapi.sqlalchemy.models import database
-from stac_fastapi.sqlalchemy.models.links import (
-    CollectionLinks,
-    ItemLinks,
-    resolve_links,
-)
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import Settings
+from stac_fastapi.types.links import CollectionLinks, ItemLinks, resolve_links
 
 
 @attr.s  # type:ignore
