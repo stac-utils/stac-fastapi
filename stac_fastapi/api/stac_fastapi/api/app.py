@@ -103,7 +103,9 @@ class StacApi:
         router.add_api_route(
             name="Landing Page",
             path="/",
-            response_model=LandingPage,
+            response_model=LandingPage
+            if self.settings.enable_response_models
+            else None,
             response_model_exclude_unset=False,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -112,7 +114,9 @@ class StacApi:
         router.add_api_route(
             name="Conformance Classes",
             path="/conformance",
-            response_model=ConformanceClasses,
+            response_model=ConformanceClasses
+            if self.settings.enable_response_models
+            else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -121,7 +125,7 @@ class StacApi:
         router.add_api_route(
             name="Get Item",
             path="/collections/{collectionId}/items/{itemId}",
-            response_model=Item,
+            response_model=Item if self.settings.enable_response_models else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -130,7 +134,9 @@ class StacApi:
         router.add_api_route(
             name="Search",
             path="/search",
-            response_model=ItemCollection if not fields_ext else None,
+            response_model=(ItemCollection if not fields_ext else None)
+            if self.settings.enable_response_models
+            else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
@@ -139,7 +145,9 @@ class StacApi:
         router.add_api_route(
             name="Search",
             path="/search",
-            response_model=ItemCollection if not fields_ext else None,
+            response_model=(ItemCollection if not fields_ext else None)
+            if self.settings.enable_response_models
+            else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -148,7 +156,9 @@ class StacApi:
         router.add_api_route(
             name="Get Collections",
             path="/collections",
-            response_model=List[Collection],
+            response_model=List[Collection]
+            if self.settings.enable_response_models
+            else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -157,7 +167,7 @@ class StacApi:
         router.add_api_route(
             name="Get Collection",
             path="/collections/{collectionId}",
-            response_model=Collection,
+            response_model=Collection if self.settings.enable_response_models else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -166,7 +176,9 @@ class StacApi:
         router.add_api_route(
             name="Get ItemCollection",
             path="/collections/{collectionId}/items",
-            response_model=ItemCollection,
+            response_model=ItemCollection
+            if self.settings.enable_response_models
+            else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
