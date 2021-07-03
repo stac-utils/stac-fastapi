@@ -4,6 +4,7 @@ import logging
 from typing import Callable, Dict, Type
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -57,8 +58,19 @@ def add_exception_handlers(
     Returns:
         None
     """
-    # """
-    # Add exception handlers to the FastAPI app.
-    # """
     for (exc, code) in status_codes.items():
         app.add_exception_handler(exc, exception_handler_factory(code))
+
+    # By default FastAPI will return 422 status codes for invalid requests
+    # But the STAC api spec suggests returning a 400 in this case
+    def request_validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
+        # change this as you like, including possibly the return type
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST, content={"detail": exc.errors()}
+        )
+
+    app.add_exception_handler(
+        RequestValidationError, request_validation_exception_handler
+    )
