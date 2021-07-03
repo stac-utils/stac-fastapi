@@ -695,7 +695,7 @@ def test_search_intersects_and_bbox(app_client):
     geoj = Polygon.from_bounds(*bbox).__geo_interface__
     params = {"bbox": bbox, "intersects": geoj}
     resp = app_client.post("/search", json=params)
-    assert resp.status_code == 422
+    assert resp.status_code == 400
 
 
 def test_get_missing_item(app_client, load_test_data):
@@ -708,4 +708,4 @@ def test_get_missing_item(app_client, load_test_data):
 def test_search_invalid_query_field(app_client):
     body = {"query": {"gsd": {"lt": 100}, "invalid-field": {"eq": 50}}}
     resp = app_client.post("/search", json=body)
-    assert resp.status_code == 422
+    assert resp.status_code == 400
