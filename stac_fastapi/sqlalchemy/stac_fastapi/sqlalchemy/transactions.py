@@ -29,7 +29,6 @@ class TransactionsClient(BaseTransactionsClient):
     def create_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
         """Create item."""
         data = self.item_table.from_schema(model)
-        print(data.geometry)
         with self.session.writer.context_session() as session:
             session.add(data)
             data.base_url = str(kwargs["request"].base_url)
