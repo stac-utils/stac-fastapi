@@ -29,6 +29,7 @@ class TransactionsClient(BaseTransactionsClient):
     def create_item(self, model: schemas.Item, **kwargs) -> schemas.Item:
         """Create item."""
         data = self.item_table.from_schema(model)
+        print(data.geometry)
         with self.session.writer.context_session() as session:
             session.add(data)
             data.base_url = str(kwargs["request"].base_url)
@@ -52,9 +53,12 @@ class TransactionsClient(BaseTransactionsClient):
             )
             if not query.scalar():
                 raise NotFoundError(f"Item {model.id} not found")
-            # SQLAlchemy orm updates don't seem to like geoalchemy types
+
             data = self.item_table.get_database_model(model)
-            data.pop("geometry", None)
+
+            # SQLAlchemy orm updates don't like geoalchemy types
+            # Coerce to geojson instead
+            data["geometry"] = json.dumps(model.geometry.dict())
             query.update(data)
 
             response = self.item_table.from_schema(model)
