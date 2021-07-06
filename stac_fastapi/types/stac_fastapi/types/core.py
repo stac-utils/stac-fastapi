@@ -131,8 +131,11 @@ class BaseCoreClient(abc.ABC):
     def list_conformance_classes(self):
         """Return a list of conformance classes, including implemented extensions."""
         base_conformance = [
-            "https://stacspec.org/STAC-api.html",
-            "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
+            "https://api.stacspec.org/v1.0.0-beta.2/core",
+            "https://api.stacspec.org/v1.0.0-beta.2/item-search",
+            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
+            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30",
+            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
         ]
 
         for extension in self.extensions:
