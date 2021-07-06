@@ -10,8 +10,8 @@ from stac_pydantic.api import ConformanceClasses, LandingPage, Search
 from stac_pydantic.shared import Link, MimeTypes, Relations
 from stac_pydantic.version import STAC_VERSION
 
-from stac_fastapi.sqlalchemy.models.links import CollectionLinks
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.links import CollectionLinks
 
 NumType = Union[float, int]
 

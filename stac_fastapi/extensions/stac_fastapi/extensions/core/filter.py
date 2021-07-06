@@ -14,7 +14,7 @@ from stac_fastapi.types.extension import ApiExtension
 
 @attr.s
 class FilterExtension(ApiExtension):
-    """Transaction Extension.
+    """Filter Extension.
 
     The filter extension adds several endpoints which allow the retrieval of queryables and
     provides an expressive mechanism for searching based on Item Attributes:
