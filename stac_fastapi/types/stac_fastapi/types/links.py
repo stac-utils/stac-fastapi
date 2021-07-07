@@ -4,7 +4,8 @@ from typing import Dict, List
 from urllib.parse import urljoin
 
 import attr
-from stac_pydantic.shared import Link, MimeTypes, Relations
+from stac_pydantic.links import Link, Relations
+from stac_pydantic.shared import MimeTypes
 
 # These can be inferred from the item/collection so they aren't included in the database
 # Instead they are dynamically generated when querying the database using the classes defined below
@@ -69,7 +70,8 @@ class ItemLinks(BaseLinks):
             rel=Relations.self,
             type=MimeTypes.geojson,
             href=urljoin(
-                self.base_url, f"collections/{self.collection_id}/items/{self.item_id}"
+                self.base_url,
+                f"collections/{self.collection_id}/items/{self.item_id}",
             ),
         )
 

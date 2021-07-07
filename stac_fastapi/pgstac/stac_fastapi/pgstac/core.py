@@ -10,7 +10,9 @@ from buildpg import render
 from fastapi.responses import ORJSONResponse
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
-from stac_pydantic.shared import Link, MimeTypes, Relations
+from stac_pydantic.api.collections import Collections
+from stac_pydantic.links import Link, Relations
+from stac_pydantic.shared import MimeTypes
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
@@ -88,7 +90,7 @@ class CoreCrudClient(BaseCoreClient):
             ]
         )
 
-    async def _all_collections_func(self, **kwargs) -> List[Dict]:
+    async def _all_collections_func(self, **kwargs) -> List[Collection]:
         """Read all collections from the database."""
         request = kwargs["request"]
         pool = request.app.state.readpool
@@ -111,10 +113,23 @@ class CoreCrudClient(BaseCoreClient):
 
     async def all_collections(self, **kwargs) -> ORJSONResponse:
         """Get all collections."""
+        request = kwargs["request"]
+        base_url = str(request.base_url)
+        url = str(request.url)
         collections = await self._all_collections_func(**kwargs)
-        if collections is None or len(collections) < 1:
-            return ORJSONResponse([])
-        return ORJSONResponse([c.dict(exclude_none=True) for c in collections])
+        links = [
+            Link(rel=Relations.self, type=MimeTypes.json, href=url),
+            Link(rel=Relations.parent, type=MimeTypes.json, href=base_url),
+            Link(rel=Relations.root, type=MimeTypes.json, href=base_url),
+        ]
+        if collections is None:
+            return ORJSONResponse(Collections(collections=[], links=links))
+        return ORJSONResponse(
+            Collections(
+                collections=[c.dict(exclude_none=True) for c in collections],
+                links=links,
+            )
+        )
 
     async def get_collection(self, id: str, **kwargs) -> ORJSONResponse:
         """Get collection by id.

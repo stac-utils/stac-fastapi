@@ -1,3 +1,6 @@
+## UNRELEASED
+
+* Upgrade to stac-pydantic 2.0.0 and stac-spec 1.0.0 (https://github.com/stac-utils/stac-fastapi/pull/181)
 
 ## 1.1.0 (2021-01-28)
 

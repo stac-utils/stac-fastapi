@@ -55,7 +55,9 @@ class ItemGetter(GetterDict):
             properties[field] = field_value
         # Create inferred links
         item_links = ItemLinks(
-            collection_id=obj.collection_id, base_url=obj.base_url, item_id=obj.id
+            collection_id=obj.collection_id,
+            base_url=obj.base_url,
+            item_id=obj.id,
         ).create_links()
         # Resolve existing links
         if obj.links:

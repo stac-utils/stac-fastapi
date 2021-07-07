@@ -7,7 +7,8 @@ from urllib.parse import urljoin
 import attr
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage, Search
-from stac_pydantic.shared import Link, MimeTypes, Relations
+from stac_pydantic.links import Link, Relations
+from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.types.extension import ApiExtension

@@ -7,8 +7,8 @@ from geojson_pydantic.geometries import Polygon
 from pydantic import BaseModel
 from stac_pydantic import Collection as CollectionBase
 from stac_pydantic import Item as ItemBase
-from stac_pydantic.api.search import DATETIME_RFC339
-from stac_pydantic.shared import Link
+from stac_pydantic.links import Link
+from stac_pydantic.shared import DATETIME_RFC339
 
 from stac_fastapi.sqlalchemy.models.decompose import CollectionGetter, ItemGetter
 

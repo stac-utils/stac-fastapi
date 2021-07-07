@@ -532,7 +532,8 @@ def test_pagination_item_collection(app_client, load_test_data):
             break
         query_params = parse_qs(urlparse(next_link[0]["href"]).query)
         page = app_client.get(
-            f"/collections/{test_item['collection']}/items", params=query_params
+            f"/collections/{test_item['collection']}/items",
+            params=query_params,
         )
 
     # Our limit is 1 so we expect len(ids) number of requests before we run out of pages
