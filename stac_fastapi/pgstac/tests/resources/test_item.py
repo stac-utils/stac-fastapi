@@ -7,7 +7,7 @@ from urllib.parse import parse_qs, urlparse
 import pytest
 from shapely.geometry import Polygon
 from stac_pydantic import Collection, Item
-from stac_pydantic.api.search import DATETIME_RFC339
+from stac_pydantic.shared import DATETIME_RFC339
 
 
 @pytest.mark.asyncio

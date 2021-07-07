@@ -7,7 +7,7 @@ from random import randint
 from urllib.parse import parse_qs, urlparse, urlsplit
 
 from shapely.geometry import Polygon
-from stac_pydantic.api.search import DATETIME_RFC339
+from stac_pydantic.shared import DATETIME_RFC339
 
 
 def test_create_and_delete_item(app_client, load_test_data):
