@@ -108,5 +108,6 @@ class CollectionGetter(GetterDict):
             summaries=obj.summaries,
             extent=obj.extent,
             links=collection_links,
+            type="collection"
         )
         super().__init__(db_model)
