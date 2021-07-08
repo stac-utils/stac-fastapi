@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List, Optional, Union
 
-from geojson_pydantic.geometries import Polygon
+from geojson_pydantic.geometries import Geometry
 from pydantic import BaseModel
 from stac_pydantic import Collection as CollectionBase
 from stac_pydantic import Item as ItemBase
@@ -32,7 +32,7 @@ class Collection(CollectionBase):
 class Item(ItemBase):
     """Item model."""
 
-    geometry: Polygon
+    geometry: Geometry
     links: Optional[List[Link]]
 
     class Config:

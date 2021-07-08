@@ -65,7 +65,26 @@ class Queryables(str, AutoValueEnum):
     minzoom = "cog:minzoom"
     maxzoom = "cog:maxzoom"
     dtype = "cog:dtype"
-    foo = "foo"
+
+    start_datetime = auto()
+    end_datetime = auto()
+    created = auto()
+    updated = auto()
+    supercell_id = "io:supercell_id"
+    tile_id = "io:tile_id"
+    data_type = "io:data_type"
+    block_overlap = "io:block_overlap"
+    nodata = "io:nodata"
+    GRID1MIL = auto()
+    GRID100K = auto()
+    MGRS_UTM = auto()
+    latitude_band = "sentinel:latitude_band"
+    sequence = "sentinel:sequence"
+    product_id = "sentinel:product_id"
+    grid_square = "sentinel:grid_square"
+    utm_zone = "sentinel:utm_zone"
+    data_coverage = "sentinel:data_coverage"
+    cloud_cover = "eo:cloud_cover"
 
 
 @dataclass
@@ -76,14 +95,33 @@ class QueryableTypes:
     # TODO: There is a much better way of defining this field <> type mapping than two enums with same keys
     """
 
-    orientation = sa.String
+    orientation = sa.Text
     gsd = sa.Float
     epsg = sa.Integer
     height = sa.Integer
     width = sa.Integer
     minzoom = sa.Integer
     maxzoom = sa.Integer
-    dtype = sa.String
+    dtype = sa.Text
+    start_datetime = sa.Text
+    end_datetime = sa.Text
+    created = sa.Text
+    updated = sa.Text
+    supercell_id = sa.Text
+    tile_id = sa.Text
+    data_type = sa.Text
+    block_overlap = sa.Integer
+    nodata = sa.Integer
+    GRID1MIL = sa.Text
+    GRID100K = sa.Text
+    MGRS_UTM = sa.Text
+    latitude_band = sa.Text    
+    sequence = sa.Text
+    product_id = sa.Text
+    grid_square = sa.Text
+    utm_zone = sa.Integer
+    data_coverage = sa.Float
+    cloud_cover = sa.Float
 
 
 class FieldsExtension(FieldsBase):
