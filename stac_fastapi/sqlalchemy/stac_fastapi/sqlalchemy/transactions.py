@@ -39,6 +39,7 @@ class TransactionsClient(BaseTransactionsClient):
     ) -> schemas.Collection:
         """Create collection."""
         data = self.collection_table.from_schema(model)
+        data.type = "collection"
         with self.session.writer.context_session() as session:
             session.add(data)
             data.base_url = str(kwargs["request"].base_url)
