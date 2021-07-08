@@ -78,7 +78,7 @@ services:
       - "5439:5432"
     command: postgres -N 500
 
-  sqlalchemy-migration:
+  sqlalchemy-loadjoplin:
     image: stac-utils/stac-fastapi
     environment:
       - ENVIRONMENT=development
