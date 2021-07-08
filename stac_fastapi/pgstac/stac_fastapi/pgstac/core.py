@@ -26,6 +26,16 @@ NumType = Union[float, int]
 class CoreCrudClient(BaseCoreClient):
     """Client for core endpoints defined by stac."""
 
+    landing_page_id: str = attr.ib(default="stac-api")
+    title: str = attr.ib(default="Arturo STAC API")
+    description: str = attr.ib(default="Arturo raster datastore")
+    conformance_classes: List[str] = attr.ib(
+        factory=lambda: [
+            "https://stacspec.org/STAC-api.html",
+            "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
+        ]
+    )
+
     async def landing_page(self, **kwargs) -> ORJSONResponse:
         """Landing page.
 
@@ -37,8 +47,10 @@ class CoreCrudClient(BaseCoreClient):
         request = kwargs["request"]
         base_url = str(request.base_url)
         landing_page = LandingPage(
-            title="Arturo STAC API",
-            description="Arturo raster datastore",
+            id=self.landing_page_id,
+            title=self.title,
+            description=self.description,
+            conformsTo=self.conformance_classes,
             links=[
                 Link(
                     rel=Relations.self,
@@ -49,24 +61,24 @@ class CoreCrudClient(BaseCoreClient):
                     rel=Relations.docs,
                     type=MimeTypes.html,
                     title="OpenAPI docs",
-                    href=urljoin(base_url, "/docs"),
+                    href=urljoin(base_url, "docs"),
                 ),
                 Link(
                     rel=Relations.conformance,
                     type=MimeTypes.json,
                     title="STAC/WFS3 conformance classes implemented by this server",
-                    href=urljoin(base_url, "/conformance"),
+                    href=urljoin(base_url, "conformance"),
                 ),
                 Link(
                     rel=Relations.search,
                     type=MimeTypes.geojson,
                     title="STAC search",
-                    href=urljoin(base_url, "/search"),
+                    href=urljoin(base_url, "search"),
                 ),
                 Link(
                     rel="data",
                     type=MimeTypes.json,
-                    href=urljoin(base_url, "/collections"),
+                    href=urljoin(base_url, "collections"),
                 ),
             ],
         )
@@ -83,12 +95,7 @@ class CoreCrudClient(BaseCoreClient):
 
     async def conformance(self, **kwargs) -> ConformanceClasses:
         """Conformance classes."""
-        return ConformanceClasses(
-            conformsTo=[
-                "https://stacspec.org/STAC-api.html",
-                "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
-            ]
-        )
+        return ConformanceClasses(conformsTo=self.conformance_classes)
 
     async def _all_collections_func(self, **kwargs) -> List[Collection]:
         """Read all collections from the database."""
