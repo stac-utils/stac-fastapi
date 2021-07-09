@@ -61,10 +61,10 @@ Use docker-compose to deploy the application, migrate the database, and ingest s
 docker-compose build
 docker-compose up
 
-# You can also launch specific application
-docker-compose up app-sqlalchemy  # or sqlalchemy-loadjoplin
+# You can also launch application with specific backend (PGSTac or sqlalchemy)
+docker-compose up app-sqlalchemy
 # or
-docker-compose up app-pgstac  # or pgstac-loadjoplin
+docker-compose up app-pgstac
 ```
 
 For local development it is often more convenient to run the application outside of docker-compose:
