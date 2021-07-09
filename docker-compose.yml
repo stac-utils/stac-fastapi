@@ -78,7 +78,8 @@ services:
       - "5439:5432"
     command: postgres -N 500
 
-  sqlalchemy-migration:
+  # Load joplin demo dataset into the SQLAlchemy Application
+  loadjoplin-sqlalchemy:
     image: stac-utils/stac-fastapi
     environment:
       - ENVIRONMENT=development
@@ -96,7 +97,8 @@ services:
       - database
       - app-sqlalchemy
 
-  pgstac-loadjoplin:
+  # Load joplin demo dataset into the PGStac Application
+  loadjoplin-pgstac:
     image: stac-utils/stac-fastapi
     environment:
       - ENVIRONMENT=development
