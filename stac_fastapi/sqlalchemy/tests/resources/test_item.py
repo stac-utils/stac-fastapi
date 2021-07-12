@@ -240,7 +240,7 @@ def test_item_search_temporal_query_post(app_client, load_test_data):
     params = {
         "collections": [test_item["collection"]],
         "intersects": test_item["geometry"],
-        "datetime": item_date.strftime(DATETIME_RFC339),
+        "datetime": f"../{item_date.strftime(DATETIME_RFC339)}",
     }
     resp = app_client.post("/search", json=params)
     resp_json = resp.json()
