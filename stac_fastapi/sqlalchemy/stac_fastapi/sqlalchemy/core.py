@@ -300,20 +300,20 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 # Temporal query
                 if search_request.datetime:
                     # Two tailed query (between)
+                    dts = search_request.datetime.split("/")
                     if ".." not in search_request.datetime:
-                        dts = search_request.datetime.split("/")
                         query = query.filter(
                             self.item_table.datetime.between(*dts)
                         )
                     # All items after the start date
-                    if search_request.datetime[0] != "..":
+                    if dts[0] != "..":
                         query = query.filter(
-                            self.item_table.datetime >= search_request.datetime[0]
+                            self.item_table.datetime >= dts[0]
                         )
                     # All items before the end date
-                    if search_request.datetime[1] != "..":
+                    if dts[1] != "..":
                         query = query.filter(
-                            self.item_table.datetime <= search_request.datetime[1]
+                            self.item_table.datetime <= dts[1]
                         )
 
                 # Query fields
