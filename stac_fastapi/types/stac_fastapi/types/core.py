@@ -186,8 +186,8 @@ class BaseCoreClient(abc.ABC):
                 {
                     "rel": Relations.child.value,
                     "type": MimeTypes.json.value,
-                    "title": collection.title,
-                    "href": urljoin(base_url, f"collections/{collection.id}"),
+                    "title": collection["title"],
+                    "href": urljoin(base_url, f"collections/{collection['id']}"),
                 }
             )
         return landing_page

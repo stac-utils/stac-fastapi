@@ -140,11 +140,11 @@ class TilesClient(BaseTilesClient):
         """Get OGC TileSet resource for a stac item."""
         item = self.client.get_item(item_id, collection_id, **kwargs)
         resource = TileSetResource(
-            extent=SpatialExtent(bbox=[list(item.bbox)]),
-            title=f"Tiled layer of {item.collection}/{item.id}",
+            extent=SpatialExtent(bbox=[list(item["bbox"])]),
+            title=f"Tiled layer of {item['collection']}/{item['id']}",
             links=TileLinks(
-                item_id=item.id,
-                collection_id=item.collection,
+                item_id=item["id"],
+                collection_id=item["collection"],
                 base_url=str(kwargs["request"].base_url),
                 route_prefix=self.route_prefix,
             ).create_links(),

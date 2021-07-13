@@ -65,7 +65,10 @@ class TransactionsClient(BaseTransactionsClient):
             )
             query.update(self.item_serializer.row_to_dict(db_model))
 
-            return self.item_serializer.db_to_stac(db_model, base_url)
+            # TODO: Fix this by allowing geoetry updates (there is a PR out to do this)
+            stac_item = self.item_serializer.db_to_stac(db_model, base_url)
+            stac_item["geometry"] = model.geometry.dict()
+            return stac_item
 
     def update_collection(self, model: schemas.Collection, **kwargs) -> Collection:
         """Update collection."""

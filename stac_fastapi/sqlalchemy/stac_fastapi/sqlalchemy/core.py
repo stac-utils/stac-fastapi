@@ -145,16 +145,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             if self.extension_is_enabled(ContextExtension):
                 context_obj = {"returned": len(page), "limit": limit, "matched": count}
 
-            # TODO: test this
-            if not response_features:
-                stac_extensions = self.extensions
-            else:
-                stac_extensions = response_features[0]["stac_extensions"]
-
+            # TODO: return stac_extensions
             return ItemCollection(
                 type="FeatureCollection",
                 stac_version=STAC_VERSION,
-                stac_extensions=stac_extensions,
                 features=response_features,
                 links=links,
                 context=context_obj,
@@ -410,16 +404,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 "matched": count,
             }
 
-        # TODO: test this
-        if not response_features:
-            stac_extensions = self.extensions
-        else:
-            stac_extensions = response_features[0]["stac_extensions"]
-
+        # TODO: return stac_extensions
         return ItemCollection(
             type="FeatureCollection",
             stac_version=STAC_VERSION,
-            stac_extensions=stac_extensions,
             features=response_features,
             links=links,
             context=context_obj,

@@ -57,7 +57,6 @@ class ItemSerializer(Serializer):
             if field == "datetime":
                 field_value = field_value.strftime(DATETIME_RFC339)
             properties[field] = field_value
-
         item_id = db_model.id
         collection_id = db_model.collection_id
         item_links = ItemLinks(
@@ -70,13 +69,20 @@ class ItemSerializer(Serializer):
 
         stac_extensions = db_model.stac_extensions or []
 
+        # The custom geometry we are using emits geojson if the geometry is bound to the database
+        # Otherwise it will return a geoalchemy2 WKBElement
+        # TODO: It's probably best to just remove the custom geometry type
+        geometry = db_model.geometry
+        if isinstance(geometry, ga.elements.WKBElement):
+            geometry = ga.shape.to_shape(geometry).__geo_interface__
+
         return stac_types.Item(
             type="Feature",
             stac_version=db_model.stac_version,
             stac_extensions=stac_extensions,
             id=db_model.id,
             collection=db_model.collection_id,
-            geometry=db_model.geometry,
+            geometry=geometry,
             bbox=db_model.bbox,
             properties=properties,
             links=item_links,
