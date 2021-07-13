@@ -7,17 +7,18 @@ import attr
 import orjson
 from buildpg import render
 from fastapi.responses import ORJSONResponse
-from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.stac import Collection, Item, ItemCollection
 
 NumType = Union[float, int]
 
 
+# TODO: Add response handler instead of returning ORJSON classes
 @attr.s
 class CoreCrudClient(BaseCoreClient):
     """Client for core endpoints defined by stac."""
@@ -31,7 +32,7 @@ class CoreCrudClient(BaseCoreClient):
             ]
         )
 
-    async def _all_collections_func(self, **kwargs) -> List[Dict]:
+    async def _all_collections_func(self, **kwargs) -> List[Collection]:
         """Read all collections from the database."""
         request = kwargs["request"]
         pool = request.app.state.readpool
@@ -45,9 +46,9 @@ class CoreCrudClient(BaseCoreClient):
         linked_collections = []
         if collections is not None and len(collections) > 0:
             for c in collections:
-                coll = Collection.construct(**c)
-                coll.links = await CollectionLinks(
-                    collection_id=coll.id, request=request
+                coll = Collection(**c)
+                coll["links"] = await CollectionLinks(
+                    collection_id=coll["id"], request=request
                 ).get_links()
                 linked_collections.append(coll)
         return linked_collections
@@ -57,7 +58,7 @@ class CoreCrudClient(BaseCoreClient):
         collections = await self._all_collections_func(**kwargs)
         if collections is None or len(collections) < 1:
             return ORJSONResponse([])
-        return ORJSONResponse([c.dict(exclude_none=True) for c in collections])
+        return ORJSONResponse(collections)
 
     async def get_collection(self, id: str, **kwargs) -> ORJSONResponse:
         """Get collection by id.
@@ -84,9 +85,7 @@ class CoreCrudClient(BaseCoreClient):
             raise NotFoundError
         links = await CollectionLinks(collection_id=id, request=request).get_links()
         collection["links"] = links
-        return ORJSONResponse(
-            Collection.construct(**collection).dict(exclude_none=True)
-        )
+        return ORJSONResponse(Collection(**collection))
 
     async def _search_base(
         self, search_request: PgstacSearch, **kwargs
@@ -117,32 +116,29 @@ class CoreCrudClient(BaseCoreClient):
             items = await conn.fetchval(q, *p)
         next = items.pop("next", None)
         prev = items.pop("prev", None)
-        collection = ItemCollection.construct(**items)
+        collection = ItemCollection(**items)
         cleaned_features = []
-        if collection.features is None or len(collection.features) == 0:
+        if collection["features"] is None or len(collection["features"]) == 0:
             raise NotFoundError("No features found")
 
-        for feature in collection.features:
-            feature = Item.construct(**feature)
+        for feature in collection["features"]:
+            feature = Item(**feature)
             if "links" not in search_request.fields.exclude:
                 links = await ItemLinks(
-                    collection_id=feature.collection,
-                    item_id=feature.id,
+                    collection_id=feature["collection"],
+                    item_id=feature["id"],
                     request=request,
                 ).get_links()
-                feature.links = links
+                feature["links"] = links
                 exclude = search_request.fields.exclude
                 if len(exclude) == 0:
                     exclude = None
                 include = search_request.fields.include
                 if len(include) == 0:
                     include = None
-                feature = feature.dict(
-                    exclude_none=True,
-                )
             cleaned_features.append(feature)
-            collection.features = cleaned_features
-        collection.links = await PagingLinks(
+            collection["features"] = cleaned_features
+        collection["links"] = await PagingLinks(
             request=request,
             next=next,
             prev=prev,
@@ -203,7 +199,7 @@ class CoreCrudClient(BaseCoreClient):
             ItemCollection containing items which match the search criteria.
         """
         collection = await self._search_base(search_request, **kwargs)
-        return ORJSONResponse(collection.dict(exclude_none=True))
+        return ORJSONResponse(collection)
 
     async def get_search(
         self,
