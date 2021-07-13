@@ -2,22 +2,30 @@
 
 import json
 import logging
-from typing import Dict, Optional, Type
+from typing import Dict, List, Optional, Type
 
 import attr
+import stac_pydantic
+from pydantic import BaseModel
 
 # TODO: This import should come from `backend` module
 from stac_fastapi.extensions.third_party.bulk_transactions import (
     BaseBulkTransactionsClient,
 )
 from stac_fastapi.sqlalchemy import serializers
-from stac_fastapi.sqlalchemy.models import database, schemas
+from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.stac import Collection, Item
 
 logger = logging.getLogger(__name__)
+
+
+class Items(BaseModel):
+    """Items model."""
+
+    items: List[stac_pydantic.Item]
 
 
 @attr.s
@@ -34,7 +42,7 @@ class TransactionsClient(BaseTransactionsClient):
         default=serializers.CollectionSerializer
     )
 
-    def create_item(self, model: schemas.Item, **kwargs) -> Item:
+    def create_item(self, model: stac_pydantic.Item, **kwargs) -> Item:
         """Create item."""
         base_url = str(kwargs["request"].base_url)
         data = self.item_serializer.stac_to_db(model.dict(exclude_none=True))
@@ -42,7 +50,9 @@ class TransactionsClient(BaseTransactionsClient):
             session.add(data)
             return self.item_serializer.db_to_stac(data, base_url)
 
-    def create_collection(self, model: schemas.Collection, **kwargs) -> Collection:
+    def create_collection(
+        self, model: stac_pydantic.Collection, **kwargs
+    ) -> Collection:
         """Create collection."""
         base_url = str(kwargs["request"].base_url)
         data = self.collection_serializer.stac_to_db(model.dict(exclude_none=True))
@@ -50,7 +60,7 @@ class TransactionsClient(BaseTransactionsClient):
             session.add(data)
             return self.collection_serializer.db_to_stac(data, base_url=base_url)
 
-    def update_item(self, model: schemas.Item, **kwargs) -> Item:
+    def update_item(self, model: stac_pydantic.Item, **kwargs) -> Item:
         """Update item."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
@@ -70,7 +80,9 @@ class TransactionsClient(BaseTransactionsClient):
             stac_item["geometry"] = model.geometry.dict()
             return stac_item
 
-    def update_collection(self, model: schemas.Collection, **kwargs) -> Collection:
+    def update_collection(
+        self, model: stac_pydantic.Collection, **kwargs
+    ) -> Collection:
         """Update collection."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
@@ -125,7 +137,7 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         self.engine = self.session.writer.cached_engine
 
     @staticmethod
-    def _preprocess_item(item: schemas.Item) -> Dict:
+    def _preprocess_item(item: stac_pydantic.Item) -> Dict:
         """Preprocess items to match data model.
 
         # TODO: dedup with GetterDict logic (ref #58)
@@ -137,7 +149,7 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         return item
 
     def bulk_item_insert(
-        self, items: schemas.Items, chunk_size: Optional[int] = None, **kwargs
+        self, items: Items, chunk_size: Optional[int] = None, **kwargs
     ) -> str:
         """Bulk item insertion using sqlalchemy core.
 
