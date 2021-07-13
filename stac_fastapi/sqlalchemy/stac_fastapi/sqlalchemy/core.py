@@ -8,6 +8,7 @@ from urllib.parse import urlencode
 import attr
 import geoalchemy2 as ga
 import sqlalchemy as sa
+import stac_pydantic
 from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import shape
 from sqlakeyset import get_page
@@ -372,7 +373,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 )
 
             response_features = []
-            # filter_kwargs = {}
+            for item in page:
+                response_features.append(
+                    self.item_serializer.db_to_stac(item, base_url=base_url)
+                )
+
+            # Use pydantic includes/excludes syntax to implement fields extension
             if self.extension_is_enabled(FieldsExtension):
                 if search_request.query is not None:
                     query_include: Set[str] = set(
@@ -388,13 +394,11 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     else:
                         search_request.field.include.union(query_include)
 
-                # TODO: Enable filter extension
-                # filter_kwargs = search_request.field.filter_fields
-
-            for item in page:
-                response_features.append(
-                    self.item_serializer.db_to_stac(item, base_url=base_url)
-                )
+                filter_kwargs = search_request.field.filter_fields
+                response_features = [
+                    stac_pydantic.Item(**feat).to_dict(**filter_kwargs)
+                    for feat in response_features
+                ]
 
         context_obj = None
         if self.extension_is_enabled(ContextExtension):
