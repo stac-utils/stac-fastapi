@@ -2,15 +2,13 @@
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
-from urllib.parse import urljoin
 
 import attr
 import orjson
 from buildpg import render
 from fastapi.responses import ORJSONResponse
 from stac_pydantic import Collection, Item, ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage
-from stac_pydantic.shared import Link, MimeTypes, Relations
+from stac_pydantic.api import ConformanceClasses
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
@@ -23,61 +21,6 @@ NumType = Union[float, int]
 @attr.s
 class CoreCrudClient(BaseCoreClient):
     """Client for core endpoints defined by stac."""
-
-    async def landing_page(self, **kwargs) -> ORJSONResponse:
-        """Landing page.
-
-        Called with `GET /`.
-
-        Returns:
-            API landing page, serving as an entry point to the API.
-        """
-        request = kwargs["request"]
-        base_url = str(request.base_url)
-        landing_page = LandingPage(
-            title="Arturo STAC API",
-            description="Arturo raster datastore",
-            links=[
-                Link(
-                    rel=Relations.self,
-                    type=MimeTypes.json,
-                    href=str(base_url),
-                ),
-                Link(
-                    rel=Relations.docs,
-                    type=MimeTypes.html,
-                    title="OpenAPI docs",
-                    href=urljoin(base_url, "/docs"),
-                ),
-                Link(
-                    rel=Relations.conformance,
-                    type=MimeTypes.json,
-                    title="STAC/WFS3 conformance classes implemented by this server",
-                    href=urljoin(base_url, "/conformance"),
-                ),
-                Link(
-                    rel=Relations.search,
-                    type=MimeTypes.geojson,
-                    title="STAC search",
-                    href=urljoin(base_url, "/search"),
-                ),
-                Link(
-                    rel="data",
-                    type=MimeTypes.json,
-                    href=urljoin(base_url, "/collections"),
-                ),
-            ],
-        )
-        collections = await self._all_collections_func(request=request)
-        if collections:
-            for coll in collections:
-                coll_link = CollectionLinks(
-                    collection_id=coll.id, request=request
-                ).link_self()
-                coll_link.rel = Relations.child
-                coll_link.title = coll.title
-                landing_page.links.append(coll_link)
-        return ORJSONResponse(landing_page.dict(exclude_none=True))
 
     async def conformance(self, **kwargs) -> ConformanceClasses:
         """Conformance classes."""
