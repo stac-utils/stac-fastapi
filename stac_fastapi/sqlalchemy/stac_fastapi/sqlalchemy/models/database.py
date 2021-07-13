@@ -98,7 +98,7 @@ class Item(BaseModel):  # type:ignore
             # Use getattr to accommodate extension namespaces
             field_value = getattr(schema.properties, field)
             if field == "datetime" and not isinstance(field_value, datetime):
-                    field_value = datetime.strptime(field_value, DATETIME_RFC339)
+                field_value = datetime.strptime(field_value, DATETIME_RFC339)
             indexed_fields[field.split(":")[-1]] = field_value
 
         # Exclude indexed fields from the properties jsonb field
