@@ -8,6 +8,7 @@ from fastapi.openapi.utils import get_openapi
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.version import STAC_VERSION
+from starlette.responses import Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.models import (
@@ -64,6 +65,7 @@ class StacApi:
     stac_version: str = attr.ib(default=STAC_VERSION)
     description: str = attr.ib(default="stac-fastapi")
     search_request_model = attr.ib(default=STACSearch)
+    response_class: Type[Response] = attr.ib(default=Response)
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -106,6 +108,7 @@ class StacApi:
             response_model=LandingPage
             if self.settings.enable_response_models
             else None,
+            response_class=self.response_class,
             response_model_exclude_unset=False,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -117,6 +120,7 @@ class StacApi:
             response_model=ConformanceClasses
             if self.settings.enable_response_models
             else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -126,6 +130,7 @@ class StacApi:
             name="Get Item",
             path="/collections/{collectionId}/items/{itemId}",
             response_model=Item if self.settings.enable_response_models else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -137,6 +142,7 @@ class StacApi:
             response_model=(ItemCollection if not fields_ext else None)
             if self.settings.enable_response_models
             else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
@@ -148,6 +154,7 @@ class StacApi:
             response_model=(ItemCollection if not fields_ext else None)
             if self.settings.enable_response_models
             else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -159,6 +166,7 @@ class StacApi:
             response_model=List[Collection]
             if self.settings.enable_response_models
             else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -168,6 +176,7 @@ class StacApi:
             name="Get Collection",
             path="/collections/{collectionId}",
             response_model=Collection if self.settings.enable_response_models else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
@@ -179,6 +188,7 @@ class StacApi:
             response_model=ItemCollection
             if self.settings.enable_response_models
             else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
