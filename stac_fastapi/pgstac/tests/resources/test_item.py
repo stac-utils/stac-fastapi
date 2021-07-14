@@ -774,7 +774,7 @@ async def test_field_extension_get(app_client, load_test_data, load_test_collect
     )
     assert resp.status_code == 200
 
-    params = {"fields": "+properties.proj:epsg,+properties.gsd"}
+    params = {"fields": "+properties.proj:epsg,+properties.gsd,+collection"}
     resp = await app_client.get("/search", params=params)
     feat_properties = resp.json()["features"][0]["properties"]
     assert not set(feat_properties) - {"proj:epsg", "gsd", "datetime"}
@@ -796,6 +796,7 @@ async def test_field_extension_post(app_client, load_test_data, load_test_collec
                 "properties.eo:cloud_cover",
                 "properties.orientation",
                 "assets",
+                "collection",
             ],
         }
     }
@@ -825,7 +826,7 @@ async def test_field_extension_exclude_and_include(
     body = {
         "fields": {
             "exclude": ["properties.eo:cloud_cover"],
-            "include": ["properties.eo:cloud_cover"],
+            "include": ["properties.eo:cloud_cover", "collection"],
         }
     }
 
