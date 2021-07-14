@@ -52,14 +52,14 @@ class CoreCrudClient(BaseCoreClient):
                 linked_collections.append(coll)
         return linked_collections
 
-    async def all_collections(self, **kwargs) -> ORJSONResponse:
+    async def all_collections(self, **kwargs) -> List[Collection]:
         """Get all collections."""
         collections = await self._all_collections_func(**kwargs)
         if collections is None or len(collections) < 1:
-            return ORJSONResponse([])
-        return ORJSONResponse(collections)
+            return list()
+        return collections
 
-    async def get_collection(self, id: str, **kwargs) -> ORJSONResponse:
+    async def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collectionId}`.
@@ -84,7 +84,7 @@ class CoreCrudClient(BaseCoreClient):
             raise NotFoundError
         links = await CollectionLinks(collection_id=id, request=request).get_links()
         collection["links"] = links
-        return ORJSONResponse(Collection(**collection))
+        return Collection(**collection)
 
     async def _search_base(
         self, search_request: PgstacSearch, **kwargs
@@ -170,9 +170,7 @@ class CoreCrudClient(BaseCoreClient):
         collection["links"] = links
         return ORJSONResponse(collection)
 
-    async def get_item(
-        self, item_id: str, collection_id: str, **kwargs
-    ) -> ORJSONResponse:
+    async def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id.
 
         Called with `GET /collections/{collectionId}/items/{itemId}`.
@@ -185,11 +183,11 @@ class CoreCrudClient(BaseCoreClient):
         """
         req = PgstacSearch(ids=[item_id], limit=1)
         collection = await self._search_base(req, **kwargs)
-        return ORJSONResponse(collection["features"][0])
+        return Item(**collection["features"][0])
 
     async def post_search(
         self, search_request: PgstacSearch, **kwargs
-    ) -> ORJSONResponse:
+    ) -> ItemCollection:
         """Cross catalog search (POST).
 
         Called with `POST /search`.
@@ -200,8 +198,8 @@ class CoreCrudClient(BaseCoreClient):
         Returns:
             ItemCollection containing items which match the search criteria.
         """
-        collection = await self._search_base(search_request, **kwargs)
-        return ORJSONResponse(collection)
+        item_collection = await self._search_base(search_request, **kwargs)
+        return ItemCollection(**item_collection)
 
     async def get_search(
         self,
@@ -215,7 +213,7 @@ class CoreCrudClient(BaseCoreClient):
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
         **kwargs,
-    ) -> ORJSONResponse:
+    ) -> ItemCollection:
         """Cross catalog search (GET).
 
         Called with `GET /search`.

@@ -5,6 +5,7 @@ from stac_pydantic import Collection, Item
 
 from stac_fastapi.api.models import CollectionUri, ItemUri, _create_request_model
 from stac_fastapi.api.routes import create_endpoint
+from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
 
@@ -29,6 +30,7 @@ class TransactionExtension(ApiExtension):
     """
 
     client: BaseTransactionsClient = attr.ib()
+    settings: ApiSettings = attr.ib()
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -46,7 +48,7 @@ class TransactionExtension(ApiExtension):
         router.add_api_route(
             name="Create Item",
             path="/collections/{collectionId}/items",
-            response_model=Item,
+            response_model=Item if self.settings.enable_response_models else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
@@ -55,7 +57,7 @@ class TransactionExtension(ApiExtension):
         router.add_api_route(
             name="Update Item",
             path="/collections/{collectionId}/items",
-            response_model=Item,
+            response_model=Item if self.settings.enable_response_models else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
@@ -64,7 +66,7 @@ class TransactionExtension(ApiExtension):
         router.add_api_route(
             name="Delete Item",
             path="/collections/{collectionId}/items/{itemId}",
-            response_model=Item,
+            response_model=Item if self.settings.enable_response_models else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
@@ -73,7 +75,7 @@ class TransactionExtension(ApiExtension):
         router.add_api_route(
             name="Create Collection",
             path="/collections",
-            response_model=Collection,
+            response_model=Collection if self.settings.enable_response_models else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
@@ -84,7 +86,7 @@ class TransactionExtension(ApiExtension):
         router.add_api_route(
             name="Update Collection",
             path="/collections",
-            response_model=Collection,
+            response_model=Collection if self.settings.enable_response_models else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
@@ -95,7 +97,7 @@ class TransactionExtension(ApiExtension):
         router.add_api_route(
             name="Delete Collection",
             path="/collections/{collectionId}",
-            response_model=Collection,
+            response_model=Collection if self.settings.enable_response_models else None,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],

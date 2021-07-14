@@ -6,6 +6,7 @@ from typing import Callable, Dict
 
 import asyncpg
 import pytest
+from fastapi.responses import ORJSONResponse
 from httpx import AsyncClient
 from pypgstac import pypgstac
 from stac_pydantic import Collection, Item
@@ -84,13 +85,14 @@ def api_client(pg):
     api = StacApi(
         settings=settings,
         extensions=[
-            TransactionExtension(client=TransactionsClient),
+            TransactionExtension(client=TransactionsClient(), settings=settings),
             QueryExtension(),
             SortExtension(),
             FieldsExtension(),
         ],
         client=CoreCrudClient(),
         search_request_model=PgstacSearch,
+        response_class=ORJSONResponse,
     )
 
     return api

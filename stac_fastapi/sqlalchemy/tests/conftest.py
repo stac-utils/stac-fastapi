@@ -105,11 +105,14 @@ def postgres_bulk_transactions(db_session):
 
 @pytest.fixture
 def api_client(db_session):
+    settings = SqlalchemySettings()
     return StacApi(
-        settings=SqlalchemySettings(),
+        settings=settings,
         client=CoreCrudClient(session=db_session),
         extensions=[
-            TransactionExtension(client=TransactionsClient(session=db_session)),
+            TransactionExtension(
+                client=TransactionsClient(session=db_session), settings=settings
+            ),
             ContextExtension(),
             SortExtension(),
             FieldsExtension(),
