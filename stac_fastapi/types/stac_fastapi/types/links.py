@@ -4,7 +4,6 @@ from typing import Any, Dict, List
 from urllib.parse import urljoin
 
 import attr
-from pydantic import BaseModel
 from stac_pydantic.shared import MimeTypes, Relations
 
 # These can be inferred from the item/collection so they aren't included in the database
@@ -19,8 +18,6 @@ def filter_links(links: List[Dict]) -> List[Dict]:
 
 def resolve_links(links: list, base_url: str) -> List[Dict]:
     """Convert relative links to absolute links."""
-    if isinstance(links[0], BaseModel):
-        links = [link.dict() for link in links]
     filtered_links = filter_links(links)
     for link in filtered_links:
         link.update({"href": urljoin(base_url, link["href"])})
