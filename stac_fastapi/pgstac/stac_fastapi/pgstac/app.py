@@ -19,7 +19,6 @@ settings = Settings()
 api = StacApi(
     settings=settings,
     extensions=[
-        # TODO: Transaction extension should receive an instance of the class, not the class itself.
         TransactionExtension(client=TransactionsClient(), settings=settings),
         QueryExtension(),
         SortExtension(),

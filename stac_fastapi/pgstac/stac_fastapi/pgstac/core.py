@@ -17,7 +17,6 @@ from stac_fastapi.types.stac import Collection, Conformance, Item, ItemCollectio
 NumType = Union[float, int]
 
 
-# TODO: Add response handler instead of returning ORJSON classes
 @attr.s
 class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
