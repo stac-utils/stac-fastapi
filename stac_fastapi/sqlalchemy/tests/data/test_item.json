@@ -1,6 +1,7 @@
 {
   "type": "Feature",
   "id": "test-item",
+  "stac_version": "1.0.0-beta.2",
   "stac_extensions": [
     "eo",
     "view"

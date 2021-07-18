@@ -1,7 +1,6 @@
 from urllib.parse import urlsplit
 
 import pytest
-from stac_pydantic import Collection, Item
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
@@ -14,10 +13,10 @@ from ..conftest import MockStarletteRequest
 @pytest.fixture
 def tiles_extension_app(postgres_core, postgres_transactions, load_test_data):
     # Ingest test data for testing
-    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    item = Item.parse_obj(load_test_data("test_item.json"))
+    item = load_test_data("test_item.json")
     postgres_transactions.create_item(item, request=MockStarletteRequest)
 
     settings = SqlalchemySettings()
@@ -31,9 +30,9 @@ def tiles_extension_app(postgres_core, postgres_transactions, load_test_data):
 
     # Cleanup test data
     postgres_transactions.delete_item(
-        item.id, item.collection, request=MockStarletteRequest
+        item["id"], item["collection"], request=MockStarletteRequest
     )
-    postgres_transactions.delete_collection(coll.id, request=MockStarletteRequest)
+    postgres_transactions.delete_collection(coll["id"], request=MockStarletteRequest)
 
 
 def test_tiles_extension(tiles_extension_app, load_test_data):

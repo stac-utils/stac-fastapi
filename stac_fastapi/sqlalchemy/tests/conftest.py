@@ -3,7 +3,6 @@ import os
 from typing import Callable, Dict
 
 import pytest
-from stac_pydantic import Collection
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
@@ -124,7 +123,7 @@ def api_client(db_session):
 
 @pytest.fixture
 def app_client(api_client, load_test_data, postgres_transactions):
-    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
     with TestClient(api_client.app) as test_app:

@@ -10,7 +10,7 @@ from fastapi.responses import ORJSONResponse
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
-from stac_fastapi.types.core import BaseCoreClient
+from stac_fastapi.types.core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.stac import Collection, Conformance, Item, ItemCollection
 
@@ -19,7 +19,7 @@ NumType = Union[float, int]
 
 # TODO: Add response handler instead of returning ORJSON classes
 @attr.s
-class CoreCrudClient(BaseCoreClient):
+class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
 
     async def conformance(self, **kwargs) -> Conformance:

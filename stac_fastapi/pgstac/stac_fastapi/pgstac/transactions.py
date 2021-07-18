@@ -7,28 +7,24 @@ import attr
 
 from stac_fastapi.pgstac.db import dbfunc
 from stac_fastapi.types import stac as stac_types
-from stac_fastapi.types.core import BaseTransactionsClient
+from stac_fastapi.types.core import AsyncBaseTransactionsClient
 
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
 
 
 @attr.s
-class TransactionsClient(BaseTransactionsClient):
+class TransactionsClient(AsyncBaseTransactionsClient):
     """Transactions extension specific CRUD operations."""
 
-    async def create_item(
-        self, item: stac_types.Item = None, **kwargs
-    ) -> stac_types.Item:
+    async def create_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
         """Create item."""
         request = kwargs["request"]
         pool = request.app.state.writepool
         await dbfunc(pool, "create_item", item)
         return item
 
-    async def update_item(
-        self, item: stac_types.Item = None, **kwargs
-    ) -> stac_types.Item:
+    async def update_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
         """Update item."""
         request = kwargs["request"]
         pool = request.app.state.writepool

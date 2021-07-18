@@ -2,30 +2,22 @@
 
 import json
 import logging
-from typing import Dict, List, Optional, Type
+from typing import Optional, Type
 
 import attr
-import stac_pydantic
-from pydantic import BaseModel
 
-# TODO: This import should come from `backend` module
 from stac_fastapi.extensions.third_party.bulk_transactions import (
     BaseBulkTransactionsClient,
+    Items,
 )
 from stac_fastapi.sqlalchemy import serializers
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
+from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Collection, Item
 
 logger = logging.getLogger(__name__)
-
-
-class Items(BaseModel):
-    """Items model."""
-
-    items: List[stac_pydantic.Item]
 
 
 @attr.s
@@ -42,76 +34,74 @@ class TransactionsClient(BaseTransactionsClient):
         default=serializers.CollectionSerializer
     )
 
-    def create_item(self, model: stac_pydantic.Item, **kwargs) -> Item:
+    def create_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
         """Create item."""
         base_url = str(kwargs["request"].base_url)
-        data = self.item_serializer.stac_to_db(model.dict(exclude_none=True))
+        data = self.item_serializer.stac_to_db(model)
         with self.session.writer.context_session() as session:
             session.add(data)
             return self.item_serializer.db_to_stac(data, base_url)
 
     def create_collection(
-        self, model: stac_pydantic.Collection, **kwargs
-    ) -> Collection:
+        self, model: stac_types.Collection, **kwargs
+    ) -> stac_types.Collection:
         """Create collection."""
         base_url = str(kwargs["request"].base_url)
-        data = self.collection_serializer.stac_to_db(model.dict(exclude_none=True))
+        data = self.collection_serializer.stac_to_db(model)
         with self.session.writer.context_session() as session:
             session.add(data)
             return self.collection_serializer.db_to_stac(data, base_url=base_url)
 
-    def update_item(self, model: stac_pydantic.Item, **kwargs) -> Item:
+    def update_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
         """Update item."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             query = session.query(self.item_table).filter(
-                self.item_table.id == model.id
+                self.item_table.id == model["id"]
             )
             if not query.scalar():
-                raise NotFoundError(f"Item {model.id} not found")
+                raise NotFoundError(f"Item {model['id']} not found")
             # SQLAlchemy orm updates don't seem to like geoalchemy types
-            db_model = self.item_serializer.stac_to_db(
-                model.dict(exclude_none=True), exclude_geometry=True
-            )
+            db_model = self.item_serializer.stac_to_db(model, exclude_geometry=True)
             query.update(self.item_serializer.row_to_dict(db_model))
 
             # TODO: Fix this by allowing geoetry updates (there is a PR out to do this)
             stac_item = self.item_serializer.db_to_stac(db_model, base_url)
-            stac_item["geometry"] = model.geometry.dict()
+            stac_item["geometry"] = model["geometry"]
             return stac_item
 
     def update_collection(
-        self, model: stac_pydantic.Collection, **kwargs
-    ) -> Collection:
+        self, model: stac_types.Collection, **kwargs
+    ) -> stac_types.Collection:
         """Update collection."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             query = session.query(self.collection_table).filter(
-                self.collection_table.id == model.id
+                self.collection_table.id == model["id"]
             )
             if not query.scalar():
-                raise NotFoundError(f"Item {model.id} not found")
+                raise NotFoundError(f"Item {model['id']} not found")
 
             # SQLAlchemy orm updates don't seem to like geoalchemy types
-            db_model = self.collection_serializer.stac_to_db(
-                model.dict(exclude_none=True)
-            )
+            db_model = self.collection_serializer.stac_to_db(model)
             query.update(self.collection_serializer.row_to_dict(db_model))
 
             return self.collection_serializer.db_to_stac(db_model, base_url)
 
-    def delete_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
+    def delete_item(
+        self, item_id: str, collection_id: str, **kwargs
+    ) -> stac_types.Item:
         """Delete item."""
         base_url = str(kwargs["request"].base_url)
         with self.session.writer.context_session() as session:
             query = session.query(self.item_table).filter(self.item_table.id == item_id)
             data = query.first()
             if not data:
-                raise NotFoundError(f"Item {id} not found")
+                raise NotFoundError(f"Item {item_id} not found")
             query.delete()
             return self.item_serializer.db_to_stac(data, base_url=base_url)
 
-    def delete_collection(self, id: str, **kwargs) -> Collection:
+    def delete_collection(self, id: str, **kwargs) -> stac_types.Collection:
         """Delete collection."""
         base_url = str(kwargs["request"].base_url)
         with self.session.writer.context_session() as session:
@@ -137,12 +127,11 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         self.engine = self.session.writer.cached_engine
 
     @staticmethod
-    def _preprocess_item(item: stac_pydantic.Item) -> Dict:
+    def _preprocess_item(item: stac_types.Item) -> stac_types.Item:
         """Preprocess items to match data model.
 
         # TODO: dedup with GetterDict logic (ref #58)
         """
-        item = item.dict(exclude_none=True)
         item["geometry"] = json.dumps(item["geometry"])
         item["collection_id"] = item.pop("collection")
         item["datetime"] = item["properties"].pop("datetime")
@@ -156,7 +145,7 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         https://docs.sqlalchemy.org/en/13/faq/performance.html#i-m-inserting-400-000-rows-with-the-orm-and-it-s-really-slow
         """
         # Use items.items because schemas.Items is a model with an items key
-        processed_items = [self._preprocess_item(item) for item in items.items]
+        processed_items = [self._preprocess_item(item) for item in items]
         return_msg = f"Successfully added {len(processed_items)} items."
         if chunk_size:
             for chunk in self._chunks(processed_items, chunk_size):
