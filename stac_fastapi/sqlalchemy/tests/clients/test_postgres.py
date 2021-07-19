@@ -2,6 +2,7 @@ import uuid
 from typing import Callable
 
 import pytest
+from geojson_pydantic import Polygon
 from stac_pydantic import Collection, Item
 from tests.conftest import MockStarletteRequest
 
@@ -152,6 +153,26 @@ def test_update_item(
         item.id, item.collection, request=MockStarletteRequest
     )
     assert updated_item.properties.foo == "bar"
+
+
+def test_update_geometry(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+
+    item = Item.parse_obj(load_test_data("test_item.json"))
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    item.geometry = Polygon(coordinates=[[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]])
+    postgres_transactions.update_item(item, request=MockStarletteRequest)
+
+    updated_item = postgres_core.get_item(
+        item.id, item.collection, request=MockStarletteRequest
+    )
+    assert updated_item.geometry == item.geometry
 
 
 def test_delete_item(
