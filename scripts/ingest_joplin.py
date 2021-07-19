@@ -4,8 +4,6 @@ import sys
 from pathlib import Path
 from urllib.parse import urljoin
 
-from stac_pydantic import Collection
-
 import requests
 
 workingdir = Path(__file__).parent.absolute()
