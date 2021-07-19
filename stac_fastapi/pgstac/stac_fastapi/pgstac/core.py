@@ -130,12 +130,14 @@ class CoreCrudClient(BaseCoreClient):
             Link(rel=Relations.root, type=MimeTypes.json, href=base_url),
         ]
         if collections is None:
-            return ORJSONResponse(Collections(collections=[], links=links))
+            return ORJSONResponse(
+                Collections(collections=[], links=links).dict(exclude_none=True)
+            )
         return ORJSONResponse(
             Collections(
                 collections=[c.dict(exclude_none=True) for c in collections],
                 links=links,
-            )
+            ).dict(exclude_none=True)
         )
 
     async def get_collection(self, id: str, **kwargs) -> ORJSONResponse:
