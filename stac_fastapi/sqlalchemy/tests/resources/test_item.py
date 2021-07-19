@@ -100,6 +100,32 @@ def test_update_item_missing_collection(app_client, load_test_data):
     assert resp.status_code == 422
 
 
+def test_update_item_geometry(app_client, load_test_data):
+    test_item = load_test_data("test_item.json")
+
+    # Create the item
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    # Update the geometry of the item
+    test_item["geometry"]["coordinates"] = [[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]]
+    resp = app_client.put(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    # Fetch the updated item
+    resp = app_client.get(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}"
+    )
+    assert resp.status_code == 200
+    assert resp.json()["geometry"]["coordinates"] == [
+        [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+    ]
+
+
 def test_get_item(app_client, load_test_data):
     """Test read an item by id (core)"""
     test_item = load_test_data("test_item.json")
