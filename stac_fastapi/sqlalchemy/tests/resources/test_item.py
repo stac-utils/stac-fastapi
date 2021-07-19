@@ -2,10 +2,11 @@ import json
 import time
 import uuid
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from random import randint
 from urllib.parse import parse_qs, urlparse, urlsplit
 
+from pydantic.datetime_parse import parse_datetime
 from shapely.geometry import Polygon
 from stac_pydantic.shared import DATETIME_RFC339
 
@@ -163,16 +164,16 @@ def test_pagination(app_client, load_test_data):
 def test_item_timestamps(app_client, load_test_data):
     """Test created and updated timestamps (common metadata)"""
     test_item = load_test_data("test_item.json")
-    start_time = datetime.utcnow()
+    start_time = datetime.now(timezone.utc)
     time.sleep(2)
     # Confirm `created` timestamp
     resp = app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
     item = resp.json()
-    created_dt = datetime.strptime(item["properties"]["created"], DATETIME_RFC339)
+    created_dt = parse_datetime(item["properties"]["created"])
     assert resp.status_code == 200
-    assert start_time < created_dt < datetime.utcnow()
+    assert start_time < created_dt < datetime.now(timezone.utc)
 
     time.sleep(2)
     # Confirm `updated` timestamp
@@ -183,10 +184,7 @@ def test_item_timestamps(app_client, load_test_data):
 
     # Created shouldn't change on update
     assert item["properties"]["created"] == updated_item["properties"]["created"]
-    assert (
-        datetime.strptime(updated_item["properties"]["updated"], DATETIME_RFC339)
-        > created_dt
-    )
+    assert parse_datetime(updated_item["properties"]["updated"]) > created_dt
 
 
 def test_item_search_by_id_post(app_client, load_test_data):

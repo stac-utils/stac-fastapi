@@ -106,6 +106,12 @@ class Item(BaseModel):  # type:ignore
         now = datetime.utcnow().strftime(DATETIME_RFC339)
         if not properties["created"]:
             properties["created"] = now
+        else:
+            # If there isn't a created field initially it is already included in the pydantic model.
+            # Which means its typed as a datetime.datetime object, but sqlalchemy needs this to be a string.
+            # Probably don't need the isinstance check here but it's a little safer.
+            if isinstance(properties["created"], datetime):
+                properties["created"] = properties["created"].strftime(DATETIME_RFC339)
         properties["updated"] = now
 
         return dict(
