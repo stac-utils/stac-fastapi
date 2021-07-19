@@ -5,10 +5,11 @@ on:
     branches:
       - master
     paths:
-      # Only rebuild website when docs have changed
+      # Rebuild website when docs have changed or code has changed
       - 'README.md'
       - 'docs/**'
       - 'mkdocs.yml'
+      - '**.py'
 
 jobs:
   build:

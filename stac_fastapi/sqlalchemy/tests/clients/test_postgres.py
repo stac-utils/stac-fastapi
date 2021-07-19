@@ -156,6 +156,26 @@ def test_update_item(
     assert updated_item["properties"]["foo"] == "bar"
 
 
+def test_update_geometry(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    coll = load_test_data("test_collection.json")
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    item["geometry"]["coordinates"] = [[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]]
+    postgres_transactions.update_item(item, request=MockStarletteRequest)
+
+    updated_item = postgres_core.get_item(
+        item["id"], item["collection"], request=MockStarletteRequest
+    )
+    assert updated_item["geometry"]["coordinates"] == item["geometry"]["coordinates"]
+
+
 def test_delete_item(
     postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,

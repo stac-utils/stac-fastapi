@@ -1,11 +1,11 @@
 """Serializers."""
 import abc
+import json
 from datetime import datetime
 from typing import TypedDict
 
 import attr
 import geoalchemy2 as ga
-from shapely.geometry import shape
 from stac_pydantic.shared import DATETIME_RFC339
 
 from stac_fastapi.sqlalchemy.models import database
@@ -114,9 +114,7 @@ class ItemSerializer(Serializer):
             collection_id=stac_data["collection"],
             stac_version=stac_data["stac_version"],
             stac_extensions=stac_data.get("stac_extensions"),
-            geometry=None
-            if exclude_geometry
-            else ga.shape.from_shape(shape(stac_data["geometry"]), 4326),
+            geometry=json.dumps(stac_data["geometry"]),
             bbox=stac_data["bbox"],
             properties=stac_data["properties"],
             assets=stac_data["assets"],

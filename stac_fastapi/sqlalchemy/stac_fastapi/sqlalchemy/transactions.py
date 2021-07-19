@@ -62,12 +62,12 @@ class TransactionsClient(BaseTransactionsClient):
             if not query.scalar():
                 raise NotFoundError(f"Item {model['id']} not found")
             # SQLAlchemy orm updates don't seem to like geoalchemy types
-            db_model = self.item_serializer.stac_to_db(model, exclude_geometry=True)
+            db_model = self.item_serializer.stac_to_db(model)
             query.update(self.item_serializer.row_to_dict(db_model))
-
-            # TODO: Fix this by allowing geoetry updates (there is a PR out to do this)
             stac_item = self.item_serializer.db_to_stac(db_model, base_url)
-            stac_item["geometry"] = model["geometry"]
+
+            # SQLAlchemy update requires the geometry to be a JSON string, coerce back to dictionary.
+            stac_item["geometry"] = json.loads(stac_item["geometry"])
             return stac_item
 
     def update_collection(
