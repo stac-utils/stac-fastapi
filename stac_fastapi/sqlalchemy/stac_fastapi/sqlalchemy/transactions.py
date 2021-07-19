@@ -52,9 +52,12 @@ class TransactionsClient(BaseTransactionsClient):
             )
             if not query.scalar():
                 raise NotFoundError(f"Item {model.id} not found")
-            # SQLAlchemy orm updates don't seem to like geoalchemy types
+
             data = self.item_table.get_database_model(model)
-            data.pop("geometry", None)
+
+            # SQLAlchemy orm updates don't like geoalchemy types
+            # Coerce to geojson instead
+            data["geometry"] = json.dumps(model.geometry.dict())
             query.update(data)
 
             response = self.item_table.from_schema(model)
