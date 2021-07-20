@@ -19,7 +19,11 @@ settings = Settings()
 api = StacApi(
     settings=settings,
     extensions=[
-        TransactionExtension(client=TransactionsClient(), settings=settings),
+        TransactionExtension(
+            client=TransactionsClient(),
+            settings=settings,
+            response_class=ORJSONResponse,
+        ),
         QueryExtension(),
         SortExtension(),
         FieldsExtension(),

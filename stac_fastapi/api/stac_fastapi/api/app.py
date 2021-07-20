@@ -89,9 +89,13 @@ class StacApi:
     ) -> Callable:
         """Create a FastAPI endpoint."""
         if isinstance(self.client, AsyncBaseCoreClient):
-            return create_async_endpoint(func, request_type)
+            return create_async_endpoint(
+                func, request_type, response_class=self.response_class
+            )
         elif isinstance(self.client, BaseCoreClient):
-            return create_sync_endpoint(func, request_type)
+            return create_sync_endpoint(
+                func, request_type, response_class=self.response_class
+            )
         raise NotImplementedError
 
     def register_landing_page(self):

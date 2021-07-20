@@ -5,6 +5,7 @@ import attr
 from fastapi import APIRouter, FastAPI
 from pydantic import BaseModel
 from stac_pydantic import Collection, Item
+from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.models import APIRequest, CollectionUri, ItemUri
 from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
@@ -36,6 +37,7 @@ class TransactionExtension(ApiExtension):
     client: Union[AsyncBaseTransactionsClient, BaseTransactionsClient] = attr.ib()
     settings: ApiSettings = attr.ib()
     router: APIRouter = attr.ib(factory=APIRouter)
+    response_class: Type[Response] = attr.ib(default=JSONResponse)
 
     def _create_endpoint(
         self,
@@ -49,9 +51,13 @@ class TransactionExtension(ApiExtension):
     ) -> Callable:
         """Create a FastAPI endpoint."""
         if isinstance(self.client, AsyncBaseTransactionsClient):
-            return create_async_endpoint(func, request_type)
+            return create_async_endpoint(
+                func, request_type, response_class=self.response_class
+            )
         elif isinstance(self.client, BaseTransactionsClient):
-            return create_sync_endpoint(func, request_type)
+            return create_sync_endpoint(
+                func, request_type, response_class=self.response_class
+            )
         raise NotImplementedError
 
     def register_create_item(self):
@@ -60,6 +66,7 @@ class TransactionExtension(ApiExtension):
             name="Create Item",
             path="/collections/{collectionId}/items",
             response_model=Item if self.settings.enable_response_models else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
@@ -72,6 +79,7 @@ class TransactionExtension(ApiExtension):
             name="Update Item",
             path="/collections/{collectionId}/items",
             response_model=Item if self.settings.enable_response_models else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
@@ -84,6 +92,7 @@ class TransactionExtension(ApiExtension):
             name="Delete Item",
             path="/collections/{collectionId}/items/{itemId}",
             response_model=Item if self.settings.enable_response_models else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
@@ -96,6 +105,7 @@ class TransactionExtension(ApiExtension):
             name="Create Collection",
             path="/collections",
             response_model=Collection if self.settings.enable_response_models else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
@@ -110,6 +120,7 @@ class TransactionExtension(ApiExtension):
             name="Update Collection",
             path="/collections",
             response_model=Collection if self.settings.enable_response_models else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
@@ -124,6 +135,7 @@ class TransactionExtension(ApiExtension):
             name="Delete Collection",
             path="/collections/{collectionId}",
             response_model=Collection if self.settings.enable_response_models else None,
+            response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
