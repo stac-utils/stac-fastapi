@@ -63,7 +63,7 @@ class StacApi:
         default=attr.Factory(lambda: DEFAULT_STATUS_CODES)
     )
     app: FastAPI = attr.ib(default=attr.Factory(FastAPI))
-    router: APIRouter = attr.ib(factory=APIRouter)
+    router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
     title: str = attr.ib(default="stac-fastapi")
     api_version: str = attr.ib(default="0.1")
     stac_version: str = attr.ib(default=STAC_VERSION)
