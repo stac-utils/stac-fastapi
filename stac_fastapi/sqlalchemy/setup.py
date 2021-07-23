@@ -1,17 +1,9 @@
-"""arturo-stac-api."""
-import os
-from imp import load_source
+"""stac_fastapi: sqlalchemy module."""
 
 from setuptools import find_namespace_packages, setup
 
 with open("README.md") as f:
     desc = f.read()
-
-# Get version from stac-fastapi-api
-__version__ = load_source(
-    "stac_fastapi.sqlalchemy.version",
-    os.path.join(os.path.dirname(__file__), "stac_fastapi/sqlalchemy/version.py"),
-).__version__  # type:ignore
 
 install_requires = [
     "fastapi",
@@ -48,7 +40,6 @@ setup(
     description="An implementation of STAC API based on the FastAPI framework.",
     long_description=desc,
     long_description_content_type="text/markdown",
-    version=__version__,
     python_requires=">=3.8",
     classifiers=[
         "Intended Audience :: Developers",
