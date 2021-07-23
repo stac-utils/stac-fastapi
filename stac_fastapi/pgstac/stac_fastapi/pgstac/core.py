@@ -147,7 +147,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
     async def item_collection(
         self, id: str, limit: int = 10, token: str = None, **kwargs
-    ) -> ORJSONResponse:
+    ) -> ItemCollection:
         """Get all items from a specific collection.
 
         Called with `GET /collections/{collectionId}/items`
@@ -166,7 +166,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
             collection_id=id, request=kwargs["request"]
         ).get_links(extra_links=collection["links"])
         collection["links"] = links
-        return ORJSONResponse(collection)
+        return collection
 
     async def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id.
