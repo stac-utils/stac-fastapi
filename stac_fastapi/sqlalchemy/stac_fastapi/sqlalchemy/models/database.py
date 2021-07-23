@@ -49,7 +49,7 @@ class Collection(BaseModel):  # type:ignore
     stac_extensions = sa.Column(sa.ARRAY(sa.VARCHAR(300)), nullable=True)
     title = sa.Column(sa.VARCHAR(1024))
     description = sa.Column(sa.VARCHAR(1024), nullable=False)
-    keywords = sa.Column(sa.VARCHAR(300))
+    keywords = sa.Column(sa.ARRAY(sa.VARCHAR(300)))
     version = sa.Column(sa.VARCHAR(300))
     license = sa.Column(sa.VARCHAR(300), nullable=False)
     providers = sa.Column(JSONB)
@@ -57,6 +57,7 @@ class Collection(BaseModel):  # type:ignore
     extent = sa.Column(JSONB)
     links = sa.Column(JSONB)
     children = sa.orm.relationship("Item", lazy="dynamic")
+    type = sa.Column(sa.VARCHAR(300), nullable=False)
 
     @classmethod
     def get_database_model(cls, schema: schemas.Collection) -> dict:
@@ -96,7 +97,7 @@ class Item(BaseModel):  # type:ignore
         for field in Settings.get().indexed_fields:
             # Use getattr to accommodate extension namespaces
             field_value = getattr(schema.properties, field)
-            if field == "datetime":
+            if field == "datetime" and not isinstance(field_value, datetime):
                 field_value = datetime.strptime(field_value, DATETIME_RFC339)
             indexed_fields[field.split(":")[-1]] = field_value
 
@@ -105,6 +106,12 @@ class Item(BaseModel):  # type:ignore
         now = datetime.utcnow().strftime(DATETIME_RFC339)
         if not properties["created"]:
             properties["created"] = now
+        else:
+            # If there isn't a created field initially it is already included in the pydantic model.
+            # Which means its typed as a datetime.datetime object, but sqlalchemy needs this to be a string.
+            # Probably don't need the isinstance check here but it's a little safer.
+            if isinstance(properties["created"], datetime):
+                properties["created"] = properties["created"].strftime(DATETIME_RFC339)
         properties["updated"] = now
 
         return dict(

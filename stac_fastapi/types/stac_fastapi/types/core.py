@@ -7,7 +7,8 @@ from urllib.parse import urljoin
 import attr
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage, Search
-from stac_pydantic.shared import Link, MimeTypes, Relations
+from stac_pydantic.links import Link, Relations
+from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.types.extension import ApiExtension
@@ -141,6 +142,10 @@ class BaseCoreClient(abc.ABC):
             id=self.landing_page_id,
             title=self.title,
             description=self.description,
+            conformsTo=[
+                "https://stacspec.org/STAC-api.html",
+                "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
+            ],
             stac_version=self.stac_version,
             links=[
                 Link(

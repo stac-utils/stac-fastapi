@@ -4,8 +4,8 @@ from typing import Dict, List, Union
 from urllib.parse import ParseResult, parse_qs, unquote, urlencode, urljoin, urlparse
 
 import attr
-from stac_pydantic.api.extensions.paging import PaginationLink
-from stac_pydantic.shared import Link, MimeTypes, Relations
+from stac_pydantic.links import Link, PaginationLink, Relations
+from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
 from stac_fastapi.extensions.third_party.tiles import OGCTileLink

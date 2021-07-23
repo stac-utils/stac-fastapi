@@ -9,13 +9,19 @@ install_requires = [
     "fastapi",
     "attrs",
     "pydantic[dotenv]",
-    "stac_pydantic==1.3.8",
+    "stac_pydantic==2.0.0",
     "stac-fastapi.types",
     "stac-fastapi.api",
 ]
 
 extra_reqs = {
-    "dev": ["pytest", "pytest-cov", "pytest-asyncio", "pre-commit", "requests"],
+    "dev": [
+        "pytest",
+        "pytest-cov",
+        "pytest-asyncio",
+        "pre-commit",
+        "requests",
+    ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
     "tiles": ["titiler==0.2.*"],
 }

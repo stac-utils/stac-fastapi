@@ -1,8 +1,9 @@
 {
   "id": "test-collection",
   "stac_extensions": [],
+  "type": "collection",
   "description": "Landat 8 imagery radiometrically calibrated and orthorectified using gound points and Digital Elevation Model (DEM) data to correct relief displacement.",
-  "stac_version": "1.0.0-beta.2",
+  "stac_version": "1.0.0",
   "license": "PDDL-1.0",
   "summaries": {
     "platform": ["landsat-8"],

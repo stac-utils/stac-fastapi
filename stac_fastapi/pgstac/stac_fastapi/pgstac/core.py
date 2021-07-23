@@ -10,7 +10,9 @@ from buildpg import render
 from fastapi.responses import ORJSONResponse
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
-from stac_pydantic.shared import Link, MimeTypes, Relations
+from stac_pydantic.api.collections import Collections
+from stac_pydantic.links import Link, Relations
+from stac_pydantic.shared import MimeTypes
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
@@ -24,6 +26,16 @@ NumType = Union[float, int]
 class CoreCrudClient(BaseCoreClient):
     """Client for core endpoints defined by stac."""
 
+    landing_page_id: str = attr.ib(default="stac-api")
+    title: str = attr.ib(default="Arturo STAC API")
+    description: str = attr.ib(default="Arturo raster datastore")
+    conformance_classes: List[str] = attr.ib(
+        factory=lambda: [
+            "https://stacspec.org/STAC-api.html",
+            "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
+        ]
+    )
+
     async def landing_page(self, **kwargs) -> ORJSONResponse:
         """Landing page.
 
@@ -35,8 +47,10 @@ class CoreCrudClient(BaseCoreClient):
         request = kwargs["request"]
         base_url = str(request.base_url)
         landing_page = LandingPage(
-            title="Arturo STAC API",
-            description="Arturo raster datastore",
+            id=self.landing_page_id,
+            title=self.title,
+            description=self.description,
+            conformsTo=self.conformance_classes,
             links=[
                 Link(
                     rel=Relations.self,
@@ -47,24 +61,24 @@ class CoreCrudClient(BaseCoreClient):
                     rel=Relations.docs,
                     type=MimeTypes.html,
                     title="OpenAPI docs",
-                    href=urljoin(base_url, "/docs"),
+                    href=urljoin(base_url, "docs"),
                 ),
                 Link(
                     rel=Relations.conformance,
                     type=MimeTypes.json,
                     title="STAC/WFS3 conformance classes implemented by this server",
-                    href=urljoin(base_url, "/conformance"),
+                    href=urljoin(base_url, "conformance"),
                 ),
                 Link(
                     rel=Relations.search,
                     type=MimeTypes.geojson,
                     title="STAC search",
-                    href=urljoin(base_url, "/search"),
+                    href=urljoin(base_url, "search"),
                 ),
                 Link(
                     rel="data",
                     type=MimeTypes.json,
-                    href=urljoin(base_url, "/collections"),
+                    href=urljoin(base_url, "collections"),
                 ),
             ],
         )
@@ -81,14 +95,9 @@ class CoreCrudClient(BaseCoreClient):
 
     async def conformance(self, **kwargs) -> ConformanceClasses:
         """Conformance classes."""
-        return ConformanceClasses(
-            conformsTo=[
-                "https://stacspec.org/STAC-api.html",
-                "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
-            ]
-        )
+        return ConformanceClasses(conformsTo=self.conformance_classes)
 
-    async def _all_collections_func(self, **kwargs) -> List[Dict]:
+    async def _all_collections_func(self, **kwargs) -> List[Collection]:
         """Read all collections from the database."""
         request = kwargs["request"]
         pool = request.app.state.readpool
@@ -111,10 +120,25 @@ class CoreCrudClient(BaseCoreClient):
 
     async def all_collections(self, **kwargs) -> ORJSONResponse:
         """Get all collections."""
+        request = kwargs["request"]
+        base_url = str(request.base_url)
+        url = str(request.url)
         collections = await self._all_collections_func(**kwargs)
-        if collections is None or len(collections) < 1:
-            return ORJSONResponse([])
-        return ORJSONResponse([c.dict(exclude_none=True) for c in collections])
+        links = [
+            Link(rel=Relations.self, type=MimeTypes.json, href=url),
+            Link(rel=Relations.parent, type=MimeTypes.json, href=base_url),
+            Link(rel=Relations.root, type=MimeTypes.json, href=base_url),
+        ]
+        if collections is None:
+            return ORJSONResponse(
+                Collections(collections=[], links=links).dict(exclude_none=True)
+            )
+        return ORJSONResponse(
+            Collections(
+                collections=[c.dict(exclude_none=True) for c in collections],
+                links=links,
+            ).dict(exclude_none=True)
+        )
 
     async def get_collection(self, id: str, **kwargs) -> ORJSONResponse:
         """Get collection by id.

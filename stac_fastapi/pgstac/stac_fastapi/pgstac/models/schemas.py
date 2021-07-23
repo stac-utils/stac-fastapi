@@ -7,8 +7,8 @@ from geojson_pydantic.geometries import Polygon
 from pydantic import BaseModel
 from stac_pydantic import Collection as CollectionBase
 from stac_pydantic import Item as ItemBase
-from stac_pydantic.api.search import DATETIME_RFC339
-from stac_pydantic.shared import Link
+from stac_pydantic.links import Link
+from stac_pydantic.shared import DATETIME_RFC339
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]

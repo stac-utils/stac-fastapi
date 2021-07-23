@@ -7,7 +7,8 @@ import attr
 from fastapi import FastAPI
 from pydantic import BaseModel
 from stac_pydantic.collection import SpatialExtent
-from stac_pydantic.shared import Link, MimeTypes, Relations
+from stac_pydantic.links import Link, Relations
+from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, RedirectResponse
 
