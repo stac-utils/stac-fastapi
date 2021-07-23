@@ -92,7 +92,7 @@ services:
       - ./stac_fastapi:/app/stac_fastapi
       - ./scripts:/app/scripts
     command: >
-      bash -c "sleep 10 && cd stac_fastapi/sqlalchemy && alembic upgrade head && python /app/scripts/ingest_joplin.py http://app-sqlalchemy:8081"
+      bash -c "./scripts/wait-for-it.sh app-sqlalchemy:8081 && cd stac_fastapi/sqlalchemy && alembic upgrade head && python /app/scripts/ingest_joplin.py http://app-sqlalchemy:8081"
     depends_on:
       - database
       - app-sqlalchemy
