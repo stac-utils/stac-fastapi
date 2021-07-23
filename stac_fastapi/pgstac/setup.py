@@ -27,7 +27,7 @@ extra_reqs = {
         "pytest-asyncio",
         "pre-commit",
         "requests",
-        "pypgstac==0.2.7",
+        "pypgstac==0.2.8",
         "httpx",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
