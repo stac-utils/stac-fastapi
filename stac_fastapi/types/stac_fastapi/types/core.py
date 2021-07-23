@@ -6,7 +6,10 @@ from urllib.parse import urljoin
 
 import attr
 from stac_pydantic.api import Search
-from stac_pydantic.shared import MimeTypes, Relations
+from stac_pydantic.api import Search
+from stac_pydantic.links import Relations
+from stac_pydantic.shared import MimeTypes
+
 from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.types import stac as stac_types
@@ -231,10 +234,15 @@ class LandingPageMixin:
 
     def _landing_page(self, base_url: str) -> stac_types.LandingPage:
         landing_page = stac_types.LandingPage(
+            type="Catalog",
             id=self.landing_page_id,
             title=self.title,
             description=self.description,
             stac_version=self.stac_version,
+            conformsTo=[
+                "https://stacspec.org/STAC-api.html",
+                "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
+            ],
             links=[
                 {
                     "rel": Relations.self.value,
@@ -265,6 +273,7 @@ class LandingPageMixin:
                     "href": urljoin(base_url, "search"),
                 },
             ],
+            stac_extensions=[]
         )
         return landing_page
 

@@ -44,7 +44,7 @@ class Collection(BaseModel):  # type:ignore
     stac_extensions = sa.Column(sa.ARRAY(sa.VARCHAR(300)), nullable=True)
     title = sa.Column(sa.VARCHAR(1024))
     description = sa.Column(sa.VARCHAR(1024), nullable=False)
-    keywords = sa.Column(sa.VARCHAR(300))
+    keywords = sa.Column(sa.ARRAY(sa.VARCHAR(300)))
     version = sa.Column(sa.VARCHAR(300))
     license = sa.Column(sa.VARCHAR(300), nullable=False)
     providers = sa.Column(JSONB)
@@ -52,6 +52,7 @@ class Collection(BaseModel):  # type:ignore
     extent = sa.Column(JSONB)
     links = sa.Column(JSONB)
     children = sa.orm.relationship("Item", lazy="dynamic")
+    type = sa.Column(sa.VARCHAR(300), nullable=False)
 
 
 class Item(BaseModel):  # type:ignore

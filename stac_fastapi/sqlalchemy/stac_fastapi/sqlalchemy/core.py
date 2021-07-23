@@ -14,7 +14,7 @@ from shapely.geometry import shape
 from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
-from stac_pydantic.shared import Relations
+from stac_pydantic.links import Relations
 from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
@@ -144,7 +144,11 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
             context_obj = None
             if self.extension_is_enabled(ContextExtension):
-                context_obj = {"returned": len(page), "limit": limit, "matched": count}
+                context_obj = {
+                    "returned": len(page),
+                    "limit": limit,
+                    "matched": count,
+                }
 
             # TODO: return stac_extensions
             return ItemCollection(
@@ -259,7 +263,8 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             if search_request.sortby:
                 sort_fields = [
                     getattr(
-                        self.item_table.get_field(sort.field), sort.direction.value
+                        self.item_table.get_field(sort.field),
+                        sort.direction.value,
                     )()
                     for sort in search_request.sortby
                 ]
@@ -308,20 +313,15 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 # Temporal query
                 if search_request.datetime:
                     # Two tailed query (between)
+                    dts = search_request.datetime.split("/")
                     if ".." not in search_request.datetime:
-                        query = query.filter(
-                            self.item_table.datetime.between(*search_request.datetime)
-                        )
+                        query = query.filter(self.item_table.datetime.between(*dts))
                     # All items after the start date
-                    if search_request.datetime[0] != "..":
-                        query = query.filter(
-                            self.item_table.datetime >= search_request.datetime[0]
-                        )
+                    if dts[0] != "..":
+                        query = query.filter(self.item_table.datetime >= dts[0])
                     # All items before the end date
-                    if search_request.datetime[1] != "..":
-                        query = query.filter(
-                            self.item_table.datetime <= search_request.datetime[1]
-                        )
+                    if dts[1] != "..":
+                        query = query.filter(self.item_table.datetime <= dts[1])
 
                 # Query fields
                 if search_request.query:

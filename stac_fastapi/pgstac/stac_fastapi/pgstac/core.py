@@ -53,6 +53,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
     async def all_collections(self, **kwargs) -> List[Collection]:
         """Get all collections."""
+        request = kwargs["request"]
+        base_url = str(request.base_url)
+        url = str(request.url)
         collections = await self._all_collections_func(**kwargs)
         if collections is None or len(collections) < 1:
             return list()

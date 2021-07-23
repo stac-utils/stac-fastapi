@@ -7,7 +7,7 @@ from urllib.parse import parse_qs, urlparse
 import pytest
 from shapely.geometry import Polygon
 from stac_pydantic import Collection, Item
-from stac_pydantic.api.search import DATETIME_RFC339
+from stac_pydantic.shared import DATETIME_RFC339
 
 
 @pytest.mark.asyncio
@@ -87,7 +87,7 @@ async def test_update_item(
 
     item.properties.description = "Update Test"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", json=item.dict())
+    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
@@ -122,7 +122,7 @@ async def test_get_collection_items(app_client, load_test_collection, load_test_
         item.id = str(uuid.uuid4())
         resp = await app_client.post(
             f"/collections/{coll.id}/items",
-            json=item.dict(),
+            data=item.json(),
         )
         assert resp.status_code == 200
 
@@ -192,7 +192,7 @@ async def test_update_new_item(
     item = load_test_item
     item.id = "test-updatenewitem"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", json=item.dict())
+    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
     assert resp.status_code == 404
 
 
@@ -204,7 +204,7 @@ async def test_update_item_missing_collection(
     item = load_test_item
     item.collection = None
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", json=item.dict())
+    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
     assert resp.status_code == 424
 
 

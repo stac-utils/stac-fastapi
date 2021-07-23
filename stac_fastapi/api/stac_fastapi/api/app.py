@@ -8,6 +8,7 @@ from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
+from stac_pydantic.api.collections import Collections
 from stac_pydantic.version import STAC_VERSION
 from starlette.responses import JSONResponse, Response
 
@@ -205,7 +206,7 @@ class StacApi:
         self.router.add_api_route(
             name="Get Collections",
             path="/collections",
-            response_model=List[Collection]
+            response_model=Collections
             if self.settings.enable_response_models
             else None,
             response_class=self.response_class,

@@ -4,7 +4,8 @@ from typing import Dict, List, Tuple
 from urllib.parse import ParseResult, parse_qs, unquote, urlencode, urljoin, urlparse
 
 import attr
-from stac_pydantic.shared import MimeTypes, Relations
+from stac_pydantic.links import Relations
+from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
 # These can be inferred from the item/collection so they aren't included in the database

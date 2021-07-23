@@ -91,7 +91,11 @@ class ItemCollectionUri(CollectionUri):
 
     def kwargs(self) -> Dict:
         """kwargs."""
-        return {"id": self.collectionId, "limit": self.limit, "token": self.token}
+        return {
+            "id": self.collectionId,
+            "limit": self.limit,
+            "token": self.token,
+        }
 
 
 @attr.s

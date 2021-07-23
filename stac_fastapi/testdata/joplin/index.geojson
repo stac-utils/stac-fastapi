@@ -55,10 +55,10 @@
                 37.0595608
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "a7e125ba-565d-4aa2-bbf3-c57a9087c2e3",
@@ -114,10 +114,10 @@
                 37.0814756
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "f7f164c9-cfdf-436d-a3f0-69864c38ba2a",
@@ -173,10 +173,10 @@
                 37.1033841
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "ea0fddf4-56f9-4a16-8a0b-f6b0b123b7cf",
@@ -232,10 +232,10 @@
                 37.0595608
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "c811e716-ab07-4d80-ac95-6670f8713bc4",
@@ -291,10 +291,10 @@
                 37.0814756
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "d4eccfa2-7d77-4624-9e2a-3f59102285bb",
@@ -350,10 +350,10 @@
                 37.1033841
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "fe916452-ba6f-4631-9154-c249924a122d",
@@ -409,10 +409,10 @@
                 37.0595608
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "85f923a5-a81f-4acd-bc7f-96c7c915f357",
@@ -468,10 +468,10 @@
                 37.0814756
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "29c53e17-d7d1-4394-a80f-36763c8f42dc",
@@ -527,10 +527,10 @@
                 37.1055746
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "e0a02e4e-aa0c-412e-8f63-6f5344f829df",
@@ -586,10 +586,10 @@
                 37.0595608
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "047ab5f0-dce1-4166-a00d-425a3dbefe02",
@@ -645,10 +645,10 @@
                 37.0814756
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "57f88dd2-e4e0-48e6-a2b6-7282d4ab8ea4",
@@ -704,10 +704,10 @@
                 37.1055746
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "68f2c2b2-4bce-4c40-9a0d-782c1be1f4f2",
@@ -763,10 +763,10 @@
                 37.0595608
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "d8461d8c-3d2b-4e4e-a931-7ae61ca06dbf",
@@ -822,10 +822,10 @@
                 37.0836668
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "aeedef30-cbdd-4364-8781-dbb42d148c99",
@@ -881,10 +881,10 @@
                 37.1055746
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "9ef4279f-386c-40c7-ad71-8de5d9543aa4",
@@ -940,10 +940,10 @@
                 37.0595608
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "70cc6c05-9fe0-436a-a264-a52515f3f242",
@@ -999,10 +999,10 @@
                 37.0836668
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "d191a6fd-7881-4421-805c-e246371e5cc4",
@@ -1058,10 +1058,10 @@
                 37.1055746
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "d144adde-df4a-45e8-bed9-f085f91486a2",
@@ -1117,10 +1117,10 @@
                 37.0617526
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "a4c32abd-9791-422b-87ab-b0f3fa36f053",
@@ -1176,10 +1176,10 @@
                 37.0836668
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "4610c58e-39f4-4d9d-94ba-ceddbf9ac570",
@@ -1235,10 +1235,10 @@
                 37.1055746
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "145fa700-16d4-4d34-98e0-7540d5c0885f",
@@ -1294,10 +1294,10 @@
                 37.0617526
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "a89dc7b8-a580-435b-8176-d8e4386d620c",
@@ -1353,10 +1353,10 @@
                 37.0836668
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "386dfa13-c2b4-4ce6-8e6f-fcac73f4e64e",
@@ -1412,10 +1412,10 @@
                 37.1055746
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "4d8a8e40-d089-4ca7-92c8-27d810ee07bf",
@@ -1471,10 +1471,10 @@
                 37.0617526
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "f734401c-2df0-4694-a353-cdd3ea760cdc",
@@ -1530,10 +1530,10 @@
                 37.0836668
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "da6ef938-c58f-4bab-9d4e-89f6ae667da2",
@@ -1589,10 +1589,10 @@
                 37.1077651
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "ad420ced-b005-472b-a6df-3838c2b74504",
@@ -1648,10 +1648,10 @@
                 37.0617526
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "f490b7af-0019-45e2-854b-3854d07fd063",
@@ -1707,10 +1707,10 @@
                 37.0836668
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         },
         {
             "id": "b853f353-4b72-44d5-aa44-c07dfd307138",
@@ -1766,10 +1766,10 @@
                 37.1077651
             ],
             "stac_extensions": [
-                "eo",
-                "proj"
+                "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
             ],
-            "stac_version": "1.0.0-beta.2"
+            "stac_version": "1.0.0"
         }
     ]
 }
