@@ -1,6 +1,6 @@
 """link helpers."""
 
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import ParseResult, parse_qs, unquote, urlencode, urljoin, urlparse
 
 import attr
@@ -76,7 +76,7 @@ class BaseLinks:
                     links.append(link)
         return links
 
-    async def get_links(self, extra_links: Tuple[Dict] = ()) -> List[Dict]:
+    async def get_links(self, extra_links: List[Dict[str, Any]] = []) -> List[Dict[str, Any]]:
         """
         Generate all the links.
 
@@ -101,10 +101,10 @@ class BaseLinks:
 class PagingLinks(BaseLinks):
     """Create links for paging."""
 
-    next: str = attr.ib(kw_only=True, default=None)
-    prev: str = attr.ib(kw_only=True, default=None)
+    next: Optional[str] = attr.ib(kw_only=True, default=None)
+    prev: Optional[str] = attr.ib(kw_only=True, default=None)
 
-    def link_next(self) -> Dict:
+    def link_next(self) -> Optional[Dict[str, Any]]:
         """Create link for next page."""
         if self.next is not None:
             method = self.request.method
@@ -118,17 +118,20 @@ class PagingLinks(BaseLinks):
                 )
                 return link
             if method == "POST":
-                body = self.request.postbody
-                body["token"] = f"next:{self.next}"
-                return dict(
-                    rel=Relations.next.value,
-                    type=MimeTypes.json.value,
-                    method=method,
-                    href=f"{self.request.url}",
-                    body=body,
-                )
+                return {
+                    "rel": Relations.next,
+                    "type": MimeTypes.json,
+                    "method": method,
+                    "href": f"{self.request.url}",
+                    "body": {
+                        **self.request.postbody,
+                        "token": f"next:{self.next}"
+                    }
+                }
 
-    def link_prev(self) -> Dict:
+        return None
+
+    def link_prev(self) -> Optional[Dict[str, Any]]:
         """Create link for previous page."""
         if self.prev is not None:
             method = self.request.method
@@ -141,15 +144,17 @@ class PagingLinks(BaseLinks):
                     href=href,
                 )
             if method == "POST":
-                body = self.request.postbody
-                body["token"] = f"prev:{self.prev}"
-                return dict(
-                    rel=Relations.previous.value,
-                    type=MimeTypes.json.value,
-                    method=method,
-                    href=f"{self.request.url}",
-                    body=body,
-                )
+                 return {
+                    "rel": Relations.previous,
+                    "type": MimeTypes.json,
+                    "method": method,
+                    "href": f"{self.request.url}",
+                    "body": {
+                        **self.request.postbody,
+                        "token": f"prev:{self.prev}"
+                    },
+                }
+        return None
 
 
 @attr.s
