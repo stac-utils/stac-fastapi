@@ -7,6 +7,7 @@ import attr
 import orjson
 from buildpg import render
 from fastapi.responses import ORJSONResponse
+from starlette.requests import Request
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
@@ -30,9 +31,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
             ]
         )
 
-    async def _all_collections_func(self, **kwargs) -> List[Collection]:
+    async def all_collections(self, **kwargs) -> List[Collection]:
         """Read all collections from the database."""
-        request = kwargs["request"]
+        request: Request = kwargs["request"]
         pool = request.app.state.readpool
 
         async with pool.acquire() as conn:
@@ -41,7 +42,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 SELECT * FROM all_collections();
                 """
             )
-        linked_collections = []
+        linked_collections: List[Collection] = []
         if collections is not None and len(collections) > 0:
             for c in collections:
                 coll = Collection(**c)
@@ -51,15 +52,6 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 linked_collections.append(coll)
         return linked_collections
 
-    async def all_collections(self, **kwargs) -> List[Collection]:
-        """Get all collections."""
-        request = kwargs["request"]
-        base_url = str(request.base_url)
-        url = str(request.url)
-        collections = await self._all_collections_func(**kwargs)
-        if collections is None or len(collections) < 1:
-            return list()
-        return collections
 
     async def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id.
@@ -72,8 +64,10 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             Collection.
         """
-        request = kwargs["request"]
-        pool = kwargs["request"].app.state.readpool
+        collection: Optional[Dict[str, Any]]
+
+        request: Request = kwargs["request"]
+        pool = request.app.state.readpool
         async with pool.acquire() as conn:
             q, p = render(
                 """
@@ -89,8 +83,8 @@ class CoreCrudClient(AsyncBaseCoreClient):
         return Collection(**collection)
 
     async def _search_base(
-        self, search_request: PgstacSearch, **kwargs
-    ) -> Dict[str, Any]:
+        self, search_request: PgstacSearch, **kwargs: Any
+    ) -> ItemCollection:
         """Cross catalog search (POST).
 
         Called with `POST /search`.
@@ -101,7 +95,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             ItemCollection containing items which match the search criteria.
         """
-        request = kwargs["request"]
+        items: Dict[str, Any]
+
+        request: Request = kwargs["request"]
         pool = request.app.state.readpool
 
         # pool = kwargs["request"].app.state.readpool
@@ -115,16 +111,16 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 req=req,
             )
             items = await conn.fetchval(q, *p)
-        next = items.pop("next", None)
-        prev = items.pop("prev", None)
+        next: Optional[str] = items.pop("next", None)
+        prev: Optional[str] = items.pop("prev", None)
         collection = ItemCollection(**items)
-        cleaned_features = []
+        cleaned_features: List[Item] = []
         if collection["features"] is None or len(collection["features"]) == 0:
             raise NotFoundError("No features found")
 
         for feature in collection["features"]:
             feature = Item(**feature)
-            if "links" not in search_request.fields.exclude:
+            if search_request.fields.exclude is None or "links" not in search_request.fields.exclude:
                 # TODO: feature.collection is not always included
                 # This code fails if it's left outside of the fields expression
                 # I've fields extension updated test cases to always include feature.collection
@@ -135,10 +131,10 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 ).get_links()
                 feature["links"] = links
                 exclude = search_request.fields.exclude
-                if len(exclude) == 0:
+                if exclude and len(exclude) == 0:
                     exclude = None
                 include = search_request.fields.include
-                if len(include) == 0:
+                if include and len(include) == 0:
                     include = None
             cleaned_features.append(feature)
             collection["features"] = cleaned_features
@@ -240,13 +236,13 @@ class CoreCrudClient(AsyncBaseCoreClient):
             sort_param = []
             for sort in sortby:
                 sortparts = re.match(r"^([+-]?)(.*)$", sort)
-
-                sort_param.append(
-                    {
-                        "field": sortparts.group(2).strip(),
-                        "direction": "desc" if sortparts.group(1) == "-" else "asc",
-                    }
-                )
+                if sortparts:
+                    sort_param.append(
+                        {
+                            "field": sortparts.group(2).strip(),
+                            "direction": "desc" if sortparts.group(1) == "-" else "asc",
+                        }
+                    )
             base_args["sortby"] = sort_param
 
         if fields:
