@@ -75,6 +75,8 @@ class ItemSerializer(Serializer):
         geometry = db_model.geometry
         if isinstance(geometry, ga.elements.WKBElement):
             geometry = ga.shape.to_shape(geometry).__geo_interface__
+        if isinstance(geometry, str):
+            geometry = json.loads(geometry)
 
         return stac_types.Item(
             type="Feature",

@@ -66,8 +66,6 @@ class TransactionsClient(BaseTransactionsClient):
             query.update(self.item_serializer.row_to_dict(db_model))
             stac_item = self.item_serializer.db_to_stac(db_model, base_url)
 
-            # SQLAlchemy update requires the geometry to be a JSON string, coerce back to dictionary.
-            stac_item["geometry"] = json.loads(stac_item["geometry"])
             return stac_item
 
     def update_collection(
