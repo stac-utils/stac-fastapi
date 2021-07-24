@@ -1,5 +1,6 @@
 from typing import Callable
 
+import pystac
 import pytest
 from stac_pydantic import Collection
 
@@ -90,3 +91,27 @@ async def test_nocollections(
 ):
     resp = await app_client.get("/collections")
     assert resp.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_returns_valid_collection(app_client, load_test_data):
+    """Test updating a collection which already exists"""
+    in_json = load_test_data("test_collection.json")
+    resp = await app_client.post(
+        "/collections",
+        json=in_json,
+    )
+    assert resp.status_code == 200
+
+    resp = await app_client.get(f"/collections/{in_json['id']}")
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    # Mock root to allow validation
+    mock_root = pystac.Catalog(
+        id="test", description="test desc", href="https://example.com"
+    )
+    collection = pystac.Collection.from_dict(
+        resp_json, root=mock_root, preserve_dict=False
+    )
+    collection.validate()

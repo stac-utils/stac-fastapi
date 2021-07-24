@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import Callable
 from urllib.parse import parse_qs, urlparse
 
+import pystac
 import pytest
 from shapely.geometry import Polygon
 from stac_pydantic import Collection, Item
@@ -76,6 +77,35 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
     assert resp.status_code == 200
     get_item = Item.parse_obj(resp.json())
     assert in_item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
+
+
+@pytest.mark.asyncio
+async def test_fetches_valid_item(
+    app_client, load_test_data: Callable, load_test_collection
+):
+    coll = load_test_collection
+
+    in_json = load_test_data("test_item.json")
+    in_item = Item.parse_obj(in_json)
+    resp = await app_client.post(
+        "/collections/{coll.id}/items",
+        json=in_json,
+    )
+    assert resp.status_code == 200
+
+    post_item = Item.parse_obj(resp.json())
+    assert in_item.dict(exclude={"links"}) == post_item.dict(exclude={"links"})
+
+    resp = await app_client.get(f"/collections/{coll.id}/items/{post_item.id}")
+
+    assert resp.status_code == 200
+    item_dict = resp.json()
+    # Mock root to allow validation
+    mock_root = pystac.Catalog(
+        id="test", description="test desc", href="https://example.com"
+    )
+    item = pystac.Item.from_dict(item_dict, preserve_dict=False, root=mock_root)
+    item.validate()
 
 
 @pytest.mark.asyncio
