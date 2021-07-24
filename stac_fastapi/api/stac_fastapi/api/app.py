@@ -7,7 +7,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel
 from stac_pydantic import Collection, Item, ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage
+from stac_pydantic.api import ConformanceClasses, LandingPage, Search
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.version import STAC_VERSION
 from starlette.responses import JSONResponse, Response
@@ -68,7 +68,7 @@ class StacApi:
     api_version: str = attr.ib(default="0.1")
     stac_version: str = attr.ib(default=STAC_VERSION)
     description: str = attr.ib(default="stac-fastapi")
-    search_request_model = attr.ib(default=STACSearch)
+    search_request_model: Type[Search] = attr.ib(default=STACSearch)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
