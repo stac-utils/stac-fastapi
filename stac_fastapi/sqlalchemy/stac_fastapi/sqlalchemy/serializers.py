@@ -83,7 +83,7 @@ class ItemSerializer(Serializer):
             id=db_model.id,
             collection=db_model.collection_id,
             geometry=geometry,
-            bbox=db_model.bbox,
+            bbox=[float(x) for x in db_model.bbox],
             properties=properties,
             links=item_links,
             assets=db_model.assets,
