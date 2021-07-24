@@ -1,6 +1,6 @@
 """link helpers."""
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 from urllib.parse import ParseResult, parse_qs, unquote, urlencode, urljoin, urlparse
 
 import attr
@@ -76,7 +76,9 @@ class BaseLinks:
                     links.append(link)
         return links
 
-    async def get_links(self, extra_links: List[Dict[str, Any]] = []) -> List[Dict[str, Any]]:
+    async def get_links(
+        self, extra_links: List[Dict[str, Any]] = []
+    ) -> List[Dict[str, Any]]:
         """
         Generate all the links.
 
@@ -123,10 +125,7 @@ class PagingLinks(BaseLinks):
                     "type": MimeTypes.json,
                     "method": method,
                     "href": f"{self.request.url}",
-                    "body": {
-                        **self.request.postbody,
-                        "token": f"next:{self.next}"
-                    }
+                    "body": {**self.request.postbody, "token": f"next:{self.next}"},
                 }
 
         return None
@@ -144,15 +143,12 @@ class PagingLinks(BaseLinks):
                     href=href,
                 )
             if method == "POST":
-                 return {
+                return {
                     "rel": Relations.previous,
                     "type": MimeTypes.json,
                     "method": method,
                     "href": f"{self.request.url}",
-                    "body": {
-                        **self.request.postbody,
-                        "token": f"prev:{self.prev}"
-                    },
+                    "body": {**self.request.postbody, "token": f"prev:{self.prev}"},
                 }
         return None
 

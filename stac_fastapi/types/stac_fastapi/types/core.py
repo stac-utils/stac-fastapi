@@ -6,10 +6,8 @@ from urllib.parse import urljoin
 
 import attr
 from stac_pydantic.api import Search
-from stac_pydantic.api import Search
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
-
 from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.types import stac as stac_types
@@ -273,7 +271,7 @@ class LandingPageMixin:
                     "href": urljoin(base_url, "search"),
                 },
             ],
-            stac_extensions=[]
+            stac_extensions=[],
         )
         return landing_page
 

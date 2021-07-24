@@ -15,6 +15,7 @@ def _wrap_response(resp: Any, response_class: Type[Response]) -> Response:
     else:
         return response_class(resp)
 
+
 def create_async_endpoint(
     func: Callable,
     request_model: Union[Type[APIRequest], Type[BaseModel], Dict],
@@ -29,8 +30,7 @@ def create_async_endpoint(
         ):
             """Endpoint."""
             return _wrap_response(
-                await func(request=request, **request_data.kwargs()),
-                response_class
+                await func(request=request, **request_data.kwargs()), response_class
             )
 
     elif issubclass(request_model, BaseModel):
@@ -41,8 +41,7 @@ def create_async_endpoint(
         ):
             """Endpoint."""
             return _wrap_response(
-                await func(request_data, request=request),
-                response_class
+                await func(request_data, request=request), response_class
             )
 
     else:
@@ -53,8 +52,7 @@ def create_async_endpoint(
         ):
             """Endpoint."""
             return _wrap_response(
-                await func(request_data, request=request),
-                response_class
+                await func(request_data, request=request), response_class
             )
 
     return _endpoint
@@ -74,8 +72,7 @@ def create_sync_endpoint(
         ):
             """Endpoint."""
             return _wrap_response(
-                func(request=request, **request_data.kwargs()),
-                response_class
+                func(request=request, **request_data.kwargs()), response_class
             )
 
     elif issubclass(request_model, BaseModel):
@@ -85,10 +82,7 @@ def create_sync_endpoint(
             request_data: request_model,  # type:ignore
         ):
             """Endpoint."""
-            return _wrap_response(
-                func(request_data, request=request),
-                response_class
-            )
+            return _wrap_response(func(request_data, request=request), response_class)
 
     else:
 
@@ -97,9 +91,6 @@ def create_sync_endpoint(
             request_data: Dict[str, Any],  # type:ignore
         ):
             """Endpoint."""
-            return _wrap_response(
-                func(request_data, request=request),
-                response_class
-            )
+            return _wrap_response(func(request_data, request=request), response_class)
 
     return _endpoint

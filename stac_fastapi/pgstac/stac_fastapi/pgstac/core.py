@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional, Union
 import attr
 import orjson
 from buildpg import render
-from fastapi.responses import ORJSONResponse
 from starlette.requests import Request
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
@@ -51,7 +50,6 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 ).get_links()
                 linked_collections.append(coll)
         return linked_collections
-
 
     async def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id.
@@ -120,7 +118,10 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
         for feature in collection["features"]:
             feature = Item(**feature)
-            if search_request.fields.exclude is None or "links" not in search_request.fields.exclude:
+            if (
+                search_request.fields.exclude is None
+                or "links" not in search_request.fields.exclude
+            ):
                 # TODO: feature.collection is not always included
                 # This code fails if it's left outside of the fields expression
                 # I've fields extension updated test cases to always include feature.collection
