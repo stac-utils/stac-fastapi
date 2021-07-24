@@ -9,6 +9,12 @@ from starlette.responses import JSONResponse, Response
 from stac_fastapi.api.models import APIRequest
 
 
+def _wrap_response(resp: Any, response_class: Type[Response]) -> Response:
+    if isinstance(resp, Response):
+        return resp
+    else:
+        return response_class(resp)
+
 def create_async_endpoint(
     func: Callable,
     request_model: Union[Type[APIRequest], Type[BaseModel], Dict],
@@ -22,10 +28,10 @@ def create_async_endpoint(
             request_data: request_model = Depends(),  # type:ignore
         ):
             """Endpoint."""
-            resp = await func(
-                request=request, **request_data.kwargs()  # type:ignore
+            return _wrap_response(
+                await func(request=request, **request_data.kwargs()),
+                response_class
             )
-            return response_class(resp)
 
     elif issubclass(request_model, BaseModel):
 
@@ -34,8 +40,10 @@ def create_async_endpoint(
             request_data: request_model,  # type:ignore
         ):
             """Endpoint."""
-            resp = await func(request_data, request=request)
-            return response_class(resp)
+            return _wrap_response(
+                await func(request_data, request=request),
+                response_class
+            )
 
     else:
 
@@ -44,8 +52,10 @@ def create_async_endpoint(
             request_data: Dict[str, Any],  # type:ignore
         ):
             """Endpoint."""
-            resp = await func(request_data, request=request)
-            return response_class(resp)
+            return _wrap_response(
+                await func(request_data, request=request),
+                response_class
+            )
 
     return _endpoint
 
@@ -63,10 +73,10 @@ def create_sync_endpoint(
             request_data: request_model = Depends(),  # type:ignore
         ):
             """Endpoint."""
-            resp = func(
-                request=request, **request_data.kwargs()  # type:ignore
+            return _wrap_response(
+                func(request=request, **request_data.kwargs()),
+                response_class
             )
-            return response_class(resp)
 
     elif issubclass(request_model, BaseModel):
 
@@ -75,8 +85,10 @@ def create_sync_endpoint(
             request_data: request_model,  # type:ignore
         ):
             """Endpoint."""
-            resp = func(request_data, request=request)
-            return response_class(resp)
+            return _wrap_response(
+                func(request_data, request=request),
+                response_class
+            )
 
     else:
 
@@ -85,7 +97,9 @@ def create_sync_endpoint(
             request_data: Dict[str, Any],  # type:ignore
         ):
             """Endpoint."""
-            resp = func(request_data, request=request)
-            return response_class(resp)
+            return _wrap_response(
+                func(request_data, request=request),
+                response_class
+            )
 
     return _endpoint
