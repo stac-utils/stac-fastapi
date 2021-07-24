@@ -19,6 +19,7 @@ extra_reqs = {
         "pytest-asyncio",
         "pre-commit",
         "requests",
+        "pystac[validation]==1.*",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
 }
