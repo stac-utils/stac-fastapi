@@ -395,8 +395,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                         search_request.field.include.union(query_include)
 
                 filter_kwargs = search_request.field.filter_fields
+                # Need to pass through `.json()` for proper serialization
+                # of datetime
                 response_features = [
-                    stac_pydantic.Item(**feat).to_dict(**filter_kwargs)
+                    json.loads(stac_pydantic.Item(**feat).json(**filter_kwargs))
                     for feat in response_features
                 ]
 
