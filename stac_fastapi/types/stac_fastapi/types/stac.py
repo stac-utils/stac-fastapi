@@ -4,16 +4,16 @@ from typing import Any, Dict, List, Optional, TypedDict, Union
 NumType = Union[float, int]
 
 
-class LandingPage(TypedDict):
+class LandingPage(TypedDict, total=False):
     """STAC Landing Page."""
 
+    type: str
     stac_version: str
     stac_extensions: Optional[List[str]]
     id: str
     title: str
     description: str
-    # TODO: Implement conformance classes in landing page (https://github.com/stac-utils/stac-fastapi/issues/159)
-    # conformsTo: List[str]
+    conformsTo: List[str]
     links: List[Dict[str, Any]]
 
 
@@ -23,7 +23,7 @@ class Conformance(TypedDict):
     conformsTo: List[str]
 
 
-class Catalog(TypedDict):
+class Catalog(TypedDict, total=False):
     """STAC Catalog."""
 
     type: str
@@ -35,7 +35,7 @@ class Catalog(TypedDict):
     links: List[Dict[str, Any]]
 
 
-class Collection(Catalog):
+class Collection(Catalog, total=False):
     """STAC Collection."""
 
     keywords: List[str]
@@ -43,11 +43,10 @@ class Collection(Catalog):
     providers: List[Dict[str, Any]]
     extent: Dict[str, Any]
     summaries: Dict[str, Any]
-    # TODO: Support collection-level assets
-    # assets: Dict[str, Any]
+    assets: Dict[str, Any]
 
 
-class Item(TypedDict):
+class Item(TypedDict, total=False):
     """STAC Item."""
 
     type: str
@@ -62,12 +61,12 @@ class Item(TypedDict):
     collection: str
 
 
-class ItemCollection(TypedDict):
+class ItemCollection(TypedDict, total=False):
     """STAC Item Collection."""
 
+    type: str
     stac_version: str
     stac_extensions: Optional[List[str]]
-    type: str
     features: List[Item]
     links: List[Dict[str, Any]]
     context: Optional[Dict[str, int]]
