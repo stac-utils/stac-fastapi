@@ -1,6 +1,6 @@
 """tiles extension."""
 import abc
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
@@ -137,7 +137,7 @@ class TilesClient(BaseTilesClient):
 
     def get_item_tiles(
         self, item_id: str, collection_id: str, **kwargs
-    ) -> Union[RedirectResponse, TileSetResource]:
+    ) -> Union[RedirectResponse, Dict[str, Any]]:
         """Get OGC TileSet resource for a stac item."""
         item = self.client.get_item(item_id, collection_id, **kwargs)
         resource = TileSetResource(
@@ -157,7 +157,7 @@ class TilesClient(BaseTilesClient):
             ][0]
             return RedirectResponse(viewer_url)
 
-        return resource
+        return resource.dict(exclude_unset=True)
 
 
 @attr.s
