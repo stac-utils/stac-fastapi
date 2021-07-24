@@ -1,6 +1,6 @@
 """tiles extension."""
 import abc
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
@@ -13,7 +13,7 @@ from starlette.requests import Request
 from starlette.responses import HTMLResponse, RedirectResponse
 
 from stac_fastapi.api.models import ItemUri
-from stac_fastapi.api.routes import create_endpoint
+from stac_fastapi.api.routes import create_sync_endpoint
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
 
@@ -137,15 +137,15 @@ class TilesClient(BaseTilesClient):
 
     def get_item_tiles(
         self, item_id: str, collection_id: str, **kwargs
-    ) -> Union[RedirectResponse, TileSetResource]:
+    ) -> Union[RedirectResponse, Dict[str, Any]]:
         """Get OGC TileSet resource for a stac item."""
         item = self.client.get_item(item_id, collection_id, **kwargs)
         resource = TileSetResource(
-            extent=SpatialExtent(bbox=[list(item.bbox)]),
-            title=f"Tiled layer of {item.collection}/{item.id}",
+            extent=SpatialExtent(bbox=[list(item["bbox"])]),
+            title=f"Tiled layer of {item['collection']}/{item['id']}",
             links=TileLinks(
-                item_id=item.id,
-                collection_id=item.collection,
+                item_id=item["id"],
+                collection_id=item["collection"],
                 base_url=str(kwargs["request"].base_url),
                 route_prefix=self.route_prefix,
             ).create_links(),
@@ -157,7 +157,7 @@ class TilesClient(BaseTilesClient):
             ][0]
             return RedirectResponse(viewer_url)
 
-        return resource
+        return resource.dict(exclude_unset=True)
 
 
 @attr.s
@@ -208,6 +208,6 @@ class TilesExtension(ApiExtension):
             response_model_exclude_none=True,
             response_model_exclude_unset=True,
             methods=["GET"],
-            endpoint=create_endpoint(self.client.get_item_tiles, ItemUri),
+            endpoint=create_sync_endpoint(self.client.get_item_tiles, ItemUri),
             tags=["OGC Tiles"],
         )

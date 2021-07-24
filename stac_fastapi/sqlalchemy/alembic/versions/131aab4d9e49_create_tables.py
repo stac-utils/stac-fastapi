@@ -1,7 +1,7 @@
 """create initial schema
 
 Revision ID: 131aab4d9e49
-Revises: 
+Revises:
 Create Date: 2020-02-09 13:03:09.336631
 
 """  # noqa

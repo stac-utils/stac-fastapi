@@ -3,7 +3,6 @@ import os
 from typing import Callable, Dict
 
 import pytest
-from stac_pydantic import Collection
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
@@ -42,19 +41,19 @@ def cleanup(postgres_core: CoreCrudClient, postgres_transactions: TransactionsCl
     yield
     collections = postgres_core.all_collections(request=MockStarletteRequest)
     for coll in collections:
-        if coll.id.split("-")[0] == "test":
+        if coll["id"].split("-")[0] == "test":
             # Delete the items
             items = postgres_core.item_collection(
-                coll.id, limit=100, request=MockStarletteRequest
+                coll["id"], limit=100, request=MockStarletteRequest
             )
-            for feat in items.features:
+            for feat in items["features"]:
                 postgres_transactions.delete_item(
-                    feat.id, feat.collection, request=MockStarletteRequest
+                    feat["id"], feat["collection"], request=MockStarletteRequest
                 )
 
             # Delete the collection
             postgres_transactions.delete_collection(
-                coll.id, request=MockStarletteRequest
+                coll["id"], request=MockStarletteRequest
             )
 
 
@@ -105,11 +104,14 @@ def postgres_bulk_transactions(db_session):
 
 @pytest.fixture
 def api_client(db_session):
+    settings = SqlalchemySettings()
     return StacApi(
-        settings=SqlalchemySettings(),
+        settings=settings,
         client=CoreCrudClient(session=db_session),
         extensions=[
-            TransactionExtension(client=TransactionsClient(session=db_session)),
+            TransactionExtension(
+                client=TransactionsClient(session=db_session), settings=settings
+            ),
             ContextExtension(),
             SortExtension(),
             FieldsExtension(),
@@ -121,7 +123,7 @@ def api_client(db_session):
 
 @pytest.fixture
 def app_client(api_client, load_test_data, postgres_transactions):
-    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
     with TestClient(api_client.app) as test_app:

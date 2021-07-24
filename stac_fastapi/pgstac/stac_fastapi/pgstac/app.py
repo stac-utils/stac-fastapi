@@ -1,4 +1,6 @@
 """FastAPI application using PGStac."""
+from fastapi.responses import ORJSONResponse
+
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import (
     FieldsExtension,
@@ -17,13 +19,18 @@ settings = Settings()
 api = StacApi(
     settings=settings,
     extensions=[
-        TransactionExtension(client=TransactionsClient),
+        TransactionExtension(
+            client=TransactionsClient(),
+            settings=settings,
+            response_class=ORJSONResponse,
+        ),
         QueryExtension(),
         SortExtension(),
         FieldsExtension(),
     ],
     client=CoreCrudClient(),
     search_request_model=PgstacSearch,
+    response_class=ORJSONResponse,
 )
 app = api.app
 

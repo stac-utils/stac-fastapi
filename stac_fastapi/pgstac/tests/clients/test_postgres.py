@@ -58,7 +58,7 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
     in_json = load_test_data("test_item.json")
     in_item = Item.parse_obj(in_json)
     resp = await app_client.post(
-        "/collections/{coll.id}/items",
+        f"/collections/{coll.id}/items",
         json=in_json,
     )
     assert resp.status_code == 200

@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from random import randint
 from urllib.parse import parse_qs, urlparse, urlsplit
 
+import pystac
 from pydantic.datetime_parse import parse_datetime
 from shapely.geometry import Polygon
 from stac_pydantic.shared import DATETIME_RFC339
@@ -138,6 +139,27 @@ def test_get_item(app_client, load_test_data):
         f"/collections/{test_item['collection']}/items/{test_item['id']}"
     )
     assert get_item.status_code == 200
+
+
+def test_returns_valid_item(app_client, load_test_data):
+    """Test validates fetched item with jsonschema"""
+    test_item = load_test_data("test_item.json")
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    get_item = app_client.get(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}"
+    )
+    assert get_item.status_code == 200
+    item_dict = get_item.json()
+    # Mock root to allow validation
+    mock_root = pystac.Catalog(
+        id="test", description="test desc", href="https://example.com"
+    )
+    item = pystac.Item.from_dict(item_dict, preserve_dict=False, root=mock_root)
+    item.validate()
 
 
 def test_get_item_collection(app_client, load_test_data):

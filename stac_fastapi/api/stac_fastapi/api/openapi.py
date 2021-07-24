@@ -6,6 +6,8 @@ from stac_fastapi.api.config import ApiExtensions
 from stac_fastapi.types.config import ApiSettings
 
 
+# TODO: Remove or fix, this is currently unused
+# and calls a missing method on ApiSettings
 def config_openapi(app: FastAPI, settings: ApiSettings):
     """Config openapi."""
 

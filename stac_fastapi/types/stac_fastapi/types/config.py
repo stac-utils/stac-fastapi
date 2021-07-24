@@ -24,6 +24,7 @@ class ApiSettings(BaseSettings):
     app_host: str = "0.0.0.0"
     app_port: int = 8000
     reload: bool = True
+    enable_response_models: bool = False
 
     class Config:
         """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""

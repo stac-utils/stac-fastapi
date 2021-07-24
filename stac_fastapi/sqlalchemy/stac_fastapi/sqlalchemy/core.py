@@ -2,29 +2,31 @@
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, Type, Union
+from typing import List, Optional, Set, Type, Union
 from urllib.parse import urlencode
 
 import attr
 import geoalchemy2 as ga
 import sqlalchemy as sa
+import stac_pydantic
 from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import shape
 from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
-from stac_pydantic import ItemCollection
-from stac_pydantic.api import ConformanceClasses
-from stac_pydantic.links import PaginationLink, Relations
+from stac_pydantic.links import Relations
+from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
-from stac_fastapi.sqlalchemy.models import database, schemas
+from stac_fastapi.sqlalchemy import serializers
+from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
 from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.stac import Collection, Conformance, Item, ItemCollection
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     item_table: Type[database.Item] = attr.ib(default=database.Item)
     collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
+    item_serializer: Type[serializers.Serializer] = attr.ib(
+        default=serializers.ItemSerializer
+    )
+    collection_serializer: Type[serializers.Serializer] = attr.ib(
+        default=serializers.CollectionSerializer
+    )
 
     @staticmethod
     def _lookup_id(
@@ -49,37 +57,38 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             raise NotFoundError(f"{table.__name__} {id} not found")
         return row
 
-    def conformance(self, **kwargs) -> ConformanceClasses:
+    def conformance(self, **kwargs) -> Conformance:
         """Conformance classes."""
-        return ConformanceClasses(
+        return Conformance(
             conformsTo=[
                 "https://stacspec.org/STAC-api.html",
                 "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
             ]
         )
 
-    def all_collections(self, **kwargs) -> List[schemas.Collection]:
+    def all_collections(self, **kwargs) -> List[Collection]:
         """Read all collections from the database."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
-            response = []
-            for collection in collections:
-                collection.base_url = str(kwargs["request"].base_url)
-                response.append(schemas.Collection.from_orm(collection))
+            response = [
+                self.collection_serializer.db_to_stac(collection, base_url=base_url)
+                for collection in collections
+            ]
             return response
 
-    def get_collection(self, id: str, **kwargs) -> schemas.Collection:
+    def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             collection = self._lookup_id(id, self.collection_table, session)
-            # TODO: Don't do this
-            collection.base_url = str(kwargs["request"].base_url)
-            return schemas.Collection.from_orm(collection)
+            return self.collection_serializer.db_to_stac(collection, base_url)
 
     def item_collection(
         self, id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
         """Read an item collection from the database."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             collection_children = (
                 session.query(self.item_table)
@@ -110,27 +119,28 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             links = []
             if page.next:
                 links.append(
-                    PaginationLink(
-                        rel=Relations.next,
-                        type="application/geo+json",
-                        href=f"{kwargs['request'].base_url}collections/{id}/items?token={page.next}&limit={limit}",
-                        method="GET",
-                    )
+                    {
+                        "rel": Relations.next.value,
+                        "type": "application/geo+json",
+                        "href": f"{kwargs['request'].base_url}collections/{id}/items?token={page.next}&limit={limit}",
+                        "method": "GET",
+                    }
                 )
             if page.previous:
                 links.append(
-                    PaginationLink(
-                        rel=Relations.previous,
-                        type="application/geo+json",
-                        href=f"{kwargs['request'].base_url}collections/{id}/items?token={page.previous}&limit={limit}",
-                        method="GET",
-                    )
+                    {
+                        "rel": Relations.previous.value,
+                        "type": "application/geo+json",
+                        "href": f"{kwargs['request'].base_url}collections/{id}/items?token={page.previous}&limit={limit}",
+                        "method": "GET",
+                    }
                 )
 
             response_features = []
             for item in page:
-                item.base_url = str(kwargs["request"].base_url)
-                response_features.append(schemas.Item.from_orm(item))
+                response_features.append(
+                    self.item_serializer.db_to_stac(item, base_url=base_url)
+                )
 
             context_obj = None
             if self.extension_is_enabled(ContextExtension):
@@ -140,19 +150,21 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     "matched": count,
                 }
 
+            # TODO: return stac_extensions
             return ItemCollection(
                 type="FeatureCollection",
-                context=context_obj,
+                stac_version=STAC_VERSION,
                 features=response_features,
                 links=links,
+                context=context_obj,
             )
 
-    def get_item(self, item_id: str, collection_id: str, **kwargs) -> schemas.Item:
+    def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             item = self._lookup_id(item_id, self.item_table, session)
-            item.base_url = str(kwargs["request"].base_url)
-            return schemas.Item.from_orm(item)
+            return self.item_serializer.db_to_stac(item, base_url=base_url)
 
     def get_search(
         self,
@@ -166,7 +178,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
         **kwargs,
-    ) -> Dict[str, Any]:
+    ) -> ItemCollection:
         """GET search catalog."""
         # Parse request parameters
         base_args = {
@@ -210,14 +222,14 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         # Pagination
         page_links = []
         for link in resp["links"]:
-            if link.rel == Relations.next or link.rel == Relations.previous:
+            if link["rel"] == Relations.next or link["rel"] == Relations.previous:
                 query_params = dict(kwargs["request"].query_params)
-                if link.body and link.merge:
-                    query_params.update(link.body)
-                link.method = "GET"
-                link.href = f"{link.href}?{urlencode(query_params)}"
-                link.body = None
-                link.merge = False
+                if link["body"] and link["merge"]:
+                    query_params.update(link["body"])
+                link["method"] = "GET"
+                link["href"] = f"{link['body']}?{urlencode(query_params)}"
+                link["body"] = None
+                link["merge"] = False
                 page_links.append(link)
             else:
                 page_links.append(link)
@@ -226,8 +238,9 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
     def post_search(
         self, search_request: SQLAlchemySTACSearch, **kwargs
-    ) -> Dict[str, Any]:
+    ) -> ItemCollection:
         """POST search catalog."""
+        base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             token = (
                 self.get_token(search_request.token) if search_request.token else False
@@ -338,29 +351,34 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             links = []
             if page.next:
                 links.append(
-                    PaginationLink(
-                        rel=Relations.next,
-                        type="application/geo+json",
-                        href=f"{kwargs['request'].base_url}search",
-                        method="POST",
-                        body={"token": page.next},
-                        merge=True,
-                    )
+                    {
+                        "rel": Relations.next.value,
+                        "type": "application/geo+json",
+                        "href": f"{kwargs['request'].base_url}search",
+                        "method": "POST",
+                        "body": {"token": page.next},
+                        "merge": True,
+                    }
                 )
             if page.previous:
                 links.append(
-                    PaginationLink(
-                        rel=Relations.previous,
-                        type="application/geo+json",
-                        href=f"{kwargs['request'].base_url}search",
-                        method="POST",
-                        body={"token": page.previous},
-                        merge=True,
-                    )
+                    {
+                        "rel": Relations.previous.value,
+                        "type": "application/geo+json",
+                        "href": f"{kwargs['request'].base_url}search",
+                        "method": "POST",
+                        "body": {"token": page.previous},
+                        "merge": True,
+                    }
                 )
 
             response_features = []
-            filter_kwargs = {}
+            for item in page:
+                response_features.append(
+                    self.item_serializer.db_to_stac(item, base_url=base_url)
+                )
+
+            # Use pydantic includes/excludes syntax to implement fields extension
             if self.extension_is_enabled(FieldsExtension):
                 if search_request.query is not None:
                     query_include: Set[str] = set(
@@ -377,20 +395,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                         search_request.field.include.union(query_include)
 
                 filter_kwargs = search_request.field.filter_fields
-
-            xvals = []
-            yvals = []
-            for item in page:
-                item.base_url = str(kwargs["request"].base_url)
-                item_model = schemas.Item.from_orm(item)
-                xvals += [item_model.bbox[0], item_model.bbox[2]]
-                yvals += [item_model.bbox[1], item_model.bbox[3]]
-                response_features.append(item_model.to_dict(**filter_kwargs))
-
-        try:
-            bbox = (min(xvals), min(yvals), max(xvals), max(yvals))
-        except ValueError:
-            bbox = None
+                # Need to pass through `.json()` for proper serialization
+                # of datetime
+                response_features = [
+                    json.loads(stac_pydantic.Item(**feat).json(**filter_kwargs))
+                    for feat in response_features
+                ]
 
         context_obj = None
         if self.extension_is_enabled(ContextExtension):
@@ -400,10 +410,11 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 "matched": count,
             }
 
-        return {
-            "type": "FeatureCollection",
-            "context": context_obj,
-            "features": response_features,
-            "links": links,
-            "bbox": bbox,
-        }
+        # TODO: return stac_extensions
+        return ItemCollection(
+            type="FeatureCollection",
+            stac_version=STAC_VERSION,
+            features=response_features,
+            links=links,
+            context=context_obj,
+        )

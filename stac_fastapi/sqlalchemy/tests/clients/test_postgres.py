@@ -1,12 +1,11 @@
 import uuid
+from copy import deepcopy
 from typing import Callable
 
 import pytest
-from geojson_pydantic import Polygon
 from stac_pydantic import Collection, Item
 from tests.conftest import MockStarletteRequest
 
-from stac_fastapi.extensions.third_party.bulk_transactions import Items
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
 from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
@@ -20,19 +19,20 @@ def test_create_collection(
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
-    data = Collection.parse_obj(load_test_data("test_collection.json"))
+    data = load_test_data("test_collection.json")
     resp = postgres_transactions.create_collection(data, request=MockStarletteRequest)
-    assert data.dict(exclude={"links"}) == resp.dict(exclude={"links"})
-    coll = postgres_core.get_collection(data.id, request=MockStarletteRequest)
-    assert coll.id == data.id
+    assert Collection(**data).dict(exclude={"links"}) == Collection(**resp).dict(
+        exclude={"links"}
+    )
+    coll = postgres_core.get_collection(data["id"], request=MockStarletteRequest)
+    assert coll["id"] == data["id"]
 
 
 def test_create_collection_already_exists(
-    postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
-    data = Collection.parse_obj(load_test_data("test_collection.json"))
+    data = load_test_data("test_collection.json")
     postgres_transactions.create_collection(data, request=MockStarletteRequest)
 
     with pytest.raises(ConflictError):
@@ -44,14 +44,14 @@ def test_update_collection(
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
-    data = Collection.parse_obj(load_test_data("test_collection.json"))
+    data = load_test_data("test_collection.json")
     postgres_transactions.create_collection(data, request=MockStarletteRequest)
 
-    data.keywords.append("new keyword")
+    data["keywords"].append("new keyword")
     postgres_transactions.update_collection(data, request=MockStarletteRequest)
 
-    coll = postgres_core.get_collection(data.id, request=MockStarletteRequest)
-    assert "new keyword" in coll.keywords
+    coll = postgres_core.get_collection(data["id"], request=MockStarletteRequest)
+    assert "new keyword" in coll["keywords"]
 
 
 def test_delete_collection(
@@ -59,15 +59,15 @@ def test_delete_collection(
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
-    data = Collection.parse_obj(load_test_data("test_collection.json"))
+    data = load_test_data("test_collection.json")
     postgres_transactions.create_collection(data, request=MockStarletteRequest)
 
     deleted = postgres_transactions.delete_collection(
-        data.id, request=MockStarletteRequest
+        data["id"], request=MockStarletteRequest
     )
 
     with pytest.raises(NotFoundError):
-        postgres_core.get_collection(deleted.id, request=MockStarletteRequest)
+        postgres_core.get_collection(deleted["id"], request=MockStarletteRequest)
 
 
 def test_get_collection(
@@ -75,11 +75,13 @@ def test_get_collection(
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
-    data = Collection.parse_obj(load_test_data("test_collection.json"))
+    data = load_test_data("test_collection.json")
     postgres_transactions.create_collection(data, request=MockStarletteRequest)
-    coll = postgres_core.get_collection(data.id, request=MockStarletteRequest)
-    assert data.dict(exclude={"links"}) == coll.dict(exclude={"links"})
-    assert coll.id == data.id
+    coll = postgres_core.get_collection(data["id"], request=MockStarletteRequest)
+    assert Collection(**data).dict(exclude={"links"}) == Collection(**coll).dict(
+        exclude={"links"}
+    )
+    assert coll["id"] == data["id"]
 
 
 def test_get_collection_items(
@@ -87,20 +89,20 @@ def test_get_collection_items(
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
-    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    item = Item.parse_obj(load_test_data("test_item.json"))
+    item = load_test_data("test_item.json")
 
     for _ in range(5):
-        item.id = str(uuid.uuid4())
+        item["id"] = str(uuid.uuid4())
         postgres_transactions.create_item(item, request=MockStarletteRequest)
 
-    fc = postgres_core.item_collection(coll.id, request=MockStarletteRequest)
-    assert len(fc.features) == 5
+    fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
+    assert len(fc["features"]) == 5
 
-    for item in fc.features:
-        assert item.collection == coll.id
+    for item in fc["features"]:
+        assert item["collection"] == coll["id"]
 
 
 def test_create_item(
@@ -108,27 +110,26 @@ def test_create_item(
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
-    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
-    item = Item.parse_obj(load_test_data("test_item.json"))
+    item = load_test_data("test_item.json")
     postgres_transactions.create_item(item, request=MockStarletteRequest)
     resp = postgres_core.get_item(
-        item.id, item.collection, request=MockStarletteRequest
+        item["id"], item["collection"], request=MockStarletteRequest
     )
-    assert item.dict(
+    assert Item(**item).dict(
         exclude={"links": ..., "properties": {"created", "updated"}}
-    ) == resp.dict(exclude={"links": ..., "properties": {"created", "updated"}})
+    ) == Item(**resp).dict(exclude={"links": ..., "properties": {"created", "updated"}})
 
 
 def test_create_item_already_exists(
-    postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
-    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    item = Item.parse_obj(load_test_data("test_item.json"))
+    item = load_test_data("test_item.json")
     postgres_transactions.create_item(item, request=MockStarletteRequest)
 
     with pytest.raises(ConflictError):
@@ -140,19 +141,19 @@ def test_update_item(
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
-    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    item = Item.parse_obj(load_test_data("test_item.json"))
+    item = load_test_data("test_item.json")
     postgres_transactions.create_item(item, request=MockStarletteRequest)
 
-    item.properties.foo = "bar"
+    item["properties"]["foo"] = "bar"
     postgres_transactions.update_item(item, request=MockStarletteRequest)
 
     updated_item = postgres_core.get_item(
-        item.id, item.collection, request=MockStarletteRequest
+        item["id"], item["collection"], request=MockStarletteRequest
     )
-    assert updated_item.properties.foo == "bar"
+    assert updated_item["properties"]["foo"] == "bar"
 
 
 def test_update_geometry(
@@ -160,19 +161,19 @@ def test_update_geometry(
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
-    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    item = Item.parse_obj(load_test_data("test_item.json"))
+    item = load_test_data("test_item.json")
     postgres_transactions.create_item(item, request=MockStarletteRequest)
 
-    item.geometry = Polygon(coordinates=[[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]])
+    item["geometry"]["coordinates"] = [[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]]
     postgres_transactions.update_item(item, request=MockStarletteRequest)
 
     updated_item = postgres_core.get_item(
-        item.id, item.collection, request=MockStarletteRequest
+        item["id"], item["collection"], request=MockStarletteRequest
     )
-    assert updated_item.geometry == item.geometry
+    assert updated_item["geometry"]["coordinates"] == item["geometry"]["coordinates"]
 
 
 def test_delete_item(
@@ -180,18 +181,20 @@ def test_delete_item(
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
-    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    item = Item.parse_obj(load_test_data("test_item.json"))
+    item = load_test_data("test_item.json")
     postgres_transactions.create_item(item, request=MockStarletteRequest)
 
     postgres_transactions.delete_item(
-        item.id, item.collection, request=MockStarletteRequest
+        item["id"], item["collection"], request=MockStarletteRequest
     )
 
     with pytest.raises(NotFoundError):
-        postgres_core.get_item(item.id, item.collection, request=MockStarletteRequest)
+        postgres_core.get_item(
+            item["id"], item["collection"], request=MockStarletteRequest
+        )
 
 
 def test_bulk_item_insert(
@@ -199,22 +202,22 @@ def test_bulk_item_insert(
     postgres_bulk_transactions: BulkTransactionsClient,
     load_test_data: Callable,
 ):
-    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    item = Item.parse_obj(load_test_data("test_item.json"))
+    item = load_test_data("test_item.json")
 
     items = []
     for _ in range(10):
-        _item = item.dict()
+        _item = deepcopy(item)
         _item["id"] = str(uuid.uuid4())
         items.append(_item)
 
-    postgres_bulk_transactions.bulk_item_insert(Items(items=items))
+    postgres_bulk_transactions.bulk_item_insert(items=items)
 
     for item in items:
         postgres_transactions.delete_item(
-            item["id"], item["collection"], request=MockStarletteRequest
+            item["id"], item["collection_id"], request=MockStarletteRequest
         )
 
 
@@ -223,20 +226,20 @@ def test_bulk_item_insert_chunked(
     postgres_bulk_transactions: BulkTransactionsClient,
     load_test_data: Callable,
 ):
-    coll = Collection.parse_obj(load_test_data("test_collection.json"))
+    coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    item = Item.parse_obj(load_test_data("test_item.json"))
+    item = load_test_data("test_item.json")
 
     items = []
     for _ in range(10):
-        _item = item.dict()
+        _item = deepcopy(item)
         _item["id"] = str(uuid.uuid4())
         items.append(_item)
 
-    postgres_bulk_transactions.bulk_item_insert(Items(items=items), chunk_size=2)
+    postgres_bulk_transactions.bulk_item_insert(items=items, chunk_size=2)
 
     for item in items:
         postgres_transactions.delete_item(
-            item["id"], item["collection"], request=MockStarletteRequest
+            item["id"], item["collection_id"], request=MockStarletteRequest
         )
