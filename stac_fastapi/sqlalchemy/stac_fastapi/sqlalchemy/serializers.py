@@ -141,6 +141,7 @@ class CollectionSerializer(Serializer):
         stac_extensions = db_model.stac_extensions or []
 
         return stac_types.Collection(
+            type="Collection",
             id=db_model.id,
             stac_extensions=stac_extensions,
             stac_version=db_model.stac_version,
