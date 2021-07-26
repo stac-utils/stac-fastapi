@@ -1,10 +1,14 @@
 """transactions extension client."""
 
 import logging
-from typing import Dict
+from typing import Dict, Optional
 
 import attr
 
+from stac_fastapi.extensions.third_party.bulk_transactions import (
+    BaseBulkTransactionsClient,
+    Items,
+)
 from stac_fastapi.pgstac.db import dbfunc
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import AsyncBaseTransactionsClient
@@ -62,3 +66,26 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         pool = request.app.state.writepool
         await dbfunc(pool, "delete_collection", id)
         return {"deleted collection": id}
+
+
+@attr.s
+class BulkTransactionsClient(BaseBulkTransactionsClient):
+    """Postgres bulk transactions."""
+
+    async def bulk_item_insert(
+        self, items: Items, chunk_size: Optional[int] = None, **kwargs
+    ) -> str:
+        """Bulk item insertion using psgtac create_items function."""
+        request = kwargs["request"]
+        pool = request.app.state.writepool
+
+        # Use items.items because schemas.Items is a model with an items key
+        processed_items = [self._preprocess_item(item) for item in items]
+        return_msg = f"Successfully added {len(processed_items)} items."
+        if chunk_size:
+            for chunk in self._chunks(processed_items, chunk_size):
+                await dbfunc(pool, "create_items", chunk)
+            return return_msg
+
+        await dbfunc(pool, "create_items", processed_items)
+        return return_msg

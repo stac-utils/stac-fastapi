@@ -8,10 +8,11 @@ from stac_fastapi.extensions.core import (
     SortExtension,
     TransactionExtension,
 )
+from stac_fastapi.extensions.third_party import BulkTransactionExtension
 from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.core import CoreCrudClient
 from stac_fastapi.pgstac.db import close_db_connection, connect_to_db
-from stac_fastapi.pgstac.transactions import TransactionsClient
+from stac_fastapi.pgstac.transactions import BulkTransactionsClient, TransactionsClient
 from stac_fastapi.pgstac.types.search import PgstacSearch
 
 settings = Settings()
@@ -24,6 +25,7 @@ api = StacApi(
             settings=settings,
             response_class=ORJSONResponse,
         ),
+        BulkTransactionExtension(client=BulkTransactionsClient()),
         QueryExtension(),
         SortExtension(),
         FieldsExtension(),

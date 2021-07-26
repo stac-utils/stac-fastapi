@@ -1,4 +1,5 @@
 """route factories."""
+import asyncio
 from typing import Any, Callable, Dict, Type, Union
 
 from fastapi import Depends
@@ -94,3 +95,15 @@ def create_sync_endpoint(
             return _wrap_response(func(request_data, request=request), response_class)
 
     return _endpoint
+
+
+def create_endpoint(
+    func: Callable,
+    request_model: Union[Type[APIRequest], Type[BaseModel], Dict],
+    response_class: Type[Response] = JSONResponse,
+):
+    """Create FastAPI Async or Sync endpoint."""
+    if asyncio.iscoroutinefunction:
+        return create_async_endpoint(func, request_model, response_class)
+    else:
+        return create_sync_endpoint(func, request_model, response_class)
