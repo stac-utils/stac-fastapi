@@ -1,13 +1,14 @@
 # encoding: utf-8
 """Filter Extension."""
 
-from typing import List
+from typing import Callable, List, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
+from starlette.responses import JSONResponse, Response
 
-from stac_fastapi.api.models import CollectionUri, EmptyRequest
-from stac_fastapi.api.routes import create_endpoint
+from stac_fastapi.api.models import APIRequest, CollectionUri, EmptyRequest
+from stac_fastapi.api.routes import create_sync_endpoint
 from stac_fastapi.types.core import BaseFiltersClient
 from stac_fastapi.types.extension import ApiExtension
 
@@ -29,7 +30,7 @@ class FilterExtension(ApiExtension):
 
     """
 
-    client: BaseFiltersClient = attr.ib()
+    client: Union[BaseFiltersClient] = attr.ib()
     conformance_classes: List[str] = attr.ib(
         default=[
             "https://api.stacspec.org/v1.0.0-beta.2/item-search#filter",
@@ -37,6 +38,27 @@ class FilterExtension(ApiExtension):
             "https://api.stacspec.org/v1.0.0-beta.2/item-search#filter:item-search-filter",
         ]
     )
+    router: APIRouter = attr.ib(factory=APIRouter)
+    response_class: Type[Response] = attr.ib(default=JSONResponse)
+
+    def _create_endpoint(
+        self,
+        func: Callable,
+        request_type: Union[
+            Type[APIRequest],
+        ],
+    ) -> Callable:
+        """Create a FastAPI endpoint."""
+        # TODO
+        # if isinstance(self.client, AsyncBaseFiltersClient):
+        #     return create_async_endpoint(
+        #         func, request_type, response_class=self.response_class
+        #     )
+        if isinstance(self.client, BaseFiltersClient):
+            return create_sync_endpoint(
+                func, request_type, response_class=self.response_class
+            )
+        raise NotImplementedError
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -47,17 +69,16 @@ class FilterExtension(ApiExtension):
         Returns:
             None
         """
-        router = APIRouter()
-        router.add_api_route(
+        self.router.add_api_route(
             name="Queryables",
             path="/queryables",
             methods=["GET"],
-            endpoint=create_endpoint(self.client.get_queryables, EmptyRequest),
+            endpoint=self._create_endpoint(self.client.get_queryables, EmptyRequest),
         )
-        router.add_api_route(
+        self.router.add_api_route(
             name="Collection Queryables",
             path="/collections/{collectionId}/queryables",
             methods=["GET"],
-            endpoint=create_endpoint(self.client.get_queryables, CollectionUri),
+            endpoint=self._create_endpoint(self.client.get_queryables, CollectionUri),
         )
-        app.include_router(router, tags=["Filter Extension"])
+        app.include_router(self.router, tags=["Filter Extension"])

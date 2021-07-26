@@ -1,7 +1,7 @@
 """Base clients."""
 import abc
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
@@ -447,9 +447,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
 
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
-    def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
+    def extension_is_enabled(self, extension: str) -> bool:
         """Check if an api extension is enabled."""
-        return any([isinstance(ext, extension) for ext in self.extensions])
+        return any([type(ext).__name__ == extension for ext in self.extensions])
 
     async def landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
