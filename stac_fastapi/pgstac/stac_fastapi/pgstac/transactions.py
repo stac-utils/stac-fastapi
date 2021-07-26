@@ -80,7 +80,7 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         pool = request.app.state.writepool
 
         # Use items.items because schemas.Items is a model with an items key
-        processed_items = [item for item in items]
+        processed_items = [item for item in items.items.values()]
         return_msg = f"Successfully added {len(processed_items)} items."
         if chunk_size:
             for chunk in self._chunks(processed_items, chunk_size):
