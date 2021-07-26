@@ -1,5 +1,9 @@
 ## UNRELEASED
 
+## 2.0.0 (2021-07)
+
+* Refactor stac-fastapi into submodules (https://github.com/stac-utils/stac-fastapi/pull/106)
+* Add pgstac backend (https://github.com/stac-utils/stac-fastapi/pull/126)
 * Upgrade to stac-pydantic 2.0.0 and stac-spec 1.0.0 (https://github.com/stac-utils/stac-fastapi/pull/181)
 
 ## 1.1.0 (2021-01-28)
