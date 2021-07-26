@@ -8,11 +8,11 @@ fi
 
 # Import shared variables
 SUBPACKAGE_DIRS=(
-    "stac_fastapi_types"
-    "stac_fastapi_extensions"
-    "stac_fastapi_api"
-    "stac_fastapi_postgres"
-    "stac_fastapi_server"
+    "stac_fastapi/types"
+    "stac_fastapi/extensions"
+    "stac_fastapi/api"
+    "stac_fastapi/sqlalchemy"
+    "stac_fastapi/pgstac"
 )
 
 function usage() {
@@ -69,8 +69,4 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         popd
 
     done
-
-    rm -rf dist
-    python setup.py sdist bdist_wheel
-    twine upload ${TEST_PYPI} dist/*
 fi
