@@ -1,16 +1,20 @@
 """fastapi app creation."""
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 import attr
 from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
+from pydantic import BaseModel
 from stac_pydantic import Collection, Item, ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage
+from stac_pydantic.api import ConformanceClasses, LandingPage, Search
+from stac_pydantic.api.collections import Collections
 from stac_pydantic.version import STAC_VERSION
+from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.models import (
+    APIRequest,
     CollectionUri,
     EmptyRequest,
     ItemCollectionUri,
@@ -18,12 +22,12 @@ from stac_fastapi.api.models import (
     SearchGetRequest,
     _create_request_model,
 )
-from stac_fastapi.api.routes import create_endpoint
+from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
 from stac_fastapi.extensions.core import FieldsExtension
 from stac_fastapi.types.config import ApiSettings, Settings
-from stac_fastapi.types.core import BaseCoreClient
+from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import STACSearch
 
@@ -53,17 +57,19 @@ class StacApi:
     """
 
     settings: ApiSettings = attr.ib()
-    client: BaseCoreClient = attr.ib()
+    client: Union[AsyncBaseCoreClient, BaseCoreClient] = attr.ib()
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
     exceptions: Dict[Type[Exception], int] = attr.ib(
         default=attr.Factory(lambda: DEFAULT_STATUS_CODES)
     )
     app: FastAPI = attr.ib(default=attr.Factory(FastAPI))
+    router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
     title: str = attr.ib(default="stac-fastapi")
     api_version: str = attr.ib(default="0.1")
     stac_version: str = attr.ib(default=STAC_VERSION)
     description: str = attr.ib(default="stac-fastapi")
-    search_request_model = attr.ib(default=STACSearch)
+    search_request_model: Type[Search] = attr.ib(default=STACSearch)
+    response_class: Type[Response] = attr.ib(default=JSONResponse)
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -78,6 +84,175 @@ class StacApi:
             if isinstance(ext, extension):
                 return ext
         return None
+
+    def _create_endpoint(
+        self, func: Callable, request_type: Union[Type[APIRequest], Type[BaseModel]]
+    ) -> Callable:
+        """Create a FastAPI endpoint."""
+        if isinstance(self.client, AsyncBaseCoreClient):
+            return create_async_endpoint(
+                func, request_type, response_class=self.response_class
+            )
+        elif isinstance(self.client, BaseCoreClient):
+            return create_sync_endpoint(
+                func, request_type, response_class=self.response_class
+            )
+        raise NotImplementedError
+
+    def register_landing_page(self):
+        """Register landing page (GET /).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Landing Page",
+            path="/",
+            response_model=LandingPage
+            if self.settings.enable_response_models
+            else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=False,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(self.client.landing_page, EmptyRequest),
+        )
+
+    def register_conformance_classes(self):
+        """Register conformance classes (GET /conformance).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Conformance Classes",
+            path="/conformance",
+            response_model=ConformanceClasses
+            if self.settings.enable_response_models
+            else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(self.client.conformance, EmptyRequest),
+        )
+
+    def register_get_item(self):
+        """Register get item endpoint (GET /collections/{collectionId}/items/{itemId}).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get Item",
+            path="/collections/{collectionId}/items/{itemId}",
+            response_model=Item if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(self.client.get_item, ItemUri),
+        )
+
+    def register_post_search(self):
+        """Register search endpoint (POST /search).
+
+        Returns:
+            None
+        """
+        search_request_model = _create_request_model(self.search_request_model)
+        fields_ext = self.get_extension(FieldsExtension)
+        self.router.add_api_route(
+            name="Search",
+            path="/search",
+            response_model=(ItemCollection if not fields_ext else None)
+            if self.settings.enable_response_models
+            else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["POST"],
+            endpoint=self._create_endpoint(
+                self.client.post_search, search_request_model
+            ),
+        )
+
+    def register_get_search(self):
+        """Register search endpoint (GET /search).
+
+        Returns:
+            None
+        """
+        fields_ext = self.get_extension(FieldsExtension)
+        self.router.add_api_route(
+            name="Search",
+            path="/search",
+            response_model=(ItemCollection if not fields_ext else None)
+            if self.settings.enable_response_models
+            else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(self.client.get_search, SearchGetRequest),
+        )
+
+    def register_get_collections(self):
+        """Register get collections endpoint (GET /collections).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get Collections",
+            path="/collections",
+            response_model=Collections
+            if self.settings.enable_response_models
+            else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(self.client.all_collections, EmptyRequest),
+        )
+
+    def register_get_collection(self):
+        """Register get collection endpoint (GET /collection/{collectionId}).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get Collection",
+            path="/collections/{collectionId}",
+            response_model=Collection if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(self.client.get_collection, CollectionUri),
+        )
+
+    def register_get_item_collection(self):
+        """Register get item collection endpoint (GET /collection/{collectionId}/items).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get ItemCollection",
+            path="/collections/{collectionId}/items",
+            response_model=ItemCollection
+            if self.settings.enable_response_models
+            else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(
+                self.client.item_collection, ItemCollectionUri
+            ),
+        )
 
     def register_core(self):
         """Register core STAC endpoints.
@@ -96,83 +271,14 @@ class StacApi:
         Returns:
             None
         """
-        search_request_model = _create_request_model(self.search_request_model)
-
-        fields_ext = self.get_extension(FieldsExtension)
-        router = APIRouter()
-        router.add_api_route(
-            name="Landing Page",
-            path="/",
-            response_model=LandingPage,
-            response_model_exclude_unset=False,
-            response_model_exclude_none=True,
-            methods=["GET"],
-            endpoint=create_endpoint(self.client.landing_page, EmptyRequest),
-        )
-        router.add_api_route(
-            name="Conformance Classes",
-            path="/conformance",
-            response_model=ConformanceClasses,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
-            methods=["GET"],
-            endpoint=create_endpoint(self.client.conformance, EmptyRequest),
-        )
-        router.add_api_route(
-            name="Get Item",
-            path="/collections/{collectionId}/items/{itemId}",
-            response_model=Item,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
-            methods=["GET"],
-            endpoint=create_endpoint(self.client.get_item, ItemUri),
-        )
-        router.add_api_route(
-            name="Search",
-            path="/search",
-            response_model=ItemCollection if not fields_ext else None,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
-            methods=["POST"],
-            endpoint=create_endpoint(self.client.post_search, search_request_model),
-        ),
-        router.add_api_route(
-            name="Search",
-            path="/search",
-            response_model=ItemCollection if not fields_ext else None,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
-            methods=["GET"],
-            endpoint=create_endpoint(self.client.get_search, SearchGetRequest),
-        )
-        router.add_api_route(
-            name="Get Collections",
-            path="/collections",
-            response_model=List[Collection],
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
-            methods=["GET"],
-            endpoint=create_endpoint(self.client.all_collections, EmptyRequest),
-        )
-        router.add_api_route(
-            name="Get Collection",
-            path="/collections/{collectionId}",
-            response_model=Collection,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
-            methods=["GET"],
-            endpoint=create_endpoint(self.client.get_collection, CollectionUri),
-        )
-        router.add_api_route(
-            name="Get ItemCollection",
-            path="/collections/{collectionId}/items",
-            response_model=ItemCollection,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
-            methods=["GET"],
-            endpoint=create_endpoint(self.client.item_collection, ItemCollectionUri),
-        )
-        self.app.include_router(router)
+        self.register_landing_page()
+        self.register_conformance_classes()
+        self.register_get_item()
+        self.register_post_search()
+        self.register_get_search()
+        self.register_get_collections()
+        self.register_get_collection()
+        self.register_get_item_collection()
 
     def customize_openapi(self) -> Optional[Dict[str, Any]]:
         """Customize openapi schema."""
@@ -218,7 +324,10 @@ class StacApi:
         Settings.set(self.settings)
         self.app.state.settings = self.settings
 
+        # Register core STAC endpoints
         self.register_core()
+        self.app.include_router(self.router)
+
         # register extensions
         for ext in self.extensions:
             ext.register(self.app)

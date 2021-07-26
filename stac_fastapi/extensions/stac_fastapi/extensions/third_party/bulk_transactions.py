@@ -1,21 +1,24 @@
 """bulk transactions extension."""
 import abc
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import attr
 from fastapi import APIRouter, FastAPI
 from pydantic import BaseModel
-from stac_pydantic import Item
 
 from stac_fastapi.api.models import _create_request_model
-from stac_fastapi.api.routes import create_endpoint
+from stac_fastapi.api.routes import create_sync_endpoint
 from stac_fastapi.types.extension import ApiExtension
 
 
 class Items(BaseModel):
-    """Items model."""
+    """A list of STAC items."""
 
-    items: List[Item]
+    items: Dict[str, Any]
+
+    def __iter__(self):
+        """Return an iterable of STAC items."""
+        return iter(self.items)
 
 
 @attr.s  # type: ignore
@@ -78,6 +81,8 @@ class BulkTransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=create_endpoint(self.client.bulk_item_insert, items_request_model),
+            endpoint=create_sync_endpoint(
+                self.client.bulk_item_insert, items_request_model
+            ),
         )
         app.include_router(router, tags=["Bulk Transaction Extension"])

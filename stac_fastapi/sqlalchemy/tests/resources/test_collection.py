@@ -1,3 +1,6 @@
+import pystac
+
+
 def test_create_and_delete_collection(app_client, load_test_data):
     """Test creation and deletion of a collection"""
     test_collection = load_test_data("test_collection.json")
@@ -50,3 +53,23 @@ def test_collection_not_found(app_client):
     """Test read a collection which does not exist"""
     resp = app_client.get("/collections/does-not-exist")
     assert resp.status_code == 404
+
+
+def test_returns_valid_collection(app_client, load_test_data):
+    """Test validates fetched collection with jsonschema"""
+    test_collection = load_test_data("test_collection.json")
+    resp = app_client.put("/collections", json=test_collection)
+    assert resp.status_code == 200
+
+    resp = app_client.get(f"/collections/{test_collection['id']}")
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    # Mock root to allow validation
+    mock_root = pystac.Catalog(
+        id="test", description="test desc", href="https://example.com"
+    )
+    collection = pystac.Collection.from_dict(
+        resp_json, root=mock_root, preserve_dict=False
+    )
+    collection.validate()

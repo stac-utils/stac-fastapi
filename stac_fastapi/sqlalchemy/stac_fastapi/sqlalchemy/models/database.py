@@ -1,19 +1,14 @@
 """SQLAlchemy ORM models."""
 
 import json
-from datetime import datetime
 from typing import Optional
 
 import geoalchemy2 as ga
 import sqlalchemy as sa
-from shapely.geometry import shape
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
-from stac_pydantic.shared import DATETIME_RFC339
 
-from stac_fastapi.sqlalchemy.models import schemas
 from stac_fastapi.sqlalchemy.types.search import Queryables, QueryableTypes
-from stac_fastapi.types.config import Settings
 
 BaseModel = declarative_base()
 
@@ -49,7 +44,7 @@ class Collection(BaseModel):  # type:ignore
     stac_extensions = sa.Column(sa.ARRAY(sa.VARCHAR(300)), nullable=True)
     title = sa.Column(sa.VARCHAR(1024))
     description = sa.Column(sa.VARCHAR(1024), nullable=False)
-    keywords = sa.Column(sa.VARCHAR(300))
+    keywords = sa.Column(sa.ARRAY(sa.VARCHAR(300)))
     version = sa.Column(sa.VARCHAR(300))
     license = sa.Column(sa.VARCHAR(300), nullable=False)
     providers = sa.Column(JSONB)
@@ -57,16 +52,7 @@ class Collection(BaseModel):  # type:ignore
     extent = sa.Column(JSONB)
     links = sa.Column(JSONB)
     children = sa.orm.relationship("Item", lazy="dynamic")
-
-    @classmethod
-    def get_database_model(cls, schema: schemas.Collection) -> dict:
-        """Decompose pydantic model to data model."""
-        return schema.dict(exclude_none=True)
-
-    @classmethod
-    def from_schema(cls, schema: schemas.Collection) -> "Collection":
-        """Create orm model from pydantic model."""
-        return cls(**cls.get_database_model(schema))
+    type = sa.Column(sa.VARCHAR(300), nullable=False)
 
 
 class Item(BaseModel):  # type:ignore
@@ -88,43 +74,6 @@ class Item(BaseModel):  # type:ignore
     parent_collection = sa.orm.relationship("Collection", back_populates="children")
     datetime = sa.Column(sa.TIMESTAMP(timezone=True), nullable=False)
     links = sa.Column(JSONB)
-
-    @classmethod
-    def get_database_model(cls, schema: schemas.Item) -> dict:
-        """Decompose pydantic model to data model."""
-        indexed_fields = {}
-        for field in Settings.get().indexed_fields:
-            # Use getattr to accommodate extension namespaces
-            field_value = getattr(schema.properties, field)
-            if field == "datetime":
-                field_value = datetime.strptime(field_value, DATETIME_RFC339)
-            indexed_fields[field.split(":")[-1]] = field_value
-
-        # Exclude indexed fields from the properties jsonb field
-        properties = schema.properties.dict(exclude=set(Settings.get().indexed_fields))
-        now = datetime.utcnow().strftime(DATETIME_RFC339)
-        if not properties["created"]:
-            properties["created"] = now
-        properties["updated"] = now
-
-        return dict(
-            collection_id=schema.collection,
-            geometry=ga.shape.from_shape(shape(schema.geometry), 4326),
-            properties=properties,
-            **indexed_fields,
-            **schema.dict(
-                exclude_none=True,
-                exclude=set(
-                    Settings().get().forbidden_fields
-                    | {"geometry", "properties", "collection"}
-                ),
-            )
-        )
-
-    @classmethod
-    def from_schema(cls, schema: schemas.Item) -> "Item":
-        """Create orm model from pydantic model."""
-        return cls(**cls.get_database_model(schema))
 
     @classmethod
     def get_field(cls, field_name):

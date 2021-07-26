@@ -21,7 +21,9 @@ session = Session.create_from_settings(settings)
 api = StacApi(
     settings=settings,
     extensions=[
-        TransactionExtension(client=TransactionsClient(session=session)),
+        TransactionExtension(
+            client=TransactionsClient(session=session), settings=settings
+        ),
         BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
         FieldsExtension(),
         QueryExtension(),

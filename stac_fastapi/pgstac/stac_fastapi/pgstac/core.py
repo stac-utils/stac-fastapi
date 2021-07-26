@@ -2,95 +2,37 @@
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
-from urllib.parse import urljoin
 
 import attr
 import orjson
 from buildpg import render
-from fastapi.responses import ORJSONResponse
-from stac_pydantic import Collection, Item, ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage
-from stac_pydantic.shared import Link, MimeTypes, Relations
+from starlette.requests import Request
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
-from stac_fastapi.types.core import BaseCoreClient
+from stac_fastapi.types.core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.stac import Collection, Conformance, Item, ItemCollection
 
 NumType = Union[float, int]
 
 
 @attr.s
-class CoreCrudClient(BaseCoreClient):
+class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
 
-    async def landing_page(self, **kwargs) -> ORJSONResponse:
-        """Landing page.
-
-        Called with `GET /`.
-
-        Returns:
-            API landing page, serving as an entry point to the API.
-        """
-        request = kwargs["request"]
-        base_url = str(request.base_url)
-        landing_page = LandingPage(
-            title="Arturo STAC API",
-            description="Arturo raster datastore",
-            links=[
-                Link(
-                    rel=Relations.self,
-                    type=MimeTypes.json,
-                    href=str(base_url),
-                ),
-                Link(
-                    rel=Relations.docs,
-                    type=MimeTypes.html,
-                    title="OpenAPI docs",
-                    href=urljoin(base_url, "/docs"),
-                ),
-                Link(
-                    rel=Relations.conformance,
-                    type=MimeTypes.json,
-                    title="STAC/WFS3 conformance classes implemented by this server",
-                    href=urljoin(base_url, "/conformance"),
-                ),
-                Link(
-                    rel=Relations.search,
-                    type=MimeTypes.geojson,
-                    title="STAC search",
-                    href=urljoin(base_url, "/search"),
-                ),
-                Link(
-                    rel="data",
-                    type=MimeTypes.json,
-                    href=urljoin(base_url, "/collections"),
-                ),
-            ],
-        )
-        collections = await self._all_collections_func(request=request)
-        if collections:
-            for coll in collections:
-                coll_link = CollectionLinks(
-                    collection_id=coll.id, request=request
-                ).link_self()
-                coll_link.rel = Relations.child
-                coll_link.title = coll.title
-                landing_page.links.append(coll_link)
-        return ORJSONResponse(landing_page.dict(exclude_none=True))
-
-    async def conformance(self, **kwargs) -> ConformanceClasses:
+    async def conformance(self, **kwargs) -> Conformance:
         """Conformance classes."""
-        return ConformanceClasses(
+        return Conformance(
             conformsTo=[
                 "https://stacspec.org/STAC-api.html",
                 "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
             ]
         )
 
-    async def _all_collections_func(self, **kwargs) -> List[Dict]:
+    async def all_collections(self, **kwargs) -> List[Collection]:
         """Read all collections from the database."""
-        request = kwargs["request"]
+        request: Request = kwargs["request"]
         pool = request.app.state.readpool
 
         async with pool.acquire() as conn:
@@ -99,24 +41,17 @@ class CoreCrudClient(BaseCoreClient):
                 SELECT * FROM all_collections();
                 """
             )
-        linked_collections = []
+        linked_collections: List[Collection] = []
         if collections is not None and len(collections) > 0:
             for c in collections:
-                coll = Collection.construct(**c)
-                coll.links = await CollectionLinks(
-                    collection_id=coll.id, request=request
+                coll = Collection(**c)
+                coll["links"] = await CollectionLinks(
+                    collection_id=coll["id"], request=request
                 ).get_links()
                 linked_collections.append(coll)
         return linked_collections
 
-    async def all_collections(self, **kwargs) -> ORJSONResponse:
-        """Get all collections."""
-        collections = await self._all_collections_func(**kwargs)
-        if collections is None or len(collections) < 1:
-            return ORJSONResponse([])
-        return ORJSONResponse([c.dict(exclude_none=True) for c in collections])
-
-    async def get_collection(self, id: str, **kwargs) -> ORJSONResponse:
+    async def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collectionId}`.
@@ -127,8 +62,10 @@ class CoreCrudClient(BaseCoreClient):
         Returns:
             Collection.
         """
-        request = kwargs["request"]
-        pool = kwargs["request"].app.state.readpool
+        collection: Optional[Dict[str, Any]]
+
+        request: Request = kwargs["request"]
+        pool = request.app.state.readpool
         async with pool.acquire() as conn:
             q, p = render(
                 """
@@ -141,13 +78,11 @@ class CoreCrudClient(BaseCoreClient):
             raise NotFoundError
         links = await CollectionLinks(collection_id=id, request=request).get_links()
         collection["links"] = links
-        return ORJSONResponse(
-            Collection.construct(**collection).dict(exclude_none=True)
-        )
+        return Collection(**collection)
 
     async def _search_base(
-        self, search_request: PgstacSearch, **kwargs
-    ) -> Dict[str, Any]:
+        self, search_request: PgstacSearch, **kwargs: Any
+    ) -> ItemCollection:
         """Cross catalog search (POST).
 
         Called with `POST /search`.
@@ -158,7 +93,9 @@ class CoreCrudClient(BaseCoreClient):
         Returns:
             ItemCollection containing items which match the search criteria.
         """
-        request = kwargs["request"]
+        items: Dict[str, Any]
+
+        request: Request = kwargs["request"]
         pool = request.app.state.readpool
 
         # pool = kwargs["request"].app.state.readpool
@@ -172,34 +109,37 @@ class CoreCrudClient(BaseCoreClient):
                 req=req,
             )
             items = await conn.fetchval(q, *p)
-        next = items.pop("next", None)
-        prev = items.pop("prev", None)
-        collection = ItemCollection.construct(**items)
-        cleaned_features = []
-        if collection.features is None or len(collection.features) == 0:
+        next: Optional[str] = items.pop("next", None)
+        prev: Optional[str] = items.pop("prev", None)
+        collection = ItemCollection(**items)
+        cleaned_features: List[Item] = []
+        if collection["features"] is None or len(collection["features"]) == 0:
             raise NotFoundError("No features found")
 
-        for feature in collection.features:
-            feature = Item.construct(**feature)
-            if "links" not in search_request.fields.exclude:
+        for feature in collection["features"]:
+            feature = Item(**feature)
+            if (
+                search_request.fields.exclude is None
+                or "links" not in search_request.fields.exclude
+            ):
+                # TODO: feature.collection is not always included
+                # This code fails if it's left outside of the fields expression
+                # I've fields extension updated test cases to always include feature.collection
                 links = await ItemLinks(
-                    collection_id=feature.collection,
-                    item_id=feature.id,
+                    collection_id=feature["collection"],
+                    item_id=feature["id"],
                     request=request,
                 ).get_links()
-                feature.links = links
+                feature["links"] = links
                 exclude = search_request.fields.exclude
-                if len(exclude) == 0:
+                if exclude and len(exclude) == 0:
                     exclude = None
                 include = search_request.fields.include
-                if len(include) == 0:
+                if include and len(include) == 0:
                     include = None
-                feature = feature.dict(
-                    exclude_none=True,
-                )
             cleaned_features.append(feature)
-            collection.features = cleaned_features
-        collection.links = await PagingLinks(
+            collection["features"] = cleaned_features
+        collection["links"] = await PagingLinks(
             request=request,
             next=next,
             prev=prev,
@@ -208,7 +148,7 @@ class CoreCrudClient(BaseCoreClient):
 
     async def item_collection(
         self, id: str, limit: int = 10, token: str = None, **kwargs
-    ) -> ORJSONResponse:
+    ) -> ItemCollection:
         """Get all items from a specific collection.
 
         Called with `GET /collections/{collectionId}/items`
@@ -225,13 +165,11 @@ class CoreCrudClient(BaseCoreClient):
         collection = await self._search_base(req, **kwargs)
         links = await CollectionLinks(
             collection_id=id, request=kwargs["request"]
-        ).get_links(extra_links=collection.links)
-        collection.links = links
-        return ORJSONResponse(collection.dict(exclude_none=True))
+        ).get_links(extra_links=collection["links"])
+        collection["links"] = links
+        return collection
 
-    async def get_item(
-        self, item_id: str, collection_id: str, **kwargs
-    ) -> ORJSONResponse:
+    async def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id.
 
         Called with `GET /collections/{collectionId}/items/{itemId}`.
@@ -244,11 +182,11 @@ class CoreCrudClient(BaseCoreClient):
         """
         req = PgstacSearch(ids=[item_id], limit=1)
         collection = await self._search_base(req, **kwargs)
-        return ORJSONResponse(collection.features[0])
+        return Item(**collection["features"][0])
 
     async def post_search(
         self, search_request: PgstacSearch, **kwargs
-    ) -> ORJSONResponse:
+    ) -> ItemCollection:
         """Cross catalog search (POST).
 
         Called with `POST /search`.
@@ -259,8 +197,8 @@ class CoreCrudClient(BaseCoreClient):
         Returns:
             ItemCollection containing items which match the search criteria.
         """
-        collection = await self._search_base(search_request, **kwargs)
-        return ORJSONResponse(collection.dict(exclude_none=True))
+        item_collection = await self._search_base(search_request, **kwargs)
+        return ItemCollection(**item_collection)
 
     async def get_search(
         self,
@@ -274,7 +212,7 @@ class CoreCrudClient(BaseCoreClient):
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
         **kwargs,
-    ) -> ORJSONResponse:
+    ) -> ItemCollection:
         """Cross catalog search (GET).
 
         Called with `GET /search`.
@@ -299,13 +237,13 @@ class CoreCrudClient(BaseCoreClient):
             sort_param = []
             for sort in sortby:
                 sortparts = re.match(r"^([+-]?)(.*)$", sort)
-
-                sort_param.append(
-                    {
-                        "field": sortparts.group(2).strip(),
-                        "direction": "desc" if sortparts.group(1) == "-" else "asc",
-                    }
-                )
+                if sortparts:
+                    sort_param.append(
+                        {
+                            "field": sortparts.group(2).strip(),
+                            "direction": "desc" if sortparts.group(1) == "-" else "asc",
+                        }
+                    )
             base_args["sortby"] = sort_param
 
         if fields:

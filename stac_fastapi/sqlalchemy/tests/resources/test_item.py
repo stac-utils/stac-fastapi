@@ -2,12 +2,14 @@ import json
 import time
 import uuid
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from random import randint
 from urllib.parse import parse_qs, urlparse, urlsplit
 
+import pystac
+from pydantic.datetime_parse import parse_datetime
 from shapely.geometry import Polygon
-from stac_pydantic.api.search import DATETIME_RFC339
+from stac_pydantic.shared import DATETIME_RFC339
 
 
 def test_create_and_delete_item(app_client, load_test_data):
@@ -99,6 +101,32 @@ def test_update_item_missing_collection(app_client, load_test_data):
     assert resp.status_code == 422
 
 
+def test_update_item_geometry(app_client, load_test_data):
+    test_item = load_test_data("test_item.json")
+
+    # Create the item
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    # Update the geometry of the item
+    test_item["geometry"]["coordinates"] = [[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]]
+    resp = app_client.put(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    # Fetch the updated item
+    resp = app_client.get(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}"
+    )
+    assert resp.status_code == 200
+    assert resp.json()["geometry"]["coordinates"] == [
+        [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+    ]
+
+
 def test_get_item(app_client, load_test_data):
     """Test read an item by id (core)"""
     test_item = load_test_data("test_item.json")
@@ -111,6 +139,27 @@ def test_get_item(app_client, load_test_data):
         f"/collections/{test_item['collection']}/items/{test_item['id']}"
     )
     assert get_item.status_code == 200
+
+
+def test_returns_valid_item(app_client, load_test_data):
+    """Test validates fetched item with jsonschema"""
+    test_item = load_test_data("test_item.json")
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    get_item = app_client.get(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}"
+    )
+    assert get_item.status_code == 200
+    item_dict = get_item.json()
+    # Mock root to allow validation
+    mock_root = pystac.Catalog(
+        id="test", description="test desc", href="https://example.com"
+    )
+    item = pystac.Item.from_dict(item_dict, preserve_dict=False, root=mock_root)
+    item.validate()
 
 
 def test_get_item_collection(app_client, load_test_data):
@@ -163,16 +212,16 @@ def test_pagination(app_client, load_test_data):
 def test_item_timestamps(app_client, load_test_data):
     """Test created and updated timestamps (common metadata)"""
     test_item = load_test_data("test_item.json")
-    start_time = datetime.utcnow()
+    start_time = datetime.now(timezone.utc)
     time.sleep(2)
     # Confirm `created` timestamp
     resp = app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
     item = resp.json()
-    created_dt = datetime.strptime(item["properties"]["created"], DATETIME_RFC339)
+    created_dt = parse_datetime(item["properties"]["created"])
     assert resp.status_code == 200
-    assert start_time < created_dt < datetime.utcnow()
+    assert start_time < created_dt < datetime.now(timezone.utc)
 
     time.sleep(2)
     # Confirm `updated` timestamp
@@ -183,10 +232,7 @@ def test_item_timestamps(app_client, load_test_data):
 
     # Created shouldn't change on update
     assert item["properties"]["created"] == updated_item["properties"]["created"]
-    assert (
-        datetime.strptime(updated_item["properties"]["updated"], DATETIME_RFC339)
-        > created_dt
-    )
+    assert parse_datetime(updated_item["properties"]["updated"]) > created_dt
 
 
 def test_item_search_by_id_post(app_client, load_test_data):
@@ -240,7 +286,7 @@ def test_item_search_temporal_query_post(app_client, load_test_data):
     params = {
         "collections": [test_item["collection"]],
         "intersects": test_item["geometry"],
-        "datetime": item_date.strftime(DATETIME_RFC339),
+        "datetime": f"../{item_date.strftime(DATETIME_RFC339)}",
     }
     resp = app_client.post("/search", json=params)
     resp_json = resp.json()
@@ -532,7 +578,8 @@ def test_pagination_item_collection(app_client, load_test_data):
             break
         query_params = parse_qs(urlparse(next_link[0]["href"]).query)
         page = app_client.get(
-            f"/collections/{test_item['collection']}/items", params=query_params
+            f"/collections/{test_item['collection']}/items",
+            params=query_params,
         )
 
     # Our limit is 1 so we expect len(ids) number of requests before we run out of pages

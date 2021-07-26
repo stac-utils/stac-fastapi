@@ -1,10 +1,11 @@
 """link helpers."""
 
-from typing import Dict, List
+from typing import Any, Dict, List
 from urllib.parse import urljoin
 
 import attr
-from stac_pydantic.shared import Link, MimeTypes, Relations
+from stac_pydantic.links import Relations
+from stac_pydantic.shared import MimeTypes
 
 # These can be inferred from the item/collection so they aren't included in the database
 # Instead they are dynamically generated when querying the database using the classes defined below
@@ -16,6 +17,14 @@ def filter_links(links: List[Dict]) -> List[Dict]:
     return [link for link in links if link["rel"] not in INFERRED_LINK_RELS]
 
 
+def resolve_links(links: list, base_url: str) -> List[Dict]:
+    """Convert relative links to absolute links."""
+    filtered_links = filter_links(links)
+    for link in filtered_links:
+        link.update({"href": urljoin(base_url, link["href"])})
+    return filtered_links
+
+
 @attr.s
 class BaseLinks:
     """Create inferred links common to collections and items."""
@@ -23,36 +32,36 @@ class BaseLinks:
     collection_id: str = attr.ib()
     base_url: str = attr.ib()
 
-    def root(self) -> Link:
+    def root(self) -> Dict[str, Any]:
         """Return the catalog root."""
-        return Link(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
+        return dict(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
 
 
 @attr.s
 class CollectionLinks(BaseLinks):
     """Create inferred links specific to collections."""
 
-    def self(self) -> Link:
+    def self(self) -> Dict[str, Any]:
         """Create the `self` link."""
-        return Link(
+        return dict(
             rel=Relations.self,
             type=MimeTypes.json,
             href=urljoin(self.base_url, f"collections/{self.collection_id}"),
         )
 
-    def parent(self) -> Link:
+    def parent(self) -> Dict[str, Any]:
         """Create the `parent` link."""
-        return Link(rel=Relations.parent, type=MimeTypes.json, href=self.base_url)
+        return dict(rel=Relations.parent, type=MimeTypes.json, href=self.base_url)
 
-    def items(self) -> Link:
+    def items(self) -> Dict[str, Any]:
         """Create the `items` link."""
-        return Link(
+        return dict(
             rel="items",
             type=MimeTypes.geojson,
             href=urljoin(self.base_url, f"collections/{self.collection_id}/items"),
         )
 
-    def create_links(self) -> List[Link]:
+    def create_links(self) -> List[Dict[str, Any]]:
         """Return all inferred links."""
         return [self.self(), self.parent(), self.items(), self.root()]
 
@@ -63,35 +72,36 @@ class ItemLinks(BaseLinks):
 
     item_id: str = attr.ib()
 
-    def self(self) -> Link:
+    def self(self) -> Dict[str, Any]:
         """Create the `self` link."""
-        return Link(
+        return dict(
             rel=Relations.self,
             type=MimeTypes.geojson,
             href=urljoin(
-                self.base_url, f"collections/{self.collection_id}/items/{self.item_id}"
+                self.base_url,
+                f"collections/{self.collection_id}/items/{self.item_id}",
             ),
         )
 
-    def parent(self) -> Link:
+    def parent(self) -> Dict[str, Any]:
         """Create the `parent` link."""
-        return Link(
+        return dict(
             rel=Relations.parent,
             type=MimeTypes.json,
             href=urljoin(self.base_url, f"collections/{self.collection_id}"),
         )
 
-    def collection(self) -> Link:
+    def collection(self) -> Dict[str, Any]:
         """Create the `collection` link."""
-        return Link(
+        return dict(
             rel=Relations.collection,
             type=MimeTypes.json,
             href=urljoin(self.base_url, f"collections/{self.collection_id}"),
         )
 
-    def tiles(self) -> Link:
+    def tiles(self) -> Dict[str, Any]:
         """Create the `tiles` link."""
-        return Link(
+        return dict(
             rel=Relations.alternate,
             type=MimeTypes.json,
             title="tiles",
@@ -101,7 +111,7 @@ class ItemLinks(BaseLinks):
             ),
         )
 
-    def create_links(self) -> List[Link]:
+    def create_links(self) -> List[Dict[str, Any]]:
         """Return all inferred links."""
         links = [
             self.self(),

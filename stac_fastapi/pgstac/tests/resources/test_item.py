@@ -4,10 +4,11 @@ from datetime import datetime, timedelta
 from typing import Callable
 from urllib.parse import parse_qs, urlparse
 
+import pystac
 import pytest
 from shapely.geometry import Polygon
 from stac_pydantic import Collection, Item
-from stac_pydantic.api.search import DATETIME_RFC339
+from stac_pydantic.shared import DATETIME_RFC339
 
 
 @pytest.mark.asyncio
@@ -79,6 +80,35 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
 
 
 @pytest.mark.asyncio
+async def test_fetches_valid_item(
+    app_client, load_test_data: Callable, load_test_collection
+):
+    coll = load_test_collection
+
+    in_json = load_test_data("test_item.json")
+    in_item = Item.parse_obj(in_json)
+    resp = await app_client.post(
+        "/collections/{coll.id}/items",
+        json=in_json,
+    )
+    assert resp.status_code == 200
+
+    post_item = Item.parse_obj(resp.json())
+    assert in_item.dict(exclude={"links"}) == post_item.dict(exclude={"links"})
+
+    resp = await app_client.get(f"/collections/{coll.id}/items/{post_item.id}")
+
+    assert resp.status_code == 200
+    item_dict = resp.json()
+    # Mock root to allow validation
+    mock_root = pystac.Catalog(
+        id="test", description="test desc", href="https://example.com"
+    )
+    item = pystac.Item.from_dict(item_dict, preserve_dict=False, root=mock_root)
+    item.validate()
+
+
+@pytest.mark.asyncio
 async def test_update_item(
     app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
@@ -87,7 +117,7 @@ async def test_update_item(
 
     item.properties.description = "Update Test"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", json=item.dict())
+    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
@@ -122,7 +152,7 @@ async def test_get_collection_items(app_client, load_test_collection, load_test_
         item.id = str(uuid.uuid4())
         resp = await app_client.post(
             f"/collections/{coll.id}/items",
-            json=item.dict(),
+            data=item.json(),
         )
         assert resp.status_code == 200
 
@@ -192,7 +222,7 @@ async def test_update_new_item(
     item = load_test_item
     item.id = "test-updatenewitem"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", json=item.dict())
+    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
     assert resp.status_code == 404
 
 
@@ -204,7 +234,7 @@ async def test_update_item_missing_collection(
     item = load_test_item
     item.collection = None
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", json=item.dict())
+    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
     assert resp.status_code == 424
 
 
@@ -774,7 +804,7 @@ async def test_field_extension_get(app_client, load_test_data, load_test_collect
     )
     assert resp.status_code == 200
 
-    params = {"fields": "+properties.proj:epsg,+properties.gsd"}
+    params = {"fields": "+properties.proj:epsg,+properties.gsd,+collection"}
     resp = await app_client.get("/search", params=params)
     feat_properties = resp.json()["features"][0]["properties"]
     assert not set(feat_properties) - {"proj:epsg", "gsd", "datetime"}
@@ -796,6 +826,7 @@ async def test_field_extension_post(app_client, load_test_data, load_test_collec
                 "properties.eo:cloud_cover",
                 "properties.orientation",
                 "assets",
+                "collection",
             ],
         }
     }
@@ -825,7 +856,7 @@ async def test_field_extension_exclude_and_include(
     body = {
         "fields": {
             "exclude": ["properties.eo:cloud_cover"],
-            "include": ["properties.eo:cloud_cover"],
+            "include": ["properties.eo:cloud_cover", "collection"],
         }
     }
 

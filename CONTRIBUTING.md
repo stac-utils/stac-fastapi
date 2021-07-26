@@ -7,7 +7,7 @@ Issues and pull requests are more than welcome.
 ```bash
 $ git clone https://github.com/stac-utils/stac-fastapi.git
 $ cd stac-fastapi
-$ pip install -e .[dev]
+$ pip install -e stac_fastapi/api[dev]
 ```
 
 **Python3.8 only**
@@ -23,7 +23,7 @@ $ pre-commit install
 ```bash
 $ git clone https://github.com/stac-utils/stac-fastapi.git
 $ cd stac-fastapi
-$ pip install -e .["docs"]
+$ pip install -e stac_fastapi/api["docs"]
 ```
 
 Hot-reloading docs:

@@ -1,5 +1,6 @@
 """Database connection handling."""
 
+import json
 from typing import Dict, Union
 
 import attr
@@ -76,7 +77,7 @@ async def dbfunc(pool: pool, func: str, arg: Union[str, Dict]):
                     f"""
                         SELECT * FROM {func}(:item::text::jsonb);
                         """,
-                    item=arg.json(exclude_unset=True),
+                    item=json.dumps(arg),
                 )
                 return await conn.fetchval(q, *p)
     except exceptions.UniqueViolationError as e:

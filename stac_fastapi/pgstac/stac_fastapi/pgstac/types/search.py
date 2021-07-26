@@ -22,9 +22,9 @@ class Operator(str, AutoValueEnum):
     eq = auto()
     ne = auto()
     lt = auto()
-    le = auto()
+    lte = auto()
     gt = auto()
-    ge = auto()
+    gte = auto()
     # TODO: These are defined in the spec but aren't currently implemented by the api
     # startsWith = auto()
     # endsWith = auto()
