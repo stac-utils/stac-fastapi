@@ -322,7 +322,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 {
                     "rel": Relations.child.value,
                     "type": MimeTypes.json.value,
-                    "title": collection["title"],
+                    "title": collection.get("title"),
                     "href": urljoin(base_url, f"collections/{collection['id']}"),
                 }
             )
@@ -467,7 +467,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 {
                     "rel": Relations.child.value,
                     "type": MimeTypes.json.value,
-                    "title": collection["title"],
+                    "title": collection.get("title"),
                     "href": urljoin(base_url, f"collections/{collection['id']}"),
                 }
             )

@@ -243,3 +243,18 @@ def test_bulk_item_insert_chunked(
         postgres_transactions.delete_item(
             item["id"], item["collection_id"], request=MockStarletteRequest
         )
+
+
+def test_landing_page_no_collection_title(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    coll = load_test_data("test_collection.json")
+    del coll["title"]
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+
+    landing_page = postgres_core.landing_page(request=MockStarletteRequest)
+    for link in landing_page["links"]:
+        if link["href"].split("/")[-1] == coll["id"]:
+            assert not link["title"]
