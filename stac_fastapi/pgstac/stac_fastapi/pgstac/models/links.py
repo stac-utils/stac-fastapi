@@ -164,7 +164,7 @@ class CollectionLinksBase(BaseLinks):
         return dict(
             rel=rel,
             type=MimeTypes.json.value,
-            href=self.resolve(f"/collections/{self.collection_id}"),
+            href=self.resolve(f"collections/{self.collection_id}"),
         )
 
 
@@ -189,7 +189,7 @@ class CollectionLinks(CollectionLinksBase):
         return dict(
             rel="items",
             type=MimeTypes.geojson.value,
-            href=self.resolve(f"/collections/{self.collection_id}/items"),
+            href=self.resolve(f"collections/{self.collection_id}/items"),
         )
 
 
@@ -205,7 +205,7 @@ class ItemLinks(CollectionLinksBase):
             rel=Relations.self.value,
             type=MimeTypes.geojson.value,
             href=self.resolve(
-                f"/collections/{self.collection_id}/items/{self.item_id}"
+                f"collections/{self.collection_id}/items/{self.item_id}"
             ),
         )
 
@@ -224,7 +224,7 @@ class ItemLinks(CollectionLinksBase):
             type=MimeTypes.json.value,
             title="tiles",
             href=self.resolve(
-                f"/collections/{self.collection_id}/items/{self.item_id}/tiles",
+                f"collections/{self.collection_id}/items/{self.item_id}/tiles",
             ),
         )
 
