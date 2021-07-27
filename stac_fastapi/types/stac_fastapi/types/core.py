@@ -225,11 +225,11 @@ class AsyncBaseTransactionsClient(abc.ABC):
 class LandingPageMixin:
     """Create a STAC landing page (GET /)."""
 
+    conformance_classes: List[str] = attr.ib()
     stac_version: str = attr.ib(default=STAC_VERSION)
     landing_page_id: str = attr.ib(default="stac-fastapi")
     title: str = attr.ib(default="stac-fastapi")
     description: str = attr.ib(default="stac-fastapi")
-    conformance_classes: List[str] = attr.ib()
 
     def _landing_page(self, base_url: str) -> stac_types.LandingPage:
         landing_page = stac_types.LandingPage(

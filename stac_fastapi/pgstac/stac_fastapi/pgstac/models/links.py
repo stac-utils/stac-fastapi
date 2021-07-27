@@ -204,9 +204,7 @@ class ItemLinks(CollectionLinksBase):
         return dict(
             rel=Relations.self.value,
             type=MimeTypes.geojson.value,
-            href=self.resolve(
-                f"collections/{self.collection_id}/items/{self.item_id}"
-            ),
+            href=self.resolve(f"collections/{self.collection_id}/items/{self.item_id}"),
         )
 
     def link_parent(self) -> Dict:
