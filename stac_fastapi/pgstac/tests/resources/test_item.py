@@ -913,20 +913,18 @@ async def test_search_invalid_query_field(app_client):
 
 
 @pytest.mark.asyncio
-async def test_relative_link_construction(load_test_data, altered_root_app_client):
-
+async def test_relative_link_construction():
     req = Request(
         scope={
-            'type': 'http',
-            'scheme': 'http',
-            'method': 'PUT',
-            'root_path': 'http://test/stac',
-            'path': '/',
-            'raw_path': b'/tab/abc',
-            'query_string': b'',
-            'headers': {}
+            "type": "http",
+            "scheme": "http",
+            "method": "PUT",
+            "root_path": "http://test/stac",
+            "path": "/",
+            "raw_path": b"/tab/abc",
+            "query_string": b"",
+            "headers": {},
         }
     )
     links = CollectionLinks(collection_id="naip", request=req)
-
-    assert links.link_items()['href'] == "http://test/stac/collections/naip/items"
+    assert links.link_items()["href"] == "http://test/stac/collections/naip/items"

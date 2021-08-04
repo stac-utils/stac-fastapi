@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 from ..conftest import MockStarletteRequest
 
-
 STAC_CORE_ROUTES = [
     "GET /",
     "GET /collections",
