@@ -9,6 +9,9 @@ import pytest
 from shapely.geometry import Polygon
 from stac_pydantic import Collection, Item
 from stac_pydantic.shared import DATETIME_RFC339
+from starlette.requests import Request
+
+from stac_fastapi.pgstac.models.links import CollectionLinks
 
 
 @pytest.mark.asyncio
@@ -907,3 +910,23 @@ async def test_search_invalid_query_field(app_client):
     body = {"query": {"gsd": {"lt": 100}, "invalid-field": {"eq": 50}}}
     resp = await app_client.post("/search", json=body)
     assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_relative_link_construction(load_test_data, altered_root_app_client):
+
+    req = Request(
+        scope={
+            'type': 'http',
+            'scheme': 'http',
+            'method': 'PUT',
+            'root_path': 'http://test/stac',
+            'path': '/',
+            'raw_path': b'/tab/abc',
+            'query_string': b'',
+            'headers': {}
+        }
+    )
+    links = CollectionLinks(collection_id="naip", request=req)
+
+    assert links.link_items()['href'] == "http://test/stac/collections/naip/items"

@@ -239,7 +239,7 @@ class TileLinks:
         """Post init handler."""
         self.item_uri = urljoin(
             self.base_url,
-            f"/collections/{self.collection_id}/items/{self.item_id}",
+            f"collections/{self.collection_id}/items/{self.item_id}",
         )
 
     def link_tiles(self) -> Dict:
@@ -247,7 +247,7 @@ class TileLinks:
         return dict(
             href=urljoin(
                 self.base_url,
-                f"/titiler/tiles/{{z}}/{{x}}/{{y}}.png?url={self.item_uri}",
+                f"titiler/tiles/{{z}}/{{x}}/{{y}}.png?url={self.item_uri}",
             ),
             rel=Relations.item.value,
             title="tiles",
@@ -258,7 +258,7 @@ class TileLinks:
     def link_viewer(self) -> Dict:
         """Create viewer link."""
         return dict(
-            href=urljoin(self.base_url, f"/titiler/viewer?url={self.item_uri}"),
+            href=urljoin(self.base_url, f"titiler/viewer?url={self.item_uri}"),
             rel=Relations.alternate.value,
             type=MimeTypes.html.value,
             title="viewer",
@@ -267,7 +267,7 @@ class TileLinks:
     def link_tilejson(self) -> Dict:
         """Create tilejson link."""
         return dict(
-            href=urljoin(self.base_url, f"/titiler/tilejson.json?url={self.item_uri}"),
+            href=urljoin(self.base_url, f"titiler/tilejson.json?url={self.item_uri}"),
             rel=Relations.alternate.value,
             type=MimeTypes.json.value,
             title="tilejson",
@@ -278,7 +278,7 @@ class TileLinks:
         return dict(
             href=urljoin(
                 self.base_url,
-                f"/titiler/WMTSCapabilities.xml?url={self.item_uri}",
+                f"titiler/WMTSCapabilities.xml?url={self.item_uri}",
             ),
             rel=Relations.alternate.value,
             type=MimeTypes.xml.value,
