@@ -96,6 +96,7 @@ class PgstacSearch(Search):
     fields: FieldsExtension = Field(FieldsExtension())
     # Override query extension with supported operators
     query: Optional[Dict[str, Dict[Operator, Any]]]
+    filter: Optional[Dict]
     token: Optional[str] = None
     datetime: Optional[str] = None
     sortby: Any
