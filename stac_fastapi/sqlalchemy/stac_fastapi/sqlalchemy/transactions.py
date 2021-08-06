@@ -148,8 +148,8 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         return_msg = f"Successfully added {len(processed_items)} items."
         if chunk_size:
             for chunk in self._chunks(processed_items, chunk_size):
-                self.engine.execute(database.Item.__table__.insert(), chunk)
+                self.engine.execute(self.item_table.__table__.insert(), chunk)
             return return_msg
 
-        self.engine.execute(database.Item.__table__.insert(), processed_items)
+        self.engine.execute(self.item_table.__table__.insert(), processed_items)
         return return_msg
