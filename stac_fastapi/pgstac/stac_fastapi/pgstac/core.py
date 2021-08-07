@@ -27,6 +27,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
             conformsTo=[
                 "https://stacspec.org/STAC-api.html",
                 "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
+                "https://api.stacspec.org/v1.0.0-beta.2/item-search",
             ]
         )
 
