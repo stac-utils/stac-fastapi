@@ -32,7 +32,7 @@ services:
     depends_on:
       - database
     command:
-      python -m stac_fastapi.sqlalchemy.app
+      bash -c "./scripts/wait-for-it.sh database:5432 && python -m stac_fastapi.sqlalchemy.app"
 
   app-pgstac:
     container_name: stac-fastapi-pgstac
@@ -65,7 +65,7 @@ services:
     depends_on:
       - database
     command:
-      python -m stac_fastapi.pgstac.app
+      bash -c "./scripts/wait-for-it.sh database:5432 && python -m stac_fastapi.pgstac.app"
 
   database:
     container_name: stac-db
