@@ -1,6 +1,5 @@
 """transactions extension client."""
 
-import json
 import logging
 from typing import Optional, Type
 
