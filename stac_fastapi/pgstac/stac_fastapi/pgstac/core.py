@@ -12,7 +12,7 @@ from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingL
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Collection, Conformance, Item, ItemCollection
+from stac_fastapi.types.stac import Collection, Item, ItemCollection
 
 NumType = Union[float, int]
 
