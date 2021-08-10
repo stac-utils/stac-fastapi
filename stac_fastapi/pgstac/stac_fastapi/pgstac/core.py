@@ -21,15 +21,6 @@ NumType = Union[float, int]
 class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
 
-    async def conformance(self, **kwargs) -> Conformance:
-        """Conformance classes."""
-        return Conformance(
-            conformsTo=[
-                "https://stacspec.org/STAC-api.html",
-                "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
-            ]
-        )
-
     async def all_collections(self, **kwargs) -> List[Collection]:
         """Read all collections from the database."""
         request: Request = kwargs["request"]

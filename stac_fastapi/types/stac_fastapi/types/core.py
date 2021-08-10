@@ -12,6 +12,7 @@ from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.stac import Conformance
 
 NumType = Union[float, int]
 StacType = Dict[str, Any]
@@ -230,6 +231,13 @@ class LandingPageMixin:
     landing_page_id: str = attr.ib(default="stac-fastapi")
     title: str = attr.ib(default="stac-fastapi")
     description: str = attr.ib(default="stac-fastapi")
+    conformance_classes: List[str] = attr.ib(
+        factory=lambda: [
+            "https://api.stacspec.org/v1.0.0-beta.2/core",
+            "https://api.stacspec.org/v1.0.0-beta.2/ogcapi-features",
+            "https://api.stacspec.org/v1.0.0-beta.2/item-search",
+        ]
+    )
 
     def _landing_page(self, base_url: str) -> stac_types.LandingPage:
         landing_page = stac_types.LandingPage(
@@ -324,7 +332,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             Conformance classes which the server conforms to.
         """
-        stac_types.Conformance(conformsTo=self.conformance_classes)
+        return Conformance(conformsTo=self.conformance_classes)
 
     @abc.abstractmethod
     def post_search(
@@ -474,7 +482,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             Conformance classes which the server conforms to.
         """
-        stac_types.Conformance(conformsTo=self.conformance_classes)
+        return Conformance(conformsTo=self.conformance_classes)
 
     @abc.abstractmethod
     async def post_search(
