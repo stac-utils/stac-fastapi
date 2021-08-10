@@ -7,7 +7,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 from pydantic import BaseModel
 from stac_pydantic import Collection, Item, ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage, Search
+from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.version import STAC_VERSION
 from starlette.responses import JSONResponse, Response
@@ -17,9 +17,10 @@ from stac_fastapi.api.models import (
     APIRequest,
     CollectionUri,
     EmptyRequest,
+    GETTokenPagination,
     ItemCollectionUri,
     ItemUri,
-    SearchGetRequest,
+    POSTTokenPagination,
     _create_request_model,
 )
 from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
@@ -29,7 +30,7 @@ from stac_fastapi.extensions.core import FieldsExtension
 from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.search import STACSearch
+from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 
 
 @attr.s
@@ -68,7 +69,14 @@ class StacApi:
     api_version: str = attr.ib(default="0.1")
     stac_version: str = attr.ib(default=STAC_VERSION)
     description: str = attr.ib(default="stac-fastapi")
-    search_request_model: Type[Search] = attr.ib(default=STACSearch)
+    search_get_request_model: Type[BaseSearchGetRequest] = attr.ib(
+        default=BaseSearchGetRequest
+    )
+    search_post_request_model: Type[BaseSearchPostRequest] = attr.ib(
+        default=BaseSearchPostRequest
+    )
+    get_pagination_model: Type[APIRequest] = attr.ib(default=GETTokenPagination)
+    post_pagination_model: Type[BaseModel] = attr.ib(default=POSTTokenPagination)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
@@ -160,7 +168,13 @@ class StacApi:
         Returns:
             None
         """
-        search_request_model = _create_request_model(self.search_request_model)
+        search_request_model = _create_request_model(
+            "SearchPostRequest",
+            base_model=self.search_post_request_model,
+            extensions=self.extensions,
+            mixins=[self.post_pagination_model],
+            request_type="POST",
+        )
         fields_ext = self.get_extension(FieldsExtension)
         self.router.add_api_route(
             name="Search",
@@ -183,6 +197,14 @@ class StacApi:
         Returns:
             None
         """
+        search_request_model = _create_request_model(
+            "SearchGetRequest",
+            self.search_get_request_model,
+            self.extensions,
+            mixins=[self.get_pagination_model],
+            request_type="GET",
+        )
+
         fields_ext = self.get_extension(FieldsExtension)
         self.router.add_api_route(
             name="Search",
@@ -194,7 +216,9 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(self.client.get_search, SearchGetRequest),
+            endpoint=self._create_endpoint(
+                self.client.get_search, search_request_model
+            ),
         )
 
     def register_get_collections(self):
@@ -239,6 +263,11 @@ class StacApi:
         Returns:
             None
         """
+        request_model = _create_request_model(
+            "ItemCollectionURI",
+            base_model=ItemCollectionUri,
+            mixins=[GETTokenPagination],
+        )
         self.router.add_api_route(
             name="Get ItemCollection",
             path="/collections/{collectionId}/items",
@@ -249,9 +278,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(
-                self.client.item_collection, ItemCollectionUri
-            ),
+            endpoint=self._create_endpoint(self.client.item_collection, request_model),
         )
 
     def register_core(self):

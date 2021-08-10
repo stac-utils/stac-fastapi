@@ -4,6 +4,8 @@ from fastapi import FastAPI
 
 from stac_fastapi.types.extension import ApiExtension
 
+from .request import SortExtensionGetRequest, SortExtensionPostRequest
+
 
 @attr.s
 class SortExtension(ApiExtension):
@@ -14,6 +16,9 @@ class SortExtension(ApiExtension):
 
     https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#sort
     """
+
+    GET = SortExtensionGetRequest
+    POST = SortExtensionPostRequest
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

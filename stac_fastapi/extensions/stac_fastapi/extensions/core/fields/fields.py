@@ -1,10 +1,13 @@
 """fields extension."""
+
 from typing import Set
 
 import attr
 from fastapi import FastAPI
 
 from stac_fastapi.types.extension import ApiExtension
+
+from .request import FieldsExtensionGetRequest, FieldsExtensionPostRequest
 
 
 @attr.s
@@ -22,6 +25,9 @@ class FieldsExtension(ApiExtension):
         default_includes (set): defines the default set of included fields.
 
     """
+
+    GET = FieldsExtensionGetRequest
+    POST = FieldsExtensionPostRequest
 
     default_includes: Set[str] = attr.ib(
         default=attr.Factory(

@@ -4,6 +4,8 @@ from fastapi import FastAPI
 
 from stac_fastapi.types.extension import ApiExtension
 
+from .request import QueryExtensionGetRequest, QueryExtensionPostRequest
+
 
 @attr.s
 class QueryExtension(ApiExtension):
@@ -14,6 +16,9 @@ class QueryExtension(ApiExtension):
 
     https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#query
     """
+
+    GET = QueryExtensionGetRequest
+    POST = QueryExtensionPostRequest
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
