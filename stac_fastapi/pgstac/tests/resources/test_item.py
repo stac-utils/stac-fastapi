@@ -338,18 +338,18 @@ async def test_item_search_by_id_post(app_client, load_test_data, load_test_coll
     assert set([feat["id"] for feat in resp_json["features"]]) == set(ids)
 
 
-# @pytest.mark.asyncio
-# async def test_item_search_by_id_no_results_post(app_client, load_test_data, load_test_collection):
-#     """Test POST search by item id (core) when there are no results"""
-#     test_item = load_test_data("test_item.json")
-#
-#     search_ids = ["nonexistent_id"]
-#
-#     params = {"collections": [test_item["collection"]], "ids": search_ids}
-#     resp = await app_client.post("/search", json=params)
-#     assert resp.status_code == 200
-#     resp_json = resp.json()
-#     assert len(resp_json["features"]) == 0
+@pytest.mark.asyncio
+async def test_item_search_by_id_no_results_post(app_client, load_test_data, load_test_collection):
+    """Test POST search by item id (core) when there are no results"""
+    test_item = load_test_data("test_item.json")
+
+    search_ids = ["nonexistent_id"]
+
+    params = {"collections": [test_item["collection"]], "ids": search_ids}
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 0
 
 @pytest.mark.asyncio
 async def test_item_search_spatial_query_post(
