@@ -198,6 +198,7 @@ def test_delete_item(
 
 
 def test_bulk_item_insert(
+    postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,
     postgres_bulk_transactions: BulkTransactionsClient,
     load_test_data: Callable,
@@ -213,11 +214,17 @@ def test_bulk_item_insert(
         _item["id"] = str(uuid.uuid4())
         items.append(_item)
 
+    fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
+    assert len(fc["features"]) == 0
+
     postgres_bulk_transactions.bulk_item_insert(items=items)
+
+    fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
+    assert len(fc["features"]) == 10
 
     for item in items:
         postgres_transactions.delete_item(
-            item["id"], item["collection_id"], request=MockStarletteRequest
+            item["id"], item["collection"], request=MockStarletteRequest
         )
 
 
@@ -241,7 +248,7 @@ def test_bulk_item_insert_chunked(
 
     for item in items:
         postgres_transactions.delete_item(
-            item["id"], item["collection_id"], request=MockStarletteRequest
+            item["id"], item["collection"], request=MockStarletteRequest
         )
 
 
