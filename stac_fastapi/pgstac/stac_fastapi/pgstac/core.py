@@ -180,6 +180,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
         """
         req = PgstacSearch(ids=[item_id], limit=1)
         collection = await self._search_base(req, **kwargs)
+        if not collection["features"]:
+            raise NotFoundError
+
         return Item(**collection["features"][0])
 
     async def post_search(
