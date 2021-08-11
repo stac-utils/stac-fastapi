@@ -16,7 +16,6 @@ install_requires = [
     "stac-fastapi.extensions",
     "asyncpg",
     "buildpg",
-    "shapely",
     "brotli_asgi",
 ]
 
