@@ -159,6 +159,21 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             An ItemCollection.
         """
+
+        # If collection doesn't exist, raise NotFoundError
+        request: Request = kwargs["request"]
+        pool = request.app.state.readpool
+        async with pool.acquire() as conn:
+            q, p = render(
+                """
+                SELECT * FROM get_collection(:id::text);
+                """,
+                id=id,
+            )
+            collection = await conn.fetchval(q, *p)
+        if collection is None:
+            raise NotFoundError(f"Collection {id} does not exist.")
+
         req = PgstacSearch(collections=[id], limit=limit, token=token)
         collection = await self._search_base(req, **kwargs)
         links = await CollectionLinks(
