@@ -1,6 +1,5 @@
 """transactions extension client."""
 
-import json
 import logging
 from typing import Optional, Type
 
@@ -119,21 +118,22 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
 
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     debug: bool = attr.ib(default=False)
+    item_table: Type[database.Item] = attr.ib(default=database.Item)
+    item_serializer: Type[serializers.Serializer] = attr.ib(
+        default=serializers.ItemSerializer
+    )
 
     def __attrs_post_init__(self):
         """Create sqlalchemy engine."""
         self.engine = self.session.writer.cached_engine
 
-    @staticmethod
-    def _preprocess_item(item: stac_types.Item) -> stac_types.Item:
+    def _preprocess_item(self, item: stac_types.Item) -> stac_types.Item:
         """Preprocess items to match data model.
 
         # TODO: dedup with GetterDict logic (ref #58)
         """
-        item["geometry"] = json.dumps(item["geometry"])
-        item["collection_id"] = item.pop("collection")
-        item["datetime"] = item["properties"].pop("datetime")
-        return item
+        db_model = self.item_serializer.stac_to_db(item)
+        return self.item_serializer.row_to_dict(db_model)
 
     def bulk_item_insert(
         self, items: Items, chunk_size: Optional[int] = None, **kwargs
@@ -147,8 +147,8 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         return_msg = f"Successfully added {len(processed_items)} items."
         if chunk_size:
             for chunk in self._chunks(processed_items, chunk_size):
-                self.engine.execute(database.Item.__table__.insert(), chunk)
+                self.engine.execute(self.item_table.__table__.insert(), chunk)
             return return_msg
 
-        self.engine.execute(database.Item.__table__.insert(), processed_items)
+        self.engine.execute(self.item_table.__table__.insert(), processed_items)
         return return_msg
