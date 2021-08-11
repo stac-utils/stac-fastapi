@@ -266,7 +266,7 @@ class StacApi:
         request_model = _create_request_model(
             "ItemCollectionURI",
             base_model=ItemCollectionUri,
-            mixins=[GETTokenPagination],
+            mixins=[self.get_pagination_model],
         )
         self.router.add_api_route(
             name="Get ItemCollection",

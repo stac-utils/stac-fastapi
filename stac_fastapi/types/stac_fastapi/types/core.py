@@ -238,8 +238,9 @@ class LandingPageMixin:
             description=self.description,
             stac_version=self.stac_version,
             conformsTo=[
-                "https://stacspec.org/STAC-api.html",
-                "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
+                "https://api.stacspec.org/v1.0.0-beta.2/core",
+                "https://api.stacspec.org/v1.0.0-beta.2/ogcapi-features",
+                "https://api.stacspec.org/v1.0.0-beta.2/item-search",
             ],
             links=[
                 {
@@ -262,7 +263,7 @@ class LandingPageMixin:
                     "rel": Relations.conformance.value,
                     "type": MimeTypes.json,
                     "title": "STAC/WFS3 conformance classes implemented by this server",
-                    "href": base_url,
+                    "href": urljoin(base_url, "conformance"),
                 },
                 {
                     "rel": Relations.search.value,
