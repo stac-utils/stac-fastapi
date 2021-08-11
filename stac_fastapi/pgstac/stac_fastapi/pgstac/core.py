@@ -113,8 +113,6 @@ class CoreCrudClient(AsyncBaseCoreClient):
         prev: Optional[str] = items.pop("prev", None)
         collection = ItemCollection(**items)
         cleaned_features: List[Item] = []
-        if collection["features"] is None or len(collection["features"]) == 0:
-            raise NotFoundError("No features found")
 
         for feature in collection["features"]:
             feature = Item(**feature)
