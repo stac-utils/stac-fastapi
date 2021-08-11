@@ -5,7 +5,7 @@ from enum import auto
 from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 
-from pydantic import Field, root_validator, validator
+from pydantic import Field, conint, root_validator, validator
 from stac_pydantic.api import Search
 from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
 from stac_pydantic.utils import AutoValueEnum
@@ -100,6 +100,7 @@ class PgstacSearch(Search):
     token: Optional[str] = None
     datetime: Optional[str] = None
     sortby: Any
+    limit: Optional[conint(ge=0, le=10000)] = 10
 
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:
