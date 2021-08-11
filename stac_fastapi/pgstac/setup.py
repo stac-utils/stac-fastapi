@@ -28,6 +28,7 @@ extra_reqs = {
         "requests",
         "pypgstac==0.2.8",
         "httpx",
+        "shapely",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
     "server": ["uvicorn[standard]>=0.12.0,<0.14.0"],
