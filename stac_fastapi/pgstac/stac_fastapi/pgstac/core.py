@@ -75,7 +75,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
             )
             collection = await conn.fetchval(q, *p)
         if collection is None:
-            raise NotFoundError
+            raise NotFoundError(f"Collection {id} does not exist.")
         links = await CollectionLinks(collection_id=id, request=request).get_links()
         collection["links"] = links
         return Collection(**collection)
