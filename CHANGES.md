@@ -1,5 +1,7 @@
 ## UNRELEASED
 
+* remove shapely from stac_fastapi.pgstac requirements (https://github.com/stac-utils/stac-fastapi/pull/225)
+
 ## 2.0.0 (2021-07)
 
 * Refactor stac-fastapi into submodules (https://github.com/stac-utils/stac-fastapi/pull/106)
