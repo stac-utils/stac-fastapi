@@ -8,6 +8,12 @@ run_docker = docker-compose run --rm \
 				-e APP_PORT=${APP_PORT} \
 				app-sqlalchemy
 
+run_pgstac = docker-compose run --rm \
+				-p ${EXTERNAL_APP_PORT}:${APP_PORT} \
+				-e APP_HOST=${APP_HOST} \
+				-e APP_PORT=${APP_PORT} \
+				app-pgstac
+
 .PHONY: image
 image:
 	docker-compose build
@@ -25,8 +31,8 @@ test-sqlalchemy:
 	$(run_docker) /bin/bash -c 'export && cd /app/stac_fastapi/sqlalchemy/tests/ && pytest'
 
 .PHONY: test-pgstac
-test-pgstac: pgstac-install
-	$(run_docker) /bin/bash -c 'export && cd /app/stac_fastapi/pgstac/tests/ && pytest'
+test-pgstac:
+	$(run_pgstac) /bin/bash -c 'export && cd /app/stac_fastapi/pgstac/tests/ && pytest'
 
 .PHONY: run-database
 run-database:
