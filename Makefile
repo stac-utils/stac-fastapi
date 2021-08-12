@@ -27,7 +27,7 @@ docker-shell:
 	$(run_docker) /bin/bash
 
 .PHONY: test-sqlalchemy
-test-sqlalchemy:
+test-sqlalchemy: run-joplin-sqlalchemy
 	$(run_docker) /bin/bash -c 'export && cd /app/stac_fastapi/sqlalchemy/tests/ && pytest'
 
 .PHONY: test-pgstac
@@ -37,6 +37,10 @@ test-pgstac:
 .PHONY: run-database
 run-database:
 	docker-compose run --rm database
+
+.PHONY: run-joplin-sqlalchemy
+run-joplin-sqlalchemy:
+	docker-compose run --rm loadjoplin-sqlalchemy
 
 .PHONY: test
 test: test-sqlalchemy test-pgstac
