@@ -53,9 +53,12 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
     async def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id.
+
         Called with `GET /collections/{collectionId}`.
+
         Args:
             id: Id of the collection.
+
         Returns:
             Collection.
         """
@@ -81,9 +84,12 @@ class CoreCrudClient(AsyncBaseCoreClient):
         self, search_request: PgstacSearch, **kwargs: Any
     ) -> ItemCollection:
         """Cross catalog search (POST).
+
         Called with `POST /search`.
+
         Args:
             search_request: search request parameters.
+
         Returns:
             ItemCollection containing items which match the search criteria.
         """
@@ -142,11 +148,14 @@ class CoreCrudClient(AsyncBaseCoreClient):
         self, id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
         """Get all items from a specific collection.
+
         Called with `GET /collections/{collectionId}/items`
+
         Args:
             id: id of the collection.
             limit: number of items to return.
             token: pagination token.
+
         Returns:
             An ItemCollection.
         """
@@ -163,9 +172,12 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
     async def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id.
+
         Called with `GET /collections/{collectionId}/items/{itemId}`.
+
         Args:
             id: Id of the item.
+
         Returns:
             Item.
         """
@@ -183,9 +195,12 @@ class CoreCrudClient(AsyncBaseCoreClient):
         self, search_request: PgstacSearch, **kwargs
     ) -> ItemCollection:
         """Cross catalog search (POST).
+
         Called with `POST /search`.
+
         Args:
             search_request: search request parameters.
+
         Returns:
             ItemCollection containing items which match the search criteria.
         """
@@ -206,7 +221,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
         **kwargs,
     ) -> ItemCollection:
         """Cross catalog search (GET).
+
         Called with `GET /search`.
+
         Returns:
             ItemCollection containing items which match the search criteria.
         """
