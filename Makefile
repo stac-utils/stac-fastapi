@@ -22,11 +22,11 @@ docker-shell:
 
 .PHONY: test-sqlalchemy
 test-sqlalchemy:
-	$(run_docker) /bin/bash -c 'export && cd /app/stac_fastapi/sqlalchemy/tests/ && pytest'
+	$(run_docker) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/sqlalchemy/tests/ && pytest'
 
 .PHONY: test-pgstac
 test-pgstac: pgstac-install
-	$(run_docker) /bin/bash -c 'export && cd /app/stac_fastapi/pgstac/tests/ && pytest'
+	$(run_docker) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/pgstac/tests/ && pytest'
 
 .PHONY: test
 test: test-sqlalchemy test-pgstac
