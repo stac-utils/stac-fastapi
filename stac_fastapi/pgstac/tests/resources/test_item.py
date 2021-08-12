@@ -687,7 +687,7 @@ async def test_item_search_get_filter_extension_cql(
     }
     resp = await app_client.post("/search", json=params)
     resp_json = resp.json()
-    print(resp_json)
+
     assert resp.status_code == 404
 
     params = {
@@ -701,7 +701,6 @@ async def test_item_search_get_filter_extension_cql(
     }
     resp = await app_client.post("/search", json=params)
     resp_json = resp.json()
-    print(resp_json)
     assert len(resp.json()["features"]) == 1
     assert (
         resp_json["features"][0]["properties"]["proj:epsg"]
