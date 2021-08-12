@@ -28,6 +28,10 @@ test-sqlalchemy:
 test-pgstac: pgstac-install
 	$(run_docker) /bin/bash -c 'export && cd /app/stac_fastapi/pgstac/tests/ && pytest'
 
+.PHONY: run-database
+run-database:
+	docker-compose run --rm database
+
 .PHONY: test
 test: test-sqlalchemy test-pgstac
 
