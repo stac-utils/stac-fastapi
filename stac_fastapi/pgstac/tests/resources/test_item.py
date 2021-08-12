@@ -689,7 +689,7 @@ async def test_get_missing_item_collection(app_client):
 
 @pytest.mark.asyncio
 async def test_get_item_from_missing_item_collection(app_client):
-    """Test reading a collection which does not exist"""
+    """Test reading an item from a collection which does not exist"""
     resp = await app_client.get("/collections/invalid-collection/items/some-item")
     assert resp.status_code == 404
 
