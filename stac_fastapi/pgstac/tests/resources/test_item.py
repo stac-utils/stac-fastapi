@@ -49,7 +49,7 @@ async def test_update_collection(app_client, load_test_data, load_test_collectio
 
 @pytest.mark.asyncio
 async def test_delete_collection(
-        app_client, load_test_data: Callable, load_test_collection
+    app_client, load_test_data: Callable, load_test_collection
 ):
     in_coll = load_test_collection
 
@@ -84,7 +84,7 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
 
 @pytest.mark.asyncio
 async def test_fetches_valid_item(
-        app_client, load_test_data: Callable, load_test_collection
+    app_client, load_test_data: Callable, load_test_collection
 ):
     coll = load_test_collection
 
@@ -113,7 +113,7 @@ async def test_fetches_valid_item(
 
 @pytest.mark.asyncio
 async def test_update_item(
-        app_client, load_test_data: Callable, load_test_collection, load_test_item
+    app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
     coll = load_test_collection
     item = load_test_item
@@ -133,7 +133,7 @@ async def test_update_item(
 
 @pytest.mark.asyncio
 async def test_delete_item(
-        app_client, load_test_data: Callable, load_test_collection, load_test_item
+    app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
     coll = load_test_collection
     item = load_test_item
@@ -170,7 +170,7 @@ async def test_get_collection_items(app_client, load_test_collection, load_test_
 
 @pytest.mark.asyncio
 async def test_create_item_conflict(
-        app_client, load_test_data: Callable, load_test_collection
+    app_client, load_test_data: Callable, load_test_collection
 ):
     pass
 
@@ -191,7 +191,7 @@ async def test_create_item_conflict(
 
 @pytest.mark.asyncio
 async def test_delete_missing_item(
-        app_client, load_test_data: Callable, load_test_collection, load_test_item
+    app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
     coll = load_test_collection
     item = load_test_item
@@ -207,7 +207,7 @@ async def test_delete_missing_item(
 
 @pytest.mark.asyncio
 async def test_create_item_missing_collection(
-        app_client, load_test_data: Callable, load_test_collection
+    app_client, load_test_data: Callable, load_test_collection
 ):
     coll = load_test_collection
     item = load_test_data("test_item.json")
@@ -219,7 +219,7 @@ async def test_create_item_missing_collection(
 
 @pytest.mark.asyncio
 async def test_update_new_item(
-        app_client, load_test_data: Callable, load_test_collection, load_test_item
+    app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
     coll = load_test_collection
     item = load_test_item
@@ -231,7 +231,7 @@ async def test_update_new_item(
 
 @pytest.mark.asyncio
 async def test_update_item_missing_collection(
-        app_client, load_test_data: Callable, load_test_collection, load_test_item
+    app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
     coll = load_test_collection
     item = load_test_item
@@ -354,7 +354,7 @@ async def test_item_search_by_id_no_results_post(app_client, load_test_data, loa
 
 @pytest.mark.asyncio
 async def test_item_search_spatial_query_post(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test POST search with spatial query (core)"""
     test_item = load_test_data("test_item.json")
@@ -375,7 +375,7 @@ async def test_item_search_spatial_query_post(
 
 @pytest.mark.asyncio
 async def test_item_search_temporal_query_post(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test POST search with single-tailed spatio-temporal query (core)"""
     test_item = load_test_data("test_item.json")
@@ -402,7 +402,7 @@ async def test_item_search_temporal_query_post(
 
 @pytest.mark.asyncio
 async def test_item_search_temporal_window_post(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test POST search with two-tailed spatio-temporal query (core)"""
     test_item = load_test_data("test_item.json")
@@ -427,7 +427,7 @@ async def test_item_search_temporal_window_post(
 
 @pytest.mark.asyncio
 async def test_item_search_temporal_open_window(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test POST search with open spatio-temporal query (core)"""
     test_item = load_test_data("test_item.json")
@@ -517,7 +517,7 @@ async def test_item_search_bbox_get(app_client, load_test_data, load_test_collec
 
 @pytest.mark.asyncio
 async def test_item_search_get_without_collections(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test GET search without specifying collections"""
     test_item = load_test_data("test_item.json")
@@ -537,7 +537,7 @@ async def test_item_search_get_without_collections(
 
 @pytest.mark.asyncio
 async def test_item_search_temporal_window_get(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test GET search with spatio-temporal query (core)"""
     test_item = load_test_data("test_item.json")
@@ -588,7 +588,7 @@ async def test_item_search_sort_get(app_client, load_test_data, load_test_collec
 
 @pytest.mark.asyncio
 async def test_item_search_post_without_collection(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test POST search without specifying a collection"""
     test_item = load_test_data("test_item.json")
@@ -608,7 +608,7 @@ async def test_item_search_post_without_collection(
 
 @pytest.mark.asyncio
 async def test_item_search_properties_jsonb(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test POST search with JSONB query (query extension)"""
     test_item = load_test_data("test_item.json")
@@ -628,7 +628,7 @@ async def test_item_search_properties_jsonb(
 
 @pytest.mark.asyncio
 async def test_item_search_properties_field(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test POST search indexed field with query (query extension)"""
     test_item = load_test_data("test_item.json")
@@ -647,7 +647,7 @@ async def test_item_search_properties_field(
 
 @pytest.mark.asyncio
 async def test_item_search_get_query_extension(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test GET search with JSONB query (query extension)"""
     test_item = load_test_data("test_item.json")
@@ -696,7 +696,7 @@ async def test_get_item_from_missing_item_collection(app_client):
 
 @pytest.mark.asyncio
 async def test_pagination_item_collection(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test item collection pagination links (paging extension)"""
     test_item = load_test_data("test_item.json")
@@ -785,7 +785,7 @@ async def test_pagination_post(app_client, load_test_data, load_test_collection)
 
 @pytest.mark.asyncio
 async def test_pagination_token_idempotent(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test that pagination tokens are idempotent (paging extension)"""
     test_item = load_test_data("test_item.json")
@@ -870,7 +870,7 @@ async def test_field_extension_post(app_client, load_test_data, load_test_collec
 
 @pytest.mark.asyncio
 async def test_field_extension_exclude_and_include(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test POST search including/excluding same field (fields extension)"""
     test_item = load_test_data("test_item.json")
@@ -893,7 +893,7 @@ async def test_field_extension_exclude_and_include(
 
 @pytest.mark.asyncio
 async def test_field_extension_exclude_default_includes(
-        app_client, load_test_data, load_test_collection
+    app_client, load_test_data, load_test_collection
 ):
     """Test POST search excluding a forbidden field (fields extension)"""
     test_item = load_test_data("test_item.json")
