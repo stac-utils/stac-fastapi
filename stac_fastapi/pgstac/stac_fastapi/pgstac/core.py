@@ -159,9 +159,8 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             An ItemCollection.
         """
-
         # If collection does not exist, NotFoundError wil be raised
-        collection = await self.get_collection(id, **kwargs)
+        await self.get_collection(id, **kwargs)
 
         req = PgstacSearch(collections=[id], limit=limit, token=token)
         item_collection = await self._search_base(req, **kwargs)
@@ -183,7 +182,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
             Item.
         """
         # If collection does not exist, NotFoundError wil be raised
-        collection = await self.get_collection(collection_id, **kwargs)
+        await self.get_collection(collection_id, **kwargs)
 
         req = PgstacSearch(ids=[item_id], limit=1)
         item_collection = await self._search_base(req, **kwargs)
