@@ -160,27 +160,16 @@ class CoreCrudClient(AsyncBaseCoreClient):
             An ItemCollection.
         """
 
-        # If collection doesn't exist, raise NotFoundError
-        request: Request = kwargs["request"]
-        pool = request.app.state.readpool
-        async with pool.acquire() as conn:
-            q, p = render(
-                """
-                SELECT * FROM get_collection(:id::text);
-                """,
-                id=id,
-            )
-            collection = await conn.fetchval(q, *p)
-        if collection is None:
-            raise NotFoundError(f"Collection {id} does not exist.")
+        # If collection does not exist, NotFoundError wil be raised
+        collection = await self.get_collection(id, **kwargs)
 
         req = PgstacSearch(collections=[id], limit=limit, token=token)
-        collection = await self._search_base(req, **kwargs)
+        item_collection = await self._search_base(req, **kwargs)
         links = await CollectionLinks(
             collection_id=id, request=kwargs["request"]
-        ).get_links(extra_links=collection["links"])
-        collection["links"] = links
-        return collection
+        ).get_links(extra_links=item_collection["links"])
+        item_collection["links"] = links
+        return item_collection
 
     async def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id.
@@ -193,12 +182,15 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             Item.
         """
-        req = PgstacSearch(ids=[item_id], limit=1)
-        collection = await self._search_base(req, **kwargs)
-        if not collection["features"]:
-            raise NotFoundError
+        # If collection does not exist, NotFoundError wil be raised
+        collection = await self.get_collection(collection_id, **kwargs)
 
-        return Item(**collection["features"][0])
+        req = PgstacSearch(ids=[item_id], limit=1)
+        item_collection = await self._search_base(req, **kwargs)
+        if not item_collection["features"]:
+            raise NotFoundError(f"Collection {collection_id} does not exist.")
+
+        return Item(**item_collection["features"][0])
 
     async def post_search(
         self, search_request: PgstacSearch, **kwargs
