@@ -339,7 +339,9 @@ async def test_item_search_by_id_post(app_client, load_test_data, load_test_coll
 
 
 @pytest.mark.asyncio
-async def test_item_search_by_id_no_results_post(app_client, load_test_data, load_test_collection):
+async def test_item_search_by_id_no_results_post(
+    app_client, load_test_data, load_test_collection
+):
     """Test POST search by item id (core) when there are no results"""
     test_item = load_test_data("test_item.json")
 
@@ -675,8 +677,8 @@ async def test_item_search_get_query_extension(
     resp_json = resp.json()
     assert len(resp.json()["features"]) == 1
     assert (
-            resp_json["features"][0]["properties"]["proj:epsg"]
-            == test_item["properties"]["proj:epsg"]
+        resp_json["features"][0]["properties"]["proj:epsg"]
+        == test_item["properties"]["proj:epsg"]
     )
 
 
