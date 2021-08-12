@@ -53,12 +53,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
     async def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id.
-
         Called with `GET /collections/{collectionId}`.
-
         Args:
             id: Id of the collection.
-
         Returns:
             Collection.
         """
@@ -75,7 +72,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
             )
             collection = await conn.fetchval(q, *p)
         if collection is None:
-            raise NotFoundError
+            raise NotFoundError(f"Collection {id} does not exist.")
         links = await CollectionLinks(collection_id=id, request=request).get_links()
         collection["links"] = links
         return Collection(**collection)
@@ -84,12 +81,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
         self, search_request: PgstacSearch, **kwargs: Any
     ) -> ItemCollection:
         """Cross catalog search (POST).
-
         Called with `POST /search`.
-
         Args:
             search_request: search request parameters.
-
         Returns:
             ItemCollection containing items which match the search criteria.
         """
@@ -113,8 +107,6 @@ class CoreCrudClient(AsyncBaseCoreClient):
         prev: Optional[str] = items.pop("prev", None)
         collection = ItemCollection(**items)
         cleaned_features: List[Item] = []
-        if collection["features"] is None or len(collection["features"]) == 0:
-            raise NotFoundError("No features found")
 
         for feature in collection["features"]:
             feature = Item(**feature)
@@ -150,50 +142,50 @@ class CoreCrudClient(AsyncBaseCoreClient):
         self, id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
         """Get all items from a specific collection.
-
         Called with `GET /collections/{collectionId}/items`
-
         Args:
             id: id of the collection.
             limit: number of items to return.
             token: pagination token.
-
         Returns:
             An ItemCollection.
         """
+        # If collection does not exist, NotFoundError wil be raised
+        await self.get_collection(id, **kwargs)
+
         req = PgstacSearch(collections=[id], limit=limit, token=token)
-        collection = await self._search_base(req, **kwargs)
+        item_collection = await self._search_base(req, **kwargs)
         links = await CollectionLinks(
             collection_id=id, request=kwargs["request"]
-        ).get_links(extra_links=collection["links"])
-        collection["links"] = links
-        return collection
+        ).get_links(extra_links=item_collection["links"])
+        item_collection["links"] = links
+        return item_collection
 
     async def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id.
-
         Called with `GET /collections/{collectionId}/items/{itemId}`.
-
         Args:
             id: Id of the item.
-
         Returns:
             Item.
         """
+        # If collection does not exist, NotFoundError wil be raised
+        await self.get_collection(collection_id, **kwargs)
+
         req = PgstacSearch(ids=[item_id], limit=1)
-        collection = await self._search_base(req, **kwargs)
-        return Item(**collection["features"][0])
+        item_collection = await self._search_base(req, **kwargs)
+        if not item_collection["features"]:
+            raise NotFoundError(f"Collection {collection_id} does not exist.")
+
+        return Item(**item_collection["features"][0])
 
     async def post_search(
         self, search_request: PgstacSearch, **kwargs
     ) -> ItemCollection:
         """Cross catalog search (POST).
-
         Called with `POST /search`.
-
         Args:
             search_request: search request parameters.
-
         Returns:
             ItemCollection containing items which match the search criteria.
         """
@@ -214,9 +206,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         **kwargs,
     ) -> ItemCollection:
         """Cross catalog search (GET).
-
         Called with `GET /search`.
-
         Returns:
             ItemCollection containing items which match the search criteria.
         """
