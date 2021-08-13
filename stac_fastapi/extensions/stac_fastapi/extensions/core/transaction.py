@@ -1,5 +1,5 @@
 """transaction extension."""
-from typing import Callable, Type, Union
+from typing import Callable, List, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -38,6 +38,7 @@ class TransactionExtension(ApiExtension):
     settings: ApiSettings = attr.ib()
     router: APIRouter = attr.ib(factory=APIRouter)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
+    conformance_classes: List[str] = attr.ib(default=list())
 
     def _create_endpoint(
         self,
