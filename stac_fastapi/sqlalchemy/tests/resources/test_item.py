@@ -764,11 +764,14 @@ def test_search_invalid_query_field(app_client):
 
 def test_conformance_classes_configurable():
     """Test conformance class configurability"""
-    landing = LandingPageMixin(conformance_classes=["this is a test"])
-    assert landing.conformance_classes[0] == "this is a test"
+    landing = LandingPageMixin()
+    landing_page = landing._landing_page(
+        base_url="http://test/test", conformance_classes=["this is a test"]
+    )
+    assert landing_page["conformsTo"][0] == "this is a test"
 
     # Update environment to avoid key error on client instantiation
     os.environ["READER_CONN_STRING"] = "testing"
     os.environ["WRITER_CONN_STRING"] = "testing"
-    client = CoreCrudClient(conformance_classes=["this is a test"])
-    assert client.conformance_classes[0] == "this is a test"
+    client = CoreCrudClient(base_conformance_classes=["this is a test"])
+    assert client.conformance_classes()[0] == "this is a test"

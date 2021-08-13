@@ -223,10 +223,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
 
 @attr.s
-class LandingPageMixin:
+class LandingPageMixin(abc.ABC):
     """Create a STAC landing page (GET /)."""
 
-    conformance_classes: List[str] = attr.ib()
     stac_version: str = attr.ib(default=STAC_VERSION)
     landing_page_id: str = attr.ib(default="stac-fastapi")
     title: str = attr.ib(default="stac-fastapi")
@@ -296,12 +295,6 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ]
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    conformance_classes: List[str] = attr.ib(
-        factory=lambda: [
-            "https://stacspec.org/STAC-api.html",
-            "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
-        ]
-    )
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base conformance classes."""
@@ -468,12 +461,6 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ]
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    conformance_classes: List[str] = attr.ib(
-        factory=lambda: [
-            "https://stacspec.org/STAC-api.html",
-            "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
-        ]
-    )
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base conformance classes."""
