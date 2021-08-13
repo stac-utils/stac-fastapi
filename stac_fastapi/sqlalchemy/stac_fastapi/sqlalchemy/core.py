@@ -26,7 +26,7 @@ from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Collection, Conformance, Item, ItemCollection
+from stac_fastapi.types.stac import Collection, Item, ItemCollection
 
 logger = logging.getLogger(__name__)
 
@@ -56,15 +56,6 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         if not row:
             raise NotFoundError(f"{table.__name__} {id} not found")
         return row
-
-    def conformance(self, **kwargs) -> Conformance:
-        """Conformance classes."""
-        return Conformance(
-            conformsTo=[
-                "https://stacspec.org/STAC-api.html",
-                "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
-            ]
-        )
 
     def all_collections(self, **kwargs) -> List[Collection]:
         """Read all collections from the database."""

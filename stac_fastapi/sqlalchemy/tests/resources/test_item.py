@@ -1,4 +1,5 @@
 import json
+import os
 import time
 import uuid
 from copy import deepcopy
@@ -10,6 +11,9 @@ import pystac
 from pydantic.datetime_parse import parse_datetime
 from shapely.geometry import Polygon
 from stac_pydantic.shared import DATETIME_RFC339
+
+from stac_fastapi.sqlalchemy.core import CoreCrudClient
+from stac_fastapi.types.core import LandingPageMixin
 
 
 def test_create_and_delete_item(app_client, load_test_data):
@@ -756,3 +760,18 @@ def test_search_invalid_query_field(app_client):
     body = {"query": {"gsd": {"lt": 100}, "invalid-field": {"eq": 50}}}
     resp = app_client.post("/search", json=body)
     assert resp.status_code == 400
+
+
+def test_conformance_classes_configurable():
+    """Test conformance class configurability"""
+    landing = LandingPageMixin()
+    landing_page = landing._landing_page(
+        base_url="http://test/test", conformance_classes=["this is a test"]
+    )
+    assert landing_page["conformsTo"][0] == "this is a test"
+
+    # Update environment to avoid key error on client instantiation
+    os.environ["READER_CONN_STRING"] = "testing"
+    os.environ["WRITER_CONN_STRING"] = "testing"
+    client = CoreCrudClient(base_conformance_classes=["this is a test"])
+    assert client.conformance_classes()[0] == "this is a test"

@@ -12,6 +12,7 @@ from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.stac import Conformance
 
 NumType = Union[float, int]
 StacType = Dict[str, Any]
@@ -222,23 +223,24 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
 
 @attr.s
-class LandingPageMixin:
+class LandingPageMixin(abc.ABC):
     """Create a STAC landing page (GET /)."""
 
-    conformance_classes: List[str] = attr.ib()
     stac_version: str = attr.ib(default=STAC_VERSION)
     landing_page_id: str = attr.ib(default="stac-fastapi")
     title: str = attr.ib(default="stac-fastapi")
     description: str = attr.ib(default="stac-fastapi")
 
-    def _landing_page(self, base_url: str) -> stac_types.LandingPage:
+    def _landing_page(
+        self, base_url: str, conformance_classes: List[str]
+    ) -> stac_types.LandingPage:
         landing_page = stac_types.LandingPage(
             type="Catalog",
             id=self.landing_page_id,
             title=self.title,
             description=self.description,
             stac_version=self.stac_version,
-            conformsTo=self.conformance_classes,
+            conformsTo=conformance_classes,
             links=[
                 {
                     "rel": Relations.self.value,
@@ -282,13 +284,27 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         extensions: list of registered api extensions.
     """
 
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    conformance_classes: List[str] = attr.ib(
+    base_conformance_classes: List[str] = attr.ib(
         factory=lambda: [
-            "https://stacspec.org/STAC-api.html",
-            "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
+            "https://api.stacspec.org/v1.0.0-beta.2/core",
+            "https://api.stacspec.org/v1.0.0-beta.2/ogcapi-features",
+            "https://api.stacspec.org/v1.0.0-beta.2/item-search",
+            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
+            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30",
+            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
         ]
     )
+    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
+
+    def conformance_classes(self) -> List[str]:
+        """Generate conformance classes by adding extension conformance to base conformance classes."""
+        base_conformance_classes = self.base_conformance_classes.copy()
+
+        for extension in self.extensions:
+            extension_classes = getattr(extension, "conformance_classes", [])
+            base_conformance_classes.extend(extension_classes)
+
+        return list(set(base_conformance_classes))
 
     def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
         """Check if an api extension is enabled."""
@@ -303,7 +319,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
             API landing page, serving as an entry point to the API.
         """
         base_url = str(kwargs["request"].base_url)
-        landing_page = self._landing_page(base_url=base_url)
+        landing_page = self._landing_page(
+            base_url=base_url, conformance_classes=self.conformance_classes()
+        )
         collections = self.all_collections(request=kwargs["request"])
         for collection in collections:
             landing_page["links"].append(
@@ -324,7 +342,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             Conformance classes which the server conforms to.
         """
-        stac_types.Conformance(conformsTo=self.conformance_classes)
+        return Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
     def post_search(
@@ -432,13 +450,27 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         extensions: list of registered api extensions.
     """
 
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    conformance_classes: List[str] = attr.ib(
+    base_conformance_classes: List[str] = attr.ib(
         factory=lambda: [
-            "https://stacspec.org/STAC-api.html",
-            "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
+            "https://api.stacspec.org/v1.0.0-beta.2/core",
+            "https://api.stacspec.org/v1.0.0-beta.2/ogcapi-features",
+            "https://api.stacspec.org/v1.0.0-beta.2/item-search",
+            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
+            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30",
+            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
         ]
     )
+    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
+
+    def conformance_classes(self) -> List[str]:
+        """Generate conformance classes by adding extension conformance to base conformance classes."""
+        conformance_classes = self.base_conformance_classes.copy()
+
+        for extension in self.extensions:
+            extension_classes = getattr(extension, "conformance_classes", [])
+            conformance_classes.extend(extension_classes)
+
+        return list(set(conformance_classes))
 
     def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
         """Check if an api extension is enabled."""
@@ -453,7 +485,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             API landing page, serving as an entry point to the API.
         """
         base_url = str(kwargs["request"].base_url)
-        landing_page = self._landing_page(base_url=base_url)
+        landing_page = self._landing_page(
+            base_url=base_url, conformance_classes=self.conformance_classes()
+        )
         collections = await self.all_collections(request=kwargs["request"])
         for collection in collections:
             landing_page["links"].append(
@@ -474,7 +508,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             Conformance classes which the server conforms to.
         """
-        stac_types.Conformance(conformsTo=self.conformance_classes)
+        return Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
     async def post_search(

@@ -1,6 +1,6 @@
 """bulk transactions extension."""
 import abc
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -60,6 +60,7 @@ class BulkTransactionExtension(ApiExtension):
     """
 
     client: BaseBulkTransactionsClient = attr.ib()
+    conformance_classes: List[str] = attr.ib(default=list())
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
