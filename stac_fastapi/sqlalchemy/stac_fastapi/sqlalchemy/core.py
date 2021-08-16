@@ -67,8 +67,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 for collection in collections
             ]
             collection_list = Collections(
-                collections=serialized_collections,
-                links={}
+                collections=serialized_collections or [], links={}
             )
             return collection_list
 

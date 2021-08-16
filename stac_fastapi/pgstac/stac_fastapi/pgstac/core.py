@@ -40,10 +40,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
                     collection_id=coll["id"], request=request
                 ).get_links()
                 linked_collections.append(coll)
-        collection_list = Collections(
-            collections=collections,
-            links={}
-        )
+        collection_list = Collections(collections=collections or [], links={})
         return collection_list
 
     async def get_collection(self, id: str, **kwargs) -> Collection:
