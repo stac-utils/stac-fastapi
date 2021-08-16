@@ -26,7 +26,7 @@ from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Collection, Item, ItemCollection
+from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 logger = logging.getLogger(__name__)
 
@@ -62,11 +62,15 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
-            response = [
+            serialized_collections = [
                 self.collection_serializer.db_to_stac(collection, base_url=base_url)
                 for collection in collections
             ]
-            return response
+            collection_list = Collections(
+                collections=serialized_collections,
+                links={}
+            )
+            return collection_list
 
     def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id."""

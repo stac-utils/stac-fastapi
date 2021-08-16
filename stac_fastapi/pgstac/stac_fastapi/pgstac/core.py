@@ -12,7 +12,7 @@ from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingL
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Collection, Item, ItemCollection
+from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 NumType = Union[float, int]
 
@@ -40,7 +40,11 @@ class CoreCrudClient(AsyncBaseCoreClient):
                     collection_id=coll["id"], request=request
                 ).get_links()
                 linked_collections.append(coll)
-        return linked_collections
+        collection_list = Collections(
+            collections=collections,
+            links={}
+        )
+        return collection_list
 
     async def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id.
