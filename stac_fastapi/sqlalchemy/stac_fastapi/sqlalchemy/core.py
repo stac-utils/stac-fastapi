@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime
 from typing import List, Optional, Set, Type, Union
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 
 import attr
 import geoalchemy2 as ga
@@ -15,6 +15,7 @@ from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic.links import Relations
+from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
@@ -66,8 +67,25 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 self.collection_serializer.db_to_stac(collection, base_url=base_url)
                 for collection in collections
             ]
+            links = [
+                {
+                    "rel": Relations.root.value,
+                    "type": MimeTypes.json,
+                    "href": base_url,
+                },
+                {
+                    "rel": Relations.parent.value,
+                    "type": MimeTypes.json,
+                    "href": base_url,
+                },
+                {
+                    "rel": Relations.self.value,
+                    "type": MimeTypes.json,
+                    "href": urljoin(base_url, "collections"),
+                },
+            ]
             collection_list = Collections(
-                collections=serialized_collections or [], links={}
+                collections=serialized_collections or [], links=links
             )
             return collection_list
 
