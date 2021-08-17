@@ -7,9 +7,9 @@ from urllib.parse import urlencode
 
 import attr
 import geoalchemy2 as ga
-from fastapi import HTTPException
 import sqlalchemy as sa
 import stac_pydantic
+from fastapi import HTTPException
 from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import shape
 from sqlakeyset import get_page
@@ -300,8 +300,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     if len(search_request.bbox) == 4:
                         poly = ShapelyPolygon.from_bounds(*search_request.bbox)
                     elif len(search_request.bbox) == 6:
-                        raise HTTPException(status_code=501, detail="Support for 3D bounding boxes is not yet implemented")
-
+                        raise HTTPException(
+                            status_code=501,
+                            detail="Support for 3D bounding boxes is not yet implemented",
+                        )
 
                 if poly:
                     filter_geom = ga.shape.from_shape(poly, srid=4326)

@@ -4,9 +4,9 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
 import attr
-from fastapi import HTTPException
 import orjson
 from buildpg import render
+from fastapi import HTTPException
 from starlette.requests import Request
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
@@ -190,7 +190,10 @@ class CoreCrudClient(AsyncBaseCoreClient):
             ItemCollection containing items which match the search criteria.
         """
         if search_request.bbox and len(search_request.bbox) == 6:
-            raise HTTPException(status_code=501, detail="Support for 3D bounding boxes is not yet implemented")
+            raise HTTPException(
+                status_code=501,
+                detail="Support for 3D bounding boxes is not yet implemented",
+            )
         item_collection = await self._search_base(search_request, **kwargs)
         return ItemCollection(**item_collection)
 

@@ -763,11 +763,11 @@ def test_search_invalid_query_field(app_client):
 
 
 def test_search_bbox_errors(app_client):
-    body = {"query": { "bbox": [0]}}
+    body = {"query": {"bbox": [0]}}
     resp = app_client.post("/search", json=body)
     assert resp.status_code == 400
 
-    body = {"query": { "bbox": [100.0, 0.0, 0.0, 105.0, 1.0, 1.0]}}
+    body = {"query": {"bbox": [100.0, 0.0, 0.0, 105.0, 1.0, 1.0]}}
     resp = app_client.post("/search", json=body)
     assert resp.status_code == 400
 
