@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 
 import attr
 import geoalchemy2 as ga
+from fastapi import HTTPException
 import sqlalchemy as sa
 import stac_pydantic
 from shapely.geometry import Polygon as ShapelyPolygon
@@ -207,7 +208,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             base_args["fields"] = {"include": includes, "exclude": excludes}
 
         # Do the request
-        search_request = SQLAlchemySTACSearch(**base_args)
+        try:
+            search_request = SQLAlchemySTACSearch(**base_args)
+        except:
+            raise HTTPException(status_code=400, detail="Invalid parameters provided")
         resp = self.post_search(search_request, request=kwargs["request"])
 
         # Pagination
@@ -293,7 +297,11 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 if search_request.intersects is not None:
                     poly = shape(search_request.intersects)
                 elif search_request.bbox:
-                    poly = ShapelyPolygon.from_bounds(*search_request.bbox)
+                    if len(search_request.bbox) == 4:
+                        poly = ShapelyPolygon.from_bounds(*search_request.bbox)
+                    elif len(search_request.bbox) == 6:
+                        raise HTTPException(status_code=501, detail="Support for 3D bounding boxes is not yet implemented")
+
 
                 if poly:
                     filter_geom = ga.shape.from_shape(poly, srid=4326)
