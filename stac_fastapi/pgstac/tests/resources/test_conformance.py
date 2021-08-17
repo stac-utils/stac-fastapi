@@ -39,9 +39,14 @@ async def test_search_link(response_json):
 
 @pytest.mark.asyncio
 async def test_conformance_link(response_json, app_client):
-    # Make sure conformance classes are linked
-    conf = get_link(response_json, "conformance")["href"]
-    resp = await app_client.get(conf)
+    conformance_link = get_link(response_json, "conformance")
+
+    assert conformance_link.get("type") == "application/json"
+
+    conformance_path = urllib.parse.urlsplit(conformance_link.get("href")).path
+    assert conformance_path == "/conformance"
+
+    resp = await app_client.get(conformance_path)
     assert resp.status_code == 200
 
 
