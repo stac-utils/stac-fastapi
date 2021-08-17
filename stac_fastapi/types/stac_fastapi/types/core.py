@@ -266,7 +266,7 @@ class LandingPageMixin(abc.ABC):
                 },
                 {
                     "rel": Relations.search.value,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.geojson,
                     "title": "STAC search",
                     "href": urljoin(base_url, "search"),
                 },
