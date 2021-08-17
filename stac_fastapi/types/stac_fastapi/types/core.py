@@ -248,6 +248,11 @@ class LandingPageMixin(abc.ABC):
                     "href": base_url,
                 },
                 {
+                    "rel": Relations.root.value,
+                    "type": MimeTypes.json,
+                    "href": base_url,
+                },
+                {
                     "rel": "data",
                     "type": MimeTypes.json,
                     "href": urljoin(base_url, "collections"),
