@@ -25,7 +25,13 @@ def test_landing_page_health(response):
     assert response.headers["content-type"] == "application/json"
 
 
+# Parameters for test_landing_page_links test below.
+# Each tuple has the following values (in this order):
+#  - Rel type of link to test
+#  - Expected MIME/Media Type
+#  - Expected relative path
 link_tests = [
+    ("root", "application/json", "/"),
     ("conformance", "application/json", "/conformance"),
     ("docs", "application/json", "/docs"),
     ("service-desc", "application/vnd.oai.openapi+json;version=3.0", "/openapi.json"),
