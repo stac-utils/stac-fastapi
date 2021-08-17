@@ -259,6 +259,12 @@ class LandingPageMixin(abc.ABC):
                     "href": urljoin(base_url, "docs"),
                 },
                 {
+                    "rel": "service-desc",
+                    "type": "application/vnd.oai.openapi+json;version=3.0",
+                    "title": "OpenAPI service description",
+                    "href": urljoin(base_url, "openapi.json"),
+                },
+                {
                     "rel": Relations.conformance.value,
                     "type": MimeTypes.json,
                     "title": "STAC/WFS3 conformance classes implemented by this server",
