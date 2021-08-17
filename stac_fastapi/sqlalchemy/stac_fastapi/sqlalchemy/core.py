@@ -10,6 +10,7 @@ import geoalchemy2 as ga
 import sqlalchemy as sa
 import stac_pydantic
 from fastapi import HTTPException
+from pydantic import ValidationError
 from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import shape
 from sqlakeyset import get_page
@@ -210,7 +211,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         # Do the request
         try:
             search_request = SQLAlchemySTACSearch(**base_args)
-        except:
+        except ValidationError:
             raise HTTPException(status_code=400, detail="Invalid parameters provided")
         resp = self.post_search(search_request, request=kwargs["request"])
 
