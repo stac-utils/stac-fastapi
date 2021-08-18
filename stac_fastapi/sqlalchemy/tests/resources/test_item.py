@@ -780,7 +780,9 @@ def test_conformance_classes_configurable():
     """Test conformance class configurability"""
     landing = LandingPageMixin()
     landing_page = landing._landing_page(
-        base_url="http://test/test", conformance_classes=["this is a test"]
+        base_url="http://test/test",
+        conformance_classes=["this is a test"],
+        extension_schemas=[],
     )
     assert landing_page["conformsTo"][0] == "this is a test"
 
