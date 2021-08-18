@@ -7,6 +7,8 @@ from urllib.parse import urljoin
 import attr
 import orjson
 from buildpg import render
+from fastapi import HTTPException
+from pydantic import ValidationError
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
@@ -272,5 +274,8 @@ class CoreCrudClient(AsyncBaseCoreClient):
             base_args["fields"] = {"include": includes, "exclude": excludes}
 
         # Do the request
-        search_request = PgstacSearch(**base_args)
+        try:
+            search_request = PgstacSearch(**base_args)
+        except ValidationError:
+            raise HTTPException(status_code=400, detail="Invalid parameters provided")
         return await self.post_search(search_request, request=kwargs["request"])

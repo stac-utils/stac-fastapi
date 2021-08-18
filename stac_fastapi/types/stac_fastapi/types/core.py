@@ -233,7 +233,10 @@ class LandingPageMixin(abc.ABC):
     description: str = attr.ib(default="stac-fastapi")
 
     def _landing_page(
-        self, base_url: str, conformance_classes: List[str]
+        self,
+        base_url: str,
+        conformance_classes: List[str],
+        extension_schemas: List[str],
     ) -> stac_types.LandingPage:
         landing_page = stac_types.LandingPage(
             type="Catalog",
@@ -277,7 +280,7 @@ class LandingPageMixin(abc.ABC):
                     "href": urljoin(base_url, "search"),
                 },
             ],
-            stac_extensions=[],
+            stac_extensions=extension_schemas,
         )
         return landing_page
 
@@ -326,8 +329,15 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         """
         request: Request = kwargs["request"]
         base_url = str(request.base_url)
+        extension_schemas = [
+            schema.schema_href for schema in self.extensions if schema.schema_href
+        ]
+        request: Request = kwargs["request"]
+        base_url = str(request.base_url)
         landing_page = self._landing_page(
-            base_url=base_url, conformance_classes=self.conformance_classes()
+            base_url=base_url,
+            conformance_classes=self.conformance_classes(),
+            extension_schemas=extension_schemas,
         )
 
         # Add Collections links
@@ -505,8 +515,13 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         """
         request: Request = kwargs["request"]
         base_url = str(request.base_url)
+        extension_schemas = [
+            schema.schema_href for schema in self.extensions if schema.schema_href
+        ]
         landing_page = self._landing_page(
-            base_url=base_url, conformance_classes=self.conformance_classes()
+            base_url=base_url,
+            conformance_classes=self.conformance_classes(),
+            extension_schemas=extension_schemas,
         )
         collections = await self.all_collections(request=kwargs["request"])
         for collection in collections["collections"]:
