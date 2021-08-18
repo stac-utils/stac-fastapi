@@ -111,7 +111,7 @@ async def app(api_client):
 
 
 @pytest.mark.asyncio
-@pytest.fixture()
+@pytest.fixture(scope="session")
 async def app_client(app):
     async with AsyncClient(app=app, base_url="http://test") as c:
         yield c

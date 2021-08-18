@@ -62,7 +62,11 @@ class StacApi:
     exceptions: Dict[Type[Exception], int] = attr.ib(
         default=attr.Factory(lambda: DEFAULT_STATUS_CODES)
     )
-    app: FastAPI = attr.ib(default=attr.Factory(FastAPI))
+    app: FastAPI = attr.ib(
+        default=attr.Factory(
+            lambda self: FastAPI(openapi_url=self.settings.openapi_url), takes_self=True
+        )
+    )
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
     title: str = attr.ib(default="stac-fastapi")
     api_version: str = attr.ib(default="0.1")
