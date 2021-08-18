@@ -38,18 +38,24 @@ packages:
 ## Installation
 
 ```bash
-pip install stac-fastapi
+# Install from pypi.org
+pip install stac-fastapi.api stac-fastapi.types stac-fastapi.extensions
 
-# or from sources
+# Install a backend of your choice
+pip stac-fastapi.sqlalchemy
+# or
+pip stac-fastapi.pgstac
 
-git clone https://github.com/stac-utils/stac-fastapi.git
-cd stac-fastapi
-pip install -e \
-    stac_fastapi/api \
-    stac_fastapi/types \
-    stac_fastapi/extensions
+#/////////////////////
+# Install from sources
 
-# Install a backend
+git clone https://github.com/stac-utils/stac-fastapi.git && cd stac-fastapi
+pip install \
+  -e stac_fastapi/api \
+  -e stac_fastapi/types \
+  -e stac_fastapi/extensions
+
+# Install a backend of your choice
 pip install -e stac_fastapi/sqlalchemy
 # or
 pip install -e stac_fastapi/pgstac
