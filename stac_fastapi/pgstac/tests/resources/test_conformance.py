@@ -34,7 +34,7 @@ link_tests = [
     ("root", "application/json", "/"),
     ("conformance", "application/json", "/conformance"),
     ("docs", "application/json", "/docs"),
-    ("service-desc", "application/vnd.oai.openapi+json;version=3.0", "/openapi.json"),
+    ("service-desc", "application/vnd.oai.openapi+json;version=3.0", "/api"),
 ]
 
 
