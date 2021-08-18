@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime
 from typing import List, Optional, Set, Type, Union
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 
 import attr
 import geoalchemy2 as ga
@@ -17,6 +17,7 @@ from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic.links import Relations
+from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.sqlalchemy import serializers
@@ -27,7 +28,7 @@ from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Collection, Item, ItemCollection
+from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 logger = logging.getLogger(__name__)
 
@@ -58,16 +59,36 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             raise NotFoundError(f"{table.__name__} {id} not found")
         return row
 
-    def all_collections(self, **kwargs) -> List[Collection]:
+    def all_collections(self, **kwargs) -> Collections:
         """Read all collections from the database."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
-            response = [
+            serialized_collections = [
                 self.collection_serializer.db_to_stac(collection, base_url=base_url)
                 for collection in collections
             ]
-            return response
+            links = [
+                {
+                    "rel": Relations.root.value,
+                    "type": MimeTypes.json,
+                    "href": base_url,
+                },
+                {
+                    "rel": Relations.parent.value,
+                    "type": MimeTypes.json,
+                    "href": base_url,
+                },
+                {
+                    "rel": Relations.self.value,
+                    "type": MimeTypes.json,
+                    "href": urljoin(base_url, "collections"),
+                },
+            ]
+            collection_list = Collections(
+                collections=serialized_collections or [], links=links
+            )
+            return collection_list
 
     def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id."""

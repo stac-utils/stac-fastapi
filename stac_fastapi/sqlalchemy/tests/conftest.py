@@ -40,7 +40,7 @@ Settings.set(settings)
 def cleanup(postgres_core: CoreCrudClient, postgres_transactions: TransactionsClient):
     yield
     collections = postgres_core.all_collections(request=MockStarletteRequest)
-    for coll in collections:
+    for coll in collections["collections"]:
         if coll["id"].split("-")[0] == "test":
             # Delete the items
             items = postgres_core.item_collection(

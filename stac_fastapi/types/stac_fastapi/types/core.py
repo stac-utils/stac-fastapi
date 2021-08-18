@@ -358,7 +358,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
         # Add Collections links
         collections = self.all_collections(request=kwargs["request"])
-        for collection in collections:
+        for collection in collections["collections"]:
             landing_page["links"].append(
                 {
                     "rel": Relations.child.value,
@@ -444,7 +444,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def all_collections(self, **kwargs) -> List[stac_types.Collection]:
+    def all_collections(self, **kwargs) -> stac_types.Collections:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -540,12 +540,12 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             extension_schemas=extension_schemas,
         )
         collections = await self.all_collections(request=kwargs["request"])
-        for collection in collections:
+        for collection in collections["collections"]:
             landing_page["links"].append(
                 {
                     "rel": Relations.child.value,
                     "type": MimeTypes.json.value,
-                    "title": collection.get("title"),
+                    "title": collection.get("title") or collection.get("id"),
                     "href": urljoin(base_url, f"collections/{collection['id']}"),
                 }
             )
@@ -629,7 +629,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def all_collections(self, **kwargs) -> List[stac_types.Collection]:
+    async def all_collections(self, **kwargs) -> stac_types.Collections:
         """Get all available collections.
 
         Called with `GET /collections`.
