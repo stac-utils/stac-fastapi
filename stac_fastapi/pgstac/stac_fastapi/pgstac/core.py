@@ -2,19 +2,22 @@
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
+from urllib.parse import urljoin
 
 import attr
 import orjson
 from buildpg import render
 from fastapi import HTTPException
 from pydantic import ValidationError
+from stac_pydantic.links import Relations
+from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Collection, Item, ItemCollection
+from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 NumType = Union[float, int]
 
@@ -23,9 +26,10 @@ NumType = Union[float, int]
 class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
 
-    async def all_collections(self, **kwargs) -> List[Collection]:
+    async def all_collections(self, **kwargs) -> Collections:
         """Read all collections from the database."""
         request: Request = kwargs["request"]
+        base_url = str(request.base_url)
         pool = request.app.state.readpool
 
         async with pool.acquire() as conn:
@@ -42,7 +46,25 @@ class CoreCrudClient(AsyncBaseCoreClient):
                     collection_id=coll["id"], request=request
                 ).get_links()
                 linked_collections.append(coll)
-        return linked_collections
+        links = [
+            {
+                "rel": Relations.root.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.parent.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.self.value,
+                "type": MimeTypes.json,
+                "href": urljoin(base_url, "collections"),
+            },
+        ]
+        collection_list = Collections(collections=collections or [], links=links)
+        return collection_list
 
     async def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id.
