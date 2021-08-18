@@ -22,9 +22,17 @@ image:
 docker-run: image
 	$(run_docker)
 
+.PHONY: docker-run-pgstac
+docker-run-pgstac: image
+	$(run_pgstac)
+
 .PHONY: docker-shell
 docker-shell:
 	$(run_docker) /bin/bash
+
+.PHONY: docker-shell-pgstac
+docker-shell-pgstac:
+	$(run_pgstac) /bin/bash
 
 .PHONY: test-sqlalchemy
 test-sqlalchemy: run-joplin-sqlalchemy
