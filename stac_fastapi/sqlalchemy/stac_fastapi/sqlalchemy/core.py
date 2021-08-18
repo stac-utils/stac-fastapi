@@ -20,7 +20,6 @@ from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 
-from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
 from stac_fastapi.sqlalchemy import serializers
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
@@ -111,7 +110,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 .order_by(self.item_table.datetime.desc(), self.item_table.id)
             )
             count = None
-            if self.extension_is_enabled(ContextExtension):
+            if self.extension_is_enabled("ContextExtension"):
                 count_query = collection_children.statement.with_only_columns(
                     [func.count()]
                 ).order_by(None)
@@ -157,7 +156,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 )
 
             context_obj = None
-            if self.extension_is_enabled(ContextExtension):
+            if self.extension_is_enabled("ContextExtension"):
                 context_obj = {
                     "returned": len(page),
                     "limit": limit,
@@ -300,7 +299,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 )
                 items = query.filter(id_filter).order_by(self.item_table.id)
                 page = get_page(items, per_page=search_request.limit, page=token)
-                if self.extension_is_enabled(ContextExtension):
+                if self.extension_is_enabled("ContextExtension"):
                     count = len(search_request.ids)
                 page.next = (
                     self.insert_token(keyset=page.paging.bookmark_next)
@@ -357,7 +356,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                         for (op, value) in expr.items():
                             query = query.filter(op.operator(field, value))
 
-                if self.extension_is_enabled(ContextExtension):
+                if self.extension_is_enabled("ContextExtension"):
                     count_query = query.statement.with_only_columns(
                         [func.count()]
                     ).order_by(None)
@@ -400,13 +399,15 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 )
 
             response_features = []
+            filter_kwargs = {}
+
             for item in page:
                 response_features.append(
                     self.item_serializer.db_to_stac(item, base_url=base_url)
                 )
 
             # Use pydantic includes/excludes syntax to implement fields extension
-            if self.extension_is_enabled(FieldsExtension):
+            if self.extension_is_enabled("FieldsExtension"):
                 if search_request.query is not None:
                     query_include: Set[str] = set(
                         [
@@ -430,7 +431,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 ]
 
         context_obj = None
-        if self.extension_is_enabled(ContextExtension):
+        if self.extension_is_enabled("ContextExtension"):
             context_obj = {
                 "returned": len(page),
                 "limit": search_request.limit,

@@ -12,6 +12,7 @@ class ApiExtensions(enum.Enum):
 
     context = "context"
     fields = "fields"
+    filter = "filter"
     query = "query"
     sort = "sort"
     transaction = "transaction"
