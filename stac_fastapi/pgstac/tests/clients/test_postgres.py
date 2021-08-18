@@ -80,7 +80,7 @@ async def test_update_item(app_client, load_test_collection, load_test_item):
 
     item.properties.description = "Update Test"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
+    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
@@ -113,7 +113,7 @@ async def test_get_collection_items(app_client, load_test_collection, load_test_
         item.id = str(uuid.uuid4())
         resp = await app_client.post(
             f"/collections/{coll.id}/items",
-            data=item.json(),
+            content=item.json(),
         )
         assert resp.status_code == 200
 
