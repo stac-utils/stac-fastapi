@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Type, Union
 from urllib.parse import urljoin
 
 import attr
+from fastapi import Request
 from stac_pydantic.api import Search
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
@@ -251,6 +252,11 @@ class LandingPageMixin(abc.ABC):
                     "href": base_url,
                 },
                 {
+                    "rel": Relations.root.value,
+                    "type": MimeTypes.json,
+                    "href": base_url,
+                },
+                {
                     "rel": "data",
                     "type": MimeTypes.json,
                     "href": urljoin(base_url, "collections"),
@@ -269,7 +275,7 @@ class LandingPageMixin(abc.ABC):
                 },
                 {
                     "rel": Relations.search.value,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.geojson,
                     "title": "STAC search",
                     "href": urljoin(base_url, "search"),
                 },
@@ -321,15 +327,20 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             API landing page, serving as an entry point to the API.
         """
-        base_url = str(kwargs["request"].base_url)
+        request: Request = kwargs["request"]
+        base_url = str(request.base_url)
         extension_schemas = [
             schema.schema_href for schema in self.extensions if schema.schema_href
         ]
+        request: Request = kwargs["request"]
+        base_url = str(request.base_url)
         landing_page = self._landing_page(
             base_url=base_url,
             conformance_classes=self.conformance_classes(),
             extension_schemas=extension_schemas,
         )
+
+        # Add Collections links
         collections = self.all_collections(request=kwargs["request"])
         for collection in collections:
             landing_page["links"].append(
@@ -340,6 +351,16 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                     "href": urljoin(base_url, f"collections/{collection['id']}"),
                 }
             )
+
+        # Add OpenAPI URL
+        landing_page["links"].append(
+            {
+                "rel": "service-desc",
+                "type": "application/vnd.oai.openapi+json;version=3.0",
+                "title": "OpenAPI service description",
+                "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
+            }
+        )
         return landing_page
 
     def conformance(self, **kwargs) -> stac_types.Conformance:
@@ -492,7 +513,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             API landing page, serving as an entry point to the API.
         """
-        base_url = str(kwargs["request"].base_url)
+        request: Request = kwargs["request"]
+        base_url = str(request.base_url)
         extension_schemas = [
             schema.schema_href for schema in self.extensions if schema.schema_href
         ]
@@ -511,6 +533,17 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                     "href": urljoin(base_url, f"collections/{collection['id']}"),
                 }
             )
+
+        # Add OpenAPI URL
+        landing_page["links"].append(
+            {
+                "rel": "service-desc",
+                "type": "application/vnd.oai.openapi+json;version=3.0",
+                "title": "OpenAPI service description",
+                "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
+            }
+        )
+
         return landing_page
 
     async def conformance(self, **kwargs) -> stac_types.Conformance:

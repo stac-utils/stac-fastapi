@@ -42,6 +42,10 @@ run-database:
 run-joplin-sqlalchemy:
 	docker-compose run --rm loadjoplin-sqlalchemy
 
+.PHONY: run-joplin-sqlalchemy
+run-joplin-sqlalchemy:
+	docker-compose run --rm loadjoplin-sqlalchemy
+
 .PHONY: test
 test: test-sqlalchemy test-pgstac
 
