@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Optional, Union
 import attr
 import orjson
 from buildpg import render
+from fastapi import HTTPException
+from pydantic import ValidationError
 from starlette.requests import Request
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
@@ -250,5 +252,8 @@ class CoreCrudClient(AsyncBaseCoreClient):
             base_args["fields"] = {"include": includes, "exclude": excludes}
 
         # Do the request
-        search_request = PgstacSearch(**base_args)
+        try:
+            search_request = PgstacSearch(**base_args)
+        except ValidationError:
+            raise HTTPException(status_code=400, detail="Invalid parameters provided")
         return await self.post_search(search_request, request=kwargs["request"])

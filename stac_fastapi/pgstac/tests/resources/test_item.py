@@ -120,7 +120,7 @@ async def test_update_item(
 
     item.properties.description = "Update Test"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
+    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
@@ -155,7 +155,7 @@ async def test_get_collection_items(app_client, load_test_collection, load_test_
         item.id = str(uuid.uuid4())
         resp = await app_client.post(
             f"/collections/{coll.id}/items",
-            data=item.json(),
+            content=item.json(),
         )
         assert resp.status_code == 200
 
@@ -225,7 +225,7 @@ async def test_update_new_item(
     item = load_test_item
     item.id = "test-updatenewitem"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
+    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
     assert resp.status_code == 404
 
 
@@ -237,7 +237,7 @@ async def test_update_item_missing_collection(
     item = load_test_item
     item.collection = None
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
+    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
     assert resp.status_code == 424
 
 
@@ -928,3 +928,18 @@ async def test_relative_link_construction():
     )
     links = CollectionLinks(collection_id="naip", request=req)
     assert links.link_items()["href"] == "http://test/stac/collections/naip/items"
+
+
+@pytest.mark.asyncio
+async def test_search_bbox_errors(app_client):
+    body = {"query": {"bbox": [0]}}
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 400
+
+    body = {"query": {"bbox": [100.0, 0.0, 0.0, 105.0, 1.0, 1.0]}}
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 400
+
+    params = {"bbox": "100.0,0.0,0.0,105.0"}
+    resp = await app_client.get("/search", params=params)
+    assert resp.status_code == 400

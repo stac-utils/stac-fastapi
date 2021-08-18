@@ -6,6 +6,7 @@ import pytest
 from stac_pydantic import Collection, Item
 from tests.conftest import MockStarletteRequest
 
+from stac_fastapi.api.app import StacApi
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
 from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
@@ -256,12 +257,16 @@ def test_landing_page_no_collection_title(
     postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
+    api_client: StacApi,
 ):
+    class MockStarletteRequestWithApp(MockStarletteRequest):
+        app = api_client.app
+
     coll = load_test_data("test_collection.json")
     del coll["title"]
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    landing_page = postgres_core.landing_page(request=MockStarletteRequest)
+    landing_page = postgres_core.landing_page(request=MockStarletteRequestWithApp)
     for link in landing_page["links"]:
         if link["href"].split("/")[-1] == coll["id"]:
             assert not link["title"]
