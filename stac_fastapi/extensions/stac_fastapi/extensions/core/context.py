@@ -1,5 +1,5 @@
 """context extension."""
-from typing import List
+from typing import List, Optional
 
 import attr
 from fastapi import FastAPI
@@ -18,7 +18,10 @@ class ContextExtension(ApiExtension):
     """
 
     conformance_classes: List[str] = attr.ib(
-        default=["https://api.stacspec.org/v1.0.0-beta.2/item-search#context"]
+        factory=lambda: ["https://api.stacspec.org/v1.0.0-beta.3/item-search/#context"]
+    )
+    schema_href: Optional[str] = attr.ib(
+        default="https://raw.githubusercontent.com/radiantearth/stac-api-spec/v1.0.0-beta.3/fragments/context/json-schema/schema.json"
     )
 
     def register(self, app: FastAPI) -> None:
