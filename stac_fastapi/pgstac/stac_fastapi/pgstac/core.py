@@ -190,11 +190,6 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             ItemCollection containing items which match the search criteria.
         """
-        if search_request.bbox and len(search_request.bbox) == 6:
-            raise HTTPException(
-                status_code=501,
-                detail="Support for 3D bounding boxes is not yet implemented",
-            )
         item_collection = await self._search_base(search_request, **kwargs)
         return ItemCollection(**item_collection)
 

@@ -301,10 +301,14 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     if len(search_request.bbox) == 4:
                         poly = ShapelyPolygon.from_bounds(*search_request.bbox)
                     elif len(search_request.bbox) == 6:
-                        raise HTTPException(
-                            status_code=501,
-                            detail="Support for 3D bounding boxes is not yet implemented",
-                        )
+                        """Shapely doesn't support 3d bounding boxes we'll just use the 2d portion"""
+                        bbox_2d = [
+                            search_request.bbox[0],
+                            search_request.bbox[1],
+                            search_request.bbox[3],
+                            search_request.bbox[4],
+                        ]
+                        poly = ShapelyPolygon.from_bounds(*bbox_2d)
 
                 if poly:
                     filter_geom = ga.shape.from_shape(poly, srid=4326)
