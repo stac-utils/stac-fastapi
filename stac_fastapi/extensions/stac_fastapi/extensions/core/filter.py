@@ -9,7 +9,7 @@ from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.models import APIRequest, CollectionUri, EmptyRequest
 from stac_fastapi.api.routes import create_sync_endpoint
-from stac_fastapi.types.core import BaseFiltersClient
+from stac_fastapi.types.core import AsyncBaseFiltersClient, BaseFiltersClient
 from stac_fastapi.types.extension import ApiExtension
 
 
@@ -30,7 +30,9 @@ class FilterExtension(ApiExtension):
 
     """
 
-    client: Union[BaseFiltersClient] = attr.ib()
+    client: Union[AsyncBaseFiltersClient, BaseFiltersClient] = attr.ib(
+        factory=BaseFiltersClient
+    )
     conformance_classes: List[str] = attr.ib(
         default=[
             "https://api.stacspec.org/v1.0.0-beta.2/item-search#filter",
