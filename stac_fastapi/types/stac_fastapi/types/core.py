@@ -1,7 +1,7 @@
 """Base clients."""
 import abc
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
@@ -323,9 +323,25 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
         return list(set(base_conformance_classes))
 
-    def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
+    def extension_is_enabled(self, extension: str) -> bool:
         """Check if an api extension is enabled."""
-        return any([isinstance(ext, extension) for ext in self.extensions])
+        return any([type(ext).__name__ == extension for ext in self.extensions])
+
+    def list_conformance_classes(self):
+        """Return a list of conformance classes, including implemented extensions."""
+        base_conformance = [
+            "https://api.stacspec.org/v1.0.0-beta.2/core",
+            "https://api.stacspec.org/v1.0.0-beta.2/item-search",
+            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
+            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30",
+            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
+        ]
+
+        for extension in self.extensions:
+            extension_classes = getattr(extension, "conformance_classes", [])
+            base_conformance.extend(extension_classes)
+
+        return base_conformance
 
     def landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
@@ -350,7 +366,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
         # Add Collections links
         collections = self.all_collections(request=kwargs["request"])
-        for collection in collections:
+        for collection in collections["collections"]:
             landing_page["links"].append(
                 {
                     "rel": Relations.child.value,
@@ -436,7 +452,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def all_collections(self, **kwargs) -> List[stac_types.Collection]:
+    def all_collections(self, **kwargs) -> stac_types.Collections:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -509,9 +525,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
 
         return list(set(conformance_classes))
 
-    def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
+    def extension_is_enabled(self, extension: str) -> bool:
         """Check if an api extension is enabled."""
-        return any([isinstance(ext, extension) for ext in self.extensions])
+        return any([type(ext).__name__ == extension for ext in self.extensions])
 
     async def landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
@@ -532,12 +548,12 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             extension_schemas=extension_schemas,
         )
         collections = await self.all_collections(request=kwargs["request"])
-        for collection in collections:
+        for collection in collections["collections"]:
             landing_page["links"].append(
                 {
                     "rel": Relations.child.value,
                     "type": MimeTypes.json.value,
-                    "title": collection.get("title"),
+                    "title": collection.get("title") or collection.get("id"),
                     "href": urljoin(base_url, f"collections/{collection['id']}"),
                 }
             )
@@ -621,7 +637,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def all_collections(self, **kwargs) -> List[stac_types.Collection]:
+    async def all_collections(self, **kwargs) -> stac_types.Collections:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -664,3 +680,57 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             An ItemCollection.
         """
         ...
+
+
+@attr.s
+class AsyncBaseFiltersClient(abc.ABC):
+    """Defines a pattern for implementing the STAC filter extension."""
+
+    async def get_queryables(
+        self, collection_id: Optional[str] = None, **kwargs
+    ) -> Dict[str, Any]:
+        """Get the queryables available for the given collection_id.
+
+        If collection_id is None, returns the intersection of all
+        queryables over all collections.
+
+        This base implementation returns a blank queryable schema. This is not allowed
+        under OGC CQL but it is allowed by the STAC API Filter Extension
+
+        https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
+        """
+        return {
+            "$schema": "https://json-schema.org/draft/2019-09/schema",
+            "$id": "https://example.org/queryables",
+            "type": "object",
+            "title": "Queryables for Example STAC API",
+            "description": "Queryable names for the example STAC API Item Search filter.",
+            "properties": {},
+        }
+
+
+@attr.s
+class BaseFiltersClient(abc.ABC):
+    """Defines a pattern for implementing the STAC filter extension."""
+
+    def get_queryables(
+        self, collection_id: Optional[str] = None, **kwargs
+    ) -> Dict[str, Any]:
+        """Get the queryables available for the given collection_id.
+
+        If collection_id is None, returns the intersection of all
+        queryables over all collections.
+
+        This base implementation returns a blank queryable schema. This is not allowed
+        under OGC CQL but it is allowed by the STAC API Filter Extension
+
+        https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
+        """
+        return {
+            "$schema": "https://json-schema.org/draft/2019-09/schema",
+            "$id": "https://example.org/queryables",
+            "type": "object",
+            "title": "Queryables for Example STAC API",
+            "description": "Queryable names for the example STAC API Item Search filter.",
+            "properties": {},
+        }

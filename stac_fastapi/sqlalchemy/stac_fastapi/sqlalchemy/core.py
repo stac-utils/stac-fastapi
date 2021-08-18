@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime
 from typing import List, Optional, Set, Type, Union
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 
 import attr
 import geoalchemy2 as ga
@@ -17,9 +17,9 @@ from sqlakeyset import get_page
 from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic.links import Relations
+from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 
-from stac_fastapi.extensions.core import ContextExtension, FieldsExtension
 from stac_fastapi.sqlalchemy import serializers
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
@@ -28,7 +28,7 @@ from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Collection, Item, ItemCollection
+from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 logger = logging.getLogger(__name__)
 
@@ -59,16 +59,36 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             raise NotFoundError(f"{table.__name__} {id} not found")
         return row
 
-    def all_collections(self, **kwargs) -> List[Collection]:
+    def all_collections(self, **kwargs) -> Collections:
         """Read all collections from the database."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
-            response = [
+            serialized_collections = [
                 self.collection_serializer.db_to_stac(collection, base_url=base_url)
                 for collection in collections
             ]
-            return response
+            links = [
+                {
+                    "rel": Relations.root.value,
+                    "type": MimeTypes.json,
+                    "href": base_url,
+                },
+                {
+                    "rel": Relations.parent.value,
+                    "type": MimeTypes.json,
+                    "href": base_url,
+                },
+                {
+                    "rel": Relations.self.value,
+                    "type": MimeTypes.json,
+                    "href": urljoin(base_url, "collections"),
+                },
+            ]
+            collection_list = Collections(
+                collections=serialized_collections or [], links=links
+            )
+            return collection_list
 
     def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id."""
@@ -90,7 +110,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 .order_by(self.item_table.datetime.desc(), self.item_table.id)
             )
             count = None
-            if self.extension_is_enabled(ContextExtension):
+            if self.extension_is_enabled("ContextExtension"):
                 count_query = collection_children.statement.with_only_columns(
                     [func.count()]
                 ).order_by(None)
@@ -136,7 +156,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 )
 
             context_obj = None
-            if self.extension_is_enabled(ContextExtension):
+            if self.extension_is_enabled("ContextExtension"):
                 context_obj = {
                     "returned": len(page),
                     "limit": limit,
@@ -279,7 +299,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 )
                 items = query.filter(id_filter).order_by(self.item_table.id)
                 page = get_page(items, per_page=search_request.limit, page=token)
-                if self.extension_is_enabled(ContextExtension):
+                if self.extension_is_enabled("ContextExtension"):
                     count = len(search_request.ids)
                 page.next = (
                     self.insert_token(keyset=page.paging.bookmark_next)
@@ -336,7 +356,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                         for (op, value) in expr.items():
                             query = query.filter(op.operator(field, value))
 
-                if self.extension_is_enabled(ContextExtension):
+                if self.extension_is_enabled("ContextExtension"):
                     count_query = query.statement.with_only_columns(
                         [func.count()]
                     ).order_by(None)
@@ -379,13 +399,15 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 )
 
             response_features = []
+            filter_kwargs = {}
+
             for item in page:
                 response_features.append(
                     self.item_serializer.db_to_stac(item, base_url=base_url)
                 )
 
             # Use pydantic includes/excludes syntax to implement fields extension
-            if self.extension_is_enabled(FieldsExtension):
+            if self.extension_is_enabled("FieldsExtension"):
                 if search_request.query is not None:
                     query_include: Set[str] = set(
                         [
@@ -409,7 +431,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 ]
 
         context_obj = None
-        if self.extension_is_enabled(ContextExtension):
+        if self.extension_is_enabled("ContextExtension"):
             context_obj = {
                 "returned": len(page),
                 "limit": search_request.limit,

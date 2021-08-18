@@ -20,6 +20,7 @@ class FieldsExtension(ApiExtension):
 
     Attributes:
         default_includes (set): defines the default set of included fields.
+        conformance_classes (list): Defines the list of conformance classes for the extension
 
     """
 
@@ -28,17 +29,19 @@ class FieldsExtension(ApiExtension):
     )
     schema_href: Optional[str] = attr.ib(default=None)
     default_includes: Set[str] = attr.ib(
-        default=attr.Factory(
-            lambda: {
-                "id",
-                "type",
-                "geometry",
-                "bbox",
-                "links",
-                "assets",
-                "properties.datetime",
-            }
-        )
+        factory=lambda: {
+            "id",
+            "type",
+            "geometry",
+            "bbox",
+            "links",
+            "assets",
+            "properties.datetime",
+        }
+    )
+
+    conformance_classes: List[str] = attr.ib(
+        default=["https://api.stacspec.org/v1.0.0-beta.2/item-search#fields"]
     )
 
     def register(self, app: FastAPI) -> None:

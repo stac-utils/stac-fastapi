@@ -70,3 +70,13 @@ class ItemCollection(TypedDict, total=False):
     features: List[Item]
     links: List[Dict[str, Any]]
     context: Optional[Dict[str, int]]
+
+
+class Collections(TypedDict, total=False):
+    """All collections endpoint.
+
+    https://github.com/radiantearth/stac-api-spec/tree/master/collections
+    """
+
+    collections: List[Collection]
+    links: List[Dict[str, Any]]
