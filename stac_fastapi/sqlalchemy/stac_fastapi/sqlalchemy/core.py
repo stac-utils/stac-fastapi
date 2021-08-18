@@ -58,7 +58,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             raise NotFoundError(f"{table.__name__} {id} not found")
         return row
 
-    def all_collections(self, **kwargs) -> List[Collection]:
+    def all_collections(self, **kwargs) -> Collections:
         """Read all collections from the database."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:

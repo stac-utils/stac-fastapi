@@ -24,7 +24,7 @@ NumType = Union[float, int]
 class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
 
-    async def all_collections(self, **kwargs) -> List[Collection]:
+    async def all_collections(self, **kwargs) -> Collections:
         """Read all collections from the database."""
         request: Request = kwargs["request"]
         base_url = str(request.base_url)
