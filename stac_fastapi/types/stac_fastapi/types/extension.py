@@ -10,7 +10,7 @@ from fastapi import FastAPI
 class ApiExtension(abc.ABC):
     """Abstract base class for defining API extensions."""
 
-    conformance_classes: List[str] = attr.ib()
+    conformance_classes: List[str] = attr.ib(factory=list)
 
     @abc.abstractmethod
     def register(self, app: FastAPI) -> None:

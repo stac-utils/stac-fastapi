@@ -12,7 +12,7 @@ from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingL
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Collection, Conformance, Item, ItemCollection
+from stac_fastapi.types.stac import Collection, Item, ItemCollection
 
 NumType = Union[float, int]
 
@@ -20,15 +20,6 @@ NumType = Union[float, int]
 @attr.s
 class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
-
-    async def conformance(self, **kwargs) -> Conformance:
-        """Conformance classes."""
-        return Conformance(
-            conformsTo=[
-                "https://stacspec.org/STAC-api.html",
-                "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
-            ]
-        )
 
     async def all_collections(self, **kwargs) -> List[Collection]:
         """Read all collections from the database."""

@@ -44,6 +44,7 @@ class TransactionExtension(ApiExtension):
     )
     router: APIRouter = attr.ib(factory=APIRouter)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
+    conformance_classes: List[str] = attr.ib(default=list())
 
     def _create_endpoint(
         self,
