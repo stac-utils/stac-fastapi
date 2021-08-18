@@ -9,6 +9,8 @@ import attr
 import geoalchemy2 as ga
 import sqlalchemy as sa
 import stac_pydantic
+from fastapi import HTTPException
+from pydantic import ValidationError
 from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import shape
 from sqlakeyset import get_page
@@ -207,7 +209,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             base_args["fields"] = {"include": includes, "exclude": excludes}
 
         # Do the request
-        search_request = SQLAlchemySTACSearch(**base_args)
+        try:
+            search_request = SQLAlchemySTACSearch(**base_args)
+        except ValidationError:
+            raise HTTPException(status_code=400, detail="Invalid parameters provided")
         resp = self.post_search(search_request, request=kwargs["request"])
 
         # Pagination
@@ -293,7 +298,17 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 if search_request.intersects is not None:
                     poly = shape(search_request.intersects)
                 elif search_request.bbox:
-                    poly = ShapelyPolygon.from_bounds(*search_request.bbox)
+                    if len(search_request.bbox) == 4:
+                        poly = ShapelyPolygon.from_bounds(*search_request.bbox)
+                    elif len(search_request.bbox) == 6:
+                        """Shapely doesn't support 3d bounding boxes we'll just use the 2d portion"""
+                        bbox_2d = [
+                            search_request.bbox[0],
+                            search_request.bbox[1],
+                            search_request.bbox[3],
+                            search_request.bbox[4],
+                        ]
+                        poly = ShapelyPolygon.from_bounds(*bbox_2d)
 
                 if poly:
                     filter_geom = ga.shape.from_shape(poly, srid=4326)
