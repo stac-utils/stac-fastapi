@@ -129,7 +129,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         collection = ItemCollection(**items)
         cleaned_features: List[Item] = []
 
-        for feature in (collection.get("features") or []):
+        for feature in collection.get("features") or []:
             feature = Item(**feature)
             if (
                 search_request.fields.exclude is None
@@ -151,7 +151,8 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 if include and len(include) == 0:
                     include = None
             cleaned_features.append(feature)
-            collection["features"] = cleaned_features
+
+        collection["features"] = cleaned_features
         collection["links"] = await PagingLinks(
             request=request,
             next=next,
