@@ -339,6 +339,22 @@ async def test_item_search_by_id_post(app_client, load_test_data, load_test_coll
 
 
 @pytest.mark.asyncio
+async def test_item_search_by_id_no_results_post(
+    app_client, load_test_data, load_test_collection
+):
+    """Test POST search by item id (core) when there are no results"""
+    test_item = load_test_data("test_item.json")
+
+    search_ids = ["nonexistent_id"]
+
+    params = {"collections": [test_item["collection"]], "ids": search_ids}
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 0
+
+
+@pytest.mark.asyncio
 async def test_item_search_spatial_query_post(
     app_client, load_test_data, load_test_collection
 ):
@@ -650,7 +666,9 @@ async def test_item_search_get_query_extension(
         ),
     }
     resp = await app_client.get("/search", params=params)
-    assert resp.status_code == 404
+    # No items found should still return a 200 but with an empty list of features
+    assert resp.status_code == 200
+    assert len(resp.json()["features"]) == 0
 
     params["query"] = json.dumps(
         {"proj:epsg": {"eq": test_item["properties"]["proj:epsg"]}}
@@ -668,6 +686,13 @@ async def test_item_search_get_query_extension(
 async def test_get_missing_item_collection(app_client):
     """Test reading a collection which does not exist"""
     resp = await app_client.get("/collections/invalid-collection/items")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_item_from_missing_item_collection(app_client):
+    """Test reading an item from a collection which does not exist"""
+    resp = await app_client.get("/collections/invalid-collection/items/some-item")
     assert resp.status_code == 404
 
 
