@@ -8,7 +8,7 @@ from fastapi import APIRouter, FastAPI
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.models import APIRequest, CollectionUri, EmptyRequest
-from stac_fastapi.api.routes import create_sync_endpoint
+from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
 from stac_fastapi.types.core import AsyncBaseFiltersClient, BaseFiltersClient
 from stac_fastapi.types.extension import ApiExtension
 
@@ -51,11 +51,10 @@ class FilterExtension(ApiExtension):
         ],
     ) -> Callable:
         """Create a FastAPI endpoint."""
-        # TODO
-        # if isinstance(self.client, AsyncBaseFiltersClient):
-        #     return create_async_endpoint(
-        #         func, request_type, response_class=self.response_class
-        #     )
+        if isinstance(self.client, AsyncBaseFiltersClient):
+            return create_async_endpoint(
+                func, request_type, response_class=self.response_class
+            )
         if isinstance(self.client, BaseFiltersClient):
             return create_sync_endpoint(
                 func, request_type, response_class=self.response_class
