@@ -18,7 +18,6 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
-from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.sqlalchemy import serializers
 from stac_fastapi.sqlalchemy.models import database
@@ -163,10 +162,8 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     "matched": count,
                 }
 
-            # TODO: return stac_extensions
             return ItemCollection(
                 type="FeatureCollection",
-                stac_version=STAC_VERSION,
                 features=response_features,
                 links=links,
                 context=context_obj,
@@ -438,10 +435,8 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 "matched": count,
             }
 
-        # TODO: return stac_extensions
         return ItemCollection(
             type="FeatureCollection",
-            stac_version=STAC_VERSION,
             features=response_features,
             links=links,
             context=context_obj,
