@@ -104,3 +104,19 @@ async def test_app_sort_extension(load_test_data, app_client, load_test_collecti
     resp_json = resp.json()
     assert resp_json["features"][1]["id"] == first_item["id"]
     assert resp_json["features"][0]["id"] == second_item["id"]
+
+
+@pytest.mark.asyncio
+async def test_search_invalid_date(load_test_data, app_client, load_test_collection):
+    coll = load_test_collection
+    first_item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=first_item)
+    assert resp.status_code == 200
+
+    params = {
+        "datetime": "2020-XX-01/2020-10-30",
+        "collections": [coll.id],
+    }
+
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 400

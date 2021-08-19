@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 
 import attr
 import orjson
+from asyncpg.exceptions import InvalidDatetimeFormatError
 from buildpg import render
 from fastapi import HTTPException
 from pydantic import ValidationError
@@ -16,7 +17,7 @@ from starlette.requests import Request
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import AsyncBaseCoreClient
-from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.errors import InvalidQueryParameter, NotFoundError
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 NumType = Union[float, int]
@@ -116,14 +117,20 @@ class CoreCrudClient(AsyncBaseCoreClient):
         # pool = kwargs["request"].app.state.readpool
         req = search_request.json(exclude_none=True)
 
-        async with pool.acquire() as conn:
-            q, p = render(
-                """
-                SELECT * FROM search(:req::text::jsonb);
-                """,
-                req=req,
+        try:
+            async with pool.acquire() as conn:
+                q, p = render(
+                    """
+                    SELECT * FROM search(:req::text::jsonb);
+                    """,
+                    req=req,
+                )
+                items = await conn.fetchval(q, *p)
+        except InvalidDatetimeFormatError:
+            raise InvalidQueryParameter(
+                f"Datetime parameter {search_request.datetime} is invalid."
             )
-            items = await conn.fetchval(q, *p)
+
         next: Optional[str] = items.pop("next", None)
         prev: Optional[str] = items.pop("prev", None)
         collection = ItemCollection(**items)
