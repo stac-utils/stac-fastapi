@@ -12,6 +12,7 @@ from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.types import stac as stac_types
+from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.stac import Conformance
 
@@ -302,14 +303,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     """
 
     base_conformance_classes: List[str] = attr.ib(
-        factory=lambda: [
-            "https://api.stacspec.org/v1.0.0-beta.2/core",
-            "https://api.stacspec.org/v1.0.0-beta.2/ogcapi-features",
-            "https://api.stacspec.org/v1.0.0-beta.2/item-search",
-            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
-            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30",
-            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
-        ]
+        factory=lambda: BASE_CONFORMANCE_CLASSES
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
@@ -329,13 +323,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
     def list_conformance_classes(self):
         """Return a list of conformance classes, including implemented extensions."""
-        base_conformance = [
-            "https://api.stacspec.org/v1.0.0-beta.2/core",
-            "https://api.stacspec.org/v1.0.0-beta.2/item-search",
-            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
-            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30",
-            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
-        ]
+        base_conformance = BASE_CONFORMANCE_CLASSES
 
         for extension in self.extensions:
             extension_classes = getattr(extension, "conformance_classes", [])
@@ -504,14 +492,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     """
 
     base_conformance_classes: List[str] = attr.ib(
-        factory=lambda: [
-            "https://api.stacspec.org/v1.0.0-beta.2/core",
-            "https://api.stacspec.org/v1.0.0-beta.2/ogcapi-features",
-            "https://api.stacspec.org/v1.0.0-beta.2/item-search",
-            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
-            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30",
-            "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
-        ]
+        factory=lambda: BASE_CONFORMANCE_CLASSES
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 

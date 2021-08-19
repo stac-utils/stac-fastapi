@@ -65,8 +65,6 @@ class ItemCollection(TypedDict, total=False):
     """STAC Item Collection."""
 
     type: str
-    stac_version: str
-    stac_extensions: Optional[List[str]]
     features: List[Item]
     links: List[Dict[str, Any]]
     context: Optional[Dict[str, int]]

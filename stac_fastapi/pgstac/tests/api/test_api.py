@@ -88,7 +88,7 @@ async def test_app_sort_extension(load_test_data, app_client, load_test_collecti
         "collections": [coll.id],
         "sortby": [{"field": "datetime", "direction": "desc"}],
     }
-    print(params)
+
     resp = await app_client.post("/search", json=params)
     assert resp.status_code == 200
     resp_json = resp.json()
@@ -120,3 +120,19 @@ async def test_search_invalid_date(load_test_data, app_client, load_test_collect
 
     resp = await app_client.post("/search", json=params)
     assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_app_search_response(load_test_data, app_client, load_test_collection):
+    coll = load_test_collection
+    params = {
+        "collections": [coll.id],
+    }
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    assert resp_json.get("type") == "FeatureCollection"
+    # stac_version and stac_extensions were removed in v1.0.0-beta.3
+    assert resp_json.get("stac_version") is None
+    assert resp_json.get("stac_extensions") is None
