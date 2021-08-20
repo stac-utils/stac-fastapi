@@ -13,6 +13,7 @@ from stac_fastapi.types.errors import (
     ConflictError,
     DatabaseError,
     ForeignKeyError,
+    InvalidQueryParameter,
     NotFoundError,
 )
 
@@ -25,6 +26,7 @@ DEFAULT_STATUS_CODES = {
     ForeignKeyError: status.HTTP_422_UNPROCESSABLE_ENTITY,
     DatabaseError: status.HTTP_424_FAILED_DEPENDENCY,
     Exception: status.HTTP_500_INTERNAL_SERVER_ERROR,
+    InvalidQueryParameter: status.HTTP_400_BAD_REQUEST,
 }
 
 
