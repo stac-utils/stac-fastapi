@@ -127,6 +127,4 @@ def test_search_invalid_date(load_test_data, app_client, postgres_transactions):
     }
 
     resp = app_client.post("/search", json=params)
-    import json
-
     assert resp.status_code == 400
