@@ -29,3 +29,13 @@ class DatabaseError(StacApiError):
     """Generic database errors."""
 
     pass
+
+
+class InvalidQueryParameter(StacApiError):
+    """Error for unknown or invalid query parameters.
+
+    Used to capture errors that should respond according to
+    http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#query_parameters
+    """
+
+    pass

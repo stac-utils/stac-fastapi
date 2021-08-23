@@ -2,17 +2,23 @@
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
+from urllib.parse import urljoin
 
 import attr
 import orjson
+from asyncpg.exceptions import InvalidDatetimeFormatError
 from buildpg import render
+from fastapi import HTTPException
+from pydantic import ValidationError
+from stac_pydantic.links import Relations
+from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import AsyncBaseCoreClient
-from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.stac import Collection, Conformance, Item, ItemCollection
+from stac_fastapi.types.errors import InvalidQueryParameter, NotFoundError
+from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 NumType = Union[float, int]
 
@@ -21,18 +27,10 @@ NumType = Union[float, int]
 class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
 
-    async def conformance(self, **kwargs) -> Conformance:
-        """Conformance classes."""
-        return Conformance(
-            conformsTo=[
-                "https://stacspec.org/STAC-api.html",
-                "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
-            ]
-        )
-
-    async def all_collections(self, **kwargs) -> List[Collection]:
+    async def all_collections(self, **kwargs) -> Collections:
         """Read all collections from the database."""
         request: Request = kwargs["request"]
+        base_url = str(request.base_url)
         pool = request.app.state.readpool
 
         async with pool.acquire() as conn:
@@ -49,7 +47,25 @@ class CoreCrudClient(AsyncBaseCoreClient):
                     collection_id=coll["id"], request=request
                 ).get_links()
                 linked_collections.append(coll)
-        return linked_collections
+        links = [
+            {
+                "rel": Relations.root.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.parent.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.self.value,
+                "type": MimeTypes.json,
+                "href": urljoin(base_url, "collections"),
+            },
+        ]
+        collection_list = Collections(collections=collections or [], links=links)
+        return collection_list
 
     async def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id.
@@ -75,7 +91,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
             )
             collection = await conn.fetchval(q, *p)
         if collection is None:
-            raise NotFoundError
+            raise NotFoundError(f"Collection {id} does not exist.")
         links = await CollectionLinks(collection_id=id, request=request).get_links()
         collection["links"] = links
         return Collection(**collection)
@@ -101,22 +117,26 @@ class CoreCrudClient(AsyncBaseCoreClient):
         # pool = kwargs["request"].app.state.readpool
         req = search_request.json(exclude_none=True)
 
-        async with pool.acquire() as conn:
-            q, p = render(
-                """
-                SELECT * FROM search(:req::text::jsonb);
-                """,
-                req=req,
+        try:
+            async with pool.acquire() as conn:
+                q, p = render(
+                    """
+                    SELECT * FROM search(:req::text::jsonb);
+                    """,
+                    req=req,
+                )
+                items = await conn.fetchval(q, *p)
+        except InvalidDatetimeFormatError:
+            raise InvalidQueryParameter(
+                f"Datetime parameter {search_request.datetime} is invalid."
             )
-            items = await conn.fetchval(q, *p)
+
         next: Optional[str] = items.pop("next", None)
         prev: Optional[str] = items.pop("prev", None)
         collection = ItemCollection(**items)
         cleaned_features: List[Item] = []
-        if collection["features"] is None or len(collection["features"]) == 0:
-            raise NotFoundError("No features found")
 
-        for feature in collection["features"]:
+        for feature in collection.get("features") or []:
             feature = Item(**feature)
             if (
                 search_request.fields.exclude is None
@@ -138,7 +158,8 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 if include and len(include) == 0:
                     include = None
             cleaned_features.append(feature)
-            collection["features"] = cleaned_features
+
+        collection["features"] = cleaned_features
         collection["links"] = await PagingLinks(
             request=request,
             next=next,
@@ -161,13 +182,16 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             An ItemCollection.
         """
+        # If collection does not exist, NotFoundError wil be raised
+        await self.get_collection(id, **kwargs)
+
         req = PgstacSearch(collections=[id], limit=limit, token=token)
-        collection = await self._search_base(req, **kwargs)
+        item_collection = await self._search_base(req, **kwargs)
         links = await CollectionLinks(
             collection_id=id, request=kwargs["request"]
-        ).get_links(extra_links=collection["links"])
-        collection["links"] = links
-        return collection
+        ).get_links(extra_links=item_collection["links"])
+        item_collection["links"] = links
+        return item_collection
 
     async def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id.
@@ -180,9 +204,15 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             Item.
         """
+        # If collection does not exist, NotFoundError wil be raised
+        await self.get_collection(collection_id, **kwargs)
+
         req = PgstacSearch(ids=[item_id], limit=1)
-        collection = await self._search_base(req, **kwargs)
-        return Item(**collection["features"][0])
+        item_collection = await self._search_base(req, **kwargs)
+        if not item_collection["features"]:
+            raise NotFoundError(f"Collection {collection_id} does not exist.")
+
+        return Item(**item_collection["features"][0])
 
     async def post_search(
         self, search_request: PgstacSearch, **kwargs
@@ -259,5 +289,8 @@ class CoreCrudClient(AsyncBaseCoreClient):
             base_args["fields"] = {"include": includes, "exclude": excludes}
 
         # Do the request
-        search_request = PgstacSearch(**base_args)
+        try:
+            search_request = PgstacSearch(**base_args)
+        except ValidationError:
+            raise HTTPException(status_code=400, detail="Invalid parameters provided")
         return await self.post_search(search_request, request=kwargs["request"])

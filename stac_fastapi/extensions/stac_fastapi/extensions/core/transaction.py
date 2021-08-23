@@ -1,5 +1,5 @@
 """transaction extension."""
-from typing import Callable, Type, Union
+from typing import Callable, List, Optional, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -36,6 +36,13 @@ class TransactionExtension(ApiExtension):
 
     client: Union[AsyncBaseTransactionsClient, BaseTransactionsClient] = attr.ib()
     settings: ApiSettings = attr.ib()
+    conformance_classes: List[str] = attr.ib(
+        factory=lambda: [
+            "https://api.stacspec.org/v1.0.0-beta.3/ogcapi-features/extensions/transaction/",
+            "http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/simpletx",
+        ]
+    )
+    schema_href: Optional[str] = attr.ib(default=None)
     router: APIRouter = attr.ib(factory=APIRouter)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
 

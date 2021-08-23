@@ -45,6 +45,20 @@ def test_app_transaction_extension(app_client, load_test_data):
     assert resp.status_code == 200
 
 
+def test_app_search_response(load_test_data, app_client, postgres_transactions):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    resp = app_client.get("/search", params={"collections": ["test-collection"]})
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    assert resp_json.get("type") == "FeatureCollection"
+    # stac_version and stac_extensions were removed in v1.0.0-beta.3
+    assert resp_json.get("stac_version") is None
+    assert resp_json.get("stac_extensions") is None
+
+
 def test_app_context_extension(load_test_data, app_client, postgres_transactions):
     item = load_test_data("test_item.json")
     postgres_transactions.create_item(item, request=MockStarletteRequest)
@@ -101,3 +115,16 @@ def test_app_sort_extension(load_test_data, app_client, postgres_transactions):
     resp_json = resp.json()
     assert resp_json["features"][0]["id"] == first_item["id"]
     assert resp_json["features"][1]["id"] == second_item["id"]
+
+
+def test_search_invalid_date(load_test_data, app_client, postgres_transactions):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    params = {
+        "datetime": "2020-XX-01/2020-10-30",
+        "collections": [item["collection"]],
+    }
+
+    resp = app_client.post("/search", json=params)
+    assert resp.status_code == 400

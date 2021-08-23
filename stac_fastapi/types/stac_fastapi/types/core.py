@@ -1,17 +1,20 @@
 """Base clients."""
 import abc
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
+from fastapi import Request
 from stac_pydantic.api import Search
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 
 from stac_fastapi.types import stac as stac_types
+from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.stac import Conformance
 
 NumType = Union[float, int]
 StacType = Dict[str, Any]
@@ -222,26 +225,35 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
 
 @attr.s
-class LandingPageMixin:
+class LandingPageMixin(abc.ABC):
     """Create a STAC landing page (GET /)."""
 
-    conformance_classes: List[str] = attr.ib()
     stac_version: str = attr.ib(default=STAC_VERSION)
     landing_page_id: str = attr.ib(default="stac-fastapi")
     title: str = attr.ib(default="stac-fastapi")
     description: str = attr.ib(default="stac-fastapi")
 
-    def _landing_page(self, base_url: str) -> stac_types.LandingPage:
+    def _landing_page(
+        self,
+        base_url: str,
+        conformance_classes: List[str],
+        extension_schemas: List[str],
+    ) -> stac_types.LandingPage:
         landing_page = stac_types.LandingPage(
             type="Catalog",
             id=self.landing_page_id,
             title=self.title,
             description=self.description,
             stac_version=self.stac_version,
-            conformsTo=self.conformance_classes,
+            conformsTo=conformance_classes,
             links=[
                 {
                     "rel": Relations.self.value,
+                    "type": MimeTypes.json,
+                    "href": base_url,
+                },
+                {
+                    "rel": Relations.root.value,
                     "type": MimeTypes.json,
                     "href": base_url,
                 },
@@ -264,12 +276,20 @@ class LandingPageMixin:
                 },
                 {
                     "rel": Relations.search.value,
+                    "type": MimeTypes.geojson,
+                    "title": "STAC search",
+                    "href": urljoin(base_url, "search"),
+                    "method": "GET",
+                },
+                {
+                    "rel": Relations.search.value,
                     "type": MimeTypes.json,
                     "title": "STAC search",
                     "href": urljoin(base_url, "search"),
+                    "method": "POST",
                 },
             ],
-            stac_extensions=[],
+            stac_extensions=extension_schemas,
         )
         return landing_page
 
@@ -282,17 +302,34 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         extensions: list of registered api extensions.
     """
 
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    conformance_classes: List[str] = attr.ib(
-        factory=lambda: [
-            "https://stacspec.org/STAC-api.html",
-            "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
-        ]
+    base_conformance_classes: List[str] = attr.ib(
+        factory=lambda: BASE_CONFORMANCE_CLASSES
     )
+    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
-    def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
+    def conformance_classes(self) -> List[str]:
+        """Generate conformance classes by adding extension conformance to base conformance classes."""
+        base_conformance_classes = self.base_conformance_classes.copy()
+
+        for extension in self.extensions:
+            extension_classes = getattr(extension, "conformance_classes", [])
+            base_conformance_classes.extend(extension_classes)
+
+        return list(set(base_conformance_classes))
+
+    def extension_is_enabled(self, extension: str) -> bool:
         """Check if an api extension is enabled."""
-        return any([isinstance(ext, extension) for ext in self.extensions])
+        return any([type(ext).__name__ == extension for ext in self.extensions])
+
+    def list_conformance_classes(self):
+        """Return a list of conformance classes, including implemented extensions."""
+        base_conformance = BASE_CONFORMANCE_CLASSES
+
+        for extension in self.extensions:
+            extension_classes = getattr(extension, "conformance_classes", [])
+            base_conformance.extend(extension_classes)
+
+        return base_conformance
 
     def landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
@@ -302,10 +339,22 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             API landing page, serving as an entry point to the API.
         """
-        base_url = str(kwargs["request"].base_url)
-        landing_page = self._landing_page(base_url=base_url)
+        request: Request = kwargs["request"]
+        base_url = str(request.base_url)
+        extension_schemas = [
+            schema.schema_href for schema in self.extensions if schema.schema_href
+        ]
+        request: Request = kwargs["request"]
+        base_url = str(request.base_url)
+        landing_page = self._landing_page(
+            base_url=base_url,
+            conformance_classes=self.conformance_classes(),
+            extension_schemas=extension_schemas,
+        )
+
+        # Add Collections links
         collections = self.all_collections(request=kwargs["request"])
-        for collection in collections:
+        for collection in collections["collections"]:
             landing_page["links"].append(
                 {
                     "rel": Relations.child.value,
@@ -314,6 +363,16 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                     "href": urljoin(base_url, f"collections/{collection['id']}"),
                 }
             )
+
+        # Add OpenAPI URL
+        landing_page["links"].append(
+            {
+                "rel": "service-desc",
+                "type": "application/vnd.oai.openapi+json;version=3.0",
+                "title": "OpenAPI service description",
+                "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
+            }
+        )
         return landing_page
 
     def conformance(self, **kwargs) -> stac_types.Conformance:
@@ -324,7 +383,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             Conformance classes which the server conforms to.
         """
-        stac_types.Conformance(conformsTo=self.conformance_classes)
+        return Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
     def post_search(
@@ -381,7 +440,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def all_collections(self, **kwargs) -> List[stac_types.Collection]:
+    def all_collections(self, **kwargs) -> stac_types.Collections:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -432,17 +491,24 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         extensions: list of registered api extensions.
     """
 
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    conformance_classes: List[str] = attr.ib(
-        factory=lambda: [
-            "https://stacspec.org/STAC-api.html",
-            "http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#ats_geojson",
-        ]
+    base_conformance_classes: List[str] = attr.ib(
+        factory=lambda: BASE_CONFORMANCE_CLASSES
     )
+    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
-    def extension_is_enabled(self, extension: Type[ApiExtension]) -> bool:
+    def conformance_classes(self) -> List[str]:
+        """Generate conformance classes by adding extension conformance to base conformance classes."""
+        conformance_classes = self.base_conformance_classes.copy()
+
+        for extension in self.extensions:
+            extension_classes = getattr(extension, "conformance_classes", [])
+            conformance_classes.extend(extension_classes)
+
+        return list(set(conformance_classes))
+
+    def extension_is_enabled(self, extension: str) -> bool:
         """Check if an api extension is enabled."""
-        return any([isinstance(ext, extension) for ext in self.extensions])
+        return any([type(ext).__name__ == extension for ext in self.extensions])
 
     async def landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
@@ -452,18 +518,37 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             API landing page, serving as an entry point to the API.
         """
-        base_url = str(kwargs["request"].base_url)
-        landing_page = self._landing_page(base_url=base_url)
+        request: Request = kwargs["request"]
+        base_url = str(request.base_url)
+        extension_schemas = [
+            schema.schema_href for schema in self.extensions if schema.schema_href
+        ]
+        landing_page = self._landing_page(
+            base_url=base_url,
+            conformance_classes=self.conformance_classes(),
+            extension_schemas=extension_schemas,
+        )
         collections = await self.all_collections(request=kwargs["request"])
-        for collection in collections:
+        for collection in collections["collections"]:
             landing_page["links"].append(
                 {
                     "rel": Relations.child.value,
                     "type": MimeTypes.json.value,
-                    "title": collection.get("title"),
+                    "title": collection.get("title") or collection.get("id"),
                     "href": urljoin(base_url, f"collections/{collection['id']}"),
                 }
             )
+
+        # Add OpenAPI URL
+        landing_page["links"].append(
+            {
+                "rel": "service-desc",
+                "type": "application/vnd.oai.openapi+json;version=3.0",
+                "title": "OpenAPI service description",
+                "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
+            }
+        )
+
         return landing_page
 
     async def conformance(self, **kwargs) -> stac_types.Conformance:
@@ -474,7 +559,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             Conformance classes which the server conforms to.
         """
-        stac_types.Conformance(conformsTo=self.conformance_classes)
+        return Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
     async def post_search(
@@ -533,7 +618,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def all_collections(self, **kwargs) -> List[stac_types.Collection]:
+    async def all_collections(self, **kwargs) -> stac_types.Collections:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -576,3 +661,57 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             An ItemCollection.
         """
         ...
+
+
+@attr.s
+class AsyncBaseFiltersClient(abc.ABC):
+    """Defines a pattern for implementing the STAC filter extension."""
+
+    async def get_queryables(
+        self, collection_id: Optional[str] = None, **kwargs
+    ) -> Dict[str, Any]:
+        """Get the queryables available for the given collection_id.
+
+        If collection_id is None, returns the intersection of all
+        queryables over all collections.
+
+        This base implementation returns a blank queryable schema. This is not allowed
+        under OGC CQL but it is allowed by the STAC API Filter Extension
+
+        https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
+        """
+        return {
+            "$schema": "https://json-schema.org/draft/2019-09/schema",
+            "$id": "https://example.org/queryables",
+            "type": "object",
+            "title": "Queryables for Example STAC API",
+            "description": "Queryable names for the example STAC API Item Search filter.",
+            "properties": {},
+        }
+
+
+@attr.s
+class BaseFiltersClient(abc.ABC):
+    """Defines a pattern for implementing the STAC filter extension."""
+
+    def get_queryables(
+        self, collection_id: Optional[str] = None, **kwargs
+    ) -> Dict[str, Any]:
+        """Get the queryables available for the given collection_id.
+
+        If collection_id is None, returns the intersection of all
+        queryables over all collections.
+
+        This base implementation returns a blank queryable schema. This is not allowed
+        under OGC CQL but it is allowed by the STAC API Filter Extension
+
+        https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
+        """
+        return {
+            "$schema": "https://json-schema.org/draft/2019-09/schema",
+            "$id": "https://example.org/queryables",
+            "type": "object",
+            "title": "Queryables for Example STAC API",
+            "description": "Queryable names for the example STAC API Item Search filter.",
+            "properties": {},
+        }
