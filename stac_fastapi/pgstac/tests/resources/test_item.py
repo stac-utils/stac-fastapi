@@ -706,7 +706,8 @@ async def test_item_search_get_filter_extension_cql(
     resp = await app_client.post("/search", json=params)
     resp_json = resp.json()
 
-    assert resp.status_code == 404
+    assert resp.status_code == 200
+    assert len(resp_json.get("features")) == 0
 
     params = {
         "collections": [test_item["collection"]],
