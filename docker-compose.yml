@@ -7,6 +7,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    platform: linux/amd64
     environment:
       - APP_HOST=0.0.0.0
       - APP_PORT=8081
@@ -40,6 +41,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    platform: linux/amd64
     environment:
       - APP_HOST=0.0.0.0
       - APP_PORT=8082
