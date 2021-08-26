@@ -6,11 +6,39 @@
 
 ### Removed
 
+### Changed
+
+### Fixed
+
+## [2.1.0]
+
+### Added
+
+* Added filter extension. ([#165](https://github.com/stac-utils/stac-fastapi/pull/165))
+* Add Support for CQL JSON to PGStac Backend ([#209](https://github.com/stac-utils/stac-fastapi/pull/209))
+* Added item_serializer and item_table to BulkTransactionsClient in sqlalchemy backend ([#210](https://github.com/stac-utils/stac-fastapi/pull/210))
+* Enable conformance class configuration ([#214](https://github.com/stac-utils/stac-fastapi/pull/214))
+* Add/fix landing page links ([#229](https://github.com/stac-utils/stac-fastapi/pull/229))
+* Correct response codes for bad/unusable bboxes ([#235](https://github.com/stac-utils/stac-fastapi/pull/235))
+* Add a "method" field for search links ([#236](https://github.com/stac-utils/stac-fastapi/pull/236))
+* Add extension schemas to landing ([#237](https://github.com/stac-utils/stac-fastapi/pull/237))
+
+### Removed
+
 * Remove shapely from stac_fastapi.pgstac requirements ([#225](https://github.com/stac-utils/stac-fastapi/pull/225))
 
 ### Changed
 
+* Update to STAC API 1.0.0-beta.3 ([#239](https://github.com/stac-utils/stac-fastapi/pull/239))
+
 ### Fixed
+
+* Make collection title is optional in landing page links ([#198](https://github.com/stac-utils/stac-fastapi/pull/198))
+* Preserve relative paths on link generation ([#199](https://github.com/stac-utils/stac-fastapi/pull/199))
+* Fix collection endpoint return value to match spec (fixes regression) ([#232](https://github.com/stac-utils/stac-fastapi/pull/232))
+* Return empty item collection instead of error when searching ([#233](https://github.com/stac-utils/stac-fastapi/pull/233))
+* Correct response codes for bad/unusable bboxes ([#235](https://github.com/stac-utils/stac-fastapi/pull/235))
+* Update pgstac to return 400 on invalid date parameter ([#240](https://github.com/stac-utils/stac-fastapi/pull/240))
 
 ## [2.0.0]
 _2021-07_
@@ -34,7 +62,8 @@ _2020-09-25_
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.0.0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..main>
+[2.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..main>
 [2.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/1.1.0..2.0.0>
 [1.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/1.0.0..1.1.0>
 [1.0.0]: <https://github.com/stac-utils/stac-fastapi/tree/1.0.0>
