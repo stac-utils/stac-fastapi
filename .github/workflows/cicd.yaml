@@ -100,3 +100,9 @@ jobs:
           POSTGRES_HOST_READER: localhost
           POSTGRES_HOST_WRITER: localhost
           POSTGRES_PORT: 5432
+  test-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test generating docs
+        run: make docs
