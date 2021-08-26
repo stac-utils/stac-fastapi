@@ -26,7 +26,7 @@ extra_reqs = {
         "pytest-asyncio",
         "pre-commit",
         "requests",
-        "pypgstac==0.3.2",
+        "pypgstac==0.3.3",
         "httpx",
         "shapely",
     ],

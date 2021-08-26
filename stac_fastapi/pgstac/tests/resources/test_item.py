@@ -683,6 +683,51 @@ async def test_item_search_get_query_extension(
 
 
 @pytest.mark.asyncio
+async def test_item_search_get_filter_extension_cql(
+    app_client, load_test_data, load_test_collection
+):
+    """Test GET search with JSONB query (cql json filter extension)"""
+    test_item = load_test_data("test_item.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    # EPSG is a JSONB key
+    params = {
+        "collections": [test_item["collection"]],
+        "filter": {
+            "gt": [
+                {"property": "proj:epsg"},
+                test_item["properties"]["proj:epsg"] + 1,
+            ]
+        },
+    }
+    resp = await app_client.post("/search", json=params)
+    resp_json = resp.json()
+
+    assert resp.status_code == 200
+    assert len(resp_json.get("features")) == 0
+
+    params = {
+        "collections": [test_item["collection"]],
+        "filter": {
+            "eq": [
+                {"property": "proj:epsg"},
+                test_item["properties"]["proj:epsg"],
+            ]
+        },
+    }
+    resp = await app_client.post("/search", json=params)
+    resp_json = resp.json()
+    assert len(resp.json()["features"]) == 1
+    assert (
+        resp_json["features"][0]["properties"]["proj:epsg"]
+        == test_item["properties"]["proj:epsg"]
+    )
+
+
+@pytest.mark.asyncio
 async def test_get_missing_item_collection(app_client):
     """Test reading a collection which does not exist"""
     resp = await app_client.get("/collections/invalid-collection/items")
@@ -927,14 +972,6 @@ async def test_get_missing_item(app_client, load_test_data):
     test_coll = load_test_data("test_collection.json")
     resp = await app_client.get(f"/collections/{test_coll['id']}/items/invalid-item")
     assert resp.status_code == 404
-
-
-@pytest.mark.skip
-@pytest.mark.asyncio
-async def test_search_invalid_query_field(app_client):
-    body = {"query": {"gsd": {"lt": 100}, "invalid-field": {"eq": 50}}}
-    resp = await app_client.post("/search", json=body)
-    assert resp.status_code == 400
 
 
 @pytest.mark.asyncio
