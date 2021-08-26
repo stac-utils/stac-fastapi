@@ -78,6 +78,10 @@ For local development it is often more convenient to run the application outside
 make docker-run
 ```
 
+#### Note to Docker for Windows users
+
+You'll need to enable experimental features on Docker for Windows in order to run the docker-compose, due to the "--platform" flag that is required to allow the project to run on some Apple architectures. To do this, open Docker Desktop, go to settings, select "Docker Engine", and modify the configuration JSON to have `"experimental": true`.
+
 ### Testing
 The database container provided by the docker-compose stack must be running.  Run all tests:
 ```bash
