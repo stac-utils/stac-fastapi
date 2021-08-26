@@ -10,6 +10,7 @@ install_requires = [
     "attrs",
     "pydantic[dotenv]",
     "stac_pydantic==2.0.*",
+    "brotli_asgi",
 ]
 
 extra_reqs = {
