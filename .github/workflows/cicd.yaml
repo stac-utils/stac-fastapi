@@ -57,7 +57,7 @@ jobs:
 
       - name: Install Extensions
         run: |
-          pip install ./stac_fastapi/extensions[dev,tiles]
+          pip install ./stac_fastapi/extensions[dev]
 
       - name: Install sqlalchemy stac-fastapi
         run: |
