@@ -7,10 +7,10 @@
       <img src="https://github.com/stac-utils/stac-fastapi/workflows/stac-fastapi/badge.svg" alt="Test">
   </a>
   <a href="https://pypi.org/project/stac-fastapi" target="_blank">
-      <img src="https://img.shields.io/pypi/v/stac-fastapi?color=%2334D058&label=pypi%20package" alt="Package version">
+      <img src="https://img.shields.io/pypi/v/stac-fastapi.api?color=%2334D058&label=pypi%20package" alt="Package version">
   </a>
   <a href="https://github.com/stac-utils/stac-fastapi/blob/master/LICENSE" target="_blank">
-      <img src="https://img.shields.io/github/license/stac-utils/stac-fastapi.svg" alt="Downloads">
+      <img src="https://img.shields.io/github/license/stac-utils/stac-fastapi.svg" alt="License">
   </a>
 </p>
 
@@ -77,6 +77,10 @@ For local development it is often more convenient to run the application outside
 ```bash
 make docker-run
 ```
+
+#### Note to Docker for Windows users
+
+You'll need to enable experimental features on Docker for Windows in order to run the docker-compose, due to the "--platform" flag that is required to allow the project to run on some Apple architectures. To do this, open Docker Desktop, go to settings, select "Docker Engine", and modify the configuration JSON to have `"experimental": true`.
 
 ### Testing
 The database container provided by the docker-compose stack must be running.  Run all tests:
