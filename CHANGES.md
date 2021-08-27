@@ -10,6 +10,10 @@
 
 ### Fixed
 
+## [2.1.1]
+
+### Fixed
+
 * Pin FastAPI to 0.67 to avoid issues with rendering OpenAPI documentation ([#246](https://github.com/stac-utils/stac-fastapi/pull/246))
 
 ## [2.1.0]
@@ -64,7 +68,8 @@ _2020-09-25_
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.1..main>
+[2.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..2.1.1>
 [2.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..main>
 [2.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/1.1.0..2.0.0>
 [1.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/1.0.0..1.1.0>
