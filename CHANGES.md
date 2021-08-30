@@ -10,6 +10,8 @@
 
 ### Fixed
 
+* Pin FastAPI to 0.67 to avoid issues with rendering OpenAPI documentation ([#246](https://github.com/stac-utils/stac-fastapi/pull/246))
+
 ## [2.1.0]
 
 ### Added

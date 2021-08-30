@@ -47,17 +47,17 @@ jobs:
         run: |
           python -m pip install --upgrade pipenv wheel
 
-      - name: Install core api
-        run: |
-          pip install ./stac_fastapi/api[dev]
-
       - name: Install types
         run: |
           pip install ./stac_fastapi/types[dev]
 
+      - name: Install core api
+        run: |
+          pip install ./stac_fastapi/api[dev]
+
       - name: Install Extensions
         run: |
-          pip install ./stac_fastapi/extensions[dev,tiles]
+          pip install ./stac_fastapi/extensions[dev]
 
       - name: Install sqlalchemy stac-fastapi
         run: |

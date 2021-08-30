@@ -6,7 +6,6 @@ with open("README.md") as f:
     desc = f.read()
 
 install_requires = [
-    "fastapi",
     "attrs",
     "orjson",
     "pydantic[dotenv]",
