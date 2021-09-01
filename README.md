@@ -42,9 +42,9 @@ packages:
 pip install stac-fastapi.api stac-fastapi.types stac-fastapi.extensions
 
 # Install a backend of your choice
-pip stac-fastapi.sqlalchemy
+pip install stac-fastapi.sqlalchemy
 # or
-pip stac-fastapi.pgstac
+pip install stac-fastapi.pgstac
 
 #/////////////////////
 # Install from sources
