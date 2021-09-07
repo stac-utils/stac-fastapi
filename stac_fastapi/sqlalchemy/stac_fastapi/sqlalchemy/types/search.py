@@ -33,7 +33,6 @@ class Operator(str, AutoValueEnum):
     lt = auto()
     lte = auto()
     gt = auto()
-    ge = auto()
     gte = auto()
     # TODO: These are defined in the spec but aren't currently implemented by the api
     # startsWith = auto()
@@ -144,7 +143,7 @@ class SQLAlchemySTACSearch(Search):
     # Override default field extension to include default fields and pydantic includes/excludes factory
     field: FieldsExtension = Field(FieldsExtension(), alias="fields")
     # Override query extension with supported operators
-    query: Optional[Dict[str, Dict[Operator, Any]]]
+    query: Optional[Dict[Queryables, Dict[Operator, Any]]]
     token: Optional[str] = None
 
     @root_validator(pre=True)
