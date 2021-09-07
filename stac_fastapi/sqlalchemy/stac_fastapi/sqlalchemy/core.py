@@ -353,10 +353,8 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                         field = self.item_table.get_field(field_name)
                         for (op, value) in expr.items():
                             if op == Operator.gte:
-                                # op = Operator.ge
                                 query = query.filter(operator.ge(field, value))
                             elif op == Operator.lte:
-                                # op = Operator.le
                                 query = query.filter(operator.le(field, value))
                             else:
                                 query = query.filter(op.operator(field, value))
