@@ -167,6 +167,26 @@ async def test_search_invalid_date(load_test_data, app_client, load_test_collect
 
 
 @pytest.mark.asyncio
+async def test_bbox_3d(load_test_data, app_client, load_test_collection):
+    coll = load_test_collection
+    first_item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=first_item)
+    assert resp.status_code == 200
+    
+    australia_bbox = [106.343365,-47.199523,0.1,168.218365,-19.437288,0.1]
+    params = {
+        "bbox": australia_bbox,
+        "collections": [coll.id],
+    }
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+
+
+@pytest.mark.asyncio
 async def test_app_search_response(load_test_data, app_client, load_test_collection):
     coll = load_test_collection
     params = {
