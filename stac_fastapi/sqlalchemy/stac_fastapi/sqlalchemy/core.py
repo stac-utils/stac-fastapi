@@ -23,7 +23,7 @@ from stac_fastapi.sqlalchemy import serializers
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
-from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
+from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch, Operator
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
@@ -351,6 +351,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     for (field_name, expr) in search_request.query.items():
                         field = self.item_table.get_field(field_name)
                         for (op, value) in expr.items():
+                            if op == Operator.gte:
+                                op = Operator.ge
+                            if op == Operator.lte:
+                                op = Operator.le  
                             query = query.filter(op.operator(field, value))
 
                 if self.extension_is_enabled("ContextExtension"):
