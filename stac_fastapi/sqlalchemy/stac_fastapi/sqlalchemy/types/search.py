@@ -11,7 +11,7 @@ from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 
 import sqlalchemy as sa
-from pydantic import Field, ValidationError, root_validator, conint
+from pydantic import Field, ValidationError, conint, root_validator
 from pydantic.error_wrappers import ErrorWrapper
 from stac_pydantic.api import Search
 from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase

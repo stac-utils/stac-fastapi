@@ -101,6 +101,7 @@ def test_app_query_extension_limit_lt0(
     resp = app_client.post("/search", json=params)
     assert resp.status_code == 400
 
+
 def test_app_query_extension_limit_gt10000(
     load_test_data, app_client, postgres_transactions
 ):
@@ -111,6 +112,7 @@ def test_app_query_extension_limit_gt10000(
     resp = app_client.post("/search", json=params)
     assert resp.status_code == 400
 
+
 def test_app_query_extension_limit_10000(
     load_test_data, app_client, postgres_transactions
 ):
@@ -120,6 +122,7 @@ def test_app_query_extension_limit_10000(
     params = {"limit": 10000}
     resp = app_client.post("/search", json=params)
     assert resp.status_code == 200
+
 
 def test_app_sort_extension(load_test_data, app_client, postgres_transactions):
     first_item = load_test_data("test_item.json")
