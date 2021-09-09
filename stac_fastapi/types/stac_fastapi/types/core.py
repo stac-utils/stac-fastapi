@@ -359,7 +359,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 {
                     "rel": Relations.child.value,
                     "type": MimeTypes.json.value,
-                    "title": collection.get("title"),
+                    "title": collection.get("title") or collection.get("id"),
                     "href": urljoin(base_url, f"collections/{collection['id']}"),
                 }
             )
