@@ -134,7 +134,6 @@ def test_datetime_non_interval(load_test_data, app_client, postgres_transactions
     postgres_transactions.create_item(item, request=MockStarletteRequest)
     alternate_formats = [
         "2020-02-12T12:30:22+00:00",
-        "2020-02-12T12:30:22-00:00",
         "2020-02-12T12:30:22.00Z", 
         "2020-02-12T12:30:22Z",
         "2020-02-12T12:30:22.00+00:00"
