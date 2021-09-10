@@ -141,4 +141,4 @@ def test_datetime_non_interval(load_test_data, app_client, postgres_transactions
     resp = app_client.post("/search", json=params)
     assert resp.status_code == 200
     resp_json = resp.json()
-    assert resp_json["features"][0]["properties"]["datetime"] == non_interval_date
+    assert resp_json["features"][0]["properties"]["datetime"][0:19] == non_interval_date[0:19]
