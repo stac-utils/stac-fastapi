@@ -343,10 +343,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     elif ".." not in search_request.datetime:
                         query = query.filter(self.item_table.datetime.between(*dts))
                     # All items after the start date
-                    if dts[0] != "..":
+                    elif dts[0] != "..":
                         query = query.filter(self.item_table.datetime >= dts[0])
                     # All items before the end date
-                    if dts[1] != "..":
+                    elif dts[1] != "..":
                         query = query.filter(self.item_table.datetime <= dts[1])
 
                 # Query fields

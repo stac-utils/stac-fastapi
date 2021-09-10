@@ -128,3 +128,17 @@ def test_search_invalid_date(load_test_data, app_client, postgres_transactions):
 
     resp = app_client.post("/search", json=params)
     assert resp.status_code == 400
+
+def test_datetime_non_interval(load_test_data, app_client, postgres_transactions):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    non_interval_date = "2020-02-12T12:30:22Z"
+    params = {
+        "datetime": non_interval_date,
+        "collections": [item["collection"]],
+    }
+
+    resp = app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert resp_json["features"][0]["properties"]["datetime"] == non_interval_date
