@@ -91,6 +91,39 @@ def test_app_query_extension(load_test_data, app_client, postgres_transactions):
     assert len(resp_json["features"]) == 0
 
 
+def test_app_query_extension_limit_lt0(
+    load_test_data, app_client, postgres_transactions
+):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    params = {"limit": -1}
+    resp = app_client.post("/search", json=params)
+    assert resp.status_code == 400
+
+
+def test_app_query_extension_limit_gt10000(
+    load_test_data, app_client, postgres_transactions
+):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    params = {"limit": 10001}
+    resp = app_client.post("/search", json=params)
+    assert resp.status_code == 400
+
+
+def test_app_query_extension_limit_10000(
+    load_test_data, app_client, postgres_transactions
+):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    params = {"limit": 10000}
+    resp = app_client.post("/search", json=params)
+    assert resp.status_code == 200
+
+
 def test_app_sort_extension(load_test_data, app_client, postgres_transactions):
     first_item = load_test_data("test_item.json")
     item_date = datetime.strptime(
