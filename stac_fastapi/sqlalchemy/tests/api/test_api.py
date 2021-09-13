@@ -162,14 +162,15 @@ def test_search_invalid_date(load_test_data, app_client, postgres_transactions):
     resp = app_client.post("/search", json=params)
     assert resp.status_code == 400
 
+
 def test_datetime_non_interval(load_test_data, app_client, postgres_transactions):
     item = load_test_data("test_item.json")
     postgres_transactions.create_item(item, request=MockStarletteRequest)
     alternate_formats = [
         "2020-02-12T12:30:22+00:00",
-        "2020-02-12T12:30:22.00Z", 
+        "2020-02-12T12:30:22.00Z",
         "2020-02-12T12:30:22Z",
-        "2020-02-12T12:30:22.00+00:00"
+        "2020-02-12T12:30:22.00+00:00",
     ]
     for date in alternate_formats:
         params = {
