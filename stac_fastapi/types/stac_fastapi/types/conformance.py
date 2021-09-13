@@ -14,7 +14,7 @@ class OAFConformanceClasses(str, Enum):
     """Conformance classes for OGC API - Features."""
 
     CORE = "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core"
-    OPEN_API = "http://www.opengis.net/spec/ogcapi-features-1/1.0/req/oas30"
+    OPEN_API = "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30"
     GEOJSON = "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson"
 
 
