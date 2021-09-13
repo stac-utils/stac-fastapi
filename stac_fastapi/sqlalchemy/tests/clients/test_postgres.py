@@ -269,4 +269,4 @@ def test_landing_page_no_collection_title(
     landing_page = postgres_core.landing_page(request=MockStarletteRequestWithApp)
     for link in landing_page["links"]:
         if link["href"].split("/")[-1] == coll["id"]:
-            assert not link["title"]
+            assert link["title"]
