@@ -180,7 +180,9 @@ def test_search_point_intersects(load_test_data, app_client, postgres_transactio
     assert len(resp_json["features"]) == 1
 
 
-def test_search_line_string_intersects(load_test_data, app_client, postgres_transactions):
+def test_search_line_string_intersects(
+    load_test_data, app_client, postgres_transactions
+):
     item = load_test_data("test_item.json")
     postgres_transactions.create_item(item, request=MockStarletteRequest)
 
@@ -195,4 +197,3 @@ def test_search_line_string_intersects(load_test_data, app_client, postgres_tran
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
-    

@@ -181,8 +181,11 @@ async def test_app_search_response(load_test_data, app_client, load_test_collect
     assert resp_json.get("stac_version") is None
     assert resp_json.get("stac_extensions") is None
 
+
 @pytest.mark.asyncio
-async def test_search_point_intersects(load_test_data, app_client, load_test_collection):
+async def test_search_point_intersects(
+    load_test_data, app_client, load_test_collection
+):
     coll = load_test_collection
     item = load_test_data("test_item.json")
     resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
@@ -202,7 +205,9 @@ async def test_search_point_intersects(load_test_data, app_client, load_test_col
 
 
 @pytest.mark.asyncio
-async def test_search_line_string_intersects(load_test_data, app_client, load_test_collection):
+async def test_search_line_string_intersects(
+    load_test_data, app_client, load_test_collection
+):
     coll = load_test_collection
     item = load_test_data("test_item.json")
     resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
