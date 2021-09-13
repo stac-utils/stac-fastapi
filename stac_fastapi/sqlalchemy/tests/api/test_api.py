@@ -84,7 +84,7 @@ def test_app_query_extension_gt(load_test_data, app_client, postgres_transaction
     test_item = load_test_data("test_item.json")
     postgres_transactions.create_item(test_item, request=MockStarletteRequest)
 
-    params = {"query": {"proj:epsg": {"gt": test_item["properties"]["proj:epsg"] + 1}}}
+    params = {"query": {"proj:epsg": {"gt": test_item["properties"]["proj:epsg"]}}}
     resp = app_client.post("/search", json=params)
     assert resp.status_code == 200
     resp_json = resp.json()

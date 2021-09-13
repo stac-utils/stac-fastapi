@@ -116,7 +116,7 @@ async def test_app_query_extension_gt(load_test_data, app_client, load_test_coll
     resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
     assert resp.status_code == 200
 
-    params = {"query": {"proj:epsg": {"gt": item["properties"]["proj:epsg"] + 1}}}
+    params = {"query": {"proj:epsg": {"gt": item["properties"]["proj:epsg"]}}}
     resp = await app_client.post("/search", json=params)
     assert resp.status_code == 200
     resp_json = resp.json()
