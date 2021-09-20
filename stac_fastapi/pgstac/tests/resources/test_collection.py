@@ -19,7 +19,8 @@ async def test_create_collection(app_client, load_test_data: Callable):
     resp = await app_client.get(f"/collections/{post_coll.id}")
     assert resp.status_code == 200
     get_coll = Collection.parse_obj(resp.json())
-    assert post_coll.dict(exclude={"links"}) == get_coll.dict(exclude={"links"})
+    assert post_coll.dict(
+        exclude={"links"}) == get_coll.dict(exclude={"links"})
 
 
 @pytest.mark.asyncio
@@ -115,3 +116,50 @@ async def test_returns_valid_collection(app_client, load_test_data):
         resp_json, root=mock_root, preserve_dict=False
     )
     collection.validate()
+
+
+@pytest.mark.asyncio
+async def test_returns_valid_links_in_collections(app_client, load_test_data):
+    """Test links from listing collections"""
+    in_json = load_test_data("test_collection.json")
+    resp = await app_client.post(
+        "/collections",
+        json=in_json,
+    )
+    assert resp.status_code == 200
+
+    # Get collection by ID
+    resp = await app_client.get(f"/collections/{in_json['id']}")
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    # Mock root to allow validation
+    mock_root = pystac.Catalog(
+        id="test", description="test desc", href="https://example.com"
+    )
+    collection = pystac.Collection.from_dict(
+        resp_json, root=mock_root, preserve_dict=False
+    )
+    assert collection.validate()
+
+    # List collections
+    resp = await app_client.get(f"/collections")
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    collections = resp_json["collections"]
+    # Find collection in list by ID
+    single_coll = next(
+        coll for coll in collections if coll["id"] == in_json['id'])
+    is_coll_from_list_valid = False
+    single_coll_mocked_link = dict()
+    if single_coll != None:
+        single_coll_mocked_link = pystac.Collection.from_dict(
+            single_coll, root=mock_root, preserve_dict=False
+        )
+        is_coll_from_list_valid = single_coll_mocked_link.validate()
+
+    assert is_coll_from_list_valid
+
+    # Check links from the collection GET and list
+    assert [i for i in collection.to_dict()["links"]
+            if i not in single_coll_mocked_link.to_dict()["links"]] == []
