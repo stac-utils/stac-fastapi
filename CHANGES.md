@@ -4,19 +4,27 @@
 
 ### Added
 
-* Add `middlewares` option in `stac_fastapi.api.StacApi` to allow custom middleware configuration ([#267](https://github.com/stac-utils/stac-fastapi/pull/267))
-
 ### Removed
 
 ### Changed
 
 ### Fixed
 
-* Pin FastAPI to 0.67 to avoid issues with rendering OpenAPI documentation ([#246](https://github.com/stac-utils/stac-fastapi/pull/246))
+## [2.1.1]
+
+### Added
+
+* Add `middlewares` option in `stac_fastapi.api.StacApi` to allow custom middleware configuration ([#267](https://github.com/stac-utils/stac-fastapi/pull/267))
+* Support non-interval datetime queries on sqlalchemy backend ([#262](https://github.com/stac-utils/stac-fastapi/pull/262))
 * Restrict `limit` parameter in sqlalchemy backend to between 1 and 10,000. ([#251](https://github.com/stac-utils/stac-fastapi/pull/251))
 * Fix OAS conformance URL ([#263](https://github.com/stac-utils/stac-fastapi/pull/263))
 * Links to children collections from the landing pagge always have a title ([#260](https://github.com/stac-utils/stac-fastapi/pull/260))
 * Fix collection links in the `all_collections` method in `pgstac` ([#269](https://github.com/stac-utils/stac-fastapi/pull/269))
+
+### Fixed
+
+* Pin FastAPI to 0.67 to avoid issues with rendering OpenAPI documentation ([#246](https://github.com/stac-utils/stac-fastapi/pull/246))
+* Add `stac_version` to default search attributes ([#268](https://github.com/stac-utils/stac-fastapi/pull/268))
 
 ## [2.1.0]
 
@@ -70,7 +78,8 @@ _2020-09-25_
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.1..main>
+[2.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..2.1.1>
 [2.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..main>
 [2.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/1.1.0..2.0.0>
 [1.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/1.0.0..1.1.0>
