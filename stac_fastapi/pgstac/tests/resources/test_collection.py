@@ -19,8 +19,7 @@ async def test_create_collection(app_client, load_test_data: Callable):
     resp = await app_client.get(f"/collections/{post_coll.id}")
     assert resp.status_code == 200
     get_coll = Collection.parse_obj(resp.json())
-    assert post_coll.dict(
-        exclude={"links"}) == get_coll.dict(exclude={"links"})
+    assert post_coll.dict(exclude={"links"}) == get_coll.dict(exclude={"links"})
 
 
 @pytest.mark.asyncio
@@ -143,16 +142,15 @@ async def test_returns_valid_links_in_collections(app_client, load_test_data):
     assert collection.validate()
 
     # List collections
-    resp = await app_client.get(f"/collections")
+    resp = await app_client.get("/collections")
     assert resp.status_code == 200
     resp_json = resp.json()
     collections = resp_json["collections"]
     # Find collection in list by ID
-    single_coll = next(
-        coll for coll in collections if coll["id"] == in_json['id'])
+    single_coll = next(coll for coll in collections if coll["id"] == in_json["id"])
     is_coll_from_list_valid = False
     single_coll_mocked_link = dict()
-    if single_coll != None:
+    if single_coll is not None:
         single_coll_mocked_link = pystac.Collection.from_dict(
             single_coll, root=mock_root, preserve_dict=False
         )
@@ -161,5 +159,8 @@ async def test_returns_valid_links_in_collections(app_client, load_test_data):
     assert is_coll_from_list_valid
 
     # Check links from the collection GET and list
-    assert [i for i in collection.to_dict()["links"]
-            if i not in single_coll_mocked_link.to_dict()["links"]] == []
+    assert [
+        i
+        for i in collection.to_dict()["links"]
+        if i not in single_coll_mocked_link.to_dict()["links"]
+    ] == []

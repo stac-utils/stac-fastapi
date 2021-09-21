@@ -64,8 +64,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 "href": urljoin(base_url, "collections"),
             },
         ]
-        collection_list = Collections(
-            collections=linked_collections or [], links=links)
+        collection_list = Collections(collections=linked_collections or [], links=links)
         return collection_list
 
     async def get_collection(self, id: str, **kwargs) -> Collection:
@@ -293,6 +292,5 @@ class CoreCrudClient(AsyncBaseCoreClient):
         try:
             search_request = PgstacSearch(**base_args)
         except ValidationError:
-            raise HTTPException(
-                status_code=400, detail="Invalid parameters provided")
+            raise HTTPException(status_code=400, detail="Invalid parameters provided")
         return await self.post_search(search_request, request=kwargs["request"])
