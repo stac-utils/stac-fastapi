@@ -38,7 +38,7 @@
 
 ### Fixed
 
-* Make collection title is optional in landing page links ([#198](https://github.com/stac-utils/stac-fastapi/pull/198))
+* Make collection title optional in landing page links ([#198](https://github.com/stac-utils/stac-fastapi/pull/198))
 * Preserve relative paths on link generation ([#199](https://github.com/stac-utils/stac-fastapi/pull/199))
 * Fix collection endpoint return value to match spec (fixes regression) ([#232](https://github.com/stac-utils/stac-fastapi/pull/232))
 * Return empty item collection instead of error when searching ([#233](https://github.com/stac-utils/stac-fastapi/pull/233))
