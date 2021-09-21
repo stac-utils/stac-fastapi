@@ -4,6 +4,8 @@
 
 ### Added
 
+* Add `middlewares` option in `stac_fastapi.api.StacApi` to allow custom middleware configuration ([#267](https://github.com/stac-utils/stac-fastapi/pull/267))
+
 ### Removed
 
 ### Changed
