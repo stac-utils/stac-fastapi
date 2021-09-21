@@ -80,15 +80,26 @@ def test_app_fields_extension(load_test_data, app_client, postgres_transactions)
     assert list(resp_json["features"][0]["properties"]) == ["datetime"]
 
 
-def test_app_query_extension(load_test_data, app_client, postgres_transactions):
+def test_app_query_extension_gt(load_test_data, app_client, postgres_transactions):
     test_item = load_test_data("test_item.json")
     postgres_transactions.create_item(test_item, request=MockStarletteRequest)
 
-    params = {"query": {"proj:epsg": {"gt": test_item["properties"]["proj:epsg"] + 1}}}
+    params = {"query": {"proj:epsg": {"gt": test_item["properties"]["proj:epsg"]}}}
     resp = app_client.post("/search", json=params)
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 0
+
+
+def test_app_query_extension_gte(load_test_data, app_client, postgres_transactions):
+    test_item = load_test_data("test_item.json")
+    postgres_transactions.create_item(test_item, request=MockStarletteRequest)
+
+    params = {"query": {"proj:epsg": {"gte": test_item["properties"]["proj:epsg"]}}}
+    resp = app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
 
 
 def test_app_query_extension_limit_lt0(
