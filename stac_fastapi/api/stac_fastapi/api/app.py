@@ -74,6 +74,7 @@ class StacApi:
     description: str = attr.ib(default="stac-fastapi")
     search_request_model: Type[Search] = attr.ib(default=STACSearch)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
+    middlewares: List = attr.ib(default=attr.Factory(lambda: [BrotliMiddleware]))
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -345,5 +346,6 @@ class StacApi:
         # customize openapi
         self.app.openapi = self.customize_openapi
 
-        # add compression middleware
-        self.app.add_middleware(BrotliMiddleware)
+        # add middlewares
+        for middleware in self.middlewares:
+            self.app.add_middleware(middleware)
