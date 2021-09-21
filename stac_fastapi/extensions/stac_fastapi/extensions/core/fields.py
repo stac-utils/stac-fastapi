@@ -32,6 +32,7 @@ class FieldsExtension(ApiExtension):
         factory=lambda: {
             "id",
             "type",
+            "stac_version",
             "geometry",
             "bbox",
             "links",
