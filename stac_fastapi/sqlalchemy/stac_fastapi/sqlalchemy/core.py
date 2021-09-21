@@ -312,12 +312,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
             else:
                 # Spatial query
-                poly = None
+                geom = None
                 if search_request.intersects is not None:
-                    poly = shape(search_request.intersects)
+                    geom = shape(search_request.intersects)
                 elif search_request.bbox:
                     if len(search_request.bbox) == 4:
-                        poly = ShapelyPolygon.from_bounds(*search_request.bbox)
+                        geom = ShapelyPolygon.from_bounds(*search_request.bbox)
                     elif len(search_request.bbox) == 6:
                         """Shapely doesn't support 3d bounding boxes we'll just use the 2d portion"""
                         bbox_2d = [
@@ -326,10 +326,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                             search_request.bbox[3],
                             search_request.bbox[4],
                         ]
-                        poly = ShapelyPolygon.from_bounds(*bbox_2d)
+                        geom = ShapelyPolygon.from_bounds(*bbox_2d)
 
-                if poly:
-                    filter_geom = ga.shape.from_shape(poly, srid=4326)
+                if geom:
+                    filter_geom = ga.shape.from_shape(geom, srid=4326)
                     query = query.filter(
                         ga.func.ST_Intersects(self.item_table.geometry, filter_geom)
                     )
