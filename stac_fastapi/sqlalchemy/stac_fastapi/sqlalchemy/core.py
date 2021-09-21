@@ -1,6 +1,7 @@
 """Item crud client."""
 import json
 import logging
+import operator
 from datetime import datetime
 from typing import List, Optional, Set, Type, Union
 from urllib.parse import urlencode, urljoin
@@ -23,7 +24,7 @@ from stac_fastapi.sqlalchemy import serializers
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
-from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
+from stac_fastapi.sqlalchemy.types.search import Operator, SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
@@ -311,12 +312,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
             else:
                 # Spatial query
-                poly = None
+                geom = None
                 if search_request.intersects is not None:
-                    poly = shape(search_request.intersects)
+                    geom = shape(search_request.intersects)
                 elif search_request.bbox:
                     if len(search_request.bbox) == 4:
-                        poly = ShapelyPolygon.from_bounds(*search_request.bbox)
+                        geom = ShapelyPolygon.from_bounds(*search_request.bbox)
                     elif len(search_request.bbox) == 6:
                         """Shapely doesn't support 3d bounding boxes we'll just use the 2d portion"""
                         bbox_2d = [
@@ -325,10 +326,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                             search_request.bbox[3],
                             search_request.bbox[4],
                         ]
-                        poly = ShapelyPolygon.from_bounds(*bbox_2d)
+                        geom = ShapelyPolygon.from_bounds(*bbox_2d)
 
-                if poly:
-                    filter_geom = ga.shape.from_shape(poly, srid=4326)
+                if geom:
+                    filter_geom = ga.shape.from_shape(geom, srid=4326)
                     query = query.filter(
                         ga.func.ST_Intersects(self.item_table.geometry, filter_geom)
                     )
@@ -337,13 +338,16 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 if search_request.datetime:
                     # Two tailed query (between)
                     dts = search_request.datetime.split("/")
-                    if ".." not in search_request.datetime:
+                    # Non-interval date ex. "2000-02-02T00:00:00.00Z"
+                    if len(dts) == 1:
+                        query = query.filter(self.item_table.datetime == dts[0])
+                    elif ".." not in search_request.datetime:
                         query = query.filter(self.item_table.datetime.between(*dts))
                     # All items after the start date
-                    if dts[0] != "..":
+                    elif dts[0] != "..":
                         query = query.filter(self.item_table.datetime >= dts[0])
                     # All items before the end date
-                    if dts[1] != "..":
+                    elif dts[1] != "..":
                         query = query.filter(self.item_table.datetime <= dts[1])
 
                 # Query fields
@@ -351,7 +355,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     for (field_name, expr) in search_request.query.items():
                         field = self.item_table.get_field(field_name)
                         for (op, value) in expr.items():
-                            query = query.filter(op.operator(field, value))
+                            if op == Operator.gte:
+                                query = query.filter(operator.ge(field, value))
+                            elif op == Operator.lte:
+                                query = query.filter(operator.le(field, value))
+                            else:
+                                query = query.filter(op.operator(field, value))
 
                 if self.extension_is_enabled("ContextExtension"):
                     count_query = query.statement.with_only_columns(

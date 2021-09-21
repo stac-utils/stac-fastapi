@@ -12,14 +12,19 @@
 
 ## [2.1.1]
 
+### Added
+
+* Add `middlewares` option in `stac_fastapi.api.StacApi` to allow custom middleware configuration ([#267](https://github.com/stac-utils/stac-fastapi/pull/267))
+* Support non-interval datetime queries on sqlalchemy backend ([#262](https://github.com/stac-utils/stac-fastapi/pull/262))
+* Restrict `limit` parameter in sqlalchemy backend to between 1 and 10,000. ([#251](https://github.com/stac-utils/stac-fastapi/pull/251))
+* Fix OAS conformance URL ([#263](https://github.com/stac-utils/stac-fastapi/pull/263))
+* Links to children collections from the landing pagge always have a title ([#260](https://github.com/stac-utils/stac-fastapi/pull/260))
+* Fix collection links in the `all_collections` method in `pgstac` ([#269](https://github.com/stac-utils/stac-fastapi/pull/269))
+
 ### Fixed
 
 * Pin FastAPI to 0.67 to avoid issues with rendering OpenAPI documentation ([#246](https://github.com/stac-utils/stac-fastapi/pull/246))
 * Add `stac_version` to default search attributes ([#268](https://github.com/stac-utils/stac-fastapi/pull/268))
-
-### Added
-
-* Support non-interval datetime queries on sqlalchemy backend ([#262](https://github.com/stac-utils/stac-fastapi/pull/262))
 
 ## [2.1.0]
 
@@ -44,7 +49,7 @@
 
 ### Fixed
 
-* Make collection title is optional in landing page links ([#198](https://github.com/stac-utils/stac-fastapi/pull/198))
+* Make collection title optional in landing page links ([#198](https://github.com/stac-utils/stac-fastapi/pull/198))
 * Preserve relative paths on link generation ([#199](https://github.com/stac-utils/stac-fastapi/pull/199))
 * Fix collection endpoint return value to match spec (fixes regression) ([#232](https://github.com/stac-utils/stac-fastapi/pull/232))
 * Return empty item collection instead of error when searching ([#233](https://github.com/stac-utils/stac-fastapi/pull/233))
