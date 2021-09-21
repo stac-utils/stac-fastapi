@@ -174,6 +174,28 @@ def test_search_invalid_date(load_test_data, app_client, postgres_transactions):
     assert resp.status_code == 400
 
 
+def test_datetime_non_interval(load_test_data, app_client, postgres_transactions):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    alternate_formats = [
+        "2020-02-12T12:30:22+00:00",
+        "2020-02-12T12:30:22.00Z",
+        "2020-02-12T12:30:22Z",
+        "2020-02-12T12:30:22.00+00:00",
+    ]
+    for date in alternate_formats:
+        params = {
+            "datetime": date,
+            "collections": [item["collection"]],
+        }
+
+        resp = app_client.post("/search", json=params)
+        assert resp.status_code == 200
+        resp_json = resp.json()
+        # datetime is returned in this format "2020-02-12T12:30:22+00:00"
+        assert resp_json["features"][0]["properties"]["datetime"][0:19] == date[0:19]
+
+
 def test_bbox_3d(load_test_data, app_client, postgres_transactions):
     item = load_test_data("test_item.json")
     postgres_transactions.create_item(item, request=MockStarletteRequest)
