@@ -110,6 +110,36 @@ async def test_app_query_extension_limit_gt10000(
 
 
 @pytest.mark.asyncio
+async def test_app_query_extension_gt(load_test_data, app_client, load_test_collection):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
+    assert resp.status_code == 200
+
+    params = {"query": {"proj:epsg": {"gt": item["properties"]["proj:epsg"]}}}
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_app_query_extension_gte(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
+    assert resp.status_code == 200
+
+    params = {"query": {"proj:epsg": {"gte": item["properties"]["proj:epsg"]}}}
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+
+@pytest.mark.asyncio
 async def test_app_sort_extension(load_test_data, app_client, load_test_collection):
     coll = load_test_collection
     first_item = load_test_data("test_item.json")

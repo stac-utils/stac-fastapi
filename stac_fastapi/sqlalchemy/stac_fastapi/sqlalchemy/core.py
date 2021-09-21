@@ -1,6 +1,7 @@
 """Item crud client."""
 import json
 import logging
+import operator
 from datetime import datetime
 from typing import List, Optional, Set, Type, Union
 from urllib.parse import urlencode, urljoin
@@ -23,7 +24,7 @@ from stac_fastapi.sqlalchemy import serializers
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
-from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
+from stac_fastapi.sqlalchemy.types.search import Operator, SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
@@ -351,7 +352,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     for (field_name, expr) in search_request.query.items():
                         field = self.item_table.get_field(field_name)
                         for (op, value) in expr.items():
-                            query = query.filter(op.operator(field, value))
+                            if op == Operator.gte:
+                                query = query.filter(operator.ge(field, value))
+                            elif op == Operator.lte:
+                                query = query.filter(operator.le(field, value))
+                            else:
+                                query = query.filter(op.operator(field, value))
 
                 if self.extension_is_enabled("ContextExtension"):
                     count_query = query.statement.with_only_columns(
