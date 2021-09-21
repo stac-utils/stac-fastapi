@@ -14,6 +14,7 @@
 * Restrict `limit` parameter in sqlalchemy backend to between 1 and 10,000. ([#251](https://github.com/stac-utils/stac-fastapi/pull/251))
 * Fix OAS conformance URL ([#263](https://github.com/stac-utils/stac-fastapi/pull/263))
 * Links to children collections from the landing pagge always have a title ([#260](https://github.com/stac-utils/stac-fastapi/pull/260))
+* Fix collection links in the `all_collections` method in `pgstac` ([#269](https://github.com/stac-utils/stac-fastapi/pull/269))
 
 ## [2.1.0]
 
