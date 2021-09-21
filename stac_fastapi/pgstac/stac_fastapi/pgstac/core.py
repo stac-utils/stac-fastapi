@@ -64,7 +64,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 "href": urljoin(base_url, "collections"),
             },
         ]
-        collection_list = Collections(collections=collections or [], links=links)
+        collection_list = Collections(collections=linked_collections or [], links=links)
         return collection_list
 
     async def get_collection(self, id: str, **kwargs) -> Collection:
