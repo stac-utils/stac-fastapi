@@ -190,7 +190,7 @@ def test_search_point_intersects(load_test_data, app_client, postgres_transactio
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
 
-    
+
 def test_datetime_non_interval(load_test_data, app_client, postgres_transactions):
     item = load_test_data("test_item.json")
     postgres_transactions.create_item(item, request=MockStarletteRequest)
