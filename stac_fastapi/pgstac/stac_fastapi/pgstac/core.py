@@ -207,7 +207,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         # If collection does not exist, NotFoundError wil be raised
         await self.get_collection(collection_id, **kwargs)
 
-        req = PgstacSearch(ids=[item_id], limit=1)
+        req = PgstacSearch(ids=[item_id], collections=[collection_id], limit=1)
         item_collection = await self._search_base(req, **kwargs)
         if not item_collection["features"]:
             raise NotFoundError(f"Collection {collection_id} does not exist.")
