@@ -210,7 +210,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
         req = PgstacSearch(ids=[item_id], collections=[collection_id], limit=1)
         item_collection = await self._search_base(req, **kwargs)
         if not item_collection["features"]:
-            raise NotFoundError(f"Collection {collection_id} does not exist.")
+            raise NotFoundError(
+                f"Item {item_id} in Collection {collection_id} does not exist."
+            )
 
         return Item(**item_collection["features"][0])
 
