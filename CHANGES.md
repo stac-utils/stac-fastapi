@@ -4,6 +4,8 @@
 
 ### Added
 
+* Add ability to override ItemCollectionUri and SearchGetRequest models ([#271](https://github.com/stac-utils/stac-fastapi/pull/271))
+
 ### Removed
 
 ### Changed
