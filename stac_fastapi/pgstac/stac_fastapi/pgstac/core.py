@@ -1,7 +1,7 @@
 """Item crud client."""
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Type, Union
 from urllib.parse import urljoin
 
 import attr
@@ -26,6 +26,8 @@ NumType = Union[float, int]
 @attr.s
 class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
+
+    search_request_model: Type[PgstacSearch] = attr.ib(init=False, default=PgstacSearch)
 
     async def all_collections(self, **kwargs) -> Collections:
         """Read all collections from the database."""
@@ -168,7 +170,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         return collection
 
     async def item_collection(
-        self, id: str, limit: int = 10, token: str = None, **kwargs
+        self, id: str, limit: Optional[int] = None, token: str = None, **kwargs
     ) -> ItemCollection:
         """Get all items from a specific collection.
 
@@ -185,7 +187,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         # If collection does not exist, NotFoundError wil be raised
         await self.get_collection(id, **kwargs)
 
-        req = PgstacSearch(collections=[id], limit=limit, token=token)
+        req = self.search_request_model(collections=[id], limit=limit, token=token)
         item_collection = await self._search_base(req, **kwargs)
         links = await CollectionLinks(
             collection_id=id, request=kwargs["request"]
@@ -207,7 +209,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
         # If collection does not exist, NotFoundError wil be raised
         await self.get_collection(collection_id, **kwargs)
 
-        req = PgstacSearch(ids=[item_id], collections=[collection_id], limit=1)
+        req = self.search_request_model(
+            ids=[item_id], collections=[collection_id], limit=1
+        )
         item_collection = await self._search_base(req, **kwargs)
         if not item_collection["features"]:
             raise NotFoundError(
@@ -238,7 +242,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         ids: Optional[List[str]] = None,
         bbox: Optional[List[NumType]] = None,
         datetime: Optional[Union[str, datetime]] = None,
-        limit: Optional[int] = 10,
+        limit: Optional[int] = None,
         query: Optional[str] = None,
         token: Optional[str] = None,
         fields: Optional[List[str]] = None,
@@ -292,7 +296,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
         # Do the request
         try:
-            search_request = PgstacSearch(**base_args)
+            search_request = self.search_request_model(**base_args)
         except ValidationError:
             raise HTTPException(status_code=400, detail="Invalid parameters provided")
         return await self.post_search(search_request, request=kwargs["request"])
