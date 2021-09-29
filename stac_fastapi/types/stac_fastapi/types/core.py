@@ -57,7 +57,7 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def delete_item(
-        self, item_id: str, collection_id: str, **kwargs
+        self, itemId: str, collectionId: str, **kwargs
     ) -> stac_types.Item:
         """Delete an item from a collection.
 
@@ -107,7 +107,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def delete_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
+    def delete_collection(self, collectionId: str, **kwargs) -> stac_types.Collection:
         """Delete a collection.
 
         Called with `DELETE /collections/{collectionId}`
