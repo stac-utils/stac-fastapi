@@ -178,6 +178,8 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             db_query = db_query.filter(self.item_table.collection_id == collection_id)
             db_query = db_query.filter(self.item_table.id == item_id)
             item = db_query.first()
+            if not item:
+                raise NotFoundError(f"{self.item_table.__name__} {id} not found")
             return self.item_serializer.db_to_stac(item, base_url=base_url)
 
     def get_search(
