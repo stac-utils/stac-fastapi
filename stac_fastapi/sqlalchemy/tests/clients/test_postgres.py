@@ -85,6 +85,26 @@ def test_get_collection(
     assert coll["id"] == data["id"]
 
 
+def test_get_item(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    collection_data = load_test_data("test_collection.json")
+    postgres_transactions.create_collection(
+        collection_data, request=MockStarletteRequest
+    )
+    data = load_test_data("test_item.json")
+    postgres_transactions.create_item(data, request=MockStarletteRequest)
+    coll = postgres_core.get_item(
+        item_id=data["id"],
+        collection_id=data["collection"],
+        request=MockStarletteRequest,
+    )
+    assert coll["id"] == data["id"]
+    assert coll["collection"] == data["collection"]
+
+
 def test_get_collection_items(
     postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,
