@@ -38,7 +38,7 @@ class FieldsExtension(ApiExtension):
             "links",
             "assets",
             "properties.datetime",
-            "collection"
+            "collection",
         }
     )
 
