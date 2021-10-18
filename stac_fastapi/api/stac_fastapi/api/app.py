@@ -73,6 +73,8 @@ class StacApi:
     stac_version: str = attr.ib(default=STAC_VERSION)
     description: str = attr.ib(default="stac-fastapi")
     search_request_model: Type[Search] = attr.ib(default=STACSearch)
+    search_get_request: Type[SearchGetRequest] = attr.ib(default=SearchGetRequest)
+    item_collection_uri: Type[ItemCollectionUri] = attr.ib(default=ItemCollectionUri)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
     middlewares: List = attr.ib(default=attr.Factory(lambda: [BrotliMiddleware]))
 
@@ -199,7 +201,9 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(self.client.get_search, SearchGetRequest),
+            endpoint=self._create_endpoint(
+                self.client.get_search, self.search_get_request
+            ),
         )
 
     def register_get_collections(self):
@@ -255,7 +259,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=self._create_endpoint(
-                self.client.item_collection, ItemCollectionUri
+                self.client.item_collection, self.item_collection_uri
             ),
         )
 

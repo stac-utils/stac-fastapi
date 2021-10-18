@@ -4,7 +4,9 @@
 
 ### Added
 
+* Add ability to override ItemCollectionUri and SearchGetRequest models ([#271](https://github.com/stac-utils/stac-fastapi/pull/271))
 * Added `collections` attribute to list of default fields to include, so that we satisfy the STAC API spec, which requires a `collections` attribute to be output when an item is part of a collection
+
 ### Removed
 
 ### Changed
