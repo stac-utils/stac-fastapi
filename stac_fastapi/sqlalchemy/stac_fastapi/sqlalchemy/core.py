@@ -174,7 +174,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         """Get item by id."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
-            item = self._lookup_id(item_id, self.item_table, session)
+            db_query = session.query(self.item_table)
+            db_query = db_query.filter(self.item_table.collection_id == collection_id)
+            db_query = db_query.filter(self.item_table.id == item_id)
+            item = db_query.first()
+            if not item:
+                raise NotFoundError(f"{self.item_table.__name__} {id} not found")
             return self.item_serializer.db_to_stac(item, base_url=base_url)
 
     def get_search(
