@@ -1,19 +1,25 @@
 # Changelog
 
-## [Unreleased]
+## Unreleased
+
+### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+
+## [2.2.0]
 
 ### Added
 
 * Add ability to override ItemCollectionUri and SearchGetRequest models ([#271](https://github.com/stac-utils/stac-fastapi/pull/271))
-* Added `collections` attribute to list of default fields to include, so that we satisfy the STAC API spec, which requires a `collections` attribute to be output when an item is part of a collection
-
-### Removed
+* Added `collections` attribute to list of default fields to include, so that we satisfy the STAC API spec, which requires a `collections` attribute to be output when an item is part of a collection ([#276](https://github.com/stac-utils/stac-fastapi/pull/276))
 
 ### Changed
 
 * Update get_item in sqlalchemy backend to allow for querying for items with same ids but in different collections. ([#275](https://github.com/stac-utils/stac-fastapi/pull/275))
-
-### Fixed
 
 ## [2.1.1]
 
@@ -84,7 +90,8 @@ _2020-09-25_
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.1..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.2.0..main>
+[2.2.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.1..2.2.0>
 [2.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..2.1.1>
 [2.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..main>
 [2.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/1.1.0..2.0.0>
