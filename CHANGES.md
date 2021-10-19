@@ -11,6 +11,8 @@
 
 ### Changed
 
+* Update get_item in sqlalchemy backend to allow for querying for items with same ids but in different collections. ([#275](https://github.com/stac-utils/stac-fastapi/pull/275))
+
 ### Fixed
 
 ## [2.1.1]
