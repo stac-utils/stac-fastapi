@@ -1,4 +1,6 @@
 """query extension."""
+from typing import List, Optional
+
 import attr
 from fastapi import FastAPI
 
@@ -14,6 +16,11 @@ class QueryExtension(ApiExtension):
 
     https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#query
     """
+
+    conformance_classes: List[str] = attr.ib(
+        factory=lambda: ["https://api.stacspec.org/v1.0.0-beta.3/item-search/#query"]
+    )
+    schema_href: Optional[str] = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

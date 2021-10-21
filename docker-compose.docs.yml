@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  docs:
+    container_name: stac-fastapi-docs-dev
+    build:
+      context: .
+      dockerfile: Dockerfile.docs
+    platform: linux/amd64
+    environment:
+      - POSTGRES_USER=username
+      - POSTGRES_PASS=password
+      - POSTGRES_DBNAME=postgis
+      - POSTGRES_HOST_READER=database
+      - POSTGRES_HOST_WRITER=database
+      - POSTGRES_PORT=5432
+    volumes:
+      - .:/opt/src

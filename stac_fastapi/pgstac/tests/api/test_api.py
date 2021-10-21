@@ -66,6 +66,80 @@ async def test_app_query_extension(load_test_data, app_client, load_test_collect
 
 
 @pytest.mark.asyncio
+async def test_app_query_extension_limit_1(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
+    assert resp.status_code == 200
+
+    params = {"limit": 1}
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_app_query_extension_limit_lt0(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
+    assert resp.status_code == 200
+
+    params = {"limit": -1}
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_app_query_extension_limit_gt10000(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
+    assert resp.status_code == 200
+
+    params = {"limit": 10001}
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_app_query_extension_gt(load_test_data, app_client, load_test_collection):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
+    assert resp.status_code == 200
+
+    params = {"query": {"proj:epsg": {"gt": item["properties"]["proj:epsg"]}}}
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_app_query_extension_gte(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
+    assert resp.status_code == 200
+
+    params = {"query": {"proj:epsg": {"gte": item["properties"]["proj:epsg"]}}}
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+
+@pytest.mark.asyncio
 async def test_app_sort_extension(load_test_data, app_client, load_test_collection):
     coll = load_test_collection
     first_item = load_test_data("test_item.json")
@@ -88,7 +162,7 @@ async def test_app_sort_extension(load_test_data, app_client, load_test_collecti
         "collections": [coll.id],
         "sortby": [{"field": "datetime", "direction": "desc"}],
     }
-    print(params)
+
     resp = await app_client.post("/search", json=params)
     assert resp.status_code == 200
     resp_json = resp.json()
@@ -104,3 +178,98 @@ async def test_app_sort_extension(load_test_data, app_client, load_test_collecti
     resp_json = resp.json()
     assert resp_json["features"][1]["id"] == first_item["id"]
     assert resp_json["features"][0]["id"] == second_item["id"]
+
+
+@pytest.mark.asyncio
+async def test_search_invalid_date(load_test_data, app_client, load_test_collection):
+    coll = load_test_collection
+    first_item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=first_item)
+    assert resp.status_code == 200
+
+    params = {
+        "datetime": "2020-XX-01/2020-10-30",
+        "collections": [coll.id],
+    }
+
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_bbox_3d(load_test_data, app_client, load_test_collection):
+    coll = load_test_collection
+    first_item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=first_item)
+    assert resp.status_code == 200
+
+    australia_bbox = [106.343365, -47.199523, 0.1, 168.218365, -19.437288, 0.1]
+    params = {
+        "bbox": australia_bbox,
+        "collections": [coll.id],
+    }
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_app_search_response(load_test_data, app_client, load_test_collection):
+    coll = load_test_collection
+    params = {
+        "collections": [coll.id],
+    }
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    assert resp_json.get("type") == "FeatureCollection"
+    # stac_version and stac_extensions were removed in v1.0.0-beta.3
+    assert resp_json.get("stac_version") is None
+    assert resp_json.get("stac_extensions") is None
+
+
+@pytest.mark.asyncio
+async def test_search_point_intersects(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
+    assert resp.status_code == 200
+
+    point = [150.04, -33.14]
+    intersects = {"type": "Point", "coordinates": point}
+
+    params = {
+        "intersects": intersects,
+        "collections": [item["collection"]],
+    }
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_search_line_string_intersects(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
+    assert resp.status_code == 200
+
+    line = [[150.04, -33.14], [150.22, -33.89]]
+    intersects = {"type": "LineString", "coordinates": line}
+
+    params = {
+        "intersects": intersects,
+        "collections": [item["collection"]],
+    }
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1

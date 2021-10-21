@@ -6,6 +6,7 @@ import pytest
 from stac_pydantic import Collection, Item
 from tests.conftest import MockStarletteRequest
 
+from stac_fastapi.api.app import StacApi
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
 from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
@@ -82,6 +83,26 @@ def test_get_collection(
         exclude={"links"}
     )
     assert coll["id"] == data["id"]
+
+
+def test_get_item(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    collection_data = load_test_data("test_collection.json")
+    postgres_transactions.create_collection(
+        collection_data, request=MockStarletteRequest
+    )
+    data = load_test_data("test_item.json")
+    postgres_transactions.create_item(data, request=MockStarletteRequest)
+    coll = postgres_core.get_item(
+        item_id=data["id"],
+        collection_id=data["collection"],
+        request=MockStarletteRequest,
+    )
+    assert coll["id"] == data["id"]
+    assert coll["collection"] == data["collection"]
 
 
 def test_get_collection_items(
@@ -198,6 +219,7 @@ def test_delete_item(
 
 
 def test_bulk_item_insert(
+    postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,
     postgres_bulk_transactions: BulkTransactionsClient,
     load_test_data: Callable,
@@ -213,11 +235,17 @@ def test_bulk_item_insert(
         _item["id"] = str(uuid.uuid4())
         items.append(_item)
 
+    fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
+    assert len(fc["features"]) == 0
+
     postgres_bulk_transactions.bulk_item_insert(items=items)
+
+    fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
+    assert len(fc["features"]) == 10
 
     for item in items:
         postgres_transactions.delete_item(
-            item["id"], item["collection_id"], request=MockStarletteRequest
+            item["id"], item["collection"], request=MockStarletteRequest
         )
 
 
@@ -241,7 +269,7 @@ def test_bulk_item_insert_chunked(
 
     for item in items:
         postgres_transactions.delete_item(
-            item["id"], item["collection_id"], request=MockStarletteRequest
+            item["id"], item["collection"], request=MockStarletteRequest
         )
 
 
@@ -249,12 +277,16 @@ def test_landing_page_no_collection_title(
     postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,
     load_test_data: Callable,
+    api_client: StacApi,
 ):
+    class MockStarletteRequestWithApp(MockStarletteRequest):
+        app = api_client.app
+
     coll = load_test_data("test_collection.json")
     del coll["title"]
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    landing_page = postgres_core.landing_page(request=MockStarletteRequest)
+    landing_page = postgres_core.landing_page(request=MockStarletteRequestWithApp)
     for link in landing_page["links"]:
         if link["href"].split("/")[-1] == coll["id"]:
-            assert not link["title"]
+            assert link["title"]

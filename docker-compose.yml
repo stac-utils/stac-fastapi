@@ -7,6 +7,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    platform: linux/amd64
     environment:
       - APP_HOST=0.0.0.0
       - APP_PORT=8081
@@ -32,7 +33,7 @@ services:
     depends_on:
       - database
     command:
-      python -m stac_fastapi.sqlalchemy.app
+      bash -c "./scripts/wait-for-it.sh database:5432 && python -m stac_fastapi.sqlalchemy.app"
 
   app-pgstac:
     container_name: stac-fastapi-pgstac
@@ -40,6 +41,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    platform: linux/amd64
     environment:
       - APP_HOST=0.0.0.0
       - APP_PORT=8082
@@ -65,11 +67,11 @@ services:
     depends_on:
       - database
     command:
-      python -m stac_fastapi.pgstac.app
+      bash -c "./scripts/wait-for-it.sh database:5432 && python -m stac_fastapi.pgstac.app"
 
   database:
     container_name: stac-db
-    image: ghcr.io/stac-utils/pgstac:v0.2.8
+    image: ghcr.io/stac-utils/pgstac:v0.3.4
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
