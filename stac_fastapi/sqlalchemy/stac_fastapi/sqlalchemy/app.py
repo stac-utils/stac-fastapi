@@ -1,11 +1,11 @@
 """FastAPI application."""
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import (
+    ContextExtension,
     FieldsExtension,
     QueryExtension,
     SortExtension,
     TransactionExtension,
-    ContextExtension,
 )
 from stac_fastapi.extensions.third_party import BulkTransactionExtension
 from stac_fastapi.sqlalchemy.config import SqlalchemySettings

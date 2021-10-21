@@ -3,11 +3,11 @@ from fastapi.responses import ORJSONResponse
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import (
+    ContextExtension,
     FieldsExtension,
     QueryExtension,
     SortExtension,
     TransactionExtension,
-    ContextExtension,
 )
 from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.core import CoreCrudClient
