@@ -28,6 +28,7 @@ nav:
     - stac_fastapi.extensions:
       - core:
           - context: api/stac_fastapi/extensions/core/context.md
+          - filter: api/stac_fastapi/extensions/core/filter.md
           - fields: api/stac_fastapi/extensions/core/fields.md
           - query: api/stac_fastapi/extensions/core/query.md
           - sort: api/stac_fastapi/extensions/core/sort.md
