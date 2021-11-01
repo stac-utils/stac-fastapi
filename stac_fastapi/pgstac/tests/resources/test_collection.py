@@ -164,3 +164,14 @@ async def test_returns_valid_links_in_collections(app_client, load_test_data):
         for i in collection.to_dict()["links"]
         if i not in single_coll_mocked_link.to_dict()["links"]
     ] == []
+
+
+@pytest.mark.asyncio
+async def test_returns_license_link(app_client, load_test_collection):
+    coll = load_test_collection
+
+    resp = await app_client.get(f"/collections/{coll.id}")
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    link_rel_types = [link["rel"] for link in resp_json["links"]]
+    assert "license" in link_rel_types
