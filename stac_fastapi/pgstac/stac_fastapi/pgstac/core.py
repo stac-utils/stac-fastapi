@@ -23,6 +23,18 @@ from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollectio
 NumType = Union[float, int]
 
 
+def _extended_links(
+    original_links: Optional[List[Dict[str, Any]]], new_links: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """Extend links with new links."""
+    if original_links is None:
+        return new_links
+    new_link_rels = set([link["rel"] for link in new_links])
+    return new_links + [
+        link for link in original_links if link["rel"] not in new_link_rels
+    ]
+
+
 @attr.s
 class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
@@ -45,9 +57,11 @@ class CoreCrudClient(AsyncBaseCoreClient):
         if collections is not None and len(collections) > 0:
             for c in collections:
                 coll = Collection(**c)
-                coll["links"] = await CollectionLinks(
+                links = await CollectionLinks(
                     collection_id=coll["id"], request=request
                 ).get_links()
+                coll["links"] = _extended_links(coll.get("links"), links)
+
                 linked_collections.append(coll)
         links = [
             {
@@ -95,7 +109,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         if collection is None:
             raise NotFoundError(f"Collection {id} does not exist.")
         links = await CollectionLinks(collection_id=id, request=request).get_links()
-        collection["links"] = links
+        collection["links"] = _extended_links(collection.get("links"), links)
         return Collection(**collection)
 
     async def _search_base(
@@ -152,7 +166,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
                     item_id=feature["id"],
                     request=request,
                 ).get_links()
-                feature["links"] = links
+                feature["links"] = _extended_links(feature.get("links"), links)
                 exclude = search_request.fields.exclude
                 if exclude and len(exclude) == 0:
                     exclude = None
