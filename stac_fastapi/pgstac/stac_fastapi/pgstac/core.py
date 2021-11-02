@@ -23,18 +23,6 @@ from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollectio
 NumType = Union[float, int]
 
 
-def _extended_links(
-    original_links: Optional[List[Dict[str, Any]]], new_links: List[Dict[str, Any]]
-) -> List[Dict[str, Any]]:
-    """Extend links with new links."""
-    if original_links is None:
-        return new_links
-    new_link_rels = set([link["rel"] for link in new_links])
-    return new_links + [
-        link for link in original_links if link["rel"] not in new_link_rels
-    ]
-
-
 @attr.s
 class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
@@ -57,12 +45,12 @@ class CoreCrudClient(AsyncBaseCoreClient):
         if collections is not None and len(collections) > 0:
             for c in collections:
                 coll = Collection(**c)
-                links = await CollectionLinks(
+                coll["links"] = await CollectionLinks(
                     collection_id=coll["id"], request=request
-                ).get_links()
-                coll["links"] = _extended_links(coll.get("links"), links)
+                ).get_links(extra_links=coll.get("links"))
 
                 linked_collections.append(coll)
+
         links = [
             {
                 "rel": Relations.root.value,
@@ -108,8 +96,11 @@ class CoreCrudClient(AsyncBaseCoreClient):
             collection = await conn.fetchval(q, *p)
         if collection is None:
             raise NotFoundError(f"Collection {id} does not exist.")
-        links = await CollectionLinks(collection_id=id, request=request).get_links()
-        collection["links"] = _extended_links(collection.get("links"), links)
+
+        collection["links"] = await CollectionLinks(
+            collection_id=id, request=request
+        ).get_links(extra_links=collection.get("links"))
+
         return Collection(**collection)
 
     async def _search_base(
@@ -161,12 +152,12 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 # TODO: feature.collection is not always included
                 # This code fails if it's left outside of the fields expression
                 # I've fields extension updated test cases to always include feature.collection
-                links = await ItemLinks(
+                feature["links"] = await ItemLinks(
                     collection_id=feature["collection"],
                     item_id=feature["id"],
                     request=request,
-                ).get_links()
-                feature["links"] = _extended_links(feature.get("links"), links)
+                ).get_links(extra_links=feature.get("links"))
+
                 exclude = search_request.fields.exclude
                 if exclude and len(exclude) == 0:
                     exclude = None
