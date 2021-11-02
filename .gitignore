@@ -126,3 +126,6 @@ docs/api/*
 
 # Direnv
 .envrc
+
+# Virtualenv
+venv
