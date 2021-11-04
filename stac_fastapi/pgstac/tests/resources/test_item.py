@@ -2,10 +2,11 @@ import json
 import uuid
 from datetime import datetime, timedelta
 from typing import Callable
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urljoin, urlparse
 
 import pystac
 import pytest
+from httpx import AsyncClient
 from shapely.geometry import Polygon
 from stac_pydantic import Collection, Item
 from stac_pydantic.shared import DATETIME_RFC339
@@ -67,7 +68,7 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
     in_json = load_test_data("test_item.json")
     in_item = Item.parse_obj(in_json)
     resp = await app_client.post(
-        "/collections/{coll.id}/items",
+        f"/collections/{coll.id}/items",
         json=in_json,
     )
     assert resp.status_code == 200
@@ -1005,3 +1006,26 @@ async def test_search_bbox_errors(app_client):
     params = {"bbox": "100.0,0.0,0.0,105.0"}
     resp = await app_client.get("/search", params=params)
     assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_preserves_extra_link(
+    app_client: AsyncClient, load_test_data, load_test_collection
+):
+    coll = load_test_collection
+    test_item = load_test_data("test_item.json")
+    expected_href = urljoin(str(app_client.base_url), "preview.html")
+
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=test_item)
+    assert resp.status_code == 200
+
+    response_item = await app_client.get(
+        f"/collections/{coll.id}/items/{test_item['id']}",
+        params={"limit": 1},
+    )
+    assert response_item.status_code == 200
+    item = response_item.json()
+
+    extra_link = [link for link in item["links"] if link["rel"] == "preview"]
+    assert extra_link
+    assert extra_link[0]["href"] == expected_href
