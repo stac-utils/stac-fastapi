@@ -1,6 +1,6 @@
 """base api extension."""
 import abc
-from typing import Optional
+from typing import List, Optional
 
 import attr
 from fastapi import FastAPI
@@ -20,6 +20,9 @@ class ApiExtension(abc.ABC):
         The model can differ based on HTTP verb
         """
         return getattr(self, verb)
+
+    conformance_classes: List[str] = attr.ib(factory=list)
+    schema_href: Optional[str] = attr.ib(default=None)
 
     @abc.abstractmethod
     def register(self, app: FastAPI) -> None:

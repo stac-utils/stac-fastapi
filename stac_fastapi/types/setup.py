@@ -6,7 +6,9 @@ with open("README.md") as f:
     desc = f.read()
 
 install_requires = [
-    "fastapi",
+    # We need to pin fastapi for the openapi schema
+    # See https://github.com/stac-utils/stac-fastapi/issues/242
+    "fastapi==0.67.*",
     "attrs",
     "pydantic[dotenv]",
     "stac_pydantic==2.0.*",

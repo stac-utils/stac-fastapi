@@ -6,7 +6,6 @@ with open("README.md") as f:
     desc = f.read()
 
 install_requires = [
-    "fastapi",
     "attrs",
     "orjson",
     "pydantic[dotenv]",
@@ -16,7 +15,6 @@ install_requires = [
     "stac-fastapi.extensions",
     "asyncpg",
     "buildpg",
-    "shapely",
     "brotli_asgi",
 ]
 
@@ -27,8 +25,9 @@ extra_reqs = {
         "pytest-asyncio",
         "pre-commit",
         "requests",
-        "pypgstac==0.2.8",
+        "pypgstac==0.3.4",
         "httpx",
+        "shapely",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
     "server": ["uvicorn[standard]>=0.12.0,<0.14.0"],

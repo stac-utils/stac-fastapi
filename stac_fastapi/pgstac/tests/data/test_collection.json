@@ -100,24 +100,9 @@
   },
   "links": [
     {
-      "href": "http://localhost:8081/collections/landsat-8-l1",
-      "rel": "self",
-      "type": "application/json"
-    },
-    {
-      "href": "http://localhost:8081/",
-      "rel": "parent",
-      "type": "application/json"
-    },
-    {
-      "href": "http://localhost:8081/collections/landsat-8-l1/items",
-      "rel": "item",
-      "type": "application/geo+json"
-    },
-    {
-      "href": "http://localhost:8081/",
-      "rel": "root",
-      "type": "application/json"
+        "rel": "license",
+        "href": "https://creativecommons.org/licenses/publicdomain/",
+        "title": "public domain"
     }
   ],
   "title": "Landsat 8 L1",

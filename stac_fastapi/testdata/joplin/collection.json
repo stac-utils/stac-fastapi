@@ -3,7 +3,13 @@
     "description": "This imagery was acquired by the NOAA Remote Sensing Division to support NOAA national security and emergency response requirements. In addition, it will be used for ongoing research efforts for testing and developing standards for airborne digital imagery. Individual images have been combined into a larger mosaic and tiled for distribution. The approximate ground sample distance (GSD) for each pixel is 35 cm (1.14 feet).",
     "stac_version": "1.0.0",
     "license": "public-domain",
-    "links": [],
+    "links": [
+        {
+            "rel": "license",
+            "href": "https://creativecommons.org/licenses/publicdomain/",
+            "title": "public domain"
+        }
+    ],
     "type": "collection",
     "extent": {
         "spatial": {

@@ -1,6 +1,5 @@
 """fields extension."""
-
-from typing import Set
+from typing import List, Optional, Set
 
 import attr
 from fastapi import FastAPI
@@ -23,25 +22,30 @@ class FieldsExtension(ApiExtension):
 
     Attributes:
         default_includes (set): defines the default set of included fields.
+        conformance_classes (list): Defines the list of conformance classes for the extension
 
     """
 
     GET = FieldsExtensionGetRequest
     POST = FieldsExtensionPostRequest
 
-    default_includes: Set[str] = attr.ib(
-        default=attr.Factory(
-            lambda: {
-                "id",
-                "type",
-                "geometry",
-                "bbox",
-                "links",
-                "assets",
-                "properties.datetime",
-            }
-        )
+    conformance_classes: List[str] = attr.ib(
+        factory=lambda: ["https://api.stacspec.org/v1.0.0-beta.3/item-search/#fields"]
     )
+    default_includes: Set[str] = attr.ib(
+        factory=lambda: {
+            "id",
+            "type",
+            "stac_version",
+            "geometry",
+            "bbox",
+            "links",
+            "assets",
+            "properties.datetime",
+            "collection",
+        }
+    )
+    schema_href: Optional[str] = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

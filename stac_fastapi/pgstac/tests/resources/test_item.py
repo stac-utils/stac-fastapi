@@ -2,13 +2,17 @@ import json
 import uuid
 from datetime import datetime, timedelta
 from typing import Callable
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urljoin, urlparse
 
 import pystac
 import pytest
+from httpx import AsyncClient
 from shapely.geometry import Polygon
 from stac_pydantic import Collection, Item
 from stac_pydantic.shared import DATETIME_RFC339
+from starlette.requests import Request
+
+from stac_fastapi.pgstac.models.links import CollectionLinks
 
 
 @pytest.mark.asyncio
@@ -64,7 +68,7 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
     in_json = load_test_data("test_item.json")
     in_item = Item.parse_obj(in_json)
     resp = await app_client.post(
-        "/collections/{coll.id}/items",
+        f"/collections/{coll.id}/items",
         json=in_json,
     )
     assert resp.status_code == 200
@@ -117,7 +121,7 @@ async def test_update_item(
 
     item.properties.description = "Update Test"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
+    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
@@ -152,7 +156,7 @@ async def test_get_collection_items(app_client, load_test_collection, load_test_
         item.id = str(uuid.uuid4())
         resp = await app_client.post(
             f"/collections/{coll.id}/items",
-            data=item.json(),
+            content=item.json(),
         )
         assert resp.status_code == 200
 
@@ -222,7 +226,7 @@ async def test_update_new_item(
     item = load_test_item
     item.id = "test-updatenewitem"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
+    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
     assert resp.status_code == 404
 
 
@@ -234,7 +238,7 @@ async def test_update_item_missing_collection(
     item = load_test_item
     item.collection = None
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", data=item.json())
+    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
     assert resp.status_code == 424
 
 
@@ -333,6 +337,22 @@ async def test_item_search_by_id_post(app_client, load_test_data, load_test_coll
     resp_json = resp.json()
     assert len(resp_json["features"]) == len(ids)
     assert set([feat["id"] for feat in resp_json["features"]]) == set(ids)
+
+
+@pytest.mark.asyncio
+async def test_item_search_by_id_no_results_post(
+    app_client, load_test_data, load_test_collection
+):
+    """Test POST search by item id (core) when there are no results"""
+    test_item = load_test_data("test_item.json")
+
+    search_ids = ["nonexistent_id"]
+
+    params = {"collections": [test_item["collection"]], "ids": search_ids}
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 0
 
 
 @pytest.mark.asyncio
@@ -647,7 +667,9 @@ async def test_item_search_get_query_extension(
         ),
     }
     resp = await app_client.get("/search", params=params)
-    assert resp.status_code == 404
+    # No items found should still return a 200 but with an empty list of features
+    assert resp.status_code == 200
+    assert len(resp.json()["features"]) == 0
 
     params["query"] = json.dumps(
         {"proj:epsg": {"eq": test_item["properties"]["proj:epsg"]}}
@@ -662,9 +684,61 @@ async def test_item_search_get_query_extension(
 
 
 @pytest.mark.asyncio
+async def test_item_search_get_filter_extension_cql(
+    app_client, load_test_data, load_test_collection
+):
+    """Test GET search with JSONB query (cql json filter extension)"""
+    test_item = load_test_data("test_item.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    # EPSG is a JSONB key
+    params = {
+        "collections": [test_item["collection"]],
+        "filter": {
+            "gt": [
+                {"property": "proj:epsg"},
+                test_item["properties"]["proj:epsg"] + 1,
+            ]
+        },
+    }
+    resp = await app_client.post("/search", json=params)
+    resp_json = resp.json()
+
+    assert resp.status_code == 200
+    assert len(resp_json.get("features")) == 0
+
+    params = {
+        "collections": [test_item["collection"]],
+        "filter": {
+            "eq": [
+                {"property": "proj:epsg"},
+                test_item["properties"]["proj:epsg"],
+            ]
+        },
+    }
+    resp = await app_client.post("/search", json=params)
+    resp_json = resp.json()
+    assert len(resp.json()["features"]) == 1
+    assert (
+        resp_json["features"][0]["properties"]["proj:epsg"]
+        == test_item["properties"]["proj:epsg"]
+    )
+
+
+@pytest.mark.asyncio
 async def test_get_missing_item_collection(app_client):
     """Test reading a collection which does not exist"""
     resp = await app_client.get("/collections/invalid-collection/items")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_item_from_missing_item_collection(app_client):
+    """Test reading an item from a collection which does not exist"""
+    resp = await app_client.get("/collections/invalid-collection/items/some-item")
     assert resp.status_code == 404
 
 
@@ -901,9 +975,57 @@ async def test_get_missing_item(app_client, load_test_data):
     assert resp.status_code == 404
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_search_invalid_query_field(app_client):
-    body = {"query": {"gsd": {"lt": 100}, "invalid-field": {"eq": 50}}}
+async def test_relative_link_construction():
+    req = Request(
+        scope={
+            "type": "http",
+            "scheme": "http",
+            "method": "PUT",
+            "root_path": "http://test/stac",
+            "path": "/",
+            "raw_path": b"/tab/abc",
+            "query_string": b"",
+            "headers": {},
+        }
+    )
+    links = CollectionLinks(collection_id="naip", request=req)
+    assert links.link_items()["href"] == "http://test/stac/collections/naip/items"
+
+
+@pytest.mark.asyncio
+async def test_search_bbox_errors(app_client):
+    body = {"query": {"bbox": [0]}}
     resp = await app_client.post("/search", json=body)
     assert resp.status_code == 400
+
+    body = {"query": {"bbox": [100.0, 0.0, 0.0, 105.0, 1.0, 1.0]}}
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 400
+
+    params = {"bbox": "100.0,0.0,0.0,105.0"}
+    resp = await app_client.get("/search", params=params)
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_preserves_extra_link(
+    app_client: AsyncClient, load_test_data, load_test_collection
+):
+    coll = load_test_collection
+    test_item = load_test_data("test_item.json")
+    expected_href = urljoin(str(app_client.base_url), "preview.html")
+
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=test_item)
+    assert resp.status_code == 200
+
+    response_item = await app_client.get(
+        f"/collections/{coll.id}/items/{test_item['id']}",
+        params={"limit": 1},
+    )
+    assert response_item.status_code == 200
+    item = response_item.json()
+
+    extra_link = [link for link in item["links"] if link["rel"] == "preview"]
+    assert extra_link
+    assert extra_link[0]["href"] == expected_href

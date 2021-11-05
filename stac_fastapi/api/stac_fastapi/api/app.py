@@ -63,7 +63,11 @@ class StacApi:
     exceptions: Dict[Type[Exception], int] = attr.ib(
         default=attr.Factory(lambda: DEFAULT_STATUS_CODES)
     )
-    app: FastAPI = attr.ib(default=attr.Factory(FastAPI))
+    app: FastAPI = attr.ib(
+        default=attr.Factory(
+            lambda self: FastAPI(openapi_url=self.settings.openapi_url), takes_self=True
+        )
+    )
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
     title: str = attr.ib(default="stac-fastapi")
     api_version: str = attr.ib(default="0.1")
@@ -78,6 +82,7 @@ class StacApi:
     get_pagination_model: Type[APIRequest] = attr.ib(default=GETTokenPagination)
     post_pagination_model: Type[BaseModel] = attr.ib(default=POSTTokenPagination)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
+    middlewares: List = attr.ib(default=attr.Factory(lambda: [BrotliMiddleware]))
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -368,5 +373,6 @@ class StacApi:
         # customize openapi
         self.app.openapi = self.customize_openapi
 
-        # add compression middleware
-        self.app.add_middleware(BrotliMiddleware)
+        # add middlewares
+        for middleware in self.middlewares:
+            self.app.add_middleware(middleware)

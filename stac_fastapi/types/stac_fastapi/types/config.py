@@ -26,6 +26,8 @@ class ApiSettings(BaseSettings):
     reload: bool = True
     enable_response_models: bool = False
 
+    openapi_url: str = "/api"
+
     class Config:
         """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
 
