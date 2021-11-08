@@ -4,13 +4,20 @@ from typing import Any, Callable, Dict, List, Optional, Type, Union
 import attr
 from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
+from fastapi.openapi.docs import (
+    get_redoc_html,
+    get_swagger_ui_html,
+    get_swagger_ui_oauth2_redirect_html,
+)
 from fastapi.openapi.utils import get_openapi
+from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage, Search
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.version import STAC_VERSION
-from starlette.responses import JSONResponse, Response
+from starlette.requests import Request
+from starlette.responses import HTMLResponse, JSONResponse, Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.models import (
@@ -30,6 +37,69 @@ from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import STACSearch
+
+
+class VndOaiResponse(ORJSONResponse):
+    """JSON with custom, vendor content-type."""
+
+    media_type = "application/vnd.oai.openapi+json;version=3.0"
+
+
+class VndFastAPI(FastAPI):
+    """Custom FastAPI to support /api response with vendor content-type."""
+
+    def setup(self) -> None:
+        """Update vendor-specific content-type for /api."""
+        if self.openapi_url:
+            urls = (server_data.get("url") for server_data in self.servers)
+            server_urls = {url for url in urls if url}
+
+            async def openapi(req: Request) -> JSONResponse:
+                root_path = req.scope.get("root_path", "").rstrip("/")
+                if root_path not in server_urls:
+                    if root_path and self.root_path_in_servers:
+                        self.servers.insert(0, {"url": root_path})
+                        server_urls.add(root_path)
+                return VndOaiResponse(self.openapi())
+
+            self.add_route(self.openapi_url, openapi, include_in_schema=False)
+        if self.openapi_url and self.docs_url:
+
+            async def swagger_ui_html(req: Request) -> HTMLResponse:
+                root_path = req.scope.get("root_path", "").rstrip("/")
+                openapi_url = root_path + self.openapi_url
+                oauth2_redirect_url = self.swagger_ui_oauth2_redirect_url
+                if oauth2_redirect_url:
+                    oauth2_redirect_url = root_path + oauth2_redirect_url
+                return get_swagger_ui_html(
+                    openapi_url=openapi_url,
+                    title=self.title + " - Swagger UI",
+                    oauth2_redirect_url=oauth2_redirect_url,
+                    init_oauth=self.swagger_ui_init_oauth,
+                )
+
+            self.add_route(self.docs_url, swagger_ui_html, include_in_schema=False)
+
+            if self.swagger_ui_oauth2_redirect_url:
+
+                async def swagger_ui_redirect(req: Request) -> HTMLResponse:
+                    return get_swagger_ui_oauth2_redirect_html()
+
+                self.add_route(
+                    self.swagger_ui_oauth2_redirect_url,
+                    swagger_ui_redirect,
+                    include_in_schema=False,
+                )
+        if self.openapi_url and self.redoc_url:
+
+            async def redoc_html(req: Request) -> HTMLResponse:
+                root_path = req.scope.get("root_path", "").rstrip("/")
+                openapi_url = root_path + self.openapi_url
+                return get_redoc_html(
+                    openapi_url=openapi_url, title=self.title + " - ReDoc"
+                )
+
+            self.add_route(self.redoc_url, redoc_html, include_in_schema=False)
 
 
 @attr.s
@@ -64,7 +134,8 @@ class StacApi:
     )
     app: FastAPI = attr.ib(
         default=attr.Factory(
-            lambda self: FastAPI(openapi_url=self.settings.openapi_url), takes_self=True
+            lambda self: VndFastAPI(openapi_url=self.settings.openapi_url),
+            takes_self=True,
         )
     )
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
@@ -75,7 +146,7 @@ class StacApi:
     search_request_model: Type[Search] = attr.ib(default=STACSearch)
     search_get_request: Type[SearchGetRequest] = attr.ib(default=SearchGetRequest)
     item_collection_uri: Type[ItemCollectionUri] = attr.ib(default=ItemCollectionUri)
-    response_class: Type[Response] = attr.ib(default=JSONResponse)
+    response_class: Type[Response] = attr.ib(default=ORJSONResponse)
     middlewares: List = attr.ib(default=attr.Factory(lambda: [BrotliMiddleware]))
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:

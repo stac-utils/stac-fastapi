@@ -11,6 +11,7 @@
 ### Fixed
 
 * Links stored with Collections and Items (e.g. license links) are now returned with those STAC objects ([#282](https://github.com/stac-utils/stac-fastapi/pull/282))
+* Content-type response headers for the /api endpoint now reflect those expected in the STAC api spec ([]())
 
 ## [2.2.0]
 
