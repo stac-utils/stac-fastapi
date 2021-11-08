@@ -20,7 +20,7 @@ from geojson_pydantic.geometries import (
     Polygon,
     _GeometryBase,
 )
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, conint, validator
 from pydantic.datetime_parse import parse_datetime
 from stac_pydantic.shared import BBox
 from stac_pydantic.utils import AutoValueEnum
@@ -95,7 +95,7 @@ class BaseSearchPostRequest(BaseModel):
         Union[Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon]
     ]
     datetime: Optional[str]
-    limit: int = 10
+    limit: Optional[conint(ge=0, le=10000)] = 10
 
     @property
     def start_date(self) -> Optional[datetime]:
