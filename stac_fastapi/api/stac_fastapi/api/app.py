@@ -17,16 +17,14 @@ from stac_fastapi.api.models import (
     APIRequest,
     CollectionUri,
     EmptyRequest,
-    GETTokenPagination,
     ItemCollectionUri,
     ItemUri,
-    POSTTokenPagination,
-    _create_request_model,
+    create_request_model,
 )
 from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
-from stac_fastapi.extensions.core import FieldsExtension
+from stac_fastapi.extensions.core import FieldsExtension, TokenPaginationExtension
 from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
@@ -79,8 +77,7 @@ class StacApi:
     search_post_request_model: Type[BaseSearchPostRequest] = attr.ib(
         default=BaseSearchPostRequest
     )
-    get_pagination_model: Type[APIRequest] = attr.ib(default=GETTokenPagination)
-    post_pagination_model: Type[BaseModel] = attr.ib(default=POSTTokenPagination)
+    pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
     middlewares: List = attr.ib(default=attr.Factory(lambda: [BrotliMiddleware]))
 
@@ -173,13 +170,6 @@ class StacApi:
         Returns:
             None
         """
-        search_request_model = _create_request_model(
-            "SearchPostRequest",
-            base_model=self.search_post_request_model,
-            extensions=self.extensions,
-            mixins=[self.post_pagination_model],
-            request_type="POST",
-        )
         fields_ext = self.get_extension(FieldsExtension)
         self.router.add_api_route(
             name="Search",
@@ -192,7 +182,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=self._create_endpoint(
-                self.client.post_search, search_request_model
+                self.client.post_search, self.search_post_request_model
             ),
         )
 
@@ -202,14 +192,6 @@ class StacApi:
         Returns:
             None
         """
-        search_request_model = _create_request_model(
-            "SearchGetRequest",
-            self.search_get_request_model,
-            self.extensions,
-            mixins=[self.get_pagination_model],
-            request_type="GET",
-        )
-
         fields_ext = self.get_extension(FieldsExtension)
         self.router.add_api_route(
             name="Search",
@@ -222,7 +204,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=self._create_endpoint(
-                self.client.get_search, search_request_model
+                self.client.get_search, self.search_get_request_model
             ),
         )
 
@@ -268,10 +250,11 @@ class StacApi:
         Returns:
             None
         """
-        request_model = _create_request_model(
+        get_pagination_model = self.get_extension(self.pagination_extension).GET
+        request_model = create_request_model(
             "ItemCollectionURI",
             base_model=ItemCollectionUri,
-            mixins=[self.get_pagination_model],
+            mixins=[get_pagination_model],
         )
         self.router.add_api_route(
             name="Get ItemCollection",

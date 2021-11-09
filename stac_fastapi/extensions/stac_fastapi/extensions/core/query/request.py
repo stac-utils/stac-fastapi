@@ -1,6 +1,6 @@
 """Request model for the Query extension."""
 
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import attr
 from pydantic import BaseModel
@@ -18,4 +18,4 @@ class QueryExtensionGetRequest(APIRequest):
 class QueryExtensionPostRequest(BaseModel):
     """Query Extension POST request model."""
 
-    query: Optional[str]
+    query: Optional[Dict[str, Dict[str, Any]]]

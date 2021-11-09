@@ -6,7 +6,7 @@ import attr
 from fastapi import APIRouter, FastAPI
 from pydantic import BaseModel
 
-from stac_fastapi.api.models import _create_request_model
+from stac_fastapi.api.models import create_request_model
 from stac_fastapi.api.routes import create_sync_endpoint
 from stac_fastapi.types.extension import ApiExtension
 
@@ -72,7 +72,7 @@ class BulkTransactionExtension(ApiExtension):
         Returns:
             None
         """
-        items_request_model = _create_request_model(Items)
+        items_request_model = create_request_model("Items", base_model=Items)
 
         router = APIRouter()
         router.add_api_route(

@@ -11,7 +11,7 @@ from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import APIRequest, BaseSearchGetRequest
 
 
-def _create_request_model(
+def create_request_model(
     model_name="SearchGetRequest",
     base_model: Union[Type[BaseModel], APIRequest] = BaseSearchGetRequest,
     extensions: Optional[ApiExtension] = None,

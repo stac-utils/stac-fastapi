@@ -85,29 +85,27 @@ class TransactionsClient(BaseTransactionsClient):
 
             return self.collection_serializer.db_to_stac(db_model, base_url)
 
-    def delete_item(
-        self, item_id: str, collection_id: str, **kwargs
-    ) -> stac_types.Item:
+    def delete_item(self, itemId: str, collectionId: str, **kwargs) -> stac_types.Item:
         """Delete item."""
         base_url = str(kwargs["request"].base_url)
         with self.session.writer.context_session() as session:
-            query = session.query(self.item_table).filter(self.item_table.id == item_id)
+            query = session.query(self.item_table).filter(self.item_table.id == itemId)
             data = query.first()
             if not data:
-                raise NotFoundError(f"Item {item_id} not found")
+                raise NotFoundError(f"Item {itemId} not found")
             query.delete()
             return self.item_serializer.db_to_stac(data, base_url=base_url)
 
-    def delete_collection(self, id: str, **kwargs) -> stac_types.Collection:
+    def delete_collection(self, collectionId: str, **kwargs) -> stac_types.Collection:
         """Delete collection."""
         base_url = str(kwargs["request"].base_url)
         with self.session.writer.context_session() as session:
             query = session.query(self.collection_table).filter(
-                self.collection_table.id == id
+                self.collection_table.id == collectionId
             )
             data = query.first()
             if not data:
-                raise NotFoundError(f"Collection {id} not found")
+                raise NotFoundError(f"Collection {collectionId} not found")
             query.delete()
             return self.collection_serializer.db_to_stac(data, base_url=base_url)
 
