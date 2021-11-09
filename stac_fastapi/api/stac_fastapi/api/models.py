@@ -7,6 +7,7 @@ import attr
 from fastapi import Body, Path
 from pydantic import BaseModel, create_model
 from pydantic.fields import UndefinedType
+from starlette.responses import JSONResponse
 
 
 def _create_request_model(model: Type[BaseModel]) -> Type[BaseModel]:
@@ -127,3 +128,9 @@ class SearchGetRequest(APIRequest):
             "fields": self.fields.split(",") if self.fields else self.fields,
             "sortby": self.sortby.split(",") if self.sortby else self.sortby,
         }
+
+
+class GeoJSONResponse(JSONResponse):
+    """JSON with custom, vendor content-type."""
+
+    media_type = "application/geo+json"
