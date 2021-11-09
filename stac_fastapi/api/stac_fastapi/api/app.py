@@ -97,7 +97,7 @@ class StacApi:
         self,
         func: Callable,
         request_type: Union[Type[APIRequest], Type[BaseModel]],
-        resp_class: Type[Response] = response_class,
+        resp_class: Type[Response],
     ) -> Callable:
         """Create a FastAPI endpoint."""
         if isinstance(self.client, AsyncBaseCoreClient):
@@ -122,7 +122,9 @@ class StacApi:
             response_model_exclude_unset=False,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(self.client.landing_page, EmptyRequest),
+            endpoint=self._create_endpoint(
+                self.client.landing_page, EmptyRequest, self.response_class
+            ),
         )
 
     def register_conformance_classes(self):
@@ -141,7 +143,9 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(self.client.conformance, EmptyRequest),
+            endpoint=self._create_endpoint(
+                self.client.conformance, EmptyRequest, self.response_class
+            ),
         )
 
     def register_get_item(self):
@@ -158,7 +162,9 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(self.client.get_item, ItemUri),
+            endpoint=self._create_endpoint(
+                self.client.get_item, ItemUri, self.response_class
+            ),
         )
 
     def register_post_search(self):
@@ -222,7 +228,9 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(self.client.all_collections, EmptyRequest),
+            endpoint=self._create_endpoint(
+                self.client.all_collections, EmptyRequest, self.response_class
+            ),
         )
 
     def register_get_collection(self):
@@ -239,7 +247,9 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(self.client.get_collection, CollectionUri),
+            endpoint=self._create_endpoint(
+                self.client.get_collection, CollectionUri, self.response_class
+            ),
         )
 
     def register_get_item_collection(self):
@@ -259,7 +269,9 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=self._create_endpoint(
-                self.client.item_collection, self.item_collection_uri
+                self.client.item_collection,
+                self.item_collection_uri,
+                self.response_class,
             ),
         )
 
