@@ -10,6 +10,8 @@
 
 ### Fixed
 
+* Links stored with Collections and Items (e.g. license links) are now returned with those STAC objects ([#282](https://github.com/stac-utils/stac-fastapi/pull/282))
+
 ## [2.2.0]
 
 ### Added

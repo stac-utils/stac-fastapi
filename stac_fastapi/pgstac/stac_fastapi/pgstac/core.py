@@ -47,8 +47,10 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 coll = Collection(**c)
                 coll["links"] = await CollectionLinks(
                     collection_id=coll["id"], request=request
-                ).get_links()
+                ).get_links(extra_links=coll.get("links"))
+
                 linked_collections.append(coll)
+
         links = [
             {
                 "rel": Relations.root.value,
@@ -94,8 +96,11 @@ class CoreCrudClient(AsyncBaseCoreClient):
             collection = await conn.fetchval(q, *p)
         if collection is None:
             raise NotFoundError(f"Collection {id} does not exist.")
-        links = await CollectionLinks(collection_id=id, request=request).get_links()
-        collection["links"] = links
+
+        collection["links"] = await CollectionLinks(
+            collection_id=id, request=request
+        ).get_links(extra_links=collection.get("links"))
+
         return Collection(**collection)
 
     async def _search_base(
@@ -147,12 +152,12 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 # TODO: feature.collection is not always included
                 # This code fails if it's left outside of the fields expression
                 # I've fields extension updated test cases to always include feature.collection
-                links = await ItemLinks(
+                feature["links"] = await ItemLinks(
                     collection_id=feature["collection"],
                     item_id=feature["id"],
                     request=request,
-                ).get_links()
-                feature["links"] = links
+                ).get_links(extra_links=feature.get("links"))
+
                 exclude = search_request.fields.exclude
                 if exclude and len(exclude) == 0:
                     exclude = None
