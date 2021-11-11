@@ -72,7 +72,9 @@ def create_request_model(
     raise TypeError("Mixed Request Model types. Check extension request types.")
 
 
-def create_get_request_model(extensions):
+def create_get_request_model(
+    extensions, base_model: BaseSearchGetRequest = BaseSearchGetRequest
+):
     """Wrap create_request_model to create the GET request model."""
     return create_request_model(
         "SearchGetRequest",
@@ -82,7 +84,9 @@ def create_get_request_model(extensions):
     )
 
 
-def create_post_requst_model(extensions):
+def create_post_request_model(
+    extensions, base_model: BaseSearchPostRequest = BaseSearchGetRequest
+):
     """Wrap create_request_model to create the POST request model."""
     return create_request_model(
         "SearchPostRequest",
