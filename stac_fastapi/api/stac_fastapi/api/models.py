@@ -8,7 +8,11 @@ from pydantic import BaseModel, create_model
 from pydantic.fields import UndefinedType
 
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.search import APIRequest, BaseSearchGetRequest
+from stac_fastapi.types.search import (
+    APIRequest,
+    BaseSearchGetRequest,
+    BaseSearchPostRequest,
+)
 
 
 def create_request_model(
@@ -66,6 +70,26 @@ def create_request_model(
         return create_model(model_name, **fields, __base__=base_model)
 
     raise TypeError("Mixed Request Model types. Check extension request types.")
+
+
+def create_get_request_model(extensions):
+    """Wrap create_request_model to create the GET request model."""
+    return create_request_model(
+        "SearchGetRequest",
+        base_model=BaseSearchGetRequest,
+        extensions=extensions,
+        request_type="GET",
+    )
+
+
+def create_post_requst_model(extensions):
+    """Wrap create_request_model to create the POST request model."""
+    return create_request_model(
+        "SearchPostRequest",
+        base_model=BaseSearchPostRequest,
+        extensions=extensions,
+        request_type="POST",
+    )
 
 
 @attr.s  # type:ignore
