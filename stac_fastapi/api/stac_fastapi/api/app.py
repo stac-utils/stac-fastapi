@@ -1,16 +1,20 @@
 """fastapi app creation."""
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import attr
 from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
+from fastapi.dependencies.utils import get_parameterless_sub_dependant
 from fastapi.openapi.utils import get_openapi
+from fastapi.params import Depends
 from pydantic import BaseModel
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage, Search
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.version import STAC_VERSION
 from starlette.responses import JSONResponse, Response
+from starlette.routing import Match
+from starlette.types import Scope
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.models import (
@@ -77,6 +81,7 @@ class StacApi:
     item_collection_uri: Type[ItemCollectionUri] = attr.ib(default=ItemCollectionUri)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
     middlewares: List = attr.ib(default=attr.Factory(lambda: [BrotliMiddleware]))
+    route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -311,6 +316,21 @@ class StacApi:
             return {"message": "PONG"}
 
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
+        
+    def add_route_dependencies(self):
+        """Add custom dependencies to routes."""
+        for scopes, dependencies in self.route_dependencies:
+            for route in self.router.routes:
+                if not any(route.matches(scope)[0] == Match.FULL for scope in scopes):
+                    continue
+
+                route.dependant.dependencies = [
+                    # Mimicking how APIRoute handles dependencies:
+                    # https://github.com/tiangolo/fastapi/blob/1760da0efa55585c19835d81afa8ca386036c325/fastapi/routing.py#L408-L412
+                    get_parameterless_sub_dependant(depends=depends, path=route.path_format)
+                    for depends in dependencies
+                ] + route.dependant.dependencies
+
 
     def __attrs_post_init__(self):
         """Post-init hook.
@@ -353,3 +373,6 @@ class StacApi:
         # add middlewares
         for middleware in self.middlewares:
             self.app.add_middleware(middleware)
+        
+        # customize route dependencies         
+        self.add_route_dependencies()
