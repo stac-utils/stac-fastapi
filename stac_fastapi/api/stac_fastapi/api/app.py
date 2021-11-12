@@ -317,19 +317,18 @@ class StacApi:
 
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
         
-    def add_route_dependencies(self):
+    def add_route_dependencies(self, scopes: List[Scope], dependencies=List[Depends]):
         """Add custom dependencies to routes."""
-        for scopes, dependencies in self.route_dependencies:
-            for route in self.router.routes:
-                if not any(route.matches(scope)[0] == Match.FULL for scope in scopes):
-                    continue
+        for route in self.router.routes:
+            if not any(route.matches(scope)[0] == Match.FULL for scope in scopes):
+                continue
 
-                route.dependant.dependencies = [
-                    # Mimicking how APIRoute handles dependencies:
-                    # https://github.com/tiangolo/fastapi/blob/1760da0efa55585c19835d81afa8ca386036c325/fastapi/routing.py#L408-L412
-                    get_parameterless_sub_dependant(depends=depends, path=route.path_format)
-                    for depends in dependencies
-                ] + route.dependant.dependencies
+            route.dependant.dependencies = [
+                # Mimicking how APIRoute handles dependencies:
+                # https://github.com/tiangolo/fastapi/blob/1760da0efa55585c19835d81afa8ca386036c325/fastapi/routing.py#L408-L412
+                get_parameterless_sub_dependant(depends=depends, path=route.path_format)
+                for depends in dependencies
+            ] + route.dependant.dependencies
 
 
     def __attrs_post_init__(self):
@@ -374,5 +373,6 @@ class StacApi:
         for middleware in self.middlewares:
             self.app.add_middleware(middleware)
         
-        # customize route dependencies         
-        self.add_route_dependencies()
+        # customize route dependencies
+        for scopes, dependencies in self.route_dependencies:
+            self.add_route_dependencies(scopes=scopes, dependencies=dependecies)
