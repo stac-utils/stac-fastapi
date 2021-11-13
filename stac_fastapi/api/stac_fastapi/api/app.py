@@ -316,7 +316,7 @@ class StacApi:
             return {"message": "PONG"}
 
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
-        
+
     def add_route_dependencies(self, scopes: List[Scope], dependencies=List[Depends]):
         """Add custom dependencies to routes."""
         for route in self.router.routes:
@@ -329,7 +329,6 @@ class StacApi:
                 get_parameterless_sub_dependant(depends=depends, path=route.path_format)
                 for depends in dependencies
             ] + route.dependant.dependencies
-
 
     def __attrs_post_init__(self):
         """Post-init hook.
@@ -372,7 +371,7 @@ class StacApi:
         # add middlewares
         for middleware in self.middlewares:
             self.app.add_middleware(middleware)
-        
+
         # customize route dependencies
         for scopes, dependencies in self.route_dependencies:
             self.add_route_dependencies(scopes=scopes, dependencies=dependecies)
