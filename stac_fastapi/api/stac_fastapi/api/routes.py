@@ -111,7 +111,7 @@ def add_route_dependencies(
     """
     for scope in scopes:
         for route in routes:
-            
+
             match, _ = route.matches({"type": "http", **scope})
             if match != Match.FULL:
                 continue
