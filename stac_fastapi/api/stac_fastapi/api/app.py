@@ -4,7 +4,6 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 import attr
 from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
-from fastapi.dependencies.utils import get_parameterless_sub_dependant
 from fastapi.openapi.utils import get_openapi
 from fastapi.params import Depends
 from pydantic import BaseModel
@@ -13,8 +12,6 @@ from stac_pydantic.api import ConformanceClasses, LandingPage, Search
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.version import STAC_VERSION
 from starlette.responses import JSONResponse, Response
-from starlette.routing import Match
-from starlette.types import Scope
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.models import (
@@ -26,7 +23,12 @@ from stac_fastapi.api.models import (
     SearchGetRequest,
     _create_request_model,
 )
-from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
+from stac_fastapi.api.routes import (
+    add_route_dependencies,
+    create_async_endpoint,
+    create_sync_endpoint,
+    Scope,
+)
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
 from stac_fastapi.extensions.core import FieldsExtension
@@ -317,18 +319,11 @@ class StacApi:
 
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
 
-    def add_route_dependencies(self, scopes: List[Scope], dependencies=List[Depends]):
+    def add_route_dependencies(
+        self, scopes: List[Scope], dependencies=List[Depends]
+    ) -> None:
         """Add custom dependencies to routes."""
-        for route in self.router.routes:
-            if not any(route.matches(scope)[0] == Match.FULL for scope in scopes):
-                continue
-
-            route.dependant.dependencies = [
-                # Mimicking how APIRoute handles dependencies:
-                # https://github.com/tiangolo/fastapi/blob/1760da0efa55585c19835d81afa8ca386036c325/fastapi/routing.py#L408-L412
-                get_parameterless_sub_dependant(depends=depends, path=route.path_format)
-                for depends in dependencies
-            ] + route.dependant.dependencies
+        return add_route_dependencies(self.router.routes, scopes, dependencies)
 
     def __attrs_post_init__(self):
         """Post-init hook.
@@ -374,4 +369,4 @@ class StacApi:
 
         # customize route dependencies
         for scopes, dependencies in self.route_dependencies:
-            self.add_route_dependencies(scopes=scopes, dependencies=dependecies)
+            self.add_route_dependencies(scopes=scopes, dependencies=dependencies)

@@ -1,10 +1,12 @@
 """route factories."""
-from typing import Any, Callable, Dict, Type, Union
+from typing import Any, Callable, Dict, Optional, Type, TypedDict, Union
 
-from fastapi import Depends
+from fastapi import APIRouter, Depends
+from fastapi.dependencies.utils import get_parameterless_sub_dependant
 from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
+from starlette.routing import BaseRoute
 
 from stac_fastapi.api.models import APIRequest
 
@@ -94,3 +96,40 @@ def create_sync_endpoint(
             return _wrap_response(func(request_data, request=request), response_class)
 
     return _endpoint
+
+
+def add_route_dependencies(
+    routes: List[BaseRoute], scopes: List[Scope], dependencies=List[Depends]
+) -> None:
+    """Add dependencies to routes.
+
+    Allows a developer to add dependencies to a route after the route has been
+    defined.
+
+    Returns:
+        None
+    """
+    for scope in scopes:
+        for route in routes:
+            
+            match, _ = route.matches({"type": "http", **scope})
+            if match != Match.FULL:
+                continue
+
+            # Mimicking how APIRoute handles dependencies:
+            # https://github.com/tiangolo/fastapi/blob/1760da0efa55585c19835d81afa8ca386036c325/fastapi/routing.py#L408-L412
+            for depends in dependencies[::-1]:
+                route.dependant.dependencies.insert(
+                    0,
+                    get_parameterless_sub_dependant(
+                        depends=depends, path=route.path_format
+                    ),
+                )
+
+
+class Scope(TypedDict, total=False):
+    # More strict version of Starlette's Scope
+    # https://github.com/encode/starlette/blob/6af5c515e0a896cbf3f86ee043b88f6c24200bcf/starlette/types.py#L3
+    path: str
+    method: str
+    type: Optional[str]
