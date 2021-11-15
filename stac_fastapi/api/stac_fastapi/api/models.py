@@ -1,13 +1,13 @@
 """api request/response models."""
 
 import abc
+import importlib
 from typing import Dict, Optional, Type, Union
 
 import attr
 from fastapi import Body, Path
 from pydantic import BaseModel, create_model
 from pydantic.fields import UndefinedType
-from starlette.responses import JSONResponse
 
 
 def _create_request_model(model: Type[BaseModel]) -> Type[BaseModel]:
@@ -130,7 +130,20 @@ class SearchGetRequest(APIRequest):
         }
 
 
-class GeoJSONResponse(JSONResponse):
-    """JSON with custom, vendor content-type."""
+# Test for ORJSON and use it rather than stdlib JSON where supported
+if importlib.util.find_spec("orjson") is not None:
+    from fastapi.responses import ORJSONResponse
 
-    media_type = "application/geo+json"
+    class GeoJSONResponse(ORJSONResponse):
+        """JSON with custom, vendor content-type."""
+
+        media_type = "application/geo+json"
+
+
+else:
+    from starlette.responses import JSONResponse
+
+    class GeoJSONResponse(JSONResponse):
+        """JSON with custom, vendor content-type."""
+
+        media_type = "application/geo+json"
