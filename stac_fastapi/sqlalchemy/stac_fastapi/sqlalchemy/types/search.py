@@ -11,7 +11,7 @@ from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 
 import sqlalchemy as sa
-from pydantic import Field, ValidationError, conint, root_validator
+from pydantic import Field, ValidationError, conint, root_validator, validator
 from pydantic.error_wrappers import ErrorWrapper
 from stac_pydantic.api import Search
 from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
@@ -145,7 +145,19 @@ class SQLAlchemySTACSearch(Search):
     # Override query extension with supported operators
     query: Optional[Dict[Queryables, Dict[Operator, Any]]]
     token: Optional[str] = None
-    limit: Optional[conint(ge=0, le=10000)] = 10
+    limit: Optional[conint(gt=0)] = 10
+
+    @validator("limit")
+    def validate_limit(cls, v):
+        """Validate limit according to max_limit set in configuration.
+
+        Limit validation needs to be conducted via a custom functionto set
+        a maximum from within the config
+        """
+        max_limit = Settings.get().max_search_limit
+        if v > max_limit:
+            raise ValueError(f"must be less than {max_limit}")
+        return v
 
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:

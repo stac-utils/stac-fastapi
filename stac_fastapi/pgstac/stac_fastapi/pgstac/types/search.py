@@ -100,7 +100,19 @@ class PgstacSearch(Search):
     token: Optional[str] = None
     datetime: Optional[str] = None
     sortby: Any
-    limit: Optional[conint(ge=0, le=10000)] = 10
+    limit: Optional[conint(gt=0)] = 10
+
+    @validator("limit")
+    def validate_limit(cls, v):
+        """Validate limit according to max_limit set in configuration.
+
+        Limit validation needs to be conducted via a custom functionto set
+        a maximum from within the config
+        """
+        max_limit = Settings.get().max_search_limit
+        if v > max_limit:
+            raise ValueError(f"must be less than {max_limit}")
+        return v
 
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:

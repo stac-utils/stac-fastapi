@@ -28,6 +28,9 @@ class ApiSettings(BaseSettings):
 
     openapi_url: str = "/api"
 
+    # The maximum limit which can be specified in search parameters
+    max_search_limit: int = 10000
+
     class Config:
         """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
 
