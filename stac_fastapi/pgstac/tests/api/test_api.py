@@ -82,6 +82,20 @@ async def test_app_query_extension_limit_1(
 
 
 @pytest.mark.asyncio
+async def test_app_query_extension_limit_eq0(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
+    assert resp.status_code == 200
+
+    params = {"limit": 0}
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
 async def test_app_query_extension_limit_lt0(
     load_test_data, app_client, load_test_collection
 ):

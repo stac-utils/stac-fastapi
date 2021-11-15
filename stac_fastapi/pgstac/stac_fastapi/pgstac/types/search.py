@@ -100,7 +100,7 @@ class PgstacSearch(Search):
     token: Optional[str] = None
     datetime: Optional[str] = None
     sortby: Any
-    limit: Optional[conint(ge=0, le=10000)] = 10
+    limit: Optional[conint(gt=0, le=10000)] = 10
 
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:
