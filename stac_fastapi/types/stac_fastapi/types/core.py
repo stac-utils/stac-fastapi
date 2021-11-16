@@ -375,6 +375,17 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
             }
         )
+
+        # Add human readable service-doc
+        landing_page["links"].append(
+            {
+                "rel": "service-doc",
+                "type": "text/html",
+                "title": "OpenAPI service documentation",
+                "href": urljoin(base_url, request.app.docs_url.lstrip("/")),
+            }
+        )
+
         return landing_page
 
     def conformance(self, **kwargs) -> stac_types.Conformance:
@@ -549,6 +560,17 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "type": "application/vnd.oai.openapi+json;version=3.0",
                 "title": "OpenAPI service description",
                 "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
+            }
+        )
+
+        # Add human readable service-doc
+        print("???", request.app)
+        landing_page["links"].append(
+            {
+                "rel": "service-doc",
+                "type": "text/html",
+                "title": "OpenAPI service documentation",
+                "href": urljoin(base_url, request.app.docs_url.lstrip("/")),
             }
         )
 
