@@ -4,6 +4,8 @@
 
 ### Added
 
+* Users can now specify a maximum `limit` value through the `max_search_limit` configuration value ([290](https://github.com/stac-utils/stac-fastapi/pull/290))
+
 ### Changed
 
 ### Removed
