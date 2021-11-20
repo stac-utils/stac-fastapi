@@ -27,7 +27,6 @@ from stac_fastapi.api.routes import (
     add_route_dependencies,
     create_async_endpoint,
     create_sync_endpoint,
-    Scope,
 )
 
 # TODO: make this module not depend on `stac_fastapi.extensions`

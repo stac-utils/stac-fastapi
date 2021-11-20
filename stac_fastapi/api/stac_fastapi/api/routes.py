@@ -1,12 +1,12 @@
 """route factories."""
-from typing import Any, Callable, Dict, Optional, Type, TypedDict, Union
+from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
 
 from fastapi import APIRouter, Depends
 from fastapi.dependencies.utils import get_parameterless_sub_dependant
 from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
-from starlette.routing import BaseRoute
+from starlette.routing import BaseRoute, Match
 
 from stac_fastapi.api.models import APIRequest
 
@@ -98,6 +98,14 @@ def create_sync_endpoint(
     return _endpoint
 
 
+class Scope(TypedDict, total=False):
+    # More strict version of Starlette's Scope
+    # https://github.com/encode/starlette/blob/6af5c515e0a896cbf3f86ee043b88f6c24200bcf/starlette/types.py#L3
+    path: str
+    method: str
+    type: Optional[str]
+
+
 def add_route_dependencies(
     routes: List[BaseRoute], scopes: List[Scope], dependencies=List[Depends]
 ) -> None:
@@ -125,11 +133,3 @@ def add_route_dependencies(
                         depends=depends, path=route.path_format
                     ),
                 )
-
-
-class Scope(TypedDict, total=False):
-    # More strict version of Starlette's Scope
-    # https://github.com/encode/starlette/blob/6af5c515e0a896cbf3f86ee043b88f6c24200bcf/starlette/types.py#L3
-    path: str
-    method: str
-    type: Optional[str]
