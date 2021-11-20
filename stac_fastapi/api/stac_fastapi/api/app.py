@@ -24,6 +24,7 @@ from stac_fastapi.api.models import (
     _create_request_model,
 )
 from stac_fastapi.api.routes import (
+    Scope,
     add_route_dependencies,
     create_async_endpoint,
     create_sync_endpoint,
