@@ -323,7 +323,7 @@ class StacApi:
         self, scopes: List[Scope], dependencies=List[Depends]
     ) -> None:
         """Add custom dependencies to routes."""
-        return add_route_dependencies(self.router.routes, scopes, dependencies)
+        return add_route_dependencies(self.app.router.routes, scopes, dependencies)
 
     def __attrs_post_init__(self):
         """Post-init hook.
