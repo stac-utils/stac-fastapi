@@ -134,3 +134,8 @@ def add_route_dependencies(
                         depends=depends, path=route.path_format
                     ),
                 )
+
+            # Register dependency on route so that it isn't ignored if the routes
+            # are added to an apt after this is route (e.g. app.include_router(router))
+            # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/routing.py#L677-L678
+            route.dependencies.extend(dependencies)
