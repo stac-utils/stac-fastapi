@@ -102,6 +102,12 @@ def test_app_query_extension_gte(load_test_data, app_client, postgres_transactio
     assert len(resp_json["features"]) == 1
 
 
+def test_app_query_extension_limit_eq0(app_client):
+    params = {"limit": 0}
+    resp = app_client.post("/search", json=params)
+    assert resp.status_code == 400
+
+
 def test_app_query_extension_limit_lt0(
     load_test_data, app_client, postgres_transactions
 ):
