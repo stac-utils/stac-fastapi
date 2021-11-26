@@ -82,6 +82,13 @@ async def test_app_query_extension_limit_1(
 
 
 @pytest.mark.asyncio
+async def test_app_query_extension_limit_eq0(app_client):
+    params = {"limit": 0}
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
 async def test_app_query_extension_limit_lt0(
     load_test_data, app_client, load_test_collection
 ):
