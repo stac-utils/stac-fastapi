@@ -95,7 +95,7 @@ class BaseSearchPostRequest(BaseModel):
         Union[Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon]
     ]
     datetime: Optional[str]
-    limit: Optional[conint(ge=0, le=10000)] = 10
+    limit: Optional[conint(gt=0, le=10000)] = 10
 
     @property
     def start_date(self) -> Optional[datetime]:
