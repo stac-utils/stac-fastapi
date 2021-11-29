@@ -102,7 +102,7 @@ def test_update_item_missing_collection(app_client, load_test_data):
     resp = app_client.put(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
-    assert resp.status_code == 422
+    assert resp.status_code == 404
 
 
 def test_update_item_geometry(app_client, load_test_data):
