@@ -66,7 +66,7 @@ class BaseLinks:
             rel=Relations.root.value, type=MimeTypes.json.value, href=self.base_url
         )
 
-    def create_links(self) -> List[Dict]:
+    def create_links(self) -> List[Dict[str, Any]]:
         """Return all inferred links."""
         links = []
         for name in dir(self):
@@ -77,7 +77,7 @@ class BaseLinks:
         return links
 
     async def get_links(
-        self, extra_links: List[Dict[str, Any]] = []
+        self, extra_links: Optional[List[Dict[str, Any]]] = None
     ) -> List[Dict[str, Any]]:
         """
         Generate all the links.
@@ -91,11 +91,22 @@ class BaseLinks:
         # join passed in links with generated links
         # and update relative paths
         links = self.create_links()
-        if extra_links is not None and len(extra_links) >= 1:
-            for link in extra_links:
-                if link["rel"] not in INFERRED_LINK_RELS:
-                    link["href"] = self.resolve(link["href"])
-                    links.append(link)
+
+        if extra_links:
+            # For extra links passed in,
+            # add links modified with a resolved href.
+            # Drop any links that are dynamically
+            # determined by the server (e.g. self, parent, etc.)
+            # Resolving the href allows for relative paths
+            # to be stored in pgstac and for the hrefs in the
+            # links of response STAC objects to be resolved
+            # to the request url.
+            links += [
+                {**link, "href": self.resolve(link["href"])}
+                for link in extra_links
+                if link["rel"] not in INFERRED_LINK_RELS
+            ]
+
         return links
 
 

@@ -145,7 +145,7 @@ class SQLAlchemySTACSearch(Search):
     # Override query extension with supported operators
     query: Optional[Dict[Queryables, Dict[Operator, Any]]]
     token: Optional[str] = None
-    limit: Optional[conint(ge=0, le=10000)] = 10
+    limit: Optional[conint(gt=0, le=10000)] = 10
 
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:
