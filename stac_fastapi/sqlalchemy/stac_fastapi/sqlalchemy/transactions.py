@@ -94,8 +94,8 @@ class TransactionsClient(BaseTransactionsClient):
         """Delete item."""
         base_url = str(kwargs["request"].base_url)
         with self.session.writer.context_session() as session:
+            query = session.query(self.item_table).filter(self.item_table.collection_id == collection_id)
             query = session.query(self.item_table).filter(self.item_table.id == item_id)
-            # query = session.query(self.item_table).filter(self.item_table.collection_id == collection_id)
             data = query.first()
             if not data:
                 raise NotFoundError(f"Item {item_id} not found in collection {collection_id}")
