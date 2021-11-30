@@ -58,7 +58,7 @@ class TransactionsClient(BaseTransactionsClient):
             query = session.query(self.item_table).filter(
                 self.item_table.id == model["id"]
             )
-            query = session.query(self.item_table).filter(
+            query = query.filter(
                 self.item_table.collection_id == model["collection"]
             )
             if not query.scalar():
@@ -99,7 +99,7 @@ class TransactionsClient(BaseTransactionsClient):
             query = session.query(self.item_table).filter(
                 self.item_table.collection_id == collection_id
             )
-            query = session.query(self.item_table).filter(self.item_table.id == item_id)
+            query = query.filter(self.item_table.id == item_id)
             data = query.first()
             if not data:
                 raise NotFoundError(
