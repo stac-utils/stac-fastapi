@@ -24,6 +24,19 @@ STAC_TRANSACTION_ROUTES = [
 
 
 @pytest.mark.asyncio
+async def test_post_search_content_type(app_client):
+    params = {"limit": 1}
+    resp = await app_client.post("search", json=params)
+    assert resp.headers["content-type"] == "application/geo+json"
+
+
+@pytest.mark.asyncio
+async def test_get_search_content_type(app_client):
+    resp = await app_client.get("search")
+    assert resp.headers["content-type"] == "application/geo+json"
+
+
+@pytest.mark.asyncio
 async def test_api_headers(app_client):
     resp = await app_client.get("/api")
     assert (
