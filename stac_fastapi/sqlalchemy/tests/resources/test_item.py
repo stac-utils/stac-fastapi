@@ -59,6 +59,38 @@ def test_create_item_duplicate(app_client, app_client_2, load_test_data):
     assert resp.status_code == 200
 
 
+def test_delete_item_duplicate(app_client, app_client_2, load_test_data):
+    """Test creation of an item id which already exists but in a different collection(transactions extension)"""
+    test_item = load_test_data("test_item.json")
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    test_item["collection"] = "test-collection-2"
+    resp = app_client_2.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    resp = app_client_2.delete(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}"
+    )
+    assert resp.status_code == 200
+
+    test_item["collection"] = "test-collection"
+    resp = app_client.delete(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}"
+    )
+    assert resp.status_code == 200
+
+    # "test-collection" has already been deleted
+    resp = app_client.delete(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}"
+    )
+    assert resp.status_code == 404
+
+
 def test_delete_missing_item(app_client, load_test_data):
     """Test deletion of an item which does not exist (transactions extension)"""
     test_item = load_test_data("test_item.json")
