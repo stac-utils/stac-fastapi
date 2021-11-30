@@ -58,9 +58,7 @@ class TransactionsClient(BaseTransactionsClient):
             query = session.query(self.item_table).filter(
                 self.item_table.id == model["id"]
             )
-            query = query.filter(
-                self.item_table.collection_id == model["collection"]
-            )
+            query = query.filter(self.item_table.collection_id == model["collection"])
             if not query.scalar():
                 raise NotFoundError(
                     f"Item {model['id']} in collection {model['collection']}"
