@@ -128,3 +128,13 @@ def app_client(api_client, load_test_data, postgres_transactions):
 
     with TestClient(api_client.app) as test_app:
         yield test_app
+
+
+@pytest.fixture
+def app_client_2(api_client, load_test_data, postgres_transactions):
+    coll = load_test_data("test_collection.json")
+    coll["id"] = "test-collection-2"
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+
+    with TestClient(api_client.app) as test_app:
+        yield test_app
