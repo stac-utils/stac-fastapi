@@ -22,6 +22,7 @@ from stac_fastapi.api.models import (
     SearchGetRequest,
     _create_request_model,
 )
+from stac_fastapi.api.openapi import update_openapi
 from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
@@ -64,8 +65,10 @@ class StacApi:
     )
     app: FastAPI = attr.ib(
         default=attr.Factory(
-            lambda self: FastAPI(openapi_url=self.settings.openapi_url), takes_self=True
-        )
+            lambda self: FastAPI(openapi_url=self.settings.openapi_url),
+            takes_self=True,
+        ),
+        converter=update_openapi,
     )
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
     title: str = attr.ib(default="stac-fastapi")
