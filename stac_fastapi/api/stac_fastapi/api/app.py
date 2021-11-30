@@ -65,12 +65,13 @@ class StacApi:
     )
     app: FastAPI = attr.ib(
         default=attr.Factory(
-            lambda self: FastAPI(openapi_url=self.settings.openapi_url),
+            lambda self: FastAPI(
                 openapi_url=self.settings.openapi_url,
                 docs_url=self.settings.docs_url,
                 redoc_url=None,
             ),
-        takes_self=True,
+            takes_self=True,
+        ),
         converter=update_openapi,
     )
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
