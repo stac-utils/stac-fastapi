@@ -264,12 +264,6 @@ class LandingPageMixin(abc.ABC):
                     "href": urljoin(base_url, "collections"),
                 },
                 {
-                    "rel": Relations.docs.value,
-                    "type": MimeTypes.json,
-                    "title": "OpenAPI docs",
-                    "href": urljoin(base_url, "docs"),
-                },
-                {
                     "rel": Relations.conformance.value,
                     "type": MimeTypes.json,
                     "title": "STAC/WFS3 conformance classes implemented by this server",
