@@ -205,7 +205,7 @@ class TilesExtension(ApiExtension):
 
         app.add_api_route(
             name="Get OGC Tiles Resource",
-            path="/collections/{collectionId}/items/{itemId}/tiles",
+            path="/collections/{collection_id}/items/{item_id}/tiles",
             response_model=TileSetResource,
             response_model_exclude_none=True,
             response_model_exclude_unset=True,
