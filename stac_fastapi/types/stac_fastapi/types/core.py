@@ -28,7 +28,7 @@ class BaseTransactionsClient(abc.ABC):
     def create_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
         """Create a new item.
 
-        Called with `POST /collections/{collectionId}/items`.
+        Called with `POST /collections/{collection_id}/items`.
 
         Args:
             item: the item
@@ -43,7 +43,7 @@ class BaseTransactionsClient(abc.ABC):
     def update_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
         """Perform a complete update on an existing item.
 
-        Called with `PUT /collections/{collectionId}/items`. It is expected that this item already exists.  The update
+        Called with `PUT /collections/{collection_id}/items`. It is expected that this item already exists.  The update
         should do a diff against the saved item and perform any necessary updates.  Partial updates are not supported
         by the transactions extension.
 
@@ -61,7 +61,7 @@ class BaseTransactionsClient(abc.ABC):
     ) -> stac_types.Item:
         """Delete an item from a collection.
 
-        Called with `DELETE /collections/{collectionId}/items/{itemId}`
+        Called with `DELETE /collections/{collection_id}/items/{item_id}`
 
         Args:
             item_id: id of the item.
@@ -110,7 +110,7 @@ class BaseTransactionsClient(abc.ABC):
     def delete_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
         """Delete a collection.
 
-        Called with `DELETE /collections/{collectionId}`
+        Called with `DELETE /collections/{collection_id}`
 
         Args:
             collection_id: id of the collection.
@@ -129,7 +129,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     async def create_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
         """Create a new item.
 
-        Called with `POST /collections/{collectionId}/items`.
+        Called with `POST /collections/{collection_id}/items`.
 
         Args:
             item: the item
@@ -144,7 +144,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     async def update_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
         """Perform a complete update on an existing item.
 
-        Called with `PUT /collections/{collectionId}/items`. It is expected that this item already exists.  The update
+        Called with `PUT /collections/{collection_id}/items`. It is expected that this item already exists.  The update
         should do a diff against the saved item and perform any necessary updates.  Partial updates are not supported
         by the transactions extension.
 
@@ -162,7 +162,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     ) -> stac_types.Item:
         """Delete an item from a collection.
 
-        Called with `DELETE /collections/{collectionId}/items/{itemId}`
+        Called with `DELETE /collections/{collection_id}/items/{item_id}`
 
         Args:
             item_id: id of the item.
@@ -213,7 +213,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     ) -> stac_types.Collection:
         """Delete a collection.
 
-        Called with `DELETE /collections/{collectionId}`
+        Called with `DELETE /collections/{collection_id}`
 
         Args:
             collection_id: id of the collection.
@@ -428,7 +428,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac_types.Item:
         """Get item by id.
 
-        Called with `GET /collections/{collectionId}/items/{itemId}`.
+        Called with `GET /collections/{collection_id}/items/{item_id}`.
 
         Args:
             item_id: Id of the item.
@@ -454,7 +454,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     def get_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
         """Get collection by id.
 
-        Called with `GET /collections/{collectionId}`.
+        Called with `GET /collections/{collection_id}`.
 
         Args:
             collection_id: Id of the collection.
@@ -470,7 +470,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     ) -> stac_types.ItemCollection:
         """Get all items from a specific collection.
 
-        Called with `GET /collections/{collectionId}/items`
+        Called with `GET /collections/{collection_id}/items`
 
         Args:
             collection_id: id of the collection.
@@ -606,7 +606,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     ) -> stac_types.Item:
         """Get item by id.
 
-        Called with `GET /collections/{collectionId}/items/{itemId}`.
+        Called with `GET /collections/{collection_id}/items/{item_id}`.
 
         Args:
             item_id: Id of the item.
@@ -634,7 +634,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     ) -> stac_types.Collection:
         """Get collection by id.
 
-        Called with `GET /collections/{collectionId}`.
+        Called with `GET /collections/{collection_id}`.
 
         Args:
             collection_id: Id of the collection.
@@ -650,7 +650,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     ) -> stac_types.ItemCollection:
         """Get all items from a specific collection.
 
-        Called with `GET /collections/{collectionId}/items`
+        Called with `GET /collections/{collection_id}/items`
 
         Args:
             collection_id: id of the collection.

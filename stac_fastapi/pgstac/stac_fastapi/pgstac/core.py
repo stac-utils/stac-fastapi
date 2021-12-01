@@ -74,7 +74,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
     async def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id.
 
-        Called with `GET /collections/{collectionId}`.
+        Called with `GET /collections/{collection_id}`.
 
         Args:
             id: Id of the collection.
@@ -179,7 +179,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
     ) -> ItemCollection:
         """Get all items from a specific collection.
 
-        Called with `GET /collections/{collectionId}/items`
+        Called with `GET /collections/{collection_id}/items`
 
         Args:
             id: id of the collection.
@@ -203,7 +203,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
     async def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id.
 
-        Called with `GET /collections/{collectionId}/items/{itemId}`.
+        Called with `GET /collections/{collection_id}/items/{item_id}`.
 
         Args:
             id: Id of the item.
