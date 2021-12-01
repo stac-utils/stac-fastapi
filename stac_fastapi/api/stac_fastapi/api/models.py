@@ -56,22 +56,22 @@ class APIRequest(abc.ABC):
 class CollectionUri(APIRequest):
     """Delete collection."""
 
-    collectionId: str = attr.ib(default=Path(..., description="Collection ID"))
+    collection_id: str = attr.ib(default=Path(..., description="Collection ID"))
 
     def kwargs(self) -> Dict:
         """kwargs."""
-        return {"id": self.collectionId}
+        return {"id": self.collection_id}
 
 
 @attr.s
 class ItemUri(CollectionUri):
     """Delete item."""
 
-    itemId: str = attr.ib(default=Path(..., description="Item ID"))
+    item_id: str = attr.ib(default=Path(..., description="Item ID"))
 
     def kwargs(self) -> Dict:
         """kwargs."""
-        return {"collection_id": self.collectionId, "item_id": self.itemId}
+        return {"collection_id": self.collection_id, "item_id": self.item_id}
 
 
 @attr.s
@@ -93,7 +93,7 @@ class ItemCollectionUri(CollectionUri):
     def kwargs(self) -> Dict:
         """kwargs."""
         return {
-            "id": self.collectionId,
+            "id": self.collection_id,
             "limit": self.limit,
             "token": self.token,
         }

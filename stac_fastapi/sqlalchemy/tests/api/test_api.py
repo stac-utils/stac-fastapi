@@ -5,21 +5,21 @@ from ..conftest import MockStarletteRequest
 STAC_CORE_ROUTES = [
     "GET /",
     "GET /collections",
-    "GET /collections/{collectionId}",
-    "GET /collections/{collectionId}/items",
-    "GET /collections/{collectionId}/items/{itemId}",
+    "GET /collections/{collection_id}",
+    "GET /collections/{collection_id}/items",
+    "GET /collections/{collection_id}/items/{item_id}",
     "GET /conformance",
     "GET /search",
     "POST /search",
 ]
 
 STAC_TRANSACTION_ROUTES = [
-    "DELETE /collections/{collectionId}",
-    "DELETE /collections/{collectionId}/items/{itemId}",
+    "DELETE /collections/{collection_id}",
+    "DELETE /collections/{collection_id}/items/{item_id}",
     "POST /collections",
-    "POST /collections/{collectionId}/items",
+    "POST /collections/{collection_id}/items",
     "PUT /collections",
-    "PUT /collections/{collectionId}/items",
+    "PUT /collections/{collection_id}/items",
 ]
 
 

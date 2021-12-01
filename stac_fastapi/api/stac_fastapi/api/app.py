@@ -152,14 +152,14 @@ class StacApi:
         )
 
     def register_get_item(self):
-        """Register get item endpoint (GET /collections/{collectionId}/items/{itemId}).
+        """Register get item endpoint (GET /collections/{collection_id}/items/{item_id}).
 
         Returns:
             None
         """
         self.router.add_api_route(
             name="Get Item",
-            path="/collections/{collectionId}/items/{itemId}",
+            path="/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
@@ -237,14 +237,14 @@ class StacApi:
         )
 
     def register_get_collection(self):
-        """Register get collection endpoint (GET /collection/{collectionId}).
+        """Register get collection endpoint (GET /collection/{collection_id}).
 
         Returns:
             None
         """
         self.router.add_api_route(
             name="Get Collection",
-            path="/collections/{collectionId}",
+            path="/collections/{collection_id}",
             response_model=Collection if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
@@ -256,14 +256,14 @@ class StacApi:
         )
 
     def register_get_item_collection(self):
-        """Register get item collection endpoint (GET /collection/{collectionId}/items).
+        """Register get item collection endpoint (GET /collection/{collection_id}/items).
 
         Returns:
             None
         """
         self.router.add_api_route(
             name="Get ItemCollection",
-            path="/collections/{collectionId}/items",
+            path="/collections/{collection_id}/items",
             response_model=ItemCollection
             if self.settings.enable_response_models
             else None,
@@ -284,9 +284,9 @@ class StacApi:
             GET /
             GET /conformance
             GET /collections
-            GET /collections/{collectionId}
-            GET /collections/{collectionId}/items
-            GET /collection/{collectionId}/items/{itemId}
+            GET /collections/{collection_id}
+            GET /collections/{collection_id}/items
+            GET /collection/{collection_id}/items/{item_id}
             GET /search
             POST /search
 
