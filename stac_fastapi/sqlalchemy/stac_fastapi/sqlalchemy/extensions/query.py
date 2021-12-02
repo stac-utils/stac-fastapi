@@ -1,4 +1,4 @@
-"""stac_fastapi.types.search module.
+"""STAC SQLAlchemy specific query search model.
 
 # TODO: replace with stac-pydantic
 """
@@ -8,16 +8,14 @@ import operator
 from dataclasses import dataclass
 from enum import auto
 from types import DynamicClassAttribute
-from typing import Any, Callable, Dict, List, Optional, Set, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import sqlalchemy as sa
-from pydantic import Field, ValidationError, conint, root_validator
+from pydantic import BaseModel, ValidationError, root_validator
 from pydantic.error_wrappers import ErrorWrapper
-from stac_pydantic.api import Search
-from stac_pydantic.api.extensions.fields import FieldsExtension as FieldsBase
 from stac_pydantic.utils import AutoValueEnum
 
-from stac_fastapi.types.config import Settings
+from stac_fastapi.extensions.core.query import QueryExtension as QueryExtensionBase
 
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
@@ -34,6 +32,7 @@ class Operator(str, AutoValueEnum):
     lte = auto()
     gt = auto()
     gte = auto()
+
     # TODO: These are defined in the spec but aren't currently implemented by the api
     # startsWith = auto()
     # endsWith = auto()
@@ -86,66 +85,14 @@ class QueryableTypes:
     dtype = sa.String
 
 
-class FieldsExtension(FieldsBase):
-    """FieldsExtension.
+class QueryExtensionPostRequest(BaseModel):
+    """Queryable validation.
 
-    Attributes:
-        include: set of fields to include.
-        exclude: set of fields to exclude.
+    Add queryables validation to the POST request
+    to raise errors for unsupported querys.
     """
 
-    include: Optional[Set[str]] = set()
-    exclude: Optional[Set[str]] = set()
-
-    @staticmethod
-    def _get_field_dict(fields: Optional[Set[str]]) -> Dict:
-        """Pydantic include/excludes notation.
-
-        Internal method to create a dictionary for advanced include or exclude of pydantic fields on model export
-        Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
-        """
-        field_dict = {}
-        for field in fields or []:
-            if "." in field:
-                parent, key = field.split(".")
-                if parent not in field_dict:
-                    field_dict[parent] = {key}
-                else:
-                    field_dict[parent].add(key)
-            else:
-                field_dict[field] = ...  # type:ignore
-        return field_dict
-
-    @property
-    def filter_fields(self) -> Dict:
-        """Create pydantic include/exclude expression.
-
-        Create dictionary of fields to include/exclude on model export based on the included and excluded fields passed
-        to the API
-        Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
-        """
-        # Always include default_includes, even if they
-        # exist in the exclude list.
-        include = (self.include or set()) - (self.exclude or set())
-        include |= Settings.get().default_includes or set()
-
-        return {
-            "include": self._get_field_dict(include),
-            "exclude": self._get_field_dict(self.exclude),
-        }
-
-
-class SQLAlchemySTACSearch(Search):
-    """Search model."""
-
-    # Make collections optional, default to searching all collections if none are provided
-    collections: Optional[List[str]] = None
-    # Override default field extension to include default fields and pydantic includes/excludes factory
-    field: FieldsExtension = Field(FieldsExtension(), alias="fields")
-    # Override query extension with supported operators
     query: Optional[Dict[Queryables, Dict[Operator, Any]]]
-    token: Optional[str] = None
-    limit: Optional[conint(gt=0, le=10000)] = 10
 
     @root_validator(pre=True)
     def validate_query_fields(cls, values: Dict) -> Dict:
@@ -162,6 +109,16 @@ class SQLAlchemySTACSearch(Search):
                                 "STACSearch",
                             )
                         ],
-                        SQLAlchemySTACSearch,
+                        QueryExtensionPostRequest,
                     )
         return values
+
+
+class QueryExtension(QueryExtensionBase):
+    """Query Extenson.
+
+    Override the POST request model to add validation against
+    supported fields
+    """
+
+    POST = QueryExtensionPostRequest

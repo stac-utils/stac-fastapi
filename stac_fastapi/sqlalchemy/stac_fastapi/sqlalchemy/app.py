@@ -1,36 +1,43 @@
 """FastAPI application."""
 from stac_fastapi.api.app import StacApi
+from stac_fastapi.api.models import create_get_request_model, create_post_request_model
 from stac_fastapi.extensions.core import (
     FieldsExtension,
-    QueryExtension,
     SortExtension,
+    TokenPaginationExtension,
     TransactionExtension,
 )
 from stac_fastapi.extensions.third_party import BulkTransactionExtension
 from stac_fastapi.sqlalchemy.config import SqlalchemySettings
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
+from stac_fastapi.sqlalchemy.extensions import QueryExtension
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 
 settings = SqlalchemySettings()
 session = Session.create_from_settings(settings)
+extensions = [
+    TransactionExtension(client=TransactionsClient(session=session), settings=settings),
+    BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
+    FieldsExtension(),
+    QueryExtension(),
+    SortExtension(),
+    TokenPaginationExtension(),
+]
+
+post_request_model = create_post_request_model(extensions)
+
 api = StacApi(
     settings=settings,
-    extensions=[
-        TransactionExtension(
-            client=TransactionsClient(session=session), settings=settings
-        ),
-        BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
-        FieldsExtension(),
-        QueryExtension(),
-        SortExtension(),
-    ],
-    client=CoreCrudClient(session=session),
-    search_request_model=SQLAlchemySTACSearch,
+    extensions=extensions,
+    client=CoreCrudClient(
+        session=session, extensions=extensions, post_request_model=post_request_model
+    ),
+    search_get_request_model=create_get_request_model(extensions),
+    search_post_request_model=post_request_model,
 )
 app = api.app
 

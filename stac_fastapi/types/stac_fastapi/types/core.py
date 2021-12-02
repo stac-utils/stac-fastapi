@@ -14,6 +14,7 @@ from stac_pydantic.version import STAC_VERSION
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import Conformance
 
 NumType = Union[float, int]
@@ -306,6 +307,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         factory=lambda: BASE_CONFORMANCE_CLASSES
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
+    post_request_model = attr.ib(default=BaseSearchPostRequest)
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base conformance classes."""
@@ -495,6 +497,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         factory=lambda: BASE_CONFORMANCE_CLASSES
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
+    post_request_model = attr.ib(default=BaseSearchPostRequest)
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base conformance classes."""
