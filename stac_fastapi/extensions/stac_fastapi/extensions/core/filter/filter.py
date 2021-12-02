@@ -12,6 +12,8 @@ from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
 from stac_fastapi.types.core import AsyncBaseFiltersClient, BaseFiltersClient
 from stac_fastapi.types.extension import ApiExtension
 
+from .request import FilterExtensionGetRequest, FilterExtensionPostRequest
+
 
 class FilterConformanceClasses(str, Enum):
     """Conformance classes for the Filter extension.
@@ -53,6 +55,9 @@ class FilterExtension(ApiExtension):
         conformance_classes: Conformance classes provided by the extension
 
     """
+
+    GET = FilterExtensionGetRequest
+    POST = FilterExtensionPostRequest
 
     client: Union[AsyncBaseFiltersClient, BaseFiltersClient] = attr.ib(
         factory=BaseFiltersClient

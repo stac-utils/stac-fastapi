@@ -1,7 +1,7 @@
 """Item crud client."""
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
@@ -26,8 +26,6 @@ NumType = Union[float, int]
 @attr.s
 class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
-
-    search_request_model: Type[PgstacSearch] = attr.ib(init=False, default=PgstacSearch)
 
     async def all_collections(self, **kwargs) -> Collections:
         """Read all collections from the database."""
@@ -71,7 +69,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         collection_list = Collections(collections=linked_collections or [], links=links)
         return collection_list
 
-    async def get_collection(self, id: str, **kwargs) -> Collection:
+    async def get_collection(self, collection_id: str, **kwargs) -> Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collection_id}`.
@@ -91,14 +89,14 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 """
                 SELECT * FROM get_collection(:id::text);
                 """,
-                id=id,
+                id=collection_id,
             )
             collection = await conn.fetchval(q, *p)
         if collection is None:
             raise NotFoundError(f"Collection {id} does not exist.")
 
         collection["links"] = await CollectionLinks(
-            collection_id=id, request=request
+            collection_id=collection_id, request=request
         ).get_links(extra_links=collection.get("links"))
 
         return Collection(**collection)
@@ -175,7 +173,11 @@ class CoreCrudClient(AsyncBaseCoreClient):
         return collection
 
     async def item_collection(
-        self, id: str, limit: Optional[int] = None, token: str = None, **kwargs
+        self,
+        collection_id: str,
+        limit: Optional[int] = None,
+        token: str = None,
+        **kwargs,
     ) -> ItemCollection:
         """Get all items from a specific collection.
 
@@ -190,12 +192,14 @@ class CoreCrudClient(AsyncBaseCoreClient):
             An ItemCollection.
         """
         # If collection does not exist, NotFoundError wil be raised
-        await self.get_collection(id, **kwargs)
+        await self.get_collection(collection_id, **kwargs)
 
-        req = self.search_request_model(collections=[id], limit=limit, token=token)
+        req = self.post_request_model(
+            collections=[collection_id], limit=limit, token=token
+        )
         item_collection = await self._search_base(req, **kwargs)
         links = await CollectionLinks(
-            collection_id=id, request=kwargs["request"]
+            collection_id=collection_id, request=kwargs["request"]
         ).get_links(extra_links=item_collection["links"])
         item_collection["links"] = links
         return item_collection
@@ -214,7 +218,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         # If collection does not exist, NotFoundError wil be raised
         await self.get_collection(collection_id, **kwargs)
 
-        req = self.search_request_model(
+        req = self.post_request_model(
             ids=[item_id], collections=[collection_id], limit=1
         )
         item_collection = await self._search_base(req, **kwargs)
@@ -301,7 +305,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
         # Do the request
         try:
-            search_request = self.search_request_model(**base_args)
+            search_request = self.post_request_model(**base_args)
         except ValidationError:
             raise HTTPException(status_code=400, detail="Invalid parameters provided")
         return await self.post_search(search_request, request=kwargs["request"])

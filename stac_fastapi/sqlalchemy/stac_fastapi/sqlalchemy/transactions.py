@@ -98,16 +98,16 @@ class TransactionsClient(BaseTransactionsClient):
             query.delete()
             return self.item_serializer.db_to_stac(data, base_url=base_url)
 
-    def delete_collection(self, id: str, **kwargs) -> stac_types.Collection:
+    def delete_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
         """Delete collection."""
         base_url = str(kwargs["request"].base_url)
         with self.session.writer.context_session() as session:
             query = session.query(self.collection_table).filter(
-                self.collection_table.id == id
+                self.collection_table.id == collection_id
             )
             data = query.first()
             if not data:
-                raise NotFoundError(f"Collection {id} not found")
+                raise NotFoundError(f"Collection {collection_id} not found")
             query.delete()
             return self.collection_serializer.db_to_stac(data, base_url=base_url)
 
