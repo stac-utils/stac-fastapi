@@ -1,5 +1,6 @@
 """api request/response models."""
 
+import importlib
 from typing import Optional, Type, Union
 
 import attr
@@ -100,14 +101,14 @@ def create_post_request_model(
 class CollectionUri(APIRequest):
     """Delete collection."""
 
-    collectionId: str = attr.ib(default=Path(..., description="Collection ID"))
+    collection_id: str = attr.ib(default=Path(..., description="Collection ID"))
 
 
 @attr.s
 class ItemUri(CollectionUri):
     """Delete item."""
 
-    itemId: str = attr.ib(default=Path(..., description="Item ID"))
+    item_id: str = attr.ib(default=Path(..., description="Item ID"))
 
 
 @attr.s
@@ -148,3 +149,22 @@ class GETPagination(APIRequest):
     """Page based pagination for GET requests."""
 
     page: Optional[str] = attr.ib(default=None)
+
+
+# Test for ORJSON and use it rather than stdlib JSON where supported
+if importlib.util.find_spec("orjson") is not None:
+    from fastapi.responses import ORJSONResponse
+
+    class GeoJSONResponse(ORJSONResponse):
+        """JSON with custom, vendor content-type."""
+
+        media_type = "application/geo+json"
+
+
+else:
+    from starlette.responses import JSONResponse
+
+    class GeoJSONResponse(JSONResponse):
+        """JSON with custom, vendor content-type."""
+
+        media_type = "application/geo+json"

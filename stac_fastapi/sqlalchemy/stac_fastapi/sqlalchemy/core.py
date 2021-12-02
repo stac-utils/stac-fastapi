@@ -91,15 +91,15 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             )
             return collection_list
 
-    def get_collection(self, collectionId: str, **kwargs) -> Collection:
+    def get_collection(self, collection_id: str, **kwargs) -> Collection:
         """Get collection by id."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
-            collection = self._lookup_id(collectionId, self.collection_table, session)
+            collection = self._lookup_id(collection_id, self.collection_table, session)
             return self.collection_serializer.db_to_stac(collection, base_url)
 
     def item_collection(
-        self, collectionId: str, limit: int = 10, token: str = None, **kwargs
+        self, collection_id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
         """Read an item collection from the database."""
         base_url = str(kwargs["request"].base_url)
@@ -107,7 +107,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             collection_children = (
                 session.query(self.item_table)
                 .join(self.collection_table)
-                .filter(self.collection_table.id == collectionId)
+                .filter(self.collection_table.id == collection_id)
                 .order_by(self.item_table.datetime.desc(), self.item_table.id)
             )
             count = None
@@ -136,7 +136,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     {
                         "rel": Relations.next.value,
                         "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}collections/{collectionId}/items?token={page.next}&limit={limit}",
+                        "href": f"{kwargs['request'].base_url}collections/{collection_id}/items?token={page.next}&limit={limit}",
                         "method": "GET",
                     }
                 )
@@ -145,7 +145,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     {
                         "rel": Relations.previous.value,
                         "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}collections/{collectionId}/items?token={page.previous}&limit={limit}",
+                        "href": f"{kwargs['request'].base_url}collections/{collection_id}/items?token={page.previous}&limit={limit}",
                         "method": "GET",
                     }
                 )
@@ -171,16 +171,16 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 context=context_obj,
             )
 
-    def get_item(self, itemId: str, collectionId: str, **kwargs) -> Item:
+    def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             db_query = session.query(self.item_table)
-            db_query = db_query.filter(self.item_table.collection_id == collectionId)
-            db_query = db_query.filter(self.item_table.id == itemId)
+            db_query = db_query.filter(self.item_table.collection_id == collection_id)
+            db_query = db_query.filter(self.item_table.id == item_id)
             item = db_query.first()
             if not item:
-                raise NotFoundError(f"{self.item_table.__name__} {itemId} not found")
+                raise NotFoundError(f"{self.item_table.__name__} {item_id} not found")
             return self.item_serializer.db_to_stac(item, base_url=base_url)
 
     def get_search(

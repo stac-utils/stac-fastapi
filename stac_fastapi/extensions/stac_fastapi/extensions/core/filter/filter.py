@@ -46,7 +46,7 @@ class FilterExtension(ApiExtension):
     The filter extension adds several endpoints which allow the retrieval of queryables and
     provides an expressive mechanism for searching based on Item Attributes:
         GET /queryables
-        GET /collections/{collectionId}/queryables
+        GET /collections/{collection_id}/queryables
 
     https://github.com/radiantearth/stac-api-spec/blob/master/fragments/filter/README.md
 
@@ -108,7 +108,7 @@ class FilterExtension(ApiExtension):
         )
         self.router.add_api_route(
             name="Collection Queryables",
-            path="/collections/{collectionId}/queryables",
+            path="/collections/{collection_id}/queryables",
             methods=["GET"],
             endpoint=self._create_endpoint(self.client.get_queryables, CollectionUri),
         )

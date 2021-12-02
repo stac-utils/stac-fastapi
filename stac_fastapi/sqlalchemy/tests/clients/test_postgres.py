@@ -97,8 +97,8 @@ def test_get_item(
     data = load_test_data("test_item.json")
     postgres_transactions.create_item(data, request=MockStarletteRequest)
     coll = postgres_core.get_item(
-        itemId=data["id"],
-        collectionId=data["collection"],
+        item_id=data["id"],
+        collection_id=data["collection"],
         request=MockStarletteRequest,
     )
     assert coll["id"] == data["id"]
