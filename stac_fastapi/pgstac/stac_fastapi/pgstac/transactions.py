@@ -49,16 +49,16 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         await dbfunc(pool, "update_collection", collection)
         return collection
 
-    async def delete_item(self, itemId: str, collectionId: str, **kwargs) -> Dict:
+    async def delete_item(self, item_id: str, collection_id: str, **kwargs) -> Dict:
         """Delete collection."""
         request = kwargs["request"]
         pool = request.app.state.writepool
-        await dbfunc(pool, "delete_item", itemId)
-        return {"deleted item": itemId}
+        await dbfunc(pool, "delete_item", item_id)
+        return {"deleted item": item_id}
 
-    async def delete_collection(self, collectionId: str, **kwargs) -> Dict:
+    async def delete_collection(self, collection_id: str, **kwargs) -> Dict:
         """Delete collection."""
         request = kwargs["request"]
         pool = request.app.state.writepool
-        await dbfunc(pool, "delete_collection", collectionId)
-        return {"deleted collection": collectionId}
+        await dbfunc(pool, "delete_collection", collection_id)
+        return {"deleted collection": collection_id}

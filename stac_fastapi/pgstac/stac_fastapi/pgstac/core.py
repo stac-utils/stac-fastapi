@@ -69,7 +69,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         collection_list = Collections(collections=linked_collections or [], links=links)
         return collection_list
 
-    async def get_collection(self, collectionId: str, **kwargs) -> Collection:
+    async def get_collection(self, collection_id: str, **kwargs) -> Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collection_id}`.
@@ -89,14 +89,14 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 """
                 SELECT * FROM get_collection(:id::text);
                 """,
-                id=collectionId,
+                id=collection_id,
             )
             collection = await conn.fetchval(q, *p)
         if collection is None:
             raise NotFoundError(f"Collection {id} does not exist.")
 
         collection["links"] = await CollectionLinks(
-            collection_id=collectionId, request=request
+            collection_id=collection_id, request=request
         ).get_links(extra_links=collection.get("links"))
 
         return Collection(**collection)
@@ -174,7 +174,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
     async def item_collection(
         self,
-        collectionId: str,
+        collection_id: str,
         limit: Optional[int] = None,
         token: str = None,
         **kwargs,
@@ -192,19 +192,19 @@ class CoreCrudClient(AsyncBaseCoreClient):
             An ItemCollection.
         """
         # If collection does not exist, NotFoundError wil be raised
-        await self.get_collection(collectionId, **kwargs)
+        await self.get_collection(collection_id, **kwargs)
 
         req = self.post_request_model(
-            collections=[collectionId], limit=limit, token=token
+            collections=[collection_id], limit=limit, token=token
         )
         item_collection = await self._search_base(req, **kwargs)
         links = await CollectionLinks(
-            collection_id=collectionId, request=kwargs["request"]
+            collection_id=collection_id, request=kwargs["request"]
         ).get_links(extra_links=item_collection["links"])
         item_collection["links"] = links
         return item_collection
 
-    async def get_item(self, itemId: str, collectionId: str, **kwargs) -> Item:
+    async def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id.
 
         Called with `GET /collections/{collection_id}/items/{item_id}`.
@@ -216,13 +216,15 @@ class CoreCrudClient(AsyncBaseCoreClient):
             Item.
         """
         # If collection does not exist, NotFoundError wil be raised
-        await self.get_collection(collectionId, **kwargs)
+        await self.get_collection(collection_id, **kwargs)
 
-        req = self.post_request_model(ids=[itemId], collections=[collectionId], limit=1)
+        req = self.post_request_model(
+            ids=[item_id], collections=[collection_id], limit=1
+        )
         item_collection = await self._search_base(req, **kwargs)
         if not item_collection["features"]:
             raise NotFoundError(
-                f"Item {itemId} in Collection {collectionId} does not exist."
+                f"Item {item_id} in Collection {collection_id} does not exist."
             )
 
         return Item(**item_collection["features"][0])
