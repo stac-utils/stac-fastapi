@@ -46,12 +46,22 @@ def test_create_item_conflict(app_client, load_test_data):
 
 def test_create_item_duplicate(app_client, app_client_2, load_test_data):
     """Test creation of an item id which already exists but in a different collection(transactions extension)"""
+
+    # add test_item to test-collection
     test_item = load_test_data("test_item.json")
     resp = app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
     assert resp.status_code == 200
 
+    # add test_item to test-collection again, resource already exists
+    test_item = load_test_data("test_item.json")
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 409
+
+    # add test_item to test-collection-2, posts successfully
     test_item["collection"] = "test-collection-2"
     resp = app_client_2.post(
         f"/collections/{test_item['collection']}/items", json=test_item
@@ -61,50 +71,60 @@ def test_create_item_duplicate(app_client, app_client_2, load_test_data):
 
 def test_delete_item_duplicate(app_client, app_client_2, load_test_data):
     """Test creation of an item id which already exists but in a different collection(transactions extension)"""
+
+    # add test_item to test-collection
     test_item = load_test_data("test_item.json")
     resp = app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
     assert resp.status_code == 200
 
+    # add test_item to test-collection-2
     test_item["collection"] = "test-collection-2"
     resp = app_client_2.post(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
     assert resp.status_code == 200
 
-    resp = app_client_2.delete(
-        f"/collections/{test_item['collection']}/items/{test_item['id']}"
-    )
-    assert resp.status_code == 200
-
+    # delete test_item from test-collection
     test_item["collection"] = "test-collection"
     resp = app_client.delete(
         f"/collections/{test_item['collection']}/items/{test_item['id']}"
     )
     assert resp.status_code == 200
 
-    # "test-collection" has already been deleted
+    # test-item in test-collection has already been deleted
     resp = app_client.delete(
         f"/collections/{test_item['collection']}/items/{test_item['id']}"
     )
     assert resp.status_code == 404
 
+    # test-item in test-collection-2 still exists, was not deleted
+    test_item["collection"] = "test-collection-2"
+    resp = app_client_2.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 409
+
 
 def test_update_item_duplicate(app_client, app_client_2, load_test_data):
     """Test creation of an item id which already exists but in a different collection(transactions extension)"""
+
+    # add test_item to test-collection
     test_item = load_test_data("test_item.json")
     resp = app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
     assert resp.status_code == 200
 
+    # add test_item to test-collection-2
     test_item["collection"] = "test-collection-2"
     resp = app_client_2.post(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
     assert resp.status_code == 200
 
+    # update gsd in test_item, test-collection-2
     test_item["properties"]["gsd"] = 16
     resp = app_client.put(
         f"/collections/{test_item['collection']}/items", json=test_item
@@ -113,6 +133,7 @@ def test_update_item_duplicate(app_client, app_client_2, load_test_data):
     updated_item = resp.json()
     assert updated_item["properties"]["gsd"] == 16
 
+    # update gsd in test_item, test-collection
     test_item["collection"] = "test-collection"
     test_item["properties"]["gsd"] = 17
     resp = app_client.put(
@@ -121,6 +142,23 @@ def test_update_item_duplicate(app_client, app_client_2, load_test_data):
     assert resp.status_code == 200
     updated_item = resp.json()
     assert updated_item["properties"]["gsd"] == 17
+
+    # test_item in test-collection, updated gsd = 17
+    resp = app_client.get(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}"
+    )
+    assert resp.status_code == 200
+    item = resp.json()
+    assert item["properties"]["gsd"] == 17
+
+    # test_item in test-collection-2, updated gsd = 16
+    test_item["collection"] = "test-collection-2"
+    resp = app_client.get(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}"
+    )
+    assert resp.status_code == 200
+    item = resp.json()
+    assert item["properties"]["gsd"] == 16
 
 
 def test_delete_missing_item(app_client, load_test_data):
