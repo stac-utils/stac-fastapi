@@ -6,9 +6,17 @@
 
 ### Changed
 
+* Refactor to remove hardcoded search request models. Request models are now dynamically created based on the enabled extensions.
+  ([#213](https://github.com/stac-utils/stac-fastapi/pull/213))  
+
 ### Removed
 
 ### Fixed
+
+* Content-type response headers for the /search endpoint now reflect the geojson response expected in the STAC api spec ([#220](https://github.com/stac-utils/stac-fastapi/issues/220)
+* The minimum `limit` value for searches is now 1 ([#296](https://github.com/stac-utils/stac-fastapi/pull/296))
+* Links stored with Collections and Items (e.g. license links) are now returned with those STAC objects ([#282](https://github.com/stac-utils/stac-fastapi/pull/282))
+* Content-type response headers for the /api endpoint now reflect those expected in the STAC api spec ([#287](https://github.com/stac-utils/stac-fastapi/pull/287))
 
 ## [2.2.0]
 
