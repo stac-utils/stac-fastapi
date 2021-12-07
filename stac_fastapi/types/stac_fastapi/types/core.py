@@ -558,7 +558,6 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add human readable service-doc
-        print("???", request.app)
         landing_page["links"].append(
             {
                 "rel": "service-doc",
