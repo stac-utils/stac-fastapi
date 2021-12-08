@@ -8,7 +8,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 
-from stac_fastapi.sqlalchemy.types.search import Queryables, QueryableTypes
+from stac_fastapi.sqlalchemy.extensions.query import Queryables, QueryableTypes
 
 BaseModel = declarative_base()
 
