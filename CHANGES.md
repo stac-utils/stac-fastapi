@@ -8,6 +8,7 @@
 
 * Refactor to remove hardcoded search request models. Request models are now dynamically created based on the enabled extensions.
   ([#213](https://github.com/stac-utils/stac-fastapi/pull/213))  
+* Upgrade pgstac from 0.3.4 to 0.4.0 ([#307](https://github.com/stac-utils/stac-fastapi/pull/307))
 
 ### Removed
 
