@@ -1,6 +1,6 @@
 """stac_fastapi.types.search module."""
 
-from typing import Optional
+from typing import Dict, Optional
 
 from pydantic import validator
 
@@ -14,6 +14,7 @@ class PgstacSearch(BaseSearchPostRequest):
     """
 
     datetime: Optional[str] = None
+    conf: Optional[Dict] = None
 
     @validator("datetime")
     def validate_datetime(cls, v):
