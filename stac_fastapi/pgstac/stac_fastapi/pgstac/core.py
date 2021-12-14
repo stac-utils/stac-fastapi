@@ -120,7 +120,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         pool = request.app.state.readpool
 
         # pool = kwargs["request"].app.state.readpool
-        req = search_request.json(exclude_none=True)
+        req = search_request.json(exclude_none=True, by_alias=True)
 
         try:
             async with pool.acquire() as conn:
