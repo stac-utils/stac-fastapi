@@ -22,7 +22,6 @@ extra_reqs = {
         "requests",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
-    "tiles": ["titiler==0.2.*"],
 }
 
 
