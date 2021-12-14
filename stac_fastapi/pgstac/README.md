@@ -43,7 +43,7 @@ cd stac-fastapi
 pip install -e \
     stac_fastapi/api[dev] \
     stac_fastapi/types[dev] \
-    stac_fastapi/extensions[dev,tiles] \
+    stac_fastapi/extensions[dev] \
     stac_fastapi/pgstac[dev,server]
 ```
 

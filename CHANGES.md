@@ -11,6 +11,8 @@
 
 ### Removed
 
+* The tiles extension and all tiles links, added for demonstration purposes, have been removed. ([#309](https://github.com/stac-utils/stac-fastapi/pull/309))
+
 ### Fixed
 
 * Enabled `ContextExtension` by default ([#207](https://github.com/stac-utils/stac-fastapi/issues/207))
