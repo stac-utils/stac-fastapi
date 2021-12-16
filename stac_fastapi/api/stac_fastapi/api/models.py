@@ -70,7 +70,9 @@ def create_request_model(
                     extra=field_info.extra,
                 )
                 fields[k] = (v.outer_type_, body)
-                print("constructing POST", model_name, model, fields)
+                print("constructing model_name", model_name)
+                print("constructing model", model)
+                print("constructing fields", fields)
         print("OUT model_name", model_name)
         print("OUT fields", fields)
         print("OUT base", base_model)
