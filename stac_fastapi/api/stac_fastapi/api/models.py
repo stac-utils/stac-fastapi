@@ -71,6 +71,9 @@ def create_request_model(
                 )
                 fields[k] = (v.outer_type_, body)
                 print("constructing POST", model_name, model, fields)
+        print("OUT model_name", model_name)
+        print("OUT fields", fields)
+        print("OUT base", base_model)
         return create_model(model_name, **fields, __base__=base_model)
 
     raise TypeError("Mixed Request Model types. Check extension request types.")
