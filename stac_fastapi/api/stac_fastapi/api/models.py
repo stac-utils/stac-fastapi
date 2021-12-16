@@ -31,6 +31,7 @@ def create_request_model(
     for extension in extensions or []:
         if extension_model := extension.get_request_model(request_type):
             extension_models.append(extension_model)
+    print("EXTENSION MODEL", extension_models)
 
     mixins = mixins or []
 
@@ -42,6 +43,7 @@ def create_request_model(
 
     # Handle POST requests
     elif all([issubclass(m, BaseModel) for m in models]):
+        print()
         for model in models:
             for (k, v) in model.__fields__.items():
                 field_info = v.field_info
@@ -68,6 +70,7 @@ def create_request_model(
                     extra=field_info.extra,
                 )
                 fields[k] = (v.outer_type_, body)
+                print("constructing POST", model_name, model, fields)
         return create_model(model_name, **fields, __base__=base_model)
 
     raise TypeError("Mixed Request Model types. Check extension request types.")
