@@ -79,7 +79,7 @@ def create_get_request_model(
     """Wrap create_request_model to create the GET request model."""
     return create_request_model(
         "SearchGetRequest",
-        base_model=BaseSearchGetRequest,
+        base_model=base_model,
         extensions=extensions,
         request_type="GET",
     )
