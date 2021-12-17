@@ -121,6 +121,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
         # pool = kwargs["request"].app.state.readpool
         req = search_request.json(exclude_none=True, by_alias=True)
+        print("THE REQ IN SUPER SEARCH BASE", req)
 
         try:
             async with pool.acquire() as conn:
