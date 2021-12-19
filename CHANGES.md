@@ -7,7 +7,7 @@
 ### Changed
 
 * Refactor to remove hardcoded search request models. Request models are now dynamically created based on the enabled extensions.
-  ([#213](https://github.com/stac-utils/stac-fastapi/pull/213))  
+  ([#213](https://github.com/stac-utils/stac-fastapi/pull/213))
 
 ### Removed
 
@@ -25,11 +25,13 @@
 
 ### Added
 
+* Add CQL2 support ([#308](https://github.com/stac-utils/stac-fastapi/pull/308))
 * Add ability to override ItemCollectionUri and SearchGetRequest models ([#271](https://github.com/stac-utils/stac-fastapi/pull/271))
 * Added `collections` attribute to list of default fields to include, so that we satisfy the STAC API spec, which requires a `collections` attribute to be output when an item is part of a collection ([#276](https://github.com/stac-utils/stac-fastapi/pull/276))
 
 ### Changed
 
+* Update pgstac to 0.4.0 ([#308](https://github.com/stac-utils/stac-fastapi/pull/308))
 * Update get_item in sqlalchemy backend to allow for querying for items with same ids but in different collections. ([#275](https://github.com/stac-utils/stac-fastapi/pull/275))
 
 ## [2.1.1]
