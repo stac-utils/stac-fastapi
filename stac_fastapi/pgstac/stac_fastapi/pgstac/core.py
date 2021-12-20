@@ -131,6 +131,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
                     """,
                     req=req,
                 )
+                print("RENDERED!?", q, p)
                 items = await conn.fetchval(q, *p)
         except InvalidDatetimeFormatError:
             raise InvalidQueryParameter(
