@@ -121,7 +121,6 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
         # pool = kwargs["request"].app.state.readpool
         req = search_request.json(exclude_none=True, by_alias=True)
-        print("THE REQ IN SUPER SEARCH BASE", req)
 
         try:
             async with pool.acquire() as conn:
@@ -131,8 +130,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
                     """,
                     req=req,
                 )
-                print("RENDERED!?", q, p)
+                print("RENDERED!?", q, *p)
                 items = await conn.fetchval(q, *p)
+                print("ITEMS UPSTREAM", items)
         except InvalidDatetimeFormatError:
             raise InvalidQueryParameter(
                 f"Datetime parameter {search_request.datetime} is invalid."
