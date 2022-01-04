@@ -8,7 +8,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 
-from stac_fastapi.sqlalchemy.types.search import Queryables, QueryableTypes
+from stac_fastapi.sqlalchemy.extensions.query import Queryables, QueryableTypes
 
 BaseModel = declarative_base()
 
@@ -69,7 +69,7 @@ class Item(BaseModel):  # type:ignore
     properties = sa.Column(JSONB)
     assets = sa.Column(JSONB)
     collection_id = sa.Column(
-        sa.VARCHAR(1024), sa.ForeignKey(Collection.id), nullable=False
+        sa.VARCHAR(1024), sa.ForeignKey(Collection.id), nullable=False, primary_key=True
     )
     parent_collection = sa.orm.relationship("Collection", back_populates="children")
     datetime = sa.Column(sa.TIMESTAMP(timezone=True), nullable=False)

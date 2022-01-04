@@ -85,6 +85,26 @@ def test_get_collection(
     assert coll["id"] == data["id"]
 
 
+def test_get_item(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    collection_data = load_test_data("test_collection.json")
+    postgres_transactions.create_collection(
+        collection_data, request=MockStarletteRequest
+    )
+    data = load_test_data("test_item.json")
+    postgres_transactions.create_item(data, request=MockStarletteRequest)
+    coll = postgres_core.get_item(
+        item_id=data["id"],
+        collection_id=data["collection"],
+        request=MockStarletteRequest,
+    )
+    assert coll["id"] == data["id"]
+    assert coll["collection"] == data["collection"]
+
+
 def test_get_collection_items(
     postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,
@@ -135,6 +155,44 @@ def test_create_item_already_exists(
 
     with pytest.raises(ConflictError):
         postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+
+def test_create_duplicate_item_different_collections(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    # create test-collection
+    coll = load_test_data("test_collection.json")
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+
+    # create test-collection-2
+    coll["id"] = "test-collection-2"
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+
+    # add item to test-collection
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    # get item from test-collection
+    resp = postgres_core.get_item(
+        item["id"], item["collection"], request=MockStarletteRequest
+    )
+    assert Item(**item).dict(
+        exclude={"links": ..., "properties": {"created", "updated"}}
+    ) == Item(**resp).dict(exclude={"links": ..., "properties": {"created", "updated"}})
+
+    # add item to test-collection-2
+    item["collection"] = "test-collection-2"
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    # get item with same id from test-collection-2
+    resp = postgres_core.get_item(
+        item["id"], item["collection"], request=MockStarletteRequest
+    )
+    assert Item(**item).dict(
+        exclude={"links": ..., "properties": {"created", "updated"}}
+    ) == Item(**resp).dict(exclude={"links": ..., "properties": {"created", "updated"}})
 
 
 def test_update_item(

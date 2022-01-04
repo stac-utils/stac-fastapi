@@ -58,8 +58,11 @@ class TransactionsClient(BaseTransactionsClient):
             query = session.query(self.item_table).filter(
                 self.item_table.id == model["id"]
             )
+            query = query.filter(self.item_table.collection_id == model["collection"])
             if not query.scalar():
-                raise NotFoundError(f"Item {model['id']} not found")
+                raise NotFoundError(
+                    f"Item {model['id']} in collection {model['collection']}"
+                )
             # SQLAlchemy orm updates don't seem to like geoalchemy types
             db_model = self.item_serializer.stac_to_db(model)
             query.update(self.item_serializer.row_to_dict(db_model))
@@ -91,23 +94,28 @@ class TransactionsClient(BaseTransactionsClient):
         """Delete item."""
         base_url = str(kwargs["request"].base_url)
         with self.session.writer.context_session() as session:
-            query = session.query(self.item_table).filter(self.item_table.id == item_id)
+            query = session.query(self.item_table).filter(
+                self.item_table.collection_id == collection_id
+            )
+            query = query.filter(self.item_table.id == item_id)
             data = query.first()
             if not data:
-                raise NotFoundError(f"Item {item_id} not found")
+                raise NotFoundError(
+                    f"Item {item_id} not found in collection {collection_id}"
+                )
             query.delete()
             return self.item_serializer.db_to_stac(data, base_url=base_url)
 
-    def delete_collection(self, id: str, **kwargs) -> stac_types.Collection:
+    def delete_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
         """Delete collection."""
         base_url = str(kwargs["request"].base_url)
         with self.session.writer.context_session() as session:
             query = session.query(self.collection_table).filter(
-                self.collection_table.id == id
+                self.collection_table.id == collection_id
             )
             data = query.first()
             if not data:
-                raise NotFoundError(f"Collection {id} not found")
+                raise NotFoundError(f"Collection {collection_id} not found")
             query.delete()
             return self.collection_serializer.db_to_stac(data, base_url=base_url)
 
