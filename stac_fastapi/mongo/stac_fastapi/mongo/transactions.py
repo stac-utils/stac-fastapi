@@ -15,6 +15,7 @@ from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.links import CollectionLinks, ItemLinks
 
 from stac_fastapi.mongo.mongo_config import MongoSettings
 
@@ -37,6 +38,11 @@ class TransactionsClient(BaseTransactionsClient):
 
     def create_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
         """Create item."""
+        base_url = str(kwargs["request"].base_url)
+        item_links = ItemLinks(
+            collection_id=model["collection"], item_id=model["id"], base_url=base_url
+        ).create_links()
+        model["links"] = item_links
         self.db.stac_item.insert_one(model)
 
     def create_collection(
@@ -44,10 +50,11 @@ class TransactionsClient(BaseTransactionsClient):
     ) -> stac_types.Collection:
         """Create collection."""
         base_url = str(kwargs["request"].base_url)
-        data = self.collection_serializer.stac_to_db(model)
-        with self.session.writer.context_session() as session:
-            session.add(data)
-            return self.collection_serializer.db_to_stac(data, base_url=base_url)
+        collection_links = CollectionLinks(
+            collection_id=model["id"], base_url=base_url
+        ).create_links()
+        model["links"] = collection_links
+        self.db.stac_collection.insert_one(model)
 
     def update_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
         """Update item."""
