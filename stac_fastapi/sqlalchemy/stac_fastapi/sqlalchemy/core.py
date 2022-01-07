@@ -386,12 +386,14 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 )
 
             links = []
+            base = kwargs['request'].base_url
+            base_corrected = str(base).replace('http://', 'https://')
             if page.next:
                 links.append(
                     {
                         "rel": Relations.next.value,
                         "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}search",
+                        "href": f"{base_corrected}search",
                         "method": "POST",
                         "body": {"token": page.next},
                         "merge": True,
@@ -402,7 +404,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     {
                         "rel": Relations.previous.value,
                         "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}search",
+                        "href": f"{base_corrected}search",
                         "method": "POST",
                         "body": {"token": page.previous},
                         "merge": True,

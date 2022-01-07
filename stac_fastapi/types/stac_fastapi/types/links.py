@@ -9,7 +9,7 @@ from stac_pydantic.shared import MimeTypes
 
 # These can be inferred from the item/collection so they aren't included in the database
 # Instead they are dynamically generated when querying the database using the classes defined below
-INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root"]
+INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root", "next"]
 
 
 def filter_links(links: List[Dict]) -> List[Dict]:
@@ -34,7 +34,10 @@ class BaseLinks:
 
     def root(self) -> Dict[str, Any]:
         """Return the catalog root."""
-        return dict(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
+        return dict(rel=Relations.root, type=MimeTypes.json, href=self.base_url.replace('http://', 'https://'))
+
+    def next(self) -> Dict[str, Any]:
+        return dict(rel=Relations.next, type=MimeTypes.json, href=self.base_url.replace('http://', 'https://'))
 
 
 @attr.s
@@ -46,19 +49,19 @@ class CollectionLinks(BaseLinks):
         return dict(
             rel=Relations.self,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"collections/{self.collection_id}"),
+            href=urljoin(self.base_url.replace('http://', 'https://'), f"collections/{self.collection_id}"),
         )
 
     def parent(self) -> Dict[str, Any]:
         """Create the `parent` link."""
-        return dict(rel=Relations.parent, type=MimeTypes.json, href=self.base_url)
+        return dict(rel=Relations.parent, type=MimeTypes.json, href=self.base_url.replace('http://', 'https://'))
 
     def items(self) -> Dict[str, Any]:
         """Create the `items` link."""
         return dict(
             rel="items",
             type=MimeTypes.geojson,
-            href=urljoin(self.base_url, f"collections/{self.collection_id}/items"),
+            href=urljoin(self.base_url.replace('http://', 'https://'), f"collections/{self.collection_id}/items"),
         )
 
     def create_links(self) -> List[Dict[str, Any]]:
@@ -78,9 +81,9 @@ class ItemLinks(BaseLinks):
             rel=Relations.self,
             type=MimeTypes.geojson,
             href=urljoin(
-                self.base_url,
+                self.base_url.replace('http://', 'https://'),
                 f"collections/{self.collection_id}/items/{self.item_id}",
-            ),
+            )
         )
 
     def parent(self) -> Dict[str, Any]:
@@ -88,7 +91,7 @@ class ItemLinks(BaseLinks):
         return dict(
             rel=Relations.parent,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"collections/{self.collection_id}"),
+            href=urljoin(self.base_url.replace('http://', 'https://'), f"collections/{self.collection_id}"),
         )
 
     def collection(self) -> Dict[str, Any]:
@@ -96,7 +99,7 @@ class ItemLinks(BaseLinks):
         return dict(
             rel=Relations.collection,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"collections/{self.collection_id}"),
+            href=urljoin(self.base_url.replace('http://', 'https://'), f"collections/{self.collection_id}"),
         )
 
     def tiles(self) -> Dict[str, Any]:
@@ -106,9 +109,9 @@ class ItemLinks(BaseLinks):
             type=MimeTypes.json,
             title="tiles",
             href=urljoin(
-                self.base_url,
+                self.base_url.replace('http://', 'https://'),
                 f"collections/{self.collection_id}/items/{self.item_id}/tiles",
-            ),
+            )
         )
 
     def create_links(self) -> List[Dict[str, Any]]:
@@ -118,6 +121,7 @@ class ItemLinks(BaseLinks):
             self.parent(),
             self.collection(),
             self.root(),
+            self.next()
         ]
         # if config.settings.add_on_is_enabled(config.AddOns.tiles):
         # TODO: Don't always append tiles link

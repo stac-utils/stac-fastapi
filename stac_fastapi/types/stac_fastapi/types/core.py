@@ -239,6 +239,10 @@ class LandingPageMixin(abc.ABC):
         conformance_classes: List[str],
         extension_schemas: List[str],
     ) -> stac_types.LandingPage:
+
+        # TODO fix this: we need to be able to use https, at least make this configurable
+        base_url = base_url.replace("http://", "https://")
+
         landing_page = stac_types.LandingPage(
             type="Catalog",
             id=self.landing_page_id,
@@ -346,6 +350,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ]
         request: Request = kwargs["request"]
         base_url = str(request.base_url)
+        # TODO fix this: we need to be able to use https, at least make this configurable
+        base_url = base_url.replace("http://", "https://")
         landing_page = self._landing_page(
             base_url=base_url,
             conformance_classes=self.conformance_classes(),
@@ -520,6 +526,10 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         """
         request: Request = kwargs["request"]
         base_url = str(request.base_url)
+
+        # TODO fix this: we need to be able to use https, at least make this configurable
+        base_url = base_url.replace("http://", "https://")
+
         extension_schemas = [
             schema.schema_href for schema in self.extensions if schema.schema_href
         ]
