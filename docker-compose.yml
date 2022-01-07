@@ -10,7 +10,7 @@ services:
     platform: linux/amd64
     environment:
       - APP_HOST=0.0.0.0
-      - APP_PORT=8081
+      - APP_PORT=8083
       - RELOAD=false
       - ENVIRONMENT=local
       - POSTGRES_USER=username

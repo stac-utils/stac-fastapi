@@ -13,6 +13,7 @@ SUBPACKAGE_DIRS=(
     "stac_fastapi/api"
     "stac_fastapi/sqlalchemy"
     "stac_fastapi/pgstac"
+    "stac_fastapi/mongo"
 )
 
 function usage() {

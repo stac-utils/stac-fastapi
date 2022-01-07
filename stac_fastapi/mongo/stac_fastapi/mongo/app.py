@@ -7,16 +7,16 @@ from stac_fastapi.extensions.core import (
     TransactionExtension,
 )
 from stac_fastapi.extensions.third_party import BulkTransactionExtension
-from stac_fastapi.sqlalchemy.config import SqlalchemySettings
-from stac_fastapi.sqlalchemy.core import CoreCrudClient
-from stac_fastapi.sqlalchemy.session import Session
-from stac_fastapi.sqlalchemy.transactions import (
+from stac_fastapi.mongo.config import MongoSettings
+from stac_fastapi.mongo.core import CoreCrudClient
+from stac_fastapi.mongo.session import Session
+from stac_fastapi.mongo.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
+from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
 
-settings = SqlalchemySettings()
+settings = MongoSettings()
 session = Session.create_from_settings(settings)
 api = StacApi(
     settings=settings,
@@ -41,7 +41,7 @@ def run():
         import uvicorn
 
         uvicorn.run(
-            "stac_fastapi.sqlalchemy.app:app",
+            "stac_fastapi.mongo.app:app",
             host=settings.app_host,
             port=settings.app_port,
             log_level="info",

@@ -4,8 +4,8 @@ from typing import Set
 from stac_fastapi.types.config import ApiSettings
 
 
-class SqlalchemySettings(ApiSettings):
-    """Postgres-specific API settings.
+class MongoSettings(ApiSettings):
+    """Mongos-specific API settings.
 
     Attributes:
         postgres_user: postgres username.
