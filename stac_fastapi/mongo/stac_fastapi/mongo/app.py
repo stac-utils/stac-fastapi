@@ -11,7 +11,7 @@ from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.core import CoreCrudClient
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.mongo.transactions import (
-    BulkTransactionsClient,
+    # BulkTransactionsClient,
     TransactionsClient,
 )
 from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
@@ -24,7 +24,7 @@ api = StacApi(
         TransactionExtension(
             client=TransactionsClient(session=session), settings=settings
         ),
-        BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
+        # BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
         FieldsExtension(),
         QueryExtension(),
         SortExtension(),
