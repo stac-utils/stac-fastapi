@@ -13,12 +13,7 @@ services:
       - APP_PORT=8083
       - RELOAD=false
       - ENVIRONMENT=local
-      - POSTGRES_USER=username
-      - POSTGRES_PASS=password
-      - POSTGRES_DBNAME=postgis
-      - POSTGRES_HOST_READER=database
-      - POSTGRES_HOST_WRITER=database
-      - POSTGRES_PORT=5432
+      - MONGO_CONN_STRING="mongodb://dev:stac@mongo:27017"
       - WEB_CONCURRENCY=10
       - VSI_CACHE=TRUE
       - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
@@ -39,7 +34,7 @@ services:
     image: mongo
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: "stac"
+      MONGO_INITDB_ROOT_USERNAME: "dev"
       MONGO_INITDB_ROOT_PASSWORD: "stac"
     volumes:
       - ./mongo_data:/data/db
