@@ -58,20 +58,19 @@ class TransactionsClient(BaseTransactionsClient):
 
     def update_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
         """Update item."""
+        post = self.db.stac_item.find_one({'id': model["id"], "collection": model["collection"]})
+        if not post:
+            raise NotFoundError(f"Item {model['id']} in collection {model['collection']} not found")
+
+        self.db.stac_item.delete_one({'id': model["id"], "collection": model["collection"]})
+
         base_url = str(kwargs["request"].base_url)
-        with self.session.reader.context_session() as session:
-            query = session.query(self.item_table).filter(
-                self.item_table.id == model["id"]
-            )
-            if not query.scalar():
-                raise NotFoundError(f"Item {model['id']} not found")
-            # SQLAlchemy orm updates don't seem to like geoalchemy types
-            db_model = self.item_serializer.stac_to_db(model)
-            query.update(self.item_serializer.row_to_dict(db_model))
-            stac_item = self.item_serializer.db_to_stac(db_model, base_url)
-
-            return stac_item
-
+        item_links = ItemLinks(
+            collection_id=model["collection"], item_id=model["id"], base_url=base_url
+        ).create_links()
+        model["links"] = item_links
+        self.db.stac_item.insert_one(model)
+      
     def update_collection(
         self, model: stac_types.Collection, **kwargs
     ) -> stac_types.Collection:
