@@ -126,3 +126,6 @@ docs/api/*
 
 # Direnv
 .envrc
+
+# mongo db data
+/mongo_data
