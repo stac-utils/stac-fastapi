@@ -38,11 +38,6 @@ class TransactionsClient(BaseTransactionsClient):
     def create_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
         """Create item."""
         self.db.stac_item.insert_one(model)
-        # base_url = str(kwargs["request"].base_url)
-        # data = self.item_serializer.stac_to_db(model)
-        # with self.session.writer.context_session() as session:
-        #     session.add(data)
-        #     return self.item_serializer.db_to_stac(data, base_url)
 
     def create_collection(
         self, model: stac_types.Collection, **kwargs
