@@ -16,8 +16,9 @@ from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.errors import NotFoundError
 
-logger = logging.getLogger(__name__)
+from stac_fastapi.mongo.mongo_config import MongoSettings
 
+logger = logging.getLogger(__name__)
 
 @attr.s
 class TransactionsClient(BaseTransactionsClient):
@@ -32,14 +33,16 @@ class TransactionsClient(BaseTransactionsClient):
     collection_serializer: Type[serializers.Serializer] = attr.ib(
         default=serializers.CollectionSerializer
     )
+    db = MongoSettings()
 
     def create_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
         """Create item."""
-        base_url = str(kwargs["request"].base_url)
-        data = self.item_serializer.stac_to_db(model)
-        with self.session.writer.context_session() as session:
-            session.add(data)
-            return self.item_serializer.db_to_stac(data, base_url)
+        self.db.stac_item.insert_one(model)
+        # base_url = str(kwargs["request"].base_url)
+        # data = self.item_serializer.stac_to_db(model)
+        # with self.session.writer.context_session() as session:
+        #     session.add(data)
+        #     return self.item_serializer.db_to_stac(data, base_url)
 
     def create_collection(
         self, model: stac_types.Collection, **kwargs
@@ -125,7 +128,8 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
 
     def __attrs_post_init__(self):
         """Create sqlalchemy engine."""
-        self.engine = self.session.writer.cached_engine
+        pass
+        # self.engine = self.session.writer.cached_engine
 
     def _preprocess_item(self, item: stac_types.Item) -> stac_types.Item:
         """Preprocess items to match data model.

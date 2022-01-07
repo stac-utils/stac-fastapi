@@ -50,8 +50,6 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     collection_serializer: Type[serializers.Serializer] = attr.ib(
         default=serializers.CollectionSerializer
     )
-
-    conn_str = "mongodb://dev:stac@mongo:27017"
     db = MongoSettings()
 
     @staticmethod
