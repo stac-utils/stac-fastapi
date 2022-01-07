@@ -14,6 +14,12 @@ services:
       - RELOAD=false
       - ENVIRONMENT=local
       - MONGO_CONN_STRING="mongodb://dev:stac@mongo:27017"
+      - POSTGRES_USER=username
+      - POSTGRES_PASS=password
+      - POSTGRES_DBNAME=postgis
+      - POSTGRES_HOST_READER=database
+      - POSTGRES_HOST_WRITER=database
+      - POSTGRES_PORT=5432
       - WEB_CONCURRENCY=10
       - VSI_CACHE=TRUE
       - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
@@ -31,7 +37,7 @@ services:
       bash -c "./scripts/wait-for-it.sh mongo_db:27017 && python -m stac_fastapi.mongo.app"
 
   mongo_db:
-    image: mongo
+    image: mongo:3.4.2
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: "dev"
@@ -39,7 +45,8 @@ services:
     volumes:
       - ./mongo_data:/data/db
     ports:
-      - "27017:27017"
+      - "27018:27017"
+    command: mongod
     
 
 
@@ -164,6 +171,16 @@ services:
   #   depends_on:
   #     - database
   #     - app-pgstac
+
+  # mongo-express:
+  #   image: mongo-express
+  #   restart: always
+  #   ports:
+  #     - "8081:8081"
+  #   environment:
+  #     ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+  #     ME_CONFIG_MONGODB_ADMINUSERNAME: "dev"
+  #     ME_CONFIG_MONGODB_ADMINPASSWORD: "stac"
 
 networks:
   default:

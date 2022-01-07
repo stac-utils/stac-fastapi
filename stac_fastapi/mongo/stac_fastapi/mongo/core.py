@@ -2,9 +2,11 @@
 import json
 import logging
 import operator
+import motor.motor_tornado
 from datetime import datetime
 from typing import List, Optional, Set, Type, Union
 from urllib.parse import urlencode, urljoin
+from stac_fastapi.types import stac as stac_types
 
 import attr
 import geoalchemy2 as ga
@@ -29,11 +31,11 @@ from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
+from stac_fastapi.mongo.mongo_config import MongoSettings
 
 logger = logging.getLogger(__name__)
 
 NumType = Union[float, int]
-
 
 @attr.s
 class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
@@ -48,6 +50,9 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     collection_serializer: Type[serializers.Serializer] = attr.ib(
         default=serializers.CollectionSerializer
     )
+
+    conn_str = "mongodb://dev:stac@mongo:27017"
+    db = MongoSettings()
 
     @staticmethod
     def _lookup_id(
@@ -171,16 +176,24 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             )
 
     def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
-        """Get item by id."""
-        base_url = str(kwargs["request"].base_url)
-        with self.session.reader.context_session() as session:
-            db_query = session.query(self.item_table)
-            db_query = db_query.filter(self.item_table.collection_id == collection_id)
-            db_query = db_query.filter(self.item_table.id == item_id)
-            item = db_query.first()
-            if not item:
-                raise NotFoundError(f"{self.item_table.__name__} {id} not found")
-            return self.item_serializer.db_to_stac(item, base_url=base_url)
+        """Get item by item id, collection id."""
+        item = self.db.stac_item.find_one({"id": item_id, "collection": collection_id})
+
+        if not item:
+            raise NotFoundError(f"{self.item_table.__name__} {item_id} not found in collection {collection_id}")
+
+        return stac_types.Item(
+            type="Feature",
+            stac_version=item["stac_version"],
+            stac_extensions=item["stac_extensions"],
+            id=item["id"],
+            collection=item["collection"],
+            geometry=item["geometry"],
+            bbox=item["bbox"],
+            properties=item["properties"],
+            links=item["links"],
+            assets=item["assets"],
+        )
 
     def get_search(
         self,
