@@ -2,9 +2,8 @@
 from pymongo import MongoClient, errors
 import os
 
-# global variables for MongoDB host (default port is 27017)
-DOMAIN = 'host.docker.internal'
-PORT = 27018
+DOMAIN = os.getenv("MONGO_HOST")
+PORT = os.getenv("MONGO_PORT")
 
 def MongoSettings():
 
