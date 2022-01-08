@@ -94,10 +94,13 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
     def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id."""
+        collection = self.db.stac_collection.find_one({"id": id})
         base_url = str(kwargs["request"].base_url)
-        with self.session.reader.context_session() as session:
-            collection = self._lookup_id(id, self.collection_table, session)
-            return self.collection_serializer.db_to_stac(collection, base_url)
+
+        if not collection:
+            raise NotFoundError(f"{id} not found in database")
+
+        return self.collection_serializer.db_to_stac(collection, base_url)
 
     def item_collection(
         self, id: str, limit: int = 10, token: str = None, **kwargs
@@ -178,7 +181,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         base_url = str(kwargs["request"].base_url)
 
         if not item:
-            raise NotFoundError(f"{self.item_table.__name__} {item_id} not found in collection {collection_id}")
+            raise NotFoundError(f"{item_id} not found in collection {collection_id}")
 
         return self.item_serializer.db_to_stac(item, base_url)
 

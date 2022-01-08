@@ -110,28 +110,28 @@ class CollectionSerializer(Serializer):
     """Serialization methods for STAC collections."""
 
     @classmethod
-    def db_to_stac(cls, db_model: database.Collection, base_url: str) -> TypedDict:
+    def db_to_stac(cls, collection, base_url: str) -> TypedDict:
         """Transform database model to stac collection."""
         collection_links = CollectionLinks(
-            collection_id=db_model.id, base_url=base_url
+            collection_id=collection["id"], base_url=base_url
         ).create_links()
 
-        original_links = db_model.links
+        original_links = collection["links"]
         if original_links:
             collection_links += resolve_links(original_links, base_url)
 
         return stac_types.Collection(
             type="Collection",
-            id=db_model.id,
-            stac_extensions=db_model.stac_extensions or [],
-            stac_version=db_model.stac_version,
-            title=db_model.title,
-            description=db_model.description,
-            keywords=db_model.keywords,
-            license=db_model.license,
-            providers=db_model.providers,
-            summaries=db_model.summaries,
-            extent=db_model.extent,
+            id=collection["id"],
+            stac_extensions=collection["stac_extensions"] or [],
+            stac_version=collection["stac_version"],
+            title=collection["title"],
+            description=collection["description"],
+            keywords=collection["keywords"],
+            license=collection["license"],
+            providers=collection["providers"],
+            summaries=collection["summaries"],
+            extent=collection["extent"],
             links=collection_links,
         )
 
