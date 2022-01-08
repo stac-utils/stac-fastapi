@@ -64,33 +64,32 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     def all_collections(self, **kwargs) -> Collections:
         """Read all collections from the database."""
         base_url = str(kwargs["request"].base_url)
-        with self.session.reader.context_session() as session:
-            collections = session.query(self.collection_table).all()
-            serialized_collections = [
-                self.collection_serializer.db_to_stac(collection, base_url=base_url)
-                for collection in collections
-            ]
-            links = [
-                {
-                    "rel": Relations.root.value,
-                    "type": MimeTypes.json,
-                    "href": base_url,
-                },
-                {
-                    "rel": Relations.parent.value,
-                    "type": MimeTypes.json,
-                    "href": base_url,
-                },
-                {
-                    "rel": Relations.self.value,
-                    "type": MimeTypes.json,
-                    "href": urljoin(base_url, "collections"),
-                },
-            ]
-            collection_list = Collections(
-                collections=serialized_collections or [], links=links
-            )
-            return collection_list
+        collections = self.db.stac_collection.find()
+        serialized_collections = [
+            self.collection_serializer.db_to_stac(collection, base_url=base_url)
+            for collection in collections
+        ]
+        links = [
+            {
+                "rel": Relations.root.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.parent.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.self.value,
+                "type": MimeTypes.json,
+                "href": urljoin(base_url, "collections"),
+            },
+        ]
+        collection_list = Collections(
+            collections=serialized_collections or [], links=links
+        )
+        return collection_list
 
     def get_collection(self, id: str, **kwargs) -> Collection:
         """Get collection by id."""
