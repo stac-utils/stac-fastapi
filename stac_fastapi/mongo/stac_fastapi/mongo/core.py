@@ -196,6 +196,16 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         ]]
         return poly
 
+    def return_date(self, datetime):
+        x = datetime.split("/")
+        start_date = x[0]
+        end_date = x[1]
+        if(start_date=='..'):
+            start_date = '1900-10-01T00:00:00Z'
+        if(end_date=='..'):
+            end_date = '2200-12-01T12:31:12Z'
+        return { "properties.datetime": { "$lt":end_date, "$gte":start_date} }
+
     def get_search(
         self,
         collections: Optional[List[str]] = None,
@@ -231,9 +241,9 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             # }
             # filters.append(bbox_filter)
 
-        # queries = {}
-        # for filter in filters:
-        #     queries.update(**filter)
+        if datetime:
+            date_filter = self.return_date(datetime)
+            queries.update(**date_filter)
 
         items = (
             self.db.stac_item
