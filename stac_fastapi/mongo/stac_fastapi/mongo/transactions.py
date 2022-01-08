@@ -64,32 +64,23 @@ class TransactionsClient(BaseTransactionsClient):
 
     def update_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
         """Update item."""
-        # base_url = str(kwargs["request"].base_url)
         post = self.db.stac_item.find_one({'id': model["id"], "collection": model["collection"]})
         if not post:
             raise NotFoundError(f"Item {model['id']} in collection {model['collection']} not found")
 
         self.db.stac_item.delete_one({'id': model["id"], "collection": model["collection"]})
-
         self.create_item(model)
       
     def update_collection(
         self, model: stac_types.Collection, **kwargs
     ) -> stac_types.Collection:
         """Update collection."""
-        base_url = str(kwargs["request"].base_url)
-        with self.session.reader.context_session() as session:
-            query = session.query(self.collection_table).filter(
-                self.collection_table.id == model["id"]
-            )
-            if not query.scalar():
-                raise NotFoundError(f"Item {model['id']} not found")
+        post = self.db.stac_collection.find_one({'id': model["id"]})
+        if not post:
+            raise NotFoundError(f"Collection {model['collection']} not found")
 
-            # SQLAlchemy orm updates don't seem to like geoalchemy types
-            db_model = self.collection_serializer.stac_to_db(model)
-            query.update(self.collection_serializer.row_to_dict(db_model))
-
-            return self.collection_serializer.db_to_stac(db_model, base_url)
+        self.db.stac_item.delete_one({'id': model["id"]})
+        self.create_collection(model)
 
     def delete_item(
         self, item_id: str, collection_id: str, **kwargs
