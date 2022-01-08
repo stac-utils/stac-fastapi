@@ -1,5 +1,6 @@
 # import the MongoClient class
 from pymongo import MongoClient, errors
+import os
 
 # global variables for MongoDB host (default port is 27017)
 DOMAIN = 'host.docker.internal'
@@ -13,8 +14,8 @@ def MongoSettings():
         client = MongoClient(
             host = [ str(DOMAIN) + ":" + str(PORT) ],
             serverSelectionTimeoutMS = 3000, # 3 second timeout
-            username = "dev",
-            password = "stac",
+            username = os.getenv("MONGO_USER"),
+            password = os.getenv("MONGO_PASS"),
         )
 
         # print the version of MongoDB server if connection successful

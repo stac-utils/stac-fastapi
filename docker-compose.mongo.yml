@@ -13,7 +13,8 @@ services:
       - APP_PORT=8083
       - RELOAD=false
       - ENVIRONMENT=local
-      - MONGO_CONN_STRING="mongodb://dev:stac@mongo:27017"
+      - MONGO_USER=dev
+      - MONGO_PASS=stac
       - POSTGRES_USER=username
       - POSTGRES_PASS=password
       - POSTGRES_DBNAME=postgis
