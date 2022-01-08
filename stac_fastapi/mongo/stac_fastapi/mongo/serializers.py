@@ -116,16 +116,14 @@ class CollectionSerializer(Serializer):
             collection_id=db_model.id, base_url=base_url
         ).create_links()
 
-        db_links = db_model.links
-        if db_links:
-            collection_links += resolve_links(db_links, base_url)
-
-        stac_extensions = db_model.stac_extensions or []
+        original_links = db_model.links
+        if original_links:
+            collection_links += resolve_links(original_links, base_url)
 
         return stac_types.Collection(
             type="Collection",
             id=db_model.id,
-            stac_extensions=stac_extensions,
+            stac_extensions=db_model.stac_extensions or [],
             stac_version=db_model.stac_version,
             title=db_model.title,
             description=db_model.description,
