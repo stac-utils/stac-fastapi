@@ -2,7 +2,6 @@
 import json
 import logging
 import operator
-import motor.motor_tornado
 from datetime import datetime
 from typing import List, Optional, Set, Type, Union
 from urllib.parse import urlencode, urljoin
