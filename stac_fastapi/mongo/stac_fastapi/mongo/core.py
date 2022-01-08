@@ -106,73 +106,79 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     ) -> ItemCollection:
         """Read an item collection from the database."""
         base_url = str(kwargs["request"].base_url)
-        with self.session.reader.context_session() as session:
-            collection_children = (
-                session.query(self.item_table)
-                .join(self.collection_table)
-                .filter(self.collection_table.id == id)
-                .order_by(self.item_table.datetime.desc(), self.item_table.id)
-            )
-            count = None
-            if self.extension_is_enabled("ContextExtension"):
-                count_query = collection_children.statement.with_only_columns(
-                    [func.count()]
-                ).order_by(None)
-                count = collection_children.session.execute(count_query).scalar()
-            token = self.get_token(token) if token else token
-            page = get_page(collection_children, per_page=limit, page=(token or False))
-            # Create dynamic attributes for each page
-            page.next = (
-                self.insert_token(keyset=page.paging.bookmark_next)
-                if page.paging.has_next
-                else None
-            )
-            page.previous = (
-                self.insert_token(keyset=page.paging.bookmark_previous)
-                if page.paging.has_previous
-                else None
+        collection_children = self.db.stac_item.find({"collection": id})
+
+        # with self.session.reader.context_session() as session:
+        #     collection_children = (
+        #         session.query(self.item_table)
+        #         .join(self.collection_table)
+        #         .filter(self.collection_table.id == id)
+        #         .order_by(self.item_table.datetime.desc(), self.item_table.id)
+        #     )
+        count = None
+        # if self.extension_is_enabled("ContextExtension"):
+        #     count_query = collection_children.statement.with_only_columns(
+        #         [func.count()]
+        #     ).order_by(None)
+        #     count = collection_children.session.execute(count_query).scalar()
+        token = self.get_token(token) if token else token
+        # page = get_page(collection_children, per_page=limit, page=(token or False))
+        # # Create dynamic attributes for each page
+        # page.next = (
+        #     self.insert_token(keyset=page.paging.bookmark_next)
+        #     if page.paging.has_next
+        #     else None
+        # )
+        # page.previous = (
+        #     self.insert_token(keyset=page.paging.bookmark_previous)
+        #     if page.paging.has_previous
+        #     else None
+        # )
+
+        links = []
+        # if page.next:
+        #     links.append(
+        #         {
+        #             "rel": Relations.next.value,
+        #             "type": "application/geo+json",
+        #             "href": f"{kwargs['request'].base_url}collections/{id}/items?token={page.next}&limit={limit}",
+        #             "method": "GET",
+        #         }
+        #     )
+        # if page.previous:
+        #     links.append(
+        #         {
+        #             "rel": Relations.previous.value,
+        #             "type": "application/geo+json",
+        #             "href": f"{kwargs['request'].base_url}collections/{id}/items?token={page.previous}&limit={limit}",
+        #             "method": "GET",
+        #         }
+        #     )
+
+        response_features = []
+        # for item in page:
+        #     response_features.append(
+        #         self.item_serializer.db_to_stac(item, base_url=base_url)
+        #     )
+
+        context_obj = None
+        # if self.extension_is_enabled("ContextExtension"):
+        #     context_obj = {
+        #         "returned": len(page),
+        #         "limit": limit,
+        #         "matched": count,
+        #     }
+        for item in collection_children:
+            response_features.append(
+                self.item_serializer.db_to_stac(item, base_url=base_url)
             )
 
-            links = []
-            if page.next:
-                links.append(
-                    {
-                        "rel": Relations.next.value,
-                        "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}collections/{id}/items?token={page.next}&limit={limit}",
-                        "method": "GET",
-                    }
-                )
-            if page.previous:
-                links.append(
-                    {
-                        "rel": Relations.previous.value,
-                        "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}collections/{id}/items?token={page.previous}&limit={limit}",
-                        "method": "GET",
-                    }
-                )
-
-            response_features = []
-            for item in page:
-                response_features.append(
-                    self.item_serializer.db_to_stac(item, base_url=base_url)
-                )
-
-            context_obj = None
-            if self.extension_is_enabled("ContextExtension"):
-                context_obj = {
-                    "returned": len(page),
-                    "limit": limit,
-                    "matched": count,
-                }
-
-            return ItemCollection(
-                type="FeatureCollection",
-                features=response_features,
-                links=links,
-                context=context_obj,
-            )
+        return ItemCollection(
+            type="FeatureCollection",
+            features=response_features,
+            links=links,
+            context=context_obj,
+        )
 
     def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by item id, collection id."""
