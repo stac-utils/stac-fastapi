@@ -213,6 +213,11 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         queries = {}
         base_url = str(kwargs["request"].base_url)
 
+        if ids:
+            for id in ids:
+                id_filter = {"id": id}
+                queries.update(**id_filter)
+
         # Australia bbox = 101.125653,-46.522368,162.473309,-4.862972
         if bbox:
             poly = self.bbox2poly(bbox)
