@@ -238,10 +238,14 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         )
 
         results = []
-        for item in items:
-            results.append(
-                self.item_serializer.db_to_stac(item, base_url=base_url)
-            )
+
+        try:
+            for item in items:
+                results.append(
+                    self.item_serializer.db_to_stac(item, base_url=base_url)
+                )
+        except:
+            return results
 
         return results
 
