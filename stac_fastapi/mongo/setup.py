@@ -19,6 +19,7 @@ install_requires = [
     "psycopg2-binary",
     "alembic",
     "fastapi-utils",
+    "pymongo"
 ]
 
 extra_reqs = {
