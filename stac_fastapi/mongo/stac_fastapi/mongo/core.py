@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import List, Optional, Set, Type, Union
 from urllib.parse import urlencode, urljoin
 from stac_fastapi.types import stac as stac_types
+import pymongo
 
 import attr
 import geoalchemy2 as ga
@@ -106,22 +107,16 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     ) -> ItemCollection:
         """Read an item collection from the database."""
         base_url = str(kwargs["request"].base_url)
-        collection_children = self.db.stac_item.find({"collection": id})
-
-        # with self.session.reader.context_session() as session:
-        #     collection_children = (
-        #         session.query(self.item_table)
-        #         .join(self.collection_table)
-        #         .filter(self.collection_table.id == id)
-        #         .order_by(self.item_table.datetime.desc(), self.item_table.id)
-        #     )
+        collection_children = ( 
+            self.db.stac_item
+            .find({"collection": id})
+            .sort([("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)])
+        )
         count = None
-        # if self.extension_is_enabled("ContextExtension"):
-        #     count_query = collection_children.statement.with_only_columns(
-        #         [func.count()]
-        #     ).order_by(None)
-        #     count = collection_children.session.execute(count_query).scalar()
+        if self.extension_is_enabled("ContextExtension"):
+            count = len(collection_children)
         token = self.get_token(token) if token else token
+
         # page = get_page(collection_children, per_page=limit, page=(token or False))
         # # Create dynamic attributes for each page
         # page.next = (
@@ -162,12 +157,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         #     )
 
         context_obj = None
-        # if self.extension_is_enabled("ContextExtension"):
-        #     context_obj = {
-        #         "returned": len(page),
-        #         "limit": limit,
-        #         "matched": count,
-        #     }
+        if self.extension_is_enabled("ContextExtension"):
+            context_obj = {
+                "returned": count,
+                "limit": limit,
+                "matched": count,
+            }
         for item in collection_children:
             response_features.append(
                 self.item_serializer.db_to_stac(item, base_url=base_url)
