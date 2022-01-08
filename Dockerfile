@@ -5,8 +5,6 @@ FROM base as builder
 # need the following packages in order to build
 RUN apt-get update && apt-get install -y build-essential git
 
-RUN pip install motor python-dotenv tornado
-
 ENV CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 ARG install_dev_dependencies=true
