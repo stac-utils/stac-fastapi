@@ -107,6 +107,8 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         self, id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
         """Read an item collection from the database."""
+        links = []
+        response_features = []
         base_url = str(kwargs["request"].base_url)
         collection_children = ( 
             self.db.stac_item
@@ -116,46 +118,6 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         count = None
         if self.extension_is_enabled("ContextExtension"):
             count = len(collection_children)
-        token = self.get_token(token) if token else token
-
-        page = get_page(collection_children, per_page=limit, page=(token or False))
-        # # Create dynamic attributes for each page
-        # page.next = (
-        #     self.insert_token(keyset=page.paging.bookmark_next)
-        #     if page.paging.has_next
-        #     else None
-        # )
-        # page.previous = (
-        #     self.insert_token(keyset=page.paging.bookmark_previous)
-        #     if page.paging.has_previous
-        #     else None
-        # )
-
-        links = []
-        # if page.next:
-        #     links.append(
-        #         {
-        #             "rel": Relations.next.value,
-        #             "type": "application/geo+json",
-        #             "href": f"{kwargs['request'].base_url}collections/{id}/items?token={page.next}&limit={limit}",
-        #             "method": "GET",
-        #         }
-        #     )
-        # if page.previous:
-        #     links.append(
-        #         {
-        #             "rel": Relations.previous.value,
-        #             "type": "application/geo+json",
-        #             "href": f"{kwargs['request'].base_url}collections/{id}/items?token={page.previous}&limit={limit}",
-        #             "method": "GET",
-        #         }
-        #     )
-
-        response_features = []
-        # for item in page:
-        #     response_features.append(
-        #         self.item_serializer.db_to_stac(item, base_url=base_url)
-        #     )
 
         context_obj = None
         if self.extension_is_enabled("ContextExtension"):
@@ -262,6 +224,11 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 if afield[0] == "-":
                     exclude_list.append(afield[1:])
 
+        sort_list = []
+        if sortby:
+            for sort in sortby:
+                pass
+
         items = (
             self.db.stac_item
             .find(queries)
@@ -270,6 +237,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         )
 
         results = []
+        links = []
 
         try:
             for item in items:
@@ -281,66 +249,24 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         except:
             return results
 
-        return results
+        count = None
+        if self.extension_is_enabled("ContextExtension"):
+            count = len(results)
 
-        # # Parse request parameters
-        # base_args = {
-        #     "collections": collections,
-        #     "ids": ids,
-        #     "bbox": bbox,
-        #     "limit": limit,
-        #     "token": token,
-        #     "query": json.loads(query) if query else query,
-        # }
-        # if datetime:
-        #     base_args["datetime"] = datetime
-        # if sortby:
-        #     # https://github.com/radiantearth/stac-spec/tree/master/api-spec/extensions/sort#http-get-or-post-form
-        #     sort_param = []
-        #     for sort in sortby:
-        #         sort_param.append(
-        #             {
-        #                 "field": sort[1:],
-        #                 "direction": "asc" if sort[0] == "+" else "desc",
-        #             }
-        #         )
-        #     base_args["sortby"] = sort_param
+        context_obj = None
+        if self.extension_is_enabled("ContextExtension"):
+            context_obj = {
+                "returned": count,
+                "limit": limit,
+                "matched": count,
+            }
 
-        # if fields:
-        #     includes = set()
-        #     excludes = set()
-        #     for field in fields:
-        #         if field[0] == "-":
-        #             excludes.add(field[1:])
-        #         elif field[0] == "+":
-        #             includes.add(field[1:])
-        #         else:
-        #             includes.add(field)
-        #     base_args["fields"] = {"include": includes, "exclude": excludes}
-
-        # # Do the request
-        # try:
-        #     search_request = SQLAlchemySTACSearch(**base_args)
-        # except ValidationError:
-        #     raise HTTPException(status_code=400, detail="Invalid parameters provided")
-        # resp = self.post_search(search_request, request=kwargs["request"])
-
-        # # Pagination
-        # page_links = []
-        # for link in resp["links"]:
-        #     if link["rel"] == Relations.next or link["rel"] == Relations.previous:
-        #         query_params = dict(kwargs["request"].query_params)
-        #         if link["body"] and link["merge"]:
-        #             query_params.update(link["body"])
-        #         link["method"] = "GET"
-        #         link["href"] = f"{link['body']}?{urlencode(query_params)}"
-        #         link["body"] = None
-        #         link["merge"] = False
-        #         page_links.append(link)
-        #     else:
-        #         page_links.append(link)
-        # resp["links"] = page_links
-        # return resp
+        return ItemCollection(
+            type="FeatureCollection",
+            features=results,
+            links=links,
+            context=context_obj,
+        )
 
     def post_search(
         self, search_request: SQLAlchemySTACSearch, **kwargs
