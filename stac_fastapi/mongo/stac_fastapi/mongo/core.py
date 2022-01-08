@@ -102,6 +102,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
         return self.collection_serializer.db_to_stac(collection, base_url)
 
+    # pagination commented out - is different with mongo
     def item_collection(
         self, id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
@@ -117,7 +118,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             count = len(collection_children)
         token = self.get_token(token) if token else token
 
-        # page = get_page(collection_children, per_page=limit, page=(token or False))
+        page = get_page(collection_children, per_page=limit, page=(token or False))
         # # Create dynamic attributes for each page
         # page.next = (
         #     self.insert_token(keyset=page.paging.bookmark_next)
@@ -185,6 +186,16 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
         return self.item_serializer.db_to_stac(item, base_url)
 
+    def bbox2poly(self, bbox):
+        poly = [[
+            [float(bbox[0]),float(bbox[1])],
+            [float(bbox[2]),float(bbox[1])],
+            [float(bbox[2]),float(bbox[3])],
+            [float(bbox[0]),float(bbox[3])],
+            [float(bbox[0]),float(bbox[1])]
+        ]]
+        return poly
+
     def get_search(
         self,
         collections: Optional[List[str]] = None,
@@ -199,64 +210,99 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         **kwargs,
     ) -> ItemCollection:
         """GET search catalog."""
-        # Parse request parameters
-        base_args = {
-            "collections": collections,
-            "ids": ids,
-            "bbox": bbox,
-            "limit": limit,
-            "token": token,
-            "query": json.loads(query) if query else query,
-        }
-        if datetime:
-            base_args["datetime"] = datetime
-        if sortby:
-            # https://github.com/radiantearth/stac-spec/tree/master/api-spec/extensions/sort#http-get-or-post-form
-            sort_param = []
-            for sort in sortby:
-                sort_param.append(
-                    {
-                        "field": sort[1:],
-                        "direction": "asc" if sort[0] == "+" else "desc",
-                    }
-                )
-            base_args["sortby"] = sort_param
+        queries = {}
+        base_url = str(kwargs["request"].base_url)
 
-        if fields:
-            includes = set()
-            excludes = set()
-            for field in fields:
-                if field[0] == "-":
-                    excludes.add(field[1:])
-                elif field[0] == "+":
-                    includes.add(field[1:])
-                else:
-                    includes.add(field)
-            base_args["fields"] = {"include": includes, "exclude": excludes}
+        # Australia bbox = 101.125653,-46.522368,162.473309,-4.862972
+        if bbox:
+            poly = self.bbox2poly(bbox)
+            bbox_filter = {
+                "geometry": {"$geoIntersects": { "$geometry": { "type": 'Polygon' , "coordinates": poly }}}
+            }
+            queries.update(**bbox_filter)
 
-        # Do the request
-        try:
-            search_request = SQLAlchemySTACSearch(**base_args)
-        except ValidationError:
-            raise HTTPException(status_code=400, detail="Invalid parameters provided")
-        resp = self.post_search(search_request, request=kwargs["request"])
+            # bbox_filter = {
+            #     "bbox": {"$geoWithin": { "$box": [[float(bbox[0]), float(bbox[1])], [float(bbox[2]), float(bbox[3])]]}},
+            # }
+            # filters.append(bbox_filter)
 
-        # Pagination
-        page_links = []
-        for link in resp["links"]:
-            if link["rel"] == Relations.next or link["rel"] == Relations.previous:
-                query_params = dict(kwargs["request"].query_params)
-                if link["body"] and link["merge"]:
-                    query_params.update(link["body"])
-                link["method"] = "GET"
-                link["href"] = f"{link['body']}?{urlencode(query_params)}"
-                link["body"] = None
-                link["merge"] = False
-                page_links.append(link)
-            else:
-                page_links.append(link)
-        resp["links"] = page_links
-        return resp
+        # queries = {}
+        # for filter in filters:
+        #     queries.update(**filter)
+
+        items = (
+            self.db.stac_item
+            .find(queries)
+            .limit(limit)
+            .sort([("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)])
+        )
+
+        results = []
+        for item in items:
+            results.append(
+                self.item_serializer.db_to_stac(item, base_url=base_url)
+            )
+
+        return results
+
+        # # Parse request parameters
+        # base_args = {
+        #     "collections": collections,
+        #     "ids": ids,
+        #     "bbox": bbox,
+        #     "limit": limit,
+        #     "token": token,
+        #     "query": json.loads(query) if query else query,
+        # }
+        # if datetime:
+        #     base_args["datetime"] = datetime
+        # if sortby:
+        #     # https://github.com/radiantearth/stac-spec/tree/master/api-spec/extensions/sort#http-get-or-post-form
+        #     sort_param = []
+        #     for sort in sortby:
+        #         sort_param.append(
+        #             {
+        #                 "field": sort[1:],
+        #                 "direction": "asc" if sort[0] == "+" else "desc",
+        #             }
+        #         )
+        #     base_args["sortby"] = sort_param
+
+        # if fields:
+        #     includes = set()
+        #     excludes = set()
+        #     for field in fields:
+        #         if field[0] == "-":
+        #             excludes.add(field[1:])
+        #         elif field[0] == "+":
+        #             includes.add(field[1:])
+        #         else:
+        #             includes.add(field)
+        #     base_args["fields"] = {"include": includes, "exclude": excludes}
+
+        # # Do the request
+        # try:
+        #     search_request = SQLAlchemySTACSearch(**base_args)
+        # except ValidationError:
+        #     raise HTTPException(status_code=400, detail="Invalid parameters provided")
+        # resp = self.post_search(search_request, request=kwargs["request"])
+
+        # # Pagination
+        # page_links = []
+        # for link in resp["links"]:
+        #     if link["rel"] == Relations.next or link["rel"] == Relations.previous:
+        #         query_params = dict(kwargs["request"].query_params)
+        #         if link["body"] and link["merge"]:
+        #             query_params.update(link["body"])
+        #         link["method"] = "GET"
+        #         link["href"] = f"{link['body']}?{urlencode(query_params)}"
+        #         link["body"] = None
+        #         link["merge"] = False
+        #         page_links.append(link)
+        #     else:
+        #         page_links.append(link)
+        # resp["links"] = page_links
+        # return resp
 
     def post_search(
         self, search_request: SQLAlchemySTACSearch, **kwargs
