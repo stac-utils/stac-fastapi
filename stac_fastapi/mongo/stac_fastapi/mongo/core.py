@@ -1,23 +1,12 @@
 """Item crud client."""
 import json
 import logging
-import operator
 from datetime import datetime
-from typing import List, Optional, Set, Type, Union
-from urllib.parse import urlencode, urljoin
-from stac_fastapi.types import stac as stac_types
+from typing import List, Optional, Type, Union
+from urllib.parse import urljoin
 import pymongo
 
 import attr
-import geoalchemy2 as ga
-import sqlalchemy as sa
-import stac_pydantic
-from fastapi import HTTPException
-from pydantic import ValidationError
-from shapely.geometry import Polygon as ShapelyPolygon
-from shapely.geometry import shape
-from sqlakeyset import get_page
-from sqlalchemy import func
 from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
@@ -26,8 +15,7 @@ from stac_fastapi.mongo import serializers
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
-from stac_fastapi.sqlalchemy.types.search import Operator, SQLAlchemySTACSearch
-from stac_fastapi.types.config import Settings
+from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
@@ -42,8 +30,6 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     """Client for core endpoints defined by stac."""
 
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
-    item_table: Type[database.Item] = attr.ib(default=database.Item)
-    collection_table: Type[database.Collection] = attr.ib(default=database.Collection)
     item_serializer: Type[serializers.Serializer] = attr.ib(
         default=serializers.ItemSerializer
     )
@@ -176,6 +162,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         datetime: Optional[Union[str, datetime]] = None,
         limit: Optional[int] = 10,
         query: Optional[str] = None,
+        intersects: Optional[dict] = None,
         token: Optional[str] = None,
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
@@ -184,6 +171,11 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         """GET search catalog."""
         queries = {}
         base_url = str(kwargs["request"].base_url)
+
+        if collections:
+            for collection in collections:
+                collection_filter = {"collection": collection}
+                queries.update(**collection_filter)
 
         if ids:
             for id in ids:
@@ -201,7 +193,13 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             # bbox_filter = {
             #     "bbox": {"$geoWithin": { "$box": [[float(bbox[0]), float(bbox[1])], [float(bbox[2]), float(bbox[3])]]}},
             # }
-            # filters.append(bbox_filter)
+            # queries.update(**bbox_filter)
+
+        if intersects:
+            intersect_filter = {
+                "geometry": {"$geoIntersects": { "$geometry": { "type": intersects.type , "coordinates": intersects.coordinates }}}
+            }
+            queries.update(**intersect_filter)
 
         if datetime:
             date_filter = self.return_date(datetime)
@@ -268,203 +266,27 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             context=context_obj,
         )
 
+    def parse_fields(self, fields: dict):
+        field_list = []
+        for field in fields["exclude"]:
+            field_string = "-" + field
+            field_list.append(field_string)
+        return field_list
+
     def post_search(
         self, search_request: SQLAlchemySTACSearch, **kwargs
     ) -> ItemCollection:
         """POST search catalog."""
-        base_url = str(kwargs["request"].base_url)
-        with self.session.reader.context_session() as session:
-            token = (
-                self.get_token(search_request.token) if search_request.token else False
-            )
-            query = session.query(self.item_table)
-
-            # Filter by collection
-            count = None
-            if search_request.collections:
-                query = query.join(self.collection_table).filter(
-                    sa.or_(
-                        *[
-                            self.collection_table.id == col_id
-                            for col_id in search_request.collections
-                        ]
-                    )
-                )
-
-            # Sort
-            if search_request.sortby:
-                sort_fields = [
-                    getattr(
-                        self.item_table.get_field(sort.field),
-                        sort.direction.value,
-                    )()
-                    for sort in search_request.sortby
-                ]
-                sort_fields.append(self.item_table.id)
-                query = query.order_by(*sort_fields)
-            else:
-                # Default sort is date
-                query = query.order_by(
-                    self.item_table.datetime.desc(), self.item_table.id
-                )
-
-            # Ignore other parameters if ID is present
-            if search_request.ids:
-                id_filter = sa.or_(
-                    *[self.item_table.id == i for i in search_request.ids]
-                )
-                items = query.filter(id_filter).order_by(self.item_table.id)
-                page = get_page(items, per_page=search_request.limit, page=token)
-                if self.extension_is_enabled("ContextExtension"):
-                    count = len(search_request.ids)
-                page.next = (
-                    self.insert_token(keyset=page.paging.bookmark_next)
-                    if page.paging.has_next
-                    else None
-                )
-                page.previous = (
-                    self.insert_token(keyset=page.paging.bookmark_previous)
-                    if page.paging.has_previous
-                    else None
-                )
-
-            else:
-                # Spatial query
-                geom = None
-                if search_request.intersects is not None:
-                    geom = shape(search_request.intersects)
-                elif search_request.bbox:
-                    if len(search_request.bbox) == 4:
-                        geom = ShapelyPolygon.from_bounds(*search_request.bbox)
-                    elif len(search_request.bbox) == 6:
-                        """Shapely doesn't support 3d bounding boxes we'll just use the 2d portion"""
-                        bbox_2d = [
-                            search_request.bbox[0],
-                            search_request.bbox[1],
-                            search_request.bbox[3],
-                            search_request.bbox[4],
-                        ]
-                        geom = ShapelyPolygon.from_bounds(*bbox_2d)
-
-                if geom:
-                    filter_geom = ga.shape.from_shape(geom, srid=4326)
-                    query = query.filter(
-                        ga.func.ST_Intersects(self.item_table.geometry, filter_geom)
-                    )
-
-                # Temporal query
-                if search_request.datetime:
-                    # Two tailed query (between)
-                    dts = search_request.datetime.split("/")
-                    # Non-interval date ex. "2000-02-02T00:00:00.00Z"
-                    if len(dts) == 1:
-                        query = query.filter(self.item_table.datetime == dts[0])
-                    elif ".." not in search_request.datetime:
-                        query = query.filter(self.item_table.datetime.between(*dts))
-                    # All items after the start date
-                    elif dts[0] != "..":
-                        query = query.filter(self.item_table.datetime >= dts[0])
-                    # All items before the end date
-                    elif dts[1] != "..":
-                        query = query.filter(self.item_table.datetime <= dts[1])
-
-                # Query fields
-                if search_request.query:
-                    for (field_name, expr) in search_request.query.items():
-                        field = self.item_table.get_field(field_name)
-                        for (op, value) in expr.items():
-                            if op == Operator.gte:
-                                query = query.filter(operator.ge(field, value))
-                            elif op == Operator.lte:
-                                query = query.filter(operator.le(field, value))
-                            else:
-                                query = query.filter(op.operator(field, value))
-
-                if self.extension_is_enabled("ContextExtension"):
-                    count_query = query.statement.with_only_columns(
-                        [func.count()]
-                    ).order_by(None)
-                    count = query.session.execute(count_query).scalar()
-                page = get_page(query, per_page=search_request.limit, page=token)
-                # Create dynamic attributes for each page
-                page.next = (
-                    self.insert_token(keyset=page.paging.bookmark_next)
-                    if page.paging.has_next
-                    else None
-                )
-                page.previous = (
-                    self.insert_token(keyset=page.paging.bookmark_previous)
-                    if page.paging.has_previous
-                    else None
-                )
-
-            links = []
-            if page.next:
-                links.append(
-                    {
-                        "rel": Relations.next.value,
-                        "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}search",
-                        "method": "POST",
-                        "body": {"token": page.next},
-                        "merge": True,
-                    }
-                )
-            if page.previous:
-                links.append(
-                    {
-                        "rel": Relations.previous.value,
-                        "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}search",
-                        "method": "POST",
-                        "body": {"token": page.previous},
-                        "merge": True,
-                    }
-                )
-
-            response_features = []
-            filter_kwargs = {}
-
-            for item in page:
-                response_features.append(
-                    self.item_serializer.db_to_stac(item, base_url=base_url)
-                )
-
-            # Use pydantic includes/excludes syntax to implement fields extension
-            if self.extension_is_enabled("FieldsExtension"):
-                if search_request.query is not None:
-                    query_include: Set[str] = set(
-                        [
-                            k
-                            if k in Settings.get().indexed_fields
-                            else f"properties.{k}"
-                            for k in search_request.query.keys()
-                        ]
-                    )
-                    if not search_request.field.include:
-                        search_request.field.include = query_include
-                    else:
-                        search_request.field.include.union(query_include)
-
-                filter_kwargs = search_request.field.filter_fields
-                # Need to pass through `.json()` for proper serialization
-                # of datetime
-                response_features = [
-                    json.loads(stac_pydantic.Item(**feat).json(**filter_kwargs))
-                    for feat in response_features
-                ]
-
-        context_obj = None
-        if self.extension_is_enabled("ContextExtension"):
-            context_obj = {
-                "returned": len(page),
-                "limit": search_request.limit,
-                "matched": count,
-            }
-
-        return ItemCollection(
-            type="FeatureCollection",
-            features=response_features,
-            links=links,
-            context=context_obj,
+        if search_request.fields:
+            search_request.fields = self.parse_fields(search_request.fields)
+        return self.get_search(
+            collections=search_request.collections,
+            ids=search_request.ids,
+            limit=search_request.limit,
+            bbox=search_request.bbox,
+            intersects=search_request.intersects,
+            query=search_request.query,
+            datetime=search_request.datetime,
+            fields=search_request.field,
+            request=kwargs["request"]
         )
