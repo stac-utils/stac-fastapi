@@ -244,6 +244,18 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         if datetime:
             date_filter = self.return_date(datetime)
             queries.update(**date_filter)
+     
+        # {"gsd": {"eq":16}}
+        if query:
+            query = json.loads(query)
+            for (field_name, expr) in query.items():
+                field = "properties." + field_name
+                for (op, value) in expr.items():
+                    key_filter = {
+                        field: { f"${op}":value }
+                    }
+                    queries.update(**key_filter)
+
 
         items = (
             self.db.stac_item
