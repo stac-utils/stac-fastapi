@@ -1,8 +1,8 @@
 version: '3'
 
 services:
-  app-mongo:
-    container_name: stac-fastapi-mongo
+  app-sqlalchemy:
+    container_name: stac-fastapi-sqlalchemy
     image: stac-utils/stac-fastapi
     build:
       context: .
@@ -10,10 +10,9 @@ services:
     platform: linux/amd64
     environment:
       - APP_HOST=0.0.0.0
-      - APP_PORT=8083
+      - APP_PORT=8081
       - RELOAD=false
       - ENVIRONMENT=local
-      - MONGO_CONN_STRING="mongodb://dev:stac@mongo:27017"
       - POSTGRES_USER=username
       - POSTGRES_PASS=password
       - POSTGRES_DBNAME=postgis
@@ -27,160 +26,102 @@ services:
       - DB_MIN_CONN_SIZE=1
       - DB_MAX_CONN_SIZE=1
     ports:
-      - "8083:8083"
+      - "8081:8081"
     volumes:
       - ./stac_fastapi:/app/stac_fastapi
       - ./scripts:/app/scripts
     depends_on:
-      - mongo_db
+      - database
     command:
-      bash -c "./scripts/wait-for-it.sh mongo_db:27017 && python -m stac_fastapi.mongo.app"
+      bash -c "./scripts/wait-for-it.sh database:5432 && python -m stac_fastapi.sqlalchemy.app"
 
-  mongo_db:
-    image: mongo:3.4.2
-    restart: always
+  app-pgstac:
+    container_name: stac-fastapi-pgstac
+    image: stac-utils/stac-fastapi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
     environment:
-      MONGO_INITDB_ROOT_USERNAME: "dev"
-      MONGO_INITDB_ROOT_PASSWORD: "stac"
-    volumes:
-      - ./mongo_data:/data/db
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8082
+      - RELOAD=false
+      - ENVIRONMENT=local
+      - POSTGRES_USER=username
+      - POSTGRES_PASS=password
+      - POSTGRES_DBNAME=postgis
+      - POSTGRES_HOST_READER=database
+      - POSTGRES_HOST_WRITER=database
+      - POSTGRES_PORT=5432
+      - WEB_CONCURRENCY=10
+      - VSI_CACHE=TRUE
+      - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
+      - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
+      - DB_MIN_CONN_SIZE=1
+      - DB_MAX_CONN_SIZE=1
     ports:
-      - "27018:27017"
-    command: mongod
-    
+      - "8082:8082"
+    volumes:
+      - ./stac_fastapi:/app/stac_fastapi
+      - ./scripts:/app/scripts
+    depends_on:
+      - database
+    command:
+      bash -c "./scripts/wait-for-it.sh database:5432 && python -m stac_fastapi.pgstac.app"
 
+  database:
+    container_name: stac-db
+    image: ghcr.io/stac-utils/pgstac:v0.3.4
+    environment:
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgis
+    ports:
+      - "5439:5432"
+    command: postgres -N 500
 
-  # app-sqlalchemy:
-  #   container_name: stac-fastapi-sqlalchemy
-  #   image: stac-utils/stac-fastapi
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   platform: linux/amd64
-  #   environment:
-  #     - APP_HOST=0.0.0.0
-  #     - APP_PORT=8081
-  #     - RELOAD=false
-  #     - ENVIRONMENT=local
-  #     - POSTGRES_USER=username
-  #     - POSTGRES_PASS=password
-  #     - POSTGRES_DBNAME=postgis
-  #     - POSTGRES_HOST_READER=database
-  #     - POSTGRES_HOST_WRITER=database
-  #     - POSTGRES_PORT=5432
-  #     - WEB_CONCURRENCY=10
-  #     - VSI_CACHE=TRUE
-  #     - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
-  #     - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
-  #     - DB_MIN_CONN_SIZE=1
-  #     - DB_MAX_CONN_SIZE=1
-  #   ports:
-  #     - "8081:8081"
-  #   volumes:
-  #     - ./stac_fastapi:/app/stac_fastapi
-  #     - ./scripts:/app/scripts
-  #   depends_on:
-  #     - database
-  #   command:
-  #     bash -c "./scripts/wait-for-it.sh database:5432 && python -m stac_fastapi.sqlalchemy.app"
+  # Load joplin demo dataset into the SQLAlchemy Application
+  loadjoplin-sqlalchemy:
+    image: stac-utils/stac-fastapi
+    environment:
+      - ENVIRONMENT=development
+      - POSTGRES_USER=username
+      - POSTGRES_PASS=password
+      - POSTGRES_DBNAME=postgis
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+    volumes:
+      - ./stac_fastapi:/app/stac_fastapi
+      - ./scripts:/app/scripts
+    command: >
+      bash -c "./scripts/wait-for-it.sh app-sqlalchemy:8081 && cd stac_fastapi/sqlalchemy && alembic upgrade head && python /app/scripts/ingest_joplin.py http://app-sqlalchemy:8081"
+    depends_on:
+      - database
+      - app-sqlalchemy
 
-  # app-pgstac:
-  #   container_name: stac-fastapi-pgstac
-  #   image: stac-utils/stac-fastapi
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   platform: linux/amd64
-  #   environment:
-  #     - APP_HOST=0.0.0.0
-  #     - APP_PORT=8082
-  #     - RELOAD=false
-  #     - ENVIRONMENT=local
-  #     - POSTGRES_USER=username
-  #     - POSTGRES_PASS=password
-  #     - POSTGRES_DBNAME=postgis
-  #     - POSTGRES_HOST_READER=database
-  #     - POSTGRES_HOST_WRITER=database
-  #     - POSTGRES_PORT=5432
-  #     - WEB_CONCURRENCY=10
-  #     - VSI_CACHE=TRUE
-  #     - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
-  #     - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
-  #     - DB_MIN_CONN_SIZE=1
-  #     - DB_MAX_CONN_SIZE=1
-  #   ports:
-  #     - "8082:8082"
-  #   volumes:
-  #     - ./stac_fastapi:/app/stac_fastapi
-  #     - ./scripts:/app/scripts
-  #   depends_on:
-  #     - database
-  #   command:
-  #     bash -c "./scripts/wait-for-it.sh database:5432 && python -m stac_fastapi.pgstac.app"
-
-  # database:
-  #   container_name: stac-db
-  #   image: ghcr.io/stac-utils/pgstac:v0.3.4
-  #   environment:
-  #     - POSTGRES_USER=username
-  #     - POSTGRES_PASSWORD=password
-  #     - POSTGRES_DB=postgis
-  #   ports:
-  #     - "5439:5432"
-  #   command: postgres -N 500
-
-  # # Load joplin demo dataset into the SQLAlchemy Application
-  # loadjoplin-sqlalchemy:
-  #   image: stac-utils/stac-fastapi
-  #   environment:
-  #     - ENVIRONMENT=development
-  #     - POSTGRES_USER=username
-  #     - POSTGRES_PASS=password
-  #     - POSTGRES_DBNAME=postgis
-  #     - POSTGRES_HOST=database
-  #     - POSTGRES_PORT=5432
-  #   volumes:
-  #     - ./stac_fastapi:/app/stac_fastapi
-  #     - ./scripts:/app/scripts
-  #   command: >
-  #     bash -c "./scripts/wait-for-it.sh app-sqlalchemy:8081 && cd stac_fastapi/sqlalchemy && alembic upgrade head && python /app/scripts/ingest_joplin.py http://app-sqlalchemy:8081"
-  #   depends_on:
-  #     - database
-  #     - app-sqlalchemy
-
-  # # Load joplin demo dataset into the PGStac Application
-  # loadjoplin-pgstac:
-  #   image: stac-utils/stac-fastapi
-  #   environment:
-  #     - ENVIRONMENT=development
-  #     - POSTGRES_USER=username
-  #     - POSTGRES_PASS=password
-  #     - POSTGRES_DBNAME=postgis
-  #     - POSTGRES_HOST=database
-  #     - POSTGRES_PORT=5432
-  #   volumes:
-  #     - ./stac_fastapi:/app/stac_fastapi
-  #     - ./scripts:/app/scripts
-  #   command:
-  #     - "./scripts/wait-for-it.sh"
-  #     - "app-pgstac:8082"
-  #     - "--"
-  #     - "python"
-  #     - "/app/scripts/ingest_joplin.py"
-  #     - "http://app-pgstac:8082"
-  #   depends_on:
-  #     - database
-  #     - app-pgstac
-
-  # mongo-express:
-  #   image: mongo-express
-  #   restart: always
-  #   ports:
-  #     - "8081:8081"
-  #   environment:
-  #     ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
-  #     ME_CONFIG_MONGODB_ADMINUSERNAME: "dev"
-  #     ME_CONFIG_MONGODB_ADMINPASSWORD: "stac"
+  # Load joplin demo dataset into the PGStac Application
+  loadjoplin-pgstac:
+    image: stac-utils/stac-fastapi
+    environment:
+      - ENVIRONMENT=development
+      - POSTGRES_USER=username
+      - POSTGRES_PASS=password
+      - POSTGRES_DBNAME=postgis
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+    volumes:
+      - ./stac_fastapi:/app/stac_fastapi
+      - ./scripts:/app/scripts
+    command:
+      - "./scripts/wait-for-it.sh"
+      - "app-pgstac:8082"
+      - "--"
+      - "python"
+      - "/app/scripts/ingest_joplin.py"
+      - "http://app-pgstac:8082"
+    depends_on:
+      - database
+      - app-pgstac
 
 networks:
   default:
