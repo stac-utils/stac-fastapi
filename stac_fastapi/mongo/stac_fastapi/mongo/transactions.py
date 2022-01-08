@@ -4,6 +4,7 @@ import logging
 from typing import Optional, Type
 
 import attr
+from pymongo import collection
 
 from stac_fastapi.extensions.third_party.bulk_transactions import (
     BaseBulkTransactionsClient,
@@ -64,49 +65,33 @@ class TransactionsClient(BaseTransactionsClient):
 
     def update_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
         """Update item."""
-        post = self.db.stac_item.find_one({'id': model["id"], "collection": model["collection"]})
-        if not post:
+        item = self.db.stac_item.find_one({'id': model["id"], "collection": model["collection"]})
+        if not item:
             raise NotFoundError(f"Item {model['id']} in collection {model['collection']} not found")
 
-        self.db.stac_item.delete_one({'id': model["id"], "collection": model["collection"]})
+        self.delete_item(model)
         self.create_item(model)
       
     def update_collection(
         self, model: stac_types.Collection, **kwargs
     ) -> stac_types.Collection:
         """Update collection."""
-        post = self.db.stac_collection.find_one({'id': model["id"]})
-        if not post:
+        collection = self.db.stac_collection.find_one({'id': model["id"]})
+        if not collection:
             raise NotFoundError(f"Collection {model['collection']} not found")
 
-        self.db.stac_item.delete_one({'id': model["id"]})
+        self.delete_collection(model)
         self.create_collection(model)
 
     def delete_item(
         self, item_id: str, collection_id: str, **kwargs
     ) -> stac_types.Item:
         """Delete item."""
-        base_url = str(kwargs["request"].base_url)
-        with self.session.writer.context_session() as session:
-            query = session.query(self.item_table).filter(self.item_table.id == item_id)
-            data = query.first()
-            if not data:
-                raise NotFoundError(f"Item {item_id} not found")
-            query.delete()
-            return self.item_serializer.db_to_stac(data, base_url=base_url)
-
+        self.db.stac_item.delete_one({'id': item_id, "collection": collection_id})
+       
     def delete_collection(self, id: str, **kwargs) -> stac_types.Collection:
         """Delete collection."""
-        base_url = str(kwargs["request"].base_url)
-        with self.session.writer.context_session() as session:
-            query = session.query(self.collection_table).filter(
-                self.collection_table.id == id
-            )
-            data = query.first()
-            if not data:
-                raise NotFoundError(f"Collection {id} not found")
-            query.delete()
-            return self.collection_serializer.db_to_stac(data, base_url=base_url)
+        self.db.stac_item.delete_one({'id': id})
 
 
 # @attr.s
