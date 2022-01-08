@@ -7,15 +7,13 @@ from urllib.parse import urljoin
 import pymongo
 
 import attr
-from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 
 from stac_fastapi.mongo import serializers
-from stac_fastapi.sqlalchemy.models import database
-from stac_fastapi.sqlalchemy.session import Session
-from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
-from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
+from stac_fastapi.mongo.session import Session
+from stac_fastapi.mongo.tokens import PaginationTokenClient
+from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
@@ -39,14 +37,9 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     db = MongoSettings()
 
     @staticmethod
-    def _lookup_id(
-        id: str, table: Type[database.BaseModel], session: SqlSession
-    ) -> Type[database.BaseModel]:
+    def _lookup_id(id: str, table, session):
         """Lookup row by id."""
-        row = session.query(table).filter(table.id == id).first()
-        if not row:
-            raise NotFoundError(f"{table.__name__} {id} not found")
-        return row
+        pass
 
     def all_collections(self, **kwargs) -> Collections:
         """Read all collections from the database."""
