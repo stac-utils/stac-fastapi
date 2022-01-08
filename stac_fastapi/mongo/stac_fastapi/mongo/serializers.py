@@ -47,48 +47,30 @@ class ItemSerializer(Serializer):
     """Serialization methods for STAC items."""
 
     @classmethod
-    def db_to_stac(cls, db_model: database.Item, base_url: str) -> stac_types.Item:
+    def db_to_stac(cls, item, base_url: str) -> stac_types.Item:
         """Transform database model to stac item."""
-        properties = db_model.properties.copy()
-        indexed_fields = Settings.get().indexed_fields
-        for field in indexed_fields:
-            # Use getattr to accommodate extension namespaces
-            field_value = getattr(db_model, field.split(":")[-1])
-            if field == "datetime":
-                field_value = field_value.strftime(DATETIME_RFC339)
-            properties[field] = field_value
-        item_id = db_model.id
-        collection_id = db_model.collection_id
+        
+        item_id = item["id"]
+        collection_id = item["collection"]
         item_links = ItemLinks(
             collection_id=collection_id, item_id=item_id, base_url=base_url
         ).create_links()
 
-        db_links = db_model.links
-        if db_links:
-            item_links += resolve_links(db_links, base_url)
-
-        stac_extensions = db_model.stac_extensions or []
-
-        # The custom geometry we are using emits geojson if the geometry is bound to the database
-        # Otherwise it will return a geoalchemy2 WKBElement
-        # TODO: It's probably best to just remove the custom geometry type
-        geometry = db_model.geometry
-        if isinstance(geometry, ga.elements.WKBElement):
-            geometry = ga.shape.to_shape(geometry).__geo_interface__
-        if isinstance(geometry, str):
-            geometry = json.loads(geometry)
+        original_links = item["links"]
+        if original_links:
+            item_links += resolve_links(original_links, base_url)
 
         return stac_types.Item(
             type="Feature",
-            stac_version=db_model.stac_version,
-            stac_extensions=stac_extensions,
-            id=db_model.id,
-            collection=db_model.collection_id,
-            geometry=geometry,
-            bbox=[float(x) for x in db_model.bbox],
-            properties=properties,
+            stac_version=item["stac_version"],
+            stac_extensions=item["stac_extensions"] or [],
+            id=item["id"],
+            collection=item["collection"],
+            geometry=item["geometry"],
+            bbox=item["bbox"],
+            properties=item["properties"],
             links=item_links,
-            assets=db_model.assets,
+            assets=item["assets"],
         )
 
     @classmethod

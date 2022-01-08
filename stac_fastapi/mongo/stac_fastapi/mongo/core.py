@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 
-from stac_fastapi.sqlalchemy import serializers
+from stac_fastapi.mongo import serializers
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
@@ -175,22 +175,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by item id, collection id."""
         item = self.db.stac_item.find_one({"id": item_id, "collection": collection_id})
+        base_url = str(kwargs["request"].base_url)
 
         if not item:
             raise NotFoundError(f"{self.item_table.__name__} {item_id} not found in collection {collection_id}")
 
-        return stac_types.Item(
-            type="Feature",
-            stac_version=item["stac_version"],
-            stac_extensions=item["stac_extensions"],
-            id=item["id"],
-            collection=item["collection"],
-            geometry=item["geometry"],
-            bbox=item["bbox"],
-            properties=item["properties"],
-            links=item["links"],
-            assets=item["assets"],
-        )
+        return self.item_serializer.db_to_stac(item, base_url)
 
     def get_search(
         self,

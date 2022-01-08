@@ -4,6 +4,7 @@ services:
   app-mongo:
     container_name: stac-fastapi-mongo
     image: stac-utils/stac-fastapi
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
