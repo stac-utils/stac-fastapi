@@ -38,38 +38,40 @@ class TransactionsClient(BaseTransactionsClient):
 
     def create_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
         """Create item."""
-        base_url = str(kwargs["request"].base_url)
-        item_links = ItemLinks(
-            collection_id=model["collection"], item_id=model["id"], base_url=base_url
-        ).create_links()
-        model["links"] = item_links
+        try:
+            base_url = str(kwargs["request"].base_url)
+            item_links = ItemLinks(
+                collection_id=model["collection"], item_id=model["id"], base_url=base_url
+            ).create_links()
+            model["links"] = item_links
+        except:
+            pass
         self.db.stac_item.insert_one(model)
 
     def create_collection(
         self, model: stac_types.Collection, **kwargs
     ) -> stac_types.Collection:
         """Create collection."""
-        base_url = str(kwargs["request"].base_url)
-        collection_links = CollectionLinks(
-            collection_id=model["id"], base_url=base_url
-        ).create_links()
-        model["links"] = collection_links
+        try:
+            base_url = str(kwargs["request"].base_url)
+            collection_links = CollectionLinks(
+                collection_id=model["id"], base_url=base_url
+            ).create_links()
+            model["links"] = collection_links
+        except:
+            pass
         self.db.stac_collection.insert_one(model)
 
     def update_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
         """Update item."""
+        # base_url = str(kwargs["request"].base_url)
         post = self.db.stac_item.find_one({'id': model["id"], "collection": model["collection"]})
         if not post:
             raise NotFoundError(f"Item {model['id']} in collection {model['collection']} not found")
 
         self.db.stac_item.delete_one({'id': model["id"], "collection": model["collection"]})
 
-        base_url = str(kwargs["request"].base_url)
-        item_links = ItemLinks(
-            collection_id=model["collection"], item_id=model["id"], base_url=base_url
-        ).create_links()
-        model["links"] = item_links
-        self.db.stac_item.insert_one(model)
+        self.create_item(model)
       
     def update_collection(
         self, model: stac_types.Collection, **kwargs
