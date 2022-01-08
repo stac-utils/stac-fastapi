@@ -256,6 +256,11 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     }
                     queries.update(**key_filter)
 
+        exclude_list = []
+        if fields:
+            for afield in fields:
+                if afield[0] == "-":
+                    exclude_list.append(afield[1:])
 
         items = (
             self.db.stac_item
@@ -268,9 +273,11 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
         try:
             for item in items:
-                results.append(
-                    self.item_serializer.db_to_stac(item, base_url=base_url)
-                )
+                item = self.item_serializer.db_to_stac(item, base_url=base_url)
+                if field:
+                    for key in exclude_list:
+                        item.pop(key)
+                results.append(item)
         except:
             return results
 
