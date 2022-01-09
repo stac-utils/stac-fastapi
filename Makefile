@@ -14,9 +14,20 @@ run_pgstac = docker-compose run --rm \
 				-e APP_PORT=${APP_PORT} \
 				app-pgstac
 
+run_mongo = docker-compose run --rm \
+				-f docker-compose.mongo.yml \
+				-p ${EXTERNAL_APP_PORT}:${APP_PORT} \
+				-e APP_HOST=${APP_HOST} \
+				-e APP_PORT=${APP_PORT} \
+				app-mongo
+
 .PHONY: image
 image:
 	docker-compose build
+
+.PHONY: mongo-image
+mongo-image:
+	docker-compose -f docker-compose.mongo.yml build
 
 .PHONY: docker-run
 docker-run: image
@@ -25,6 +36,10 @@ docker-run: image
 .PHONY: docker-run-pgstac
 docker-run-pgstac: image
 	$(run_pgstac)
+
+.PHONY: docker-run-mongo
+docker-run-mongo: mongo-image
+	$(run_mongo)
 
 .PHONY: docker-shell
 docker-shell:
