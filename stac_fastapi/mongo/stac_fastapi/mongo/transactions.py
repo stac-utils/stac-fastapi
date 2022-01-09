@@ -31,8 +31,10 @@ class TransactionsClient(BaseTransactionsClient):
                 collection_id=model["collection"], item_id=model["id"], base_url=base_url
             ).create_links()
             model["links"] = item_links
+            model["_id"] = model["id"]
         except:
             pass
+
         self.db.stac_item.insert_one(model)
 
     def create_collection(self, model: stac_types.Collection, **kwargs):
@@ -43,11 +45,9 @@ class TransactionsClient(BaseTransactionsClient):
                 collection_id=model["id"], base_url=base_url
             ).create_links()
             model["links"] = collection_links
+            model["_id"] = model["id"]
         except:
             pass
-
-        if self.db.stac_collection.find_one(model):
-            raise ConflictError(f"{model['id']} already exists")
 
         self.db.stac_collection.insert_one(model)
 
@@ -56,7 +56,7 @@ class TransactionsClient(BaseTransactionsClient):
         item = self.db.stac_item.find_one({'id': model["id"], "collection": model["collection"]})
         if not item:
             raise NotFoundError(f"Item {model['id']} in collection {model['collection']} not found")
-        self.delete_item(model)
+        self.delete_item(item_id=model["id"], collection_id=model["collection"])
         self.create_item(model)
       
     def update_collection(self, model: stac_types.Collection, **kwargs):

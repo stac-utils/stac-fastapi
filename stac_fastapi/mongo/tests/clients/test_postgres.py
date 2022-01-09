@@ -3,6 +3,7 @@ from copy import deepcopy
 from typing import Callable
 
 import pytest
+import pymongo
 from stac_pydantic import Collection, Item
 from tests.conftest import MockStarletteRequest
 
@@ -33,10 +34,10 @@ def test_create_collection_already_exists(
     data = load_test_data("test_collection.json")
     mongo_transactions.create_collection(data, request=MockStarletteRequest)
 
-    # change stac version to avoid mongo duplicate key error
-    data["stac_verson"] = "1.0.1"
+    # change id to avoid mongo duplicate key error
+    data["_id"] = str(uuid.uuid4())
 
-    with pytest.raises(ConflictError):
+    with pytest.raises(pymongo.errors.DuplicateKeyError):
         mongo_transactions.create_collection(data, request=MockStarletteRequest)
 
 
@@ -46,10 +47,6 @@ def test_update_collection(
     load_test_data: Callable,
 ):
     data = load_test_data("test_collection.json")
-    # try:
-    #     mongo_transactions.create_collection(data, request=MockStarletteRequest)
-    # except:
-    #     pass
 
     mongo_transactions.create_collection(data, request=MockStarletteRequest)
     data["keywords"].append("new keyword")
@@ -60,47 +57,42 @@ def test_update_collection(
 
 
 def test_delete_collection(
-    postgres_core: CoreCrudClient,
-    postgres_transactions: TransactionsClient,
+    mongo_core: CoreCrudClient,
+    mongo_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
     data = load_test_data("test_collection.json")
-    postgres_transactions.create_collection(data, request=MockStarletteRequest)
+    mongo_transactions.create_collection(data, request=MockStarletteRequest)
 
-    deleted = postgres_transactions.delete_collection(
-        data["id"], request=MockStarletteRequest
-    )
+    mongo_transactions.delete_collection(data["id"], request=MockStarletteRequest)
 
     with pytest.raises(NotFoundError):
-        postgres_core.get_collection(deleted["id"], request=MockStarletteRequest)
+        mongo_core.get_collection(data["id"], request=MockStarletteRequest)
 
 
 def test_get_collection(
-    postgres_core: CoreCrudClient,
-    postgres_transactions: TransactionsClient,
+    mongo_core: CoreCrudClient,
+    mongo_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
     data = load_test_data("test_collection.json")
-    postgres_transactions.create_collection(data, request=MockStarletteRequest)
-    coll = postgres_core.get_collection(data["id"], request=MockStarletteRequest)
-    assert Collection(**data).dict(exclude={"links"}) == Collection(**coll).dict(
-        exclude={"links"}
-    )
+    mongo_transactions.create_collection(data, request=MockStarletteRequest)
+    coll = mongo_core.get_collection(data["id"], request=MockStarletteRequest)
     assert coll["id"] == data["id"]
 
 
 def test_get_item(
-    postgres_core: CoreCrudClient,
-    postgres_transactions: TransactionsClient,
+    mongo_core: CoreCrudClient,
+    mongo_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
     collection_data = load_test_data("test_collection.json")
-    postgres_transactions.create_collection(
+    mongo_transactions.create_collection(
         collection_data, request=MockStarletteRequest
     )
     data = load_test_data("test_item.json")
-    postgres_transactions.create_item(data, request=MockStarletteRequest)
-    coll = postgres_core.get_item(
+    mongo_transactions.create_item(data, request=MockStarletteRequest)
+    coll = mongo_core.get_item(
         item_id=data["id"],
         collection_id=data["collection"],
         request=MockStarletteRequest,
@@ -110,20 +102,21 @@ def test_get_item(
 
 
 def test_get_collection_items(
-    postgres_core: CoreCrudClient,
-    postgres_transactions: TransactionsClient,
+    mongo_core: CoreCrudClient,
+    mongo_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
     coll = load_test_data("test_collection.json")
-    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+    mongo_transactions.create_collection(coll, request=MockStarletteRequest)
 
     item = load_test_data("test_item.json")
 
     for _ in range(5):
+        item["_id"] = str(uuid.uuid4())
         item["id"] = str(uuid.uuid4())
-        postgres_transactions.create_item(item, request=MockStarletteRequest)
+        mongo_transactions.create_item(item, request=MockStarletteRequest)
 
-    fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
+    fc = mongo_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) == 5
 
     for item in fc["features"]:
@@ -131,15 +124,15 @@ def test_get_collection_items(
 
 
 def test_create_item(
-    postgres_core: CoreCrudClient,
-    postgres_transactions: TransactionsClient,
+    mongo_core: CoreCrudClient,
+    mongo_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
     coll = load_test_data("test_collection.json")
-    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+    mongo_transactions.create_collection(coll, request=MockStarletteRequest)
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
-    resp = postgres_core.get_item(
+    mongo_transactions.create_item(item, request=MockStarletteRequest)
+    resp = mongo_core.get_item(
         item["id"], item["collection"], request=MockStarletteRequest
     )
     assert Item(**item).dict(
@@ -148,34 +141,34 @@ def test_create_item(
 
 
 def test_create_item_already_exists(
-    postgres_transactions: TransactionsClient,
+    mongo_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
     coll = load_test_data("test_collection.json")
-    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+    mongo_transactions.create_collection(coll, request=MockStarletteRequest)
 
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    mongo_transactions.create_item(item, request=MockStarletteRequest)
 
-    with pytest.raises(ConflictError):
-        postgres_transactions.create_item(item, request=MockStarletteRequest)
+    with pytest.raises(pymongo.errors.DuplicateKeyError):
+        mongo_transactions.create_item(item, request=MockStarletteRequest)
 
 
 def test_update_item(
-    postgres_core: CoreCrudClient,
-    postgres_transactions: TransactionsClient,
+    mongo_core: CoreCrudClient,
+    mongo_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
     coll = load_test_data("test_collection.json")
-    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+    mongo_transactions.create_collection(coll, request=MockStarletteRequest)
 
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    mongo_transactions.create_item(item, request=MockStarletteRequest)
 
     item["properties"]["foo"] = "bar"
-    postgres_transactions.update_item(item, request=MockStarletteRequest)
+    mongo_transactions.update_item(item, request=MockStarletteRequest)
 
-    updated_item = postgres_core.get_item(
+    updated_item = mongo_core.get_item(
         item["id"], item["collection"], request=MockStarletteRequest
     )
     assert updated_item["properties"]["foo"] == "bar"
