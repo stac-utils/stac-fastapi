@@ -13,21 +13,20 @@ from stac_fastapi.extensions.core import (
     SortExtension,
     TransactionExtension,
 )
-from stac_fastapi.sqlalchemy.config import SqlalchemySettings
-from stac_fastapi.sqlalchemy.core import CoreCrudClient
-from stac_fastapi.sqlalchemy.models import database
-from stac_fastapi.sqlalchemy.session import Session
-from stac_fastapi.sqlalchemy.transactions import (
-    BulkTransactionsClient,
+from stac_fastapi.mongo.config import MongoSettings
+from stac_fastapi.mongo.mongo_config import MongoSettings as MongoDB
+from stac_fastapi.mongo.core import CoreCrudClient
+from stac_fastapi.mongo.session import Session
+from stac_fastapi.mongo.transactions import (
     TransactionsClient,
 )
-from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
+from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
-class TestSettings(SqlalchemySettings):
+class TestSettings(MongoSettings):
     class Config:
         env_file = ".env.test"
 
@@ -37,22 +36,22 @@ Settings.set(settings)
 
 
 @pytest.fixture(autouse=True)
-def cleanup(postgres_core: CoreCrudClient, postgres_transactions: TransactionsClient):
+def cleanup(mongo_core: CoreCrudClient, mongo_transactions: TransactionsClient):
     yield
-    collections = postgres_core.all_collections(request=MockStarletteRequest)
+    collections = mongo_core.all_collections(request=MockStarletteRequest)
     for coll in collections["collections"]:
         if coll["id"].split("-")[0] == "test":
             # Delete the items
-            items = postgres_core.item_collection(
+            items = mongo_core.item_collection(
                 coll["id"], limit=100, request=MockStarletteRequest
             )
             for feat in items["features"]:
-                postgres_transactions.delete_item(
+                mongo_transactions.delete_item(
                     feat["id"], feat["collection"], request=MockStarletteRequest
                 )
 
             # Delete the collection
-            postgres_transactions.delete_collection(
+            mongo_transactions.delete_collection(
                 coll["id"], request=MockStarletteRequest
             )
 
@@ -70,47 +69,42 @@ class MockStarletteRequest:
     base_url = "http://test-server"
 
 
-@pytest.fixture
-def db_session() -> Session:
-    return Session(
-        reader_conn_string=settings.reader_connection_string,
-        writer_conn_string=settings.writer_connection_string,
-    )
+# @pytest.fixture
+# def db_session() -> Session:
+#     return Session(
+#         reader_conn_string=settings.reader_connection_string,
+#         writer_conn_string=settings.writer_connection_string,
+#     )
 
 
 @pytest.fixture
-def postgres_core(db_session):
+def mongo_core():
     return CoreCrudClient(
-        session=db_session,
-        item_table=database.Item,
-        collection_table=database.Collection,
-        token_table=database.PaginationToken,
+        session=None
     )
 
 
 @pytest.fixture
-def postgres_transactions(db_session):
+def mongo_transactions():
     return TransactionsClient(
-        session=db_session,
-        item_table=database.Item,
-        collection_table=database.Collection,
+        session=None
     )
 
 
-@pytest.fixture
-def postgres_bulk_transactions(db_session):
-    return BulkTransactionsClient(session=db_session)
+# @pytest.fixture
+# def postgres_bulk_transactions(db_session):
+#     return BulkTransactionsClient(session=db_session)
 
 
 @pytest.fixture
-def api_client(db_session):
-    settings = SqlalchemySettings()
+def api_client():
+    settings = MongoSettings()
     return StacApi(
         settings=settings,
-        client=CoreCrudClient(session=db_session),
+        client=CoreCrudClient(session=None),
         extensions=[
             TransactionExtension(
-                client=TransactionsClient(session=db_session), settings=settings
+                client=TransactionsClient(session=None), settings=settings
             ),
             ContextExtension(),
             SortExtension(),
@@ -122,9 +116,12 @@ def api_client(db_session):
 
 
 @pytest.fixture
-def app_client(api_client, load_test_data, postgres_transactions):
+def app_client(api_client, load_test_data):
     coll = load_test_data("test_collection.json")
-    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+    client = TransactionsClient(
+        session=None,
+    )
+    client.create_collection(coll, request=MockStarletteRequest)
 
     with TestClient(api_client.app) as test_app:
         yield test_app
