@@ -4,7 +4,6 @@ from typing import TypedDict
 
 import attr
 
-from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.links import CollectionLinks, ItemLinks, resolve_links
 
@@ -15,7 +14,7 @@ class Serializer(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def db_to_stac(cls, db_model: database.BaseModel, base_url: str) -> TypedDict:
+    def db_to_stac(cls, item: dict, base_url: str) -> TypedDict:
         """Transform database model to stac."""
         ...
 
@@ -23,7 +22,7 @@ class ItemSerializer(Serializer):
     """Serialization methods for STAC items."""
 
     @classmethod
-    def db_to_stac(cls, item, base_url: str) -> stac_types.Item:
+    def db_to_stac(cls, item: dict, base_url: str) -> stac_types.Item:
         """Transform database model to stac item."""
         
         item_id = item["id"]
@@ -53,7 +52,7 @@ class CollectionSerializer(Serializer):
     """Serialization methods for STAC collections."""
 
     @classmethod
-    def db_to_stac(cls, collection, base_url: str) -> TypedDict:
+    def db_to_stac(cls, collection: dict, base_url: str) -> stac_types.Collection:
         """Transform database model to stac collection."""
         collection_links = CollectionLinks(
             collection_id=collection["id"], base_url=base_url
