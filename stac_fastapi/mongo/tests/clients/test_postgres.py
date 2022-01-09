@@ -16,42 +16,46 @@ from stac_fastapi.types.errors import ConflictError, NotFoundError
 
 
 def test_create_collection(
-    postgres_core: CoreCrudClient,
-    postgres_transactions: TransactionsClient,
+    mongo_core: CoreCrudClient,
+    mongo_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
     data = load_test_data("test_collection.json")
-    resp = postgres_transactions.create_collection(data, request=MockStarletteRequest)
-    assert Collection(**data).dict(exclude={"links"}) == Collection(**resp).dict(
-        exclude={"links"}
-    )
-    coll = postgres_core.get_collection(data["id"], request=MockStarletteRequest)
+    mongo_transactions.create_collection(data, request=MockStarletteRequest)
+    coll = mongo_core.get_collection(data["id"], request=MockStarletteRequest)
     assert coll["id"] == data["id"]
 
 
 def test_create_collection_already_exists(
-    postgres_transactions: TransactionsClient,
+    mongo_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
     data = load_test_data("test_collection.json")
-    postgres_transactions.create_collection(data, request=MockStarletteRequest)
+    mongo_transactions.create_collection(data, request=MockStarletteRequest)
+
+    # change stac version to avoid mongo duplicate key error
+    data["stac_verson"] = "1.0.1"
 
     with pytest.raises(ConflictError):
-        postgres_transactions.create_collection(data, request=MockStarletteRequest)
+        mongo_transactions.create_collection(data, request=MockStarletteRequest)
 
 
 def test_update_collection(
-    postgres_core: CoreCrudClient,
-    postgres_transactions: TransactionsClient,
+    mongo_core: CoreCrudClient,
+    mongo_transactions: TransactionsClient,
     load_test_data: Callable,
 ):
     data = load_test_data("test_collection.json")
-    postgres_transactions.create_collection(data, request=MockStarletteRequest)
+    # try:
+    #     mongo_transactions.create_collection(data, request=MockStarletteRequest)
+    # except:
+    #     pass
 
+    mongo_transactions.create_collection(data, request=MockStarletteRequest)
     data["keywords"].append("new keyword")
-    postgres_transactions.update_collection(data, request=MockStarletteRequest)
+    mongo_transactions.update_collection(data, request=MockStarletteRequest)
 
-    coll = postgres_core.get_collection(data["id"], request=MockStarletteRequest)
+    coll = mongo_core.get_collection(data["id"], request=MockStarletteRequest)
     assert "new keyword" in coll["keywords"]
 
 
