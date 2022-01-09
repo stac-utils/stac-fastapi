@@ -14,8 +14,8 @@ run_pgstac = docker-compose run --rm \
 				-e APP_PORT=${APP_PORT} \
 				app-pgstac
 
-run_mongo = docker-compose run --rm \
-				-f docker-compose.mongo.yml \
+run_mongo = docker-compose -f docker-compose.mongo.yml \
+				run \
 				-p ${EXTERNAL_APP_PORT}:${APP_PORT} \
 				-e APP_HOST=${APP_HOST} \
 				-e APP_PORT=${APP_PORT} \
@@ -49,6 +49,10 @@ docker-shell:
 docker-shell-pgstac:
 	$(run_pgstac) /bin/bash
 
+.PHONY: docker-shell-mongo
+docker-shell-mongo:
+	$(run_mongo) /bin/bash
+
 .PHONY: test-sqlalchemy
 test-sqlalchemy: run-joplin-sqlalchemy
 	$(run_docker) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/sqlalchemy/tests/ && pytest'
@@ -56,6 +60,10 @@ test-sqlalchemy: run-joplin-sqlalchemy
 .PHONY: test-pgstac
 test-pgstac:
 	$(run_pgstac) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/pgstac/tests/ && pytest'
+
+.PHONY: test-mongo
+test-mongo: mongo-image
+	$(run_mongo) /bin/bash -c 'export && ./scripts/wait-for-it.sh mongo_db:27018 && cd /app/stac_fastapi/mongo/tests/ && pytest'
 
 .PHONY: run-database
 run-database:
