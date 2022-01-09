@@ -17,6 +17,7 @@ run_pgstac = docker-compose run --rm \
 run_mongo = docker-compose -f docker-compose.mongo.yml \
 				run \
 				-p ${EXTERNAL_APP_PORT}:${APP_PORT} \
+				-e PY_IGNORE_IMPORTMISMATCH=1 \
 				-e APP_HOST=${APP_HOST} \
 				-e APP_PORT=${APP_PORT} \
 				app-mongo
