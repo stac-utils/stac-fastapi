@@ -62,19 +62,23 @@ test-pgstac:
 	$(run_pgstac) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/pgstac/tests/ && pytest'
 
 .PHONY: test-mongo
-test-mongo: mongo-image
-	$(run_mongo) /bin/bash -c 'export && ./scripts/wait-for-it.sh mongo_db:27018 && cd /app/stac_fastapi/mongo/tests/ && pytest'
+test-mongo:
+	$(run_mongo) /bin/bash -c 'export && ./scripts/wait-for-it.sh mongo_db:27017 && cd /app/stac_fastapi/mongo/tests/ && pytest'
 
 .PHONY: run-database
 run-database:
 	docker-compose run --rm database
+
+.PHONY: run-mongo-database
+run-mongo-database:
+	docker-compose -f docker-compose.mongo.yml run --rm mongo_db
 
 .PHONY: run-joplin-sqlalchemy
 run-joplin-sqlalchemy:
 	docker-compose run --rm loadjoplin-sqlalchemy
 
 .PHONY: test
-test: test-sqlalchemy test-pgstac
+test: test-sqlalchemy test-pgstac test-mongo
 
 .PHONY: pybase-install
 pybase-install:
@@ -90,6 +94,10 @@ pgstac-install: pybase-install
 .PHONY: sqlalchemy-install
 sqlalchemy-install: pybase-install
 	pip install -e ./stac_fastapi/sqlalchemy[dev,server]
+
+.PHONY: mongo-install
+mongo-install: pybase-install
+	pip install -e ./stac_fastapi/mongo[dev,server]
 
 .PHONY: docs-image
 docs-image:
