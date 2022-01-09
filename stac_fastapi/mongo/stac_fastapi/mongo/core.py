@@ -12,7 +12,6 @@ from stac_pydantic.shared import MimeTypes
 
 from stac_fastapi.mongo import serializers
 from stac_fastapi.mongo.session import Session
-from stac_fastapi.mongo.tokens import PaginationTokenClient
 from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
@@ -24,7 +23,7 @@ logger = logging.getLogger(__name__)
 NumType = Union[float, int]
 
 @attr.s
-class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
+class CoreCrudClient(BaseCoreClient):
     """Client for core endpoints defined by stac."""
 
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
@@ -81,7 +80,6 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
         return self.collection_serializer.db_to_stac(collection, base_url)
 
-    # pagination commented out - is different with mongo
     def item_collection(
         self, id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
@@ -127,7 +125,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
         return self.item_serializer.db_to_stac(item, base_url)
 
-    def bbox2poly(self, bbox):
+    def _bbox2poly(self, bbox):
         poly = [[
             [float(bbox[0]),float(bbox[1])],
             [float(bbox[2]),float(bbox[1])],
@@ -137,7 +135,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         ]]
         return poly
 
-    def return_date(self, datetime):
+    def _return_date(self, datetime):
         x = datetime.split("/")
         start_date = x[0]
         end_date = x[1]
@@ -177,7 +175,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
         # Australia bbox = 101.125653,-46.522368,162.473309,-4.862972
         if bbox:
-            poly = self.bbox2poly(bbox)
+            poly = self._bbox2poly(bbox)
             bbox_filter = {
                 "geometry": {"$geoIntersects": { "$geometry": { "type": 'Polygon' , "coordinates": poly }}}
             }
@@ -195,7 +193,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             queries.update(**intersect_filter)
 
         if datetime:
-            date_filter = self.return_date(datetime)
+            date_filter = self._return_date(datetime)
             queries.update(**date_filter)
      
         # {"gsd": {"eq":16}}
@@ -259,7 +257,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             context=context_obj,
         )
 
-    def parse_fields(self, fields: dict):
+    def _parse_fields(self, fields: dict):
         field_list = []
         for field in fields["exclude"]:
             field_string = "-" + field
@@ -271,7 +269,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
     ) -> ItemCollection:
         """POST search catalog."""
         if search_request.fields:
-            search_request.fields = self.parse_fields(search_request.fields)
+            search_request.fields = self._parse_fields(search_request.fields)
         return self.get_search(
             collections=search_request.collections,
             ids=search_request.ids,
