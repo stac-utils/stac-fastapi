@@ -10,7 +10,7 @@ from stac_fastapi.extensions.third_party.bulk_transactions import (
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import BaseTransactionsClient
-from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.errors import NotFoundError, ConflictError
 from stac_fastapi.types.links import CollectionLinks, ItemLinks
 
 from stac_fastapi.mongo.mongo_config import MongoSettings
@@ -45,6 +45,10 @@ class TransactionsClient(BaseTransactionsClient):
             model["links"] = collection_links
         except:
             pass
+
+        if self.db.stac_collection.find_one(model):
+            raise ConflictError(f"{model['id']} already exists")
+
         self.db.stac_collection.insert_one(model)
 
     def update_item(self, model: stac_types.Item, **kwargs):
@@ -59,8 +63,8 @@ class TransactionsClient(BaseTransactionsClient):
         """Update collection."""
         collection = self.db.stac_collection.find_one({'id': model["id"]})
         if not collection:
-            raise NotFoundError(f"Collection {model['collection']} not found")
-        self.delete_collection(model)
+            raise NotFoundError(f"Collection {model['id']} not found")
+        self.delete_collection(model["id"])
         self.create_collection(model)
 
     def delete_item(self, item_id: str, collection_id: str, **kwargs):
@@ -69,7 +73,7 @@ class TransactionsClient(BaseTransactionsClient):
        
     def delete_collection(self, id: str, **kwargs):
         """Delete collection."""
-        self.db.stac_item.delete_one({'id': id})
+        self.db.stac_collection.delete_one({'id': id})
 
 
 # @attr.s
