@@ -8,6 +8,7 @@
 
 * Refactor to remove hardcoded search request models. Request models are now dynamically created based on the enabled extensions.
   ([#213](https://github.com/stac-utils/stac-fastapi/pull/213))
+* Changed the geometry type in the Item model from Polygon to Geometry.
 
 ### Removed
 
@@ -15,6 +16,7 @@
 
 ### Fixed
 
+* Add environment variables required by upgraded pgstac container ([#313](https://github.com/stac-utils/stac-fastapi/pull/313))
 * Enabled `ContextExtension` by default ([#207](https://github.com/stac-utils/stac-fastapi/issues/207))
 * Content-type response headers for the /search endpoint now reflect the geojson response expected in the STAC api spec ([#220](https://github.com/stac-utils/stac-fastapi/issues/220))
 * The minimum `limit` value for searches is now 1 ([#296](https://github.com/stac-utils/stac-fastapi/pull/296))
