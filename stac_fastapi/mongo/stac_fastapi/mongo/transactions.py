@@ -1,7 +1,6 @@
 """transactions extension client."""
 
 import logging
-from pymongo import collection
 from pymongo.errors import DuplicateKeyError
 import attr
 
@@ -34,7 +33,7 @@ class TransactionsClient(BaseTransactionsClient):
         model["links"] = item_links
 
         if self.db.stac_item.count_documents({'id': model['id'], "collection": model['collection']}, limit=1):
-            raise DuplicateKeyError(f"Item {model['id']} in collection {model['collection']} already exists")
+            raise ConflictError(f"Item {model['id']} in collection {model['collection']} already exists")
         else:
             self.db.stac_item.insert_one(model)
 
@@ -46,11 +45,10 @@ class TransactionsClient(BaseTransactionsClient):
         ).create_links()
         model["links"] = collection_links
 
-        collection = self.db.stac_collection.find_one({"id": model['id']})
-        if collection is None:
-            self.db.stac_collection.insert_one(model)
+        if self.db.stac_collection.count_documents({'id': model['id']}, limit=1):
+            raise ConflictError(f"Collection {model['id']} already exists")
         else:
-            raise DuplicateKeyError(f"Collection {model['id']} already exists")
+            self.db.stac_collection.insert_one(model)
 
     def update_item(self, model: stac_types.Item, **kwargs):
         """Update item."""
@@ -61,8 +59,7 @@ class TransactionsClient(BaseTransactionsClient):
       
     def update_collection(self, model: stac_types.Collection, **kwargs):
         """Update collection."""
-        collection = self.db.stac_collection.find_one({'id': model["id"]})
-        if not collection:
+        if self.db.stac_collection.count_documents({'id': model["id"]}) == 0:
             raise NotFoundError(f"Collection {model['id']} not found")
         self.delete_collection(model["id"])
         self.create_collection(model, **kwargs)
