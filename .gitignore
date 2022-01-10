@@ -129,3 +129,5 @@ docs/api/*
 
 # Virtualenv
 venv
+
+/mongo_data
