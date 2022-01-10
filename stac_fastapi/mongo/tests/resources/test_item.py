@@ -49,16 +49,10 @@ def test_create_item_conflict(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    # this should work 
-    # resp = app_client.post(
-    #     f"/collections/{test_item['collection']}/items", json=test_item
-    # )
-    # assert resp.status_code == 409
-
-    with pytest.raises(pymongo.errors.DuplicateKeyError):
-        resp = app_client.post(
-            f"/collections/{test_item['collection']}/items", json=test_item
-        )
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 409
 
 def test_delete_missing_item(app_client, load_test_data):
     """Test deletion of an item which does not exist (transactions extension)"""
