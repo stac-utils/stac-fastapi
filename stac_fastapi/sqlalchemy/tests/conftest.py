@@ -6,23 +6,25 @@ import pytest
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
+from stac_fastapi.api.models import create_request_model
 from stac_fastapi.extensions.core import (
     ContextExtension,
     FieldsExtension,
-    QueryExtension,
     SortExtension,
+    TokenPaginationExtension,
     TransactionExtension,
 )
 from stac_fastapi.sqlalchemy.config import SqlalchemySettings
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
+from stac_fastapi.sqlalchemy.extensions import QueryExtension
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_fastapi.sqlalchemy.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
+from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
@@ -105,19 +107,41 @@ def postgres_bulk_transactions(db_session):
 @pytest.fixture
 def api_client(db_session):
     settings = SqlalchemySettings()
+    extensions = [
+        TransactionExtension(
+            client=TransactionsClient(session=db_session), settings=settings
+        ),
+        ContextExtension(),
+        SortExtension(),
+        FieldsExtension(),
+        QueryExtension(),
+        TokenPaginationExtension(),
+    ]
+
+    get_request_model = create_request_model(
+        "SearchGetRequest",
+        base_model=BaseSearchGetRequest,
+        extensions=extensions,
+        request_type="GET",
+    )
+
+    post_request_model = create_request_model(
+        "SearchPostRequest",
+        base_model=BaseSearchPostRequest,
+        extensions=extensions,
+        request_type="POST",
+    )
+
     return StacApi(
         settings=settings,
-        client=CoreCrudClient(session=db_session),
-        extensions=[
-            TransactionExtension(
-                client=TransactionsClient(session=db_session), settings=settings
-            ),
-            ContextExtension(),
-            SortExtension(),
-            FieldsExtension(),
-            QueryExtension(),
-        ],
-        search_request_model=SQLAlchemySTACSearch,
+        client=CoreCrudClient(
+            session=db_session,
+            extensions=extensions,
+            post_request_model=post_request_model,
+        ),
+        extensions=extensions,
+        search_get_request_model=get_request_model,
+        search_post_request_model=post_request_model,
     )
 
 
