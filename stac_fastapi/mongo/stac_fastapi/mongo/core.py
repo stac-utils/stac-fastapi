@@ -268,10 +268,14 @@ class CoreCrudClient(BaseCoreClient):
                     queries.update(**key_filter)
 
         exclude_list = []
+
         # if search_request.field:
-        #     for afield in search_request.field:
-        #         if afield[0] == "-":
-        #             exclude_list.append(afield[1:])
+        #     search_request.fields = self._parse_fields(search_request.field)
+
+        if search_request.field:
+            for afield in search_request.field:
+                if afield[0] == "-":
+                    exclude_list.append(afield[1:])
 
         sort_list = []
         if search_request.sortby:
@@ -289,16 +293,13 @@ class CoreCrudClient(BaseCoreClient):
         results = []
         links = []
 
-        # try:
         for item in items:
             item = self.item_serializer.db_to_stac(item, base_url=base_url)
             if search_request.field:
                 for key in exclude_list:
                     item.pop(key)
             results.append(item)
-        # except:
-        #     return results
-
+            
         count = None
         if self.extension_is_enabled("ContextExtension"):
             count = len(results)
