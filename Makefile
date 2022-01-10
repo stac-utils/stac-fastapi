@@ -64,7 +64,7 @@ test-pgstac:
 
 .PHONY: test-mongo
 test-mongo:
-	$(run_mongo) /bin/bash -c 'export && ./scripts/wait-for-it.sh mongo_db:27017 && cd /app/stac_fastapi/mongo/tests/ && pytest'
+	$(run_mongo) /bin/bash -c 'export && cd /app/stac_fastapi/mongo/tests/ && pytest'
 
 .PHONY: run-database
 run-database:
