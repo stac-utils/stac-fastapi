@@ -9,6 +9,8 @@ import pymongo
 import attr
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
+from fastapi import HTTPException
+from pydantic import ValidationError
 
 from stac_fastapi.mongo import serializers
 from stac_fastapi.mongo.session import Session
@@ -94,7 +96,8 @@ class CoreCrudClient(BaseCoreClient):
         )
         count = None
         if self.extension_is_enabled("ContextExtension"):
-            count = len(collection_children)
+            if type(collection_children) == list:
+                count = len(collection_children)
 
         context_obj = None
         if self.extension_is_enabled("ContextExtension"):
@@ -153,109 +156,54 @@ class CoreCrudClient(BaseCoreClient):
         datetime: Optional[Union[str, datetime]] = None,
         limit: Optional[int] = 10,
         query: Optional[str] = None,
-        intersects: Optional[dict] = None,
         token: Optional[str] = None,
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
         **kwargs,
     ) -> ItemCollection:
         """GET search catalog."""
-        queries = {}
-        base_url = str(kwargs["request"].base_url)
-
-        if collections:
-            for collection in collections:
-                collection_filter = {"collection": collection}
-                queries.update(**collection_filter)
-
-        if ids:
-            for id in ids:
-                id_filter = {"id": id}
-                queries.update(**id_filter)
-
-        # Australia bbox = 101.125653,-46.522368,162.473309,-4.862972
-        if bbox:
-            poly = self._bbox2poly(bbox)
-            bbox_filter = {
-                "geometry": {"$geoIntersects": { "$geometry": { "type": 'Polygon' , "coordinates": poly }}}
-            }
-            queries.update(**bbox_filter)
-
-            # bbox_filter = {
-            #     "bbox": {"$geoWithin": { "$box": [[float(bbox[0]), float(bbox[1])], [float(bbox[2]), float(bbox[3])]]}},
-            # }
-            # queries.update(**bbox_filter)
-
-        if intersects:
-            intersect_filter = {
-                "geometry": {"$geoIntersects": { "$geometry": { "type": intersects.type , "coordinates": intersects.coordinates }}}
-            }
-            queries.update(**intersect_filter)
-
+        base_args = {
+            "collections": collections,
+            "ids": ids,
+            "bbox": bbox,
+            "limit": limit,
+            "token": token,
+            "query": json.loads(query) if query else query,
+        }
         if datetime:
-            date_filter = self._return_date(datetime)
-            queries.update(**date_filter)
-     
-        # {"gsd": {"eq":16}}
-        if query:
-            query = json.loads(query)
-            for (field_name, expr) in query.items():
-                field = "properties." + field_name
-                for (op, value) in expr.items():
-                    key_filter = {
-                        field: { f"${op}":value }
-                    }
-                    queries.update(**key_filter)
-
-        exclude_list = []
-        if fields:
-            for afield in fields:
-                if afield[0] == "-":
-                    exclude_list.append(afield[1:])
-
-        sort_list = []
+            base_args["datetime"] = datetime
         if sortby:
+            # https://github.com/radiantearth/stac-spec/tree/master/api-spec/extensions/sort#http-get-or-post-form
+            sort_param = []
             for sort in sortby:
-                pass
+                sort_param.append(
+                    {
+                        "field": sort[1:],
+                        "direction": "asc" if sort[0] == "+" else "desc",
+                    }
+                )
+            base_args["sortby"] = sort_param
 
-        items = (
-            self.db.stac_item
-            .find(queries)
-            .limit(limit)
-            .sort([("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)])
-        )
+        if fields:
+            includes = set()
+            excludes = set()
+            for field in fields:
+                if field[0] == "-":
+                    excludes.add(field[1:])
+                elif field[0] == "+":
+                    includes.add(field[1:])
+                else:
+                    includes.add(field)
+            base_args["fields"] = {"include": includes, "exclude": excludes}
 
-        results = []
-        links = []
-
+        # Do the request
         try:
-            for item in items:
-                item = self.item_serializer.db_to_stac(item, base_url=base_url)
-                if field:
-                    for key in exclude_list:
-                        item.pop(key)
-                results.append(item)
-        except:
-            return results
+            search_request = SQLAlchemySTACSearch(**base_args)
+        except ValidationError:
+            raise HTTPException(status_code=400, detail="Invalid parameters provided")
+        resp = self.post_search(search_request, request=kwargs["request"])
 
-        count = None
-        if self.extension_is_enabled("ContextExtension"):
-            count = len(results)
-
-        context_obj = None
-        if self.extension_is_enabled("ContextExtension"):
-            context_obj = {
-                "returned": count,
-                "limit": limit,
-                "matched": count,
-            }
-
-        return ItemCollection(
-            type="FeatureCollection",
-            features=results,
-            links=links,
-            context=context_obj,
-        )
+        return resp
 
     def _parse_fields(self, fields: dict):
         field_list = []
@@ -268,16 +216,104 @@ class CoreCrudClient(BaseCoreClient):
         self, search_request: SQLAlchemySTACSearch, **kwargs
     ) -> ItemCollection:
         """POST search catalog."""
-        if search_request.fields:
-            search_request.fields = self._parse_fields(search_request.fields)
-        return self.get_search(
-            collections=search_request.collections,
-            ids=search_request.ids,
-            limit=search_request.limit,
-            bbox=search_request.bbox,
-            intersects=search_request.intersects,
-            query=search_request.query,
-            datetime=search_request.datetime,
-            fields=search_request.field,
-            request=kwargs["request"]
+        base_url = str(kwargs["request"].base_url)
+        queries = {}
+
+        if search_request.collections:
+            for collection in search_request.collections:
+                collection_filter = {"collection": collection}
+                queries.update(**collection_filter)
+
+        if search_request.ids:
+            # for id in search_request.ids:
+            id_filter = {"id": {"$in": search_request.ids}}
+            queries.update(**id_filter)
+
+        # Australia bbox = 101.125653,-46.522368,162.473309,-4.862972
+        if search_request.bbox:
+            # check for 3d bbox
+            if len(search_request.bbox) == 6:
+                search_request.bbox = [search_request.bbox[0], search_request.bbox[1], search_request.bbox[3], search_request.bbox[4]]
+            poly = self._bbox2poly(search_request.bbox)
+            bbox_filter = {
+                "geometry": {"$geoIntersects": { "$geometry": { "type": 'Polygon' , "coordinates": poly }}}
+            }
+            queries.update(**bbox_filter)
+
+            # bbox_filter = {
+            #     "bbox": {"$geoWithin": { "$box": [[float(bbox[0]), float(bbox[1])], [float(bbox[2]), float(bbox[3])]]}},
+            # }
+            # queries.update(**bbox_filter)
+
+        if search_request.intersects:
+            intersect_filter = {
+                "geometry": {"$geoIntersects": { "$geometry": { "type": search_request.intersects.type , "coordinates": search_request.intersects.coordinates }}}
+            }
+            queries.update(**intersect_filter)
+
+        if search_request.datetime:
+            date_filter = self._return_date(str(search_request.datetime))
+            queries.update(**date_filter)
+     
+        # {"gsd": {"eq":16}}
+        if search_request.query:
+            if type(search_request.query) == str:
+                search_request.query = json.loads(search_request.query)
+            for (field_name, expr) in search_request.query.items():
+                field = "properties." + field_name
+                for (op, value) in expr.items():
+                    key_filter = {
+                        field: { f"${op}":value }
+                    }
+                    queries.update(**key_filter)
+
+        exclude_list = []
+        # if search_request.field:
+        #     for afield in search_request.field:
+        #         if afield[0] == "-":
+        #             exclude_list.append(afield[1:])
+
+        sort_list = []
+        if search_request.sortby:
+            for sort in search_request.sortby:
+                pass
+
+        items = []
+        items = (
+            self.db.stac_item
+            .find(queries)
+            .limit(search_request.limit)
+            .sort([("properties.datetime", pymongo.DESCENDING), ("id", pymongo.DESCENDING)])
+        )
+
+        results = []
+        links = []
+
+        # try:
+        for item in items:
+            item = self.item_serializer.db_to_stac(item, base_url=base_url)
+            if search_request.field:
+                for key in exclude_list:
+                    item.pop(key)
+            results.append(item)
+        # except:
+        #     return results
+
+        count = None
+        if self.extension_is_enabled("ContextExtension"):
+            count = len(results)
+
+        context_obj = None
+        if self.extension_is_enabled("ContextExtension"):
+            context_obj = {
+                "returned": count,
+                "limit": search_request.limit,
+                "matched": count,
+            }
+
+        return ItemCollection(
+            type="FeatureCollection",
+            features=results,
+            links=links,
+            context=context_obj,
         )
