@@ -10,3 +10,4 @@ coverage.xml
 *.log
 .git
 .envrc
+/mongo_data
