@@ -1,6 +1,8 @@
 """transactions extension client."""
 
 import logging
+from pymongo import collection
+from pymongo.errors import DuplicateKeyError
 import attr
 
 from stac_fastapi.extensions.third_party.bulk_transactions import (
@@ -25,39 +27,37 @@ class TransactionsClient(BaseTransactionsClient):
 
     def create_item(self, model: stac_types.Item, **kwargs):
         """Create item."""
-        try:
-            base_url = str(kwargs["request"].base_url)
-            item_links = ItemLinks(
-                collection_id=model["collection"], item_id=model["id"], base_url=base_url
-            ).create_links()
-            model["links"] = item_links
-            model["_id"] = model["id"]
-        except:
-            pass
+        base_url = str(kwargs["request"].base_url)
+        item_links = ItemLinks(
+            collection_id=model["collection"], item_id=model["id"], base_url=base_url
+        ).create_links()
+        model["links"] = item_links
 
-        self.db.stac_item.insert_one(model)
+        if self.db.stac_item.count_documents({'id': model['id'], "collection": model['collection']}, limit=1):
+            raise DuplicateKeyError(f"Item {model['id']} in collection {model['collection']} already exists")
+        else:
+            self.db.stac_item.insert_one(model)
 
     def create_collection(self, model: stac_types.Collection, **kwargs):
         """Create collection."""
-        try:
-            base_url = str(kwargs["request"].base_url)
-            collection_links = CollectionLinks(
-                collection_id=model["id"], base_url=base_url
-            ).create_links()
-            model["links"] = collection_links
-            model["_id"] = model["id"]
-        except:
-            pass
+        base_url = str(kwargs["request"].base_url)
+        collection_links = CollectionLinks(
+            collection_id=model["id"], base_url=base_url
+        ).create_links()
+        model["links"] = collection_links
 
-        self.db.stac_collection.insert_one(model)
+        collection = self.db.stac_collection.find_one({"id": model['id']})
+        if collection is None:
+            self.db.stac_collection.insert_one(model)
+        else:
+            raise DuplicateKeyError(f"Collection {model['id']} already exists")
 
     def update_item(self, model: stac_types.Item, **kwargs):
         """Update item."""
-        item = self.db.stac_item.find_one({'id': model["id"], "collection": model["collection"]})
-        if not item:
+        if self.db.stac_item.count_documents({'id': model["id"], "collection": model["collection"]}) == 0:
             raise NotFoundError(f"Item {model['id']} in collection {model['collection']} not found")
         self.delete_item(item_id=model["id"], collection_id=model["collection"])
-        self.create_item(model)
+        self.create_item(model, **kwargs)
       
     def update_collection(self, model: stac_types.Collection, **kwargs):
         """Update collection."""
@@ -65,14 +65,18 @@ class TransactionsClient(BaseTransactionsClient):
         if not collection:
             raise NotFoundError(f"Collection {model['id']} not found")
         self.delete_collection(model["id"])
-        self.create_collection(model)
+        self.create_collection(model, **kwargs)
 
     def delete_item(self, item_id: str, collection_id: str, **kwargs):
         """Delete item."""
+        if self.db.stac_item.count_documents({'id': item_id, "collection": collection_id}) == 0:
+            raise NotFoundError(f"Item {item_id} does not exist")
         self.db.stac_item.delete_one({'id': item_id, "collection": collection_id})
        
     def delete_collection(self, id: str, **kwargs):
         """Delete collection."""
+        if self.db.stac_collection.count_documents({'id': id}) == 0:
+            raise NotFoundError(f"Collection {id} does not exist")
         self.db.stac_collection.delete_one({'id': id})
 
 
