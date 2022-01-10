@@ -21,4 +21,5 @@ RUN mkdir -p /install && \
     pip install -e ./stac_fastapi/api[dev] && \
     pip install -e ./stac_fastapi/extensions[dev] && \
     pip install -e ./stac_fastapi/sqlalchemy[dev,server] && \
+    pip install -e ./stac_fastapi/mongo[dev,server] && \
     pip install -e ./stac_fastapi/pgstac[dev,server]

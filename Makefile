@@ -14,9 +14,21 @@ run_pgstac = docker-compose run --rm \
 				-e APP_PORT=${APP_PORT} \
 				app-pgstac
 
+run_mongo = docker-compose -f docker-compose.mongo.yml \
+				run \
+				-p ${EXTERNAL_APP_PORT}:${APP_PORT} \
+				-e PY_IGNORE_IMPORTMISMATCH=1 \
+				-e APP_HOST=${APP_HOST} \
+				-e APP_PORT=${APP_PORT} \
+				app-mongo
+
 .PHONY: image
 image:
 	docker-compose build
+
+.PHONY: mongo-image
+mongo-image:
+	docker-compose -f docker-compose.mongo.yml build
 
 .PHONY: docker-run
 docker-run: image
@@ -26,6 +38,10 @@ docker-run: image
 docker-run-pgstac: image
 	$(run_pgstac)
 
+.PHONY: docker-run-mongo
+docker-run-mongo: mongo-image
+	$(run_mongo)
+
 .PHONY: docker-shell
 docker-shell:
 	$(run_docker) /bin/bash
@@ -33,6 +49,10 @@ docker-shell:
 .PHONY: docker-shell-pgstac
 docker-shell-pgstac:
 	$(run_pgstac) /bin/bash
+
+.PHONY: docker-shell-mongo
+docker-shell-mongo:
+	$(run_mongo) /bin/bash
 
 .PHONY: test-sqlalchemy
 test-sqlalchemy: run-joplin-sqlalchemy
@@ -42,9 +62,17 @@ test-sqlalchemy: run-joplin-sqlalchemy
 test-pgstac:
 	$(run_pgstac) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/pgstac/tests/ && pytest'
 
+.PHONY: test-mongo
+test-mongo:
+	$(run_mongo) /bin/bash -c 'export && cd /app/stac_fastapi/mongo/tests/ && pytest'
+
 .PHONY: run-database
 run-database:
 	docker-compose run --rm database
+
+.PHONY: run-mongo-database
+run-mongo-database:
+	docker-compose -f docker-compose.mongo.yml run --rm mongo_db
 
 .PHONY: run-joplin-sqlalchemy
 run-joplin-sqlalchemy:
@@ -55,7 +83,7 @@ run-joplin-pgstac:
 	docker-compose run --rm loadjoplin-pgstac
 
 .PHONY: test
-test: test-sqlalchemy test-pgstac
+test: test-sqlalchemy test-pgstac test-mongo
 
 .PHONY: pybase-install
 pybase-install:
@@ -71,6 +99,10 @@ pgstac-install: pybase-install
 .PHONY: sqlalchemy-install
 sqlalchemy-install: pybase-install
 	pip install -e ./stac_fastapi/sqlalchemy[dev,server]
+
+.PHONY: mongo-install
+mongo-install: pybase-install
+	pip install -e ./stac_fastapi/mongo[dev,server]
 
 .PHONY: docs-image
 docs-image:
