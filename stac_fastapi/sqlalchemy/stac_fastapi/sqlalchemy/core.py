@@ -21,13 +21,14 @@ from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 
 from stac_fastapi.sqlalchemy import serializers
+from stac_fastapi.sqlalchemy.extensions.query import Operator
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
-from stac_fastapi.sqlalchemy.types.search import Operator, SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 logger = logging.getLogger(__name__)
@@ -90,15 +91,15 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             )
             return collection_list
 
-    def get_collection(self, id: str, **kwargs) -> Collection:
+    def get_collection(self, collection_id: str, **kwargs) -> Collection:
         """Get collection by id."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
-            collection = self._lookup_id(id, self.collection_table, session)
+            collection = self._lookup_id(collection_id, self.collection_table, session)
             return self.collection_serializer.db_to_stac(collection, base_url)
 
     def item_collection(
-        self, id: str, limit: int = 10, token: str = None, **kwargs
+        self, collection_id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
         """Read an item collection from the database."""
         base_url = str(kwargs["request"].base_url)
@@ -106,7 +107,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             collection_children = (
                 session.query(self.item_table)
                 .join(self.collection_table)
-                .filter(self.collection_table.id == id)
+                .filter(self.collection_table.id == collection_id)
                 .order_by(self.item_table.datetime.desc(), self.item_table.id)
             )
             count = None
@@ -135,7 +136,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     {
                         "rel": Relations.next.value,
                         "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}collections/{id}/items?token={page.next}&limit={limit}",
+                        "href": f"{kwargs['request'].base_url}collections/{collection_id}/items?token={page.next}&limit={limit}",
                         "method": "GET",
                     }
                 )
@@ -144,7 +145,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     {
                         "rel": Relations.previous.value,
                         "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}collections/{id}/items?token={page.previous}&limit={limit}",
+                        "href": f"{kwargs['request'].base_url}collections/{collection_id}/items?token={page.previous}&limit={limit}",
                         "method": "GET",
                     }
                 )
@@ -179,7 +180,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             db_query = db_query.filter(self.item_table.id == item_id)
             item = db_query.first()
             if not item:
-                raise NotFoundError(f"{self.item_table.__name__} {id} not found")
+                raise NotFoundError(f"{self.item_table.__name__} {item_id} not found")
             return self.item_serializer.db_to_stac(item, base_url=base_url)
 
     def get_search(
@@ -233,7 +234,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
         # Do the request
         try:
-            search_request = SQLAlchemySTACSearch(**base_args)
+            search_request = self.post_request_model(**base_args)
         except ValidationError:
             raise HTTPException(status_code=400, detail="Invalid parameters provided")
         resp = self.post_search(search_request, request=kwargs["request"])
@@ -256,7 +257,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         return resp
 
     def post_search(
-        self, search_request: SQLAlchemySTACSearch, **kwargs
+        self, search_request: BaseSearchPostRequest, **kwargs
     ) -> ItemCollection:
         """POST search catalog."""
         base_url = str(kwargs["request"].base_url)
@@ -428,12 +429,12 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                             for k in search_request.query.keys()
                         ]
                     )
-                    if not search_request.field.include:
-                        search_request.field.include = query_include
+                    if not search_request.fields.include:
+                        search_request.fields.include = query_include
                     else:
-                        search_request.field.include.union(query_include)
+                        search_request.fields.include.union(query_include)
 
-                filter_kwargs = search_request.field.filter_fields
+                filter_kwargs = search_request.fields.filter_fields
                 # Need to pass through `.json()` for proper serialization
                 # of datetime
                 response_features = [
