@@ -18,13 +18,13 @@ class Serializer(abc.ABC):
         """Transform database model to stac."""
         ...
 
+
 class ItemSerializer(Serializer):
     """Serialization methods for STAC items."""
 
     @classmethod
     def db_to_stac(cls, item: dict, base_url: str) -> stac_types.Item:
         """Transform database model to stac item."""
-        
         item_id = item["id"]
         collection_id = item["collection"]
         item_links = ItemLinks(
@@ -47,6 +47,7 @@ class ItemSerializer(Serializer):
             links=item_links,
             assets=item["assets"],
         )
+
 
 class CollectionSerializer(Serializer):
     """Serialization methods for STAC collections."""

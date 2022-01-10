@@ -1,6 +1,7 @@
 import pystac
 import pytest
 
+
 def test_create_and_delete_collection(app_client, load_test_data):
     """Test creation and deletion of a collection"""
     test_collection = load_test_data("test_collection.json")

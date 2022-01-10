@@ -1,26 +1,27 @@
 """transactions extension client."""
 
 import logging
-from pymongo.errors import DuplicateKeyError
+
 import attr
 
-from stac_fastapi.extensions.third_party.bulk_transactions import (
-    BaseBulkTransactionsClient,
-    Items,
-)
+# from stac_fastapi.extensions.third_party.bulk_transactions import (
+#     BaseBulkTransactionsClient,
+#     Items,
+# )
+from stac_fastapi.mongo.mongo_config import MongoSettings
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import BaseTransactionsClient
-from stac_fastapi.types.errors import NotFoundError, ConflictError
+from stac_fastapi.types.errors import ConflictError, NotFoundError
 from stac_fastapi.types.links import CollectionLinks, ItemLinks
 
-from stac_fastapi.mongo.mongo_config import MongoSettings
-
 logger = logging.getLogger(__name__)
+
 
 @attr.s
 class TransactionsClient(BaseTransactionsClient):
     """Transactions extension specific CRUD operations."""
+
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     db = MongoSettings()
 
@@ -32,8 +33,12 @@ class TransactionsClient(BaseTransactionsClient):
         ).create_links()
         model["links"] = item_links
 
-        if self.db.stac_item.count_documents({'id': model['id'], "collection": model['collection']}, limit=1):
-            raise ConflictError(f"Item {model['id']} in collection {model['collection']} already exists")
+        if self.db.stac_item.count_documents(
+            {"id": model["id"], "collection": model["collection"]}, limit=1
+        ):
+            raise ConflictError(
+                f"Item {model['id']} in collection {model['collection']} already exists"
+            )
         else:
             self.db.stac_item.insert_one(model)
 
@@ -45,36 +50,48 @@ class TransactionsClient(BaseTransactionsClient):
         ).create_links()
         model["links"] = collection_links
 
-        if self.db.stac_collection.count_documents({'id': model['id']}, limit=1):
+        if self.db.stac_collection.count_documents({"id": model["id"]}, limit=1):
             raise ConflictError(f"Collection {model['id']} already exists")
         else:
             self.db.stac_collection.insert_one(model)
 
     def update_item(self, model: stac_types.Item, **kwargs):
         """Update item."""
-        if self.db.stac_item.count_documents({'id': model["id"], "collection": model["collection"]}) == 0:
-            raise NotFoundError(f"Item {model['id']} in collection {model['collection']} not found")
+        if (
+            self.db.stac_item.count_documents(
+                {"id": model["id"], "collection": model["collection"]}
+            )
+            == 0
+        ):
+            raise NotFoundError(
+                f"Item {model['id']} in collection {model['collection']} not found"
+            )
         self.delete_item(item_id=model["id"], collection_id=model["collection"])
         self.create_item(model, **kwargs)
-      
+
     def update_collection(self, model: stac_types.Collection, **kwargs):
         """Update collection."""
-        if self.db.stac_collection.count_documents({'id': model["id"]}) == 0:
+        if self.db.stac_collection.count_documents({"id": model["id"]}) == 0:
             raise NotFoundError(f"Collection {model['id']} not found")
         self.delete_collection(model["id"])
         self.create_collection(model, **kwargs)
 
     def delete_item(self, item_id: str, collection_id: str, **kwargs):
         """Delete item."""
-        if self.db.stac_item.count_documents({'id': item_id, "collection": collection_id}) == 0:
+        if (
+            self.db.stac_item.count_documents(
+                {"id": item_id, "collection": collection_id}
+            )
+            == 0
+        ):
             raise NotFoundError(f"Item {item_id} does not exist")
-        self.db.stac_item.delete_one({'id': item_id, "collection": collection_id})
-       
+        self.db.stac_item.delete_one({"id": item_id, "collection": collection_id})
+
     def delete_collection(self, id: str, **kwargs):
         """Delete collection."""
-        if self.db.stac_collection.count_documents({'id': id}) == 0:
+        if self.db.stac_collection.count_documents({"id": id}) == 0:
             raise NotFoundError(f"Collection {id} does not exist")
-        self.db.stac_collection.delete_one({'id': id})
+        self.db.stac_collection.delete_one({"id": id})
 
 
 # @attr.s

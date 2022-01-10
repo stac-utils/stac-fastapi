@@ -14,12 +14,8 @@ from stac_fastapi.extensions.core import (
     TransactionExtension,
 )
 from stac_fastapi.mongo.config import MongoSettings
-from stac_fastapi.mongo.mongo_config import MongoSettings as MongoDB
 from stac_fastapi.mongo.core import CoreCrudClient
-from stac_fastapi.mongo.session import Session
-from stac_fastapi.mongo.transactions import (
-    TransactionsClient,
-)
+from stac_fastapi.mongo.transactions import TransactionsClient
 from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 
@@ -79,16 +75,12 @@ class MockStarletteRequest:
 
 @pytest.fixture
 def mongo_core():
-    return CoreCrudClient(
-        session=None
-    )
+    return CoreCrudClient(session=None)
 
 
 @pytest.fixture
 def mongo_transactions():
-    return TransactionsClient(
-        session=None
-    )
+    return TransactionsClient(session=None)
 
 
 # @pytest.fixture

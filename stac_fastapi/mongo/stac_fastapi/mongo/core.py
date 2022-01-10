@@ -4,25 +4,26 @@ import logging
 from datetime import datetime
 from typing import List, Optional, Type, Union
 from urllib.parse import urljoin
-import pymongo
 
 import attr
-from stac_pydantic.links import Relations
-from stac_pydantic.shared import MimeTypes
+import pymongo
 from fastapi import HTTPException
 from pydantic import ValidationError
+from stac_pydantic.links import Relations
+from stac_pydantic.shared import MimeTypes
 
 from stac_fastapi.mongo import serializers
+from stac_fastapi.mongo.mongo_config import MongoSettings
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
-from stac_fastapi.mongo.mongo_config import MongoSettings
 
 logger = logging.getLogger(__name__)
 
 NumType = Union[float, int]
+
 
 @attr.s
 class CoreCrudClient(BaseCoreClient):
@@ -89,10 +90,8 @@ class CoreCrudClient(BaseCoreClient):
         links = []
         response_features = []
         base_url = str(kwargs["request"].base_url)
-        collection_children = ( 
-            self.db.stac_item
-            .find({"collection": id})
-            .sort([("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)])
+        collection_children = self.db.stac_item.find({"collection": id}).sort(
+            [("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)]
         )
         count = None
         if self.extension_is_enabled("ContextExtension"):
@@ -129,24 +128,26 @@ class CoreCrudClient(BaseCoreClient):
         return self.item_serializer.db_to_stac(item, base_url)
 
     def _bbox2poly(self, bbox):
-        poly = [[
-            [float(bbox[0]),float(bbox[1])],
-            [float(bbox[2]),float(bbox[1])],
-            [float(bbox[2]),float(bbox[3])],
-            [float(bbox[0]),float(bbox[3])],
-            [float(bbox[0]),float(bbox[1])]
-        ]]
+        poly = [
+            [
+                [float(bbox[0]), float(bbox[1])],
+                [float(bbox[2]), float(bbox[1])],
+                [float(bbox[2]), float(bbox[3])],
+                [float(bbox[0]), float(bbox[3])],
+                [float(bbox[0]), float(bbox[1])],
+            ]
+        ]
         return poly
 
     def _return_date(self, datetime):
         x = datetime.split("/")
         start_date = x[0]
         end_date = x[1]
-        if(start_date=='..'):
-            start_date = '1900-10-01T00:00:00Z'
-        if(end_date=='..'):
-            end_date = '2200-12-01T12:31:12Z'
-        return { "properties.datetime": { "$lt":end_date, "$gte":start_date} }
+        if start_date == "..":
+            start_date = "1900-10-01T00:00:00Z"
+        if end_date == "..":
+            end_date = "2200-12-01T12:31:12Z"
+        return {"properties.datetime": {"$lt": end_date, "$gte": start_date}}
 
     def get_search(
         self,
@@ -233,10 +234,19 @@ class CoreCrudClient(BaseCoreClient):
         if search_request.bbox:
             # check for 3d bbox
             if len(search_request.bbox) == 6:
-                search_request.bbox = [search_request.bbox[0], search_request.bbox[1], search_request.bbox[3], search_request.bbox[4]]
+                search_request.bbox = [
+                    search_request.bbox[0],
+                    search_request.bbox[1],
+                    search_request.bbox[3],
+                    search_request.bbox[4],
+                ]
             poly = self._bbox2poly(search_request.bbox)
             bbox_filter = {
-                "geometry": {"$geoIntersects": { "$geometry": { "type": 'Polygon' , "coordinates": poly }}}
+                "geometry": {
+                    "$geoIntersects": {
+                        "$geometry": {"type": "Polygon", "coordinates": poly}
+                    }
+                }
             }
             queries.update(**bbox_filter)
 
@@ -247,14 +257,21 @@ class CoreCrudClient(BaseCoreClient):
 
         if search_request.intersects:
             intersect_filter = {
-                "geometry": {"$geoIntersects": { "$geometry": { "type": search_request.intersects.type , "coordinates": search_request.intersects.coordinates }}}
+                "geometry": {
+                    "$geoIntersects": {
+                        "$geometry": {
+                            "type": search_request.intersects.type,
+                            "coordinates": search_request.intersects.coordinates,
+                        }
+                    }
+                }
             }
             queries.update(**intersect_filter)
 
         if search_request.datetime:
             date_filter = self._return_date(str(search_request.datetime))
             queries.update(**date_filter)
-     
+
         # {"gsd": {"eq":16}}
         if search_request.query:
             if type(search_request.query) == str:
@@ -262,9 +279,7 @@ class CoreCrudClient(BaseCoreClient):
             for (field_name, expr) in search_request.query.items():
                 field = "properties." + field_name
                 for (op, value) in expr.items():
-                    key_filter = {
-                        field: { f"${op}":value }
-                    }
+                    key_filter = {field: {f"${op}": value}}
                     queries.update(**key_filter)
 
         exclude_list = []
@@ -277,17 +292,21 @@ class CoreCrudClient(BaseCoreClient):
                 if afield[0] == "-":
                     exclude_list.append(afield[1:])
 
-        sort_list = []
+        # sort_list = []
         if search_request.sortby:
             for sort in search_request.sortby:
                 pass
 
         items = []
         items = (
-            self.db.stac_item
-            .find(queries)
+            self.db.stac_item.find(queries)
             .limit(search_request.limit)
-            .sort([("properties.datetime", pymongo.DESCENDING), ("id", pymongo.DESCENDING)])
+            .sort(
+                [
+                    ("properties.datetime", pymongo.DESCENDING),
+                    ("id", pymongo.DESCENDING),
+                ]
+            )
         )
 
         results = []
@@ -299,7 +318,7 @@ class CoreCrudClient(BaseCoreClient):
                 for key in exclude_list:
                     item.pop(key)
             results.append(item)
-            
+
         count = None
         if self.extension_is_enabled("ContextExtension"):
             count = len(results)

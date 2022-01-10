@@ -3,9 +3,9 @@ from typing import Set
 
 from stac_fastapi.types.config import ApiSettings
 
+
 class MongoSettings(ApiSettings):
-    """API settings.
-    """
+    """API settings."""
 
     # Fields which are defined by STAC but not included in the database model
     forbidden_fields: Set[str] = {"type"}

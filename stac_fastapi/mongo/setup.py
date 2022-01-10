@@ -19,7 +19,7 @@ install_requires = [
     "psycopg2-binary",
     "alembic",
     "fastapi-utils",
-    "pymongo"
+    "pymongo",
 ]
 
 extra_reqs = {
@@ -58,7 +58,5 @@ setup(
     install_requires=install_requires,
     tests_require=extra_reqs["dev"],
     extras_require=extra_reqs,
-    entry_points={
-        "console_scripts": ["stac-fastapi-mongo=stac_fastapi.mongo.app:run"]
-    },
+    entry_points={"console_scripts": ["stac-fastapi-mongo=stac_fastapi.mongo.app:run"]},
 )

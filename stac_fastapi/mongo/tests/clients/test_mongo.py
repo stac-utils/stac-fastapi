@@ -2,9 +2,9 @@ import uuid
 from copy import deepcopy
 from typing import Callable
 
-import pytest
 import pymongo
-from stac_pydantic import Collection, Item
+import pytest
+from stac_pydantic import Item
 from tests.conftest import MockStarletteRequest
 
 from stac_fastapi.api.app import StacApi
@@ -13,7 +13,7 @@ from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_fastapi.types.errors import ConflictError, NotFoundError
+from stac_fastapi.types.errors import NotFoundError
 
 
 def test_create_collection(
@@ -84,13 +84,11 @@ def test_get_collection(
 def test_get_item(
     mongo_core: CoreCrudClient,
     mongo_transactions: TransactionsClient,
-    load_test_data: Callable
+    load_test_data: Callable,
 ):
     collection_data = load_test_data("test_collection.json")
     item_data = load_test_data("test_item.json")
-    mongo_transactions.create_collection(
-        collection_data, request=MockStarletteRequest
-    )
+    mongo_transactions.create_collection(collection_data, request=MockStarletteRequest)
     mongo_transactions.create_item(item_data, request=MockStarletteRequest)
     coll = mongo_core.get_item(
         item_id=item_data["id"],
@@ -214,6 +212,7 @@ def test_delete_item(
             item["id"], item["collection"], request=MockStarletteRequest
         )
 
+
 @pytest.mark.skip(reason="Bulk transactions not implemented yet")
 def test_bulk_item_insert(
     mongo_core: CoreCrudClient,
@@ -245,6 +244,7 @@ def test_bulk_item_insert(
             item["id"], item["collection"], request=MockStarletteRequest
         )
 
+
 @pytest.mark.skip(reason="Bulk transactions not implemented yet")
 def test_bulk_item_insert_chunked(
     mongo_transactions: TransactionsClient,
@@ -268,6 +268,7 @@ def test_bulk_item_insert_chunked(
         mongo_transactions.delete_item(
             item["id"], item["collection"], request=MockStarletteRequest
         )
+
 
 @pytest.mark.skip(reason="Not working")
 def test_landing_page_no_collection_title(

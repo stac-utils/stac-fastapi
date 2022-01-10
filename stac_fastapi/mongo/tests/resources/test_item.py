@@ -1,8 +1,6 @@
 import json
 import os
 import time
-import pymongo
-import pytest
 import uuid
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
@@ -10,6 +8,7 @@ from random import randint
 from urllib.parse import parse_qs, urlparse, urlsplit
 
 import pystac
+import pytest
 from pydantic.datetime_parse import parse_datetime
 from shapely.geometry import Polygon
 from stac_pydantic.shared import DATETIME_RFC339
@@ -41,6 +40,7 @@ def test_create_and_delete_item(app_client, load_test_data):
     )
     assert resp.status_code == 404
 
+
 def test_create_item_conflict(app_client, load_test_data):
     """Test creation of an item which already exists (transactions extension)"""
     test_item = load_test_data("test_item.json")
@@ -54,11 +54,13 @@ def test_create_item_conflict(app_client, load_test_data):
     )
     assert resp.status_code == 409
 
+
 def test_delete_missing_item(app_client, load_test_data):
     """Test deletion of an item which does not exist (transactions extension)"""
     test_item = load_test_data("test_item.json")
     resp = app_client.delete(f"/collections/{test_item['collection']}/items/hijosh")
     assert resp.status_code == 404
+
 
 @pytest.mark.skip(reason="This should not return 200")
 def test_create_item_missing_collection(app_client, load_test_data):
@@ -70,6 +72,7 @@ def test_create_item_missing_collection(app_client, load_test_data):
     )
     assert resp.status_code == 422
 
+
 def test_update_item_already_exists(app_client, load_test_data):
     """Test updating an item which already exists (transactions extension)"""
     test_item = load_test_data("test_item.json")
@@ -80,9 +83,7 @@ def test_update_item_already_exists(app_client, load_test_data):
 
     assert test_item["properties"]["gsd"] != 16
     test_item["properties"]["gsd"] = 16
-    app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
-    )
+    app_client.put(f"/collections/{test_item['collection']}/items", json=test_item)
     resp = app_client.get(
         f"/collections/{test_item['collection']}/items/{test_item['id']}"
     )
@@ -98,7 +99,10 @@ def test_update_new_item(app_client, load_test_data):
     )
     assert resp.status_code == 404
 
-@pytest.mark.skip(reason="This should work when items are checked for parent collections")
+
+@pytest.mark.skip(
+    reason="This should work when items are checked for parent collections"
+)
 def test_update_item_missing_collection(app_client, load_test_data):
     """Test updating an item without a parent collection (transactions extension)"""
     test_item = load_test_data("test_item.json")
@@ -562,6 +566,7 @@ def test_get_missing_item_collection(app_client):
     resp = app_client.get("/collections/invalid-collection/items")
     assert resp.status_code == 200
 
+
 @pytest.mark.skip(reason="Pagination extension not implemented")
 def test_pagination_item_collection(app_client, load_test_data):
     """Test item collection pagination links (paging extension)"""
@@ -603,6 +608,7 @@ def test_pagination_item_collection(app_client, load_test_data):
     # Confirm we have paginated through all items
     assert not set(item_ids) - set(ids)
 
+
 @pytest.mark.skip(reason="Pagination extension not implemented")
 def test_pagination_post(app_client, load_test_data):
     """Test POST pagination (paging extension)"""
@@ -641,6 +647,7 @@ def test_pagination_post(app_client, load_test_data):
     # Confirm we have paginated through all items
     assert not set(item_ids) - set(ids)
 
+
 @pytest.mark.skip(reason="Pagination extension not implemented")
 def test_pagination_token_idempotent(app_client, load_test_data):
     """Test that pagination tokens are idempotent (paging extension)"""
@@ -676,6 +683,7 @@ def test_pagination_token_idempotent(app_client, load_test_data):
         item["id"] for item in resp2_data["features"]
     ]
 
+
 @pytest.mark.skip(reason="Field extension not implemented")
 def test_field_extension_get(app_client, load_test_data):
     """Test GET search with included fields (fields extension)"""
@@ -689,6 +697,7 @@ def test_field_extension_get(app_client, load_test_data):
     resp = app_client.get("/search", params=params)
     feat_properties = resp.json()["features"][0]["properties"]
     assert not set(feat_properties) - {"proj:epsg", "gsd", "datetime"}
+
 
 @pytest.mark.skip(reason="Field extension not implemented")
 def test_field_extension_post(app_client, load_test_data):
@@ -715,6 +724,7 @@ def test_field_extension_post(app_client, load_test_data):
         "datetime",
     }
 
+
 @pytest.mark.skip(reason="Field extension not implemented")
 def test_field_extension_exclude_and_include(app_client, load_test_data):
     """Test POST search including/excluding same field (fields extension)"""
@@ -734,6 +744,7 @@ def test_field_extension_exclude_and_include(app_client, load_test_data):
     resp = app_client.post("/search", json=body)
     resp_json = resp.json()
     assert "eo:cloud_cover" not in resp_json["features"][0]["properties"]
+
 
 @pytest.mark.skip(reason="Field extension not implemented")
 def test_field_extension_exclude_default_includes(app_client, load_test_data):
