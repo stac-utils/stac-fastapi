@@ -78,6 +78,10 @@ run-mongo-database:
 run-joplin-sqlalchemy:
 	docker-compose run --rm loadjoplin-sqlalchemy
 
+.PHONY: run-joplin-pgstac
+run-joplin-pgstac:
+	docker-compose run --rm loadjoplin-pgstac
+
 .PHONY: test
 test: test-sqlalchemy test-pgstac test-mongo
 
@@ -86,7 +90,7 @@ pybase-install:
 	pip install wheel && \
 	pip install -e ./stac_fastapi/api[dev] && \
 	pip install -e ./stac_fastapi/types[dev] && \
-	pip install -e ./stac_fastapi/extensions[dev,tiles]
+	pip install -e ./stac_fastapi/extensions[dev]
 
 .PHONY: pgstac-install
 pgstac-install: pybase-install

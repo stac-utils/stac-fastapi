@@ -6,6 +6,8 @@ from fastapi import FastAPI
 
 from stac_fastapi.types.extension import ApiExtension
 
+from .request import QueryExtensionGetRequest, QueryExtensionPostRequest
+
 
 @attr.s
 class QueryExtension(ApiExtension):
@@ -16,6 +18,9 @@ class QueryExtension(ApiExtension):
 
     https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#query
     """
+
+    GET = QueryExtensionGetRequest
+    POST = QueryExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
         factory=lambda: ["https://api.stacspec.org/v1.0.0-beta.3/item-search/#query"]
