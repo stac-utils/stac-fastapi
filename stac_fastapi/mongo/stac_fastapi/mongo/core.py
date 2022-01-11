@@ -2,8 +2,7 @@
 import json
 import logging
 from datetime import datetime
-from re import search
-from typing import List, Optional, Type, Union, Set
+from typing import List, Optional, Set, Type, Union
 from urllib.parse import urljoin
 
 import attr
@@ -13,11 +12,11 @@ from fastapi import HTTPException
 from pydantic import ValidationError
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
-from stac_fastapi.types.config import Settings
 
 from stac_fastapi.mongo import serializers
 from stac_fastapi.mongo.mongo_config import MongoSettings
 from stac_fastapi.mongo.session import Session
+from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.search import BaseSearchPostRequest
@@ -292,9 +291,7 @@ class CoreCrudClient(BaseCoreClient):
             sort_list = [("properties.datetime", pymongo.ASCENDING)]
 
         items = (
-            self.db.stac_item.find(queries)
-            .limit(search_request.limit)
-            .sort(sort_list)
+            self.db.stac_item.find(queries).limit(search_request.limit).sort(sort_list)
         )
 
         results = []
@@ -309,9 +306,7 @@ class CoreCrudClient(BaseCoreClient):
             if search_request.query is not None:
                 query_include: Set[str] = set(
                     [
-                        k
-                        if k in Settings.get().indexed_fields
-                        else f"properties.{k}"
+                        k if k in Settings.get().indexed_fields else f"properties.{k}"
                         for k in search_request.query.keys()
                     ]
                 )
