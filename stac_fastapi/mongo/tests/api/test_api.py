@@ -212,7 +212,6 @@ def test_search_point_intersects(load_test_data, app_client, mongo_transactions)
     assert len(resp_json["features"]) == 1
 
 
-@pytest.mark.skip(reason="Alternate dates are not implemented yet")
 def test_datetime_non_interval(load_test_data, app_client, mongo_transactions):
     item = load_test_data("test_item.json")
     mongo_transactions.create_item(item, request=MockStarletteRequest)
