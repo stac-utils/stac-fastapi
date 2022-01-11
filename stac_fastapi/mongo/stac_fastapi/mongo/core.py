@@ -295,24 +295,18 @@ class CoreCrudClient(BaseCoreClient):
         sort_list = []
         if search_request.sortby:
             for sort in search_request.sortby:
-                if(sort.field == 'datetime'):
-                    sort.field = 'properties.datetime'
-                if(sort.direction == "asc"):
+                if sort.field == "datetime":
+                    sort.field = "properties.datetime"
+                if sort.direction == "asc":
                     sort.direction = pymongo.ASCENDING
-                else: 
+                else:
                     sort.direction = pymongo.DESCENDING
                 sort_list.append((sort.field, sort.direction))
         else:
-            sort_list = [
-                ("properties.datetime", pymongo.ASCENDING)
-            ]
+            sort_list = [("properties.datetime", pymongo.ASCENDING)]
 
         items = (
-            self.db.stac_item.find(queries)
-            .limit(search_request.limit)
-            .sort(
-                    sort_list
-            )
+            self.db.stac_item.find(queries).limit(search_request.limit).sort(sort_list)
         )
 
         results = []

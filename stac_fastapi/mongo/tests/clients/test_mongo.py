@@ -2,7 +2,6 @@ import uuid
 from copy import deepcopy
 from typing import Callable
 
-import pymongo
 import pytest
 from stac_pydantic import Item
 from tests.conftest import MockStarletteRequest
