@@ -17,6 +17,7 @@ from stac_fastapi.mongo.mongo_config import MongoSettings
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.core import BaseCoreClient
+from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
@@ -73,9 +74,9 @@ class CoreCrudClient(BaseCoreClient):
         )
         return collection_list
 
-    def get_collection(self, id: str, **kwargs) -> Collection:
+    def get_collection(self, collection_id: str, **kwargs) -> Collection:
         """Get collection by id."""
-        collection = self.db.stac_collection.find_one({"id": id})
+        collection = self.db.stac_collection.find_one({"id": collection_id})
         base_url = str(kwargs["request"].base_url)
 
         if not collection:
@@ -84,13 +85,13 @@ class CoreCrudClient(BaseCoreClient):
         return self.collection_serializer.db_to_stac(collection, base_url)
 
     def item_collection(
-        self, id: str, limit: int = 10, token: str = None, **kwargs
+        self, collection_id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
         """Read an item collection from the database."""
         links = []
         response_features = []
         base_url = str(kwargs["request"].base_url)
-        collection_children = self.db.stac_item.find({"collection": id}).sort(
+        collection_children = self.db.stac_item.find({"collection": collection_id}).sort(
             [("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)]
         )
         count = None
@@ -156,7 +157,7 @@ class CoreCrudClient(BaseCoreClient):
         bbox: Optional[List[NumType]] = None,
         datetime: Optional[Union[str, datetime]] = None,
         limit: Optional[int] = 10,
-        # query: Optional[str] = None,
+        query: Optional[str] = None,
         token: Optional[str] = None,
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
@@ -199,7 +200,7 @@ class CoreCrudClient(BaseCoreClient):
 
         # Do the request
         try:
-            search_request = SQLAlchemySTACSearch(**base_args)
+            search_request = self.post_request_model(**base_args)
         except ValidationError:
             raise HTTPException(status_code=400, detail="Invalid parameters provided")
         resp = self.post_search(search_request, request=kwargs["request"])
@@ -214,7 +215,7 @@ class CoreCrudClient(BaseCoreClient):
         return field_list
 
     def post_search(
-        self, search_request: SQLAlchemySTACSearch, **kwargs
+        self, search_request: BaseSearchPostRequest, **kwargs
     ) -> ItemCollection:
         """POST search catalog."""
         base_url = str(kwargs["request"].base_url)
@@ -273,24 +274,24 @@ class CoreCrudClient(BaseCoreClient):
             queries.update(**date_filter)
 
         # {"gsd": {"eq":16}}
-        # if search_request.query:
-        #     if type(search_request.query) == str:
-        #         search_request.query = json.loads(search_request.query)
-        #     for (field_name, expr) in search_request.query.items():
-        #         field = "properties." + field_name
-        #         for (op, value) in expr.items():
-        #             key_filter = {field: {f"${op}": value}}
-        #             queries.update(**key_filter)
+        if search_request.query:
+            if type(search_request.query) == str:
+                search_request.query = json.loads(search_request.query)
+            for (field_name, expr) in search_request.query.items():
+                field = "properties." + field_name
+                for (op, value) in expr.items():
+                    key_filter = {field: {f"${op}": value}}
+                    queries.update(**key_filter)
 
         exclude_list = []
 
         # if search_request.field:
         #     search_request.fields = self._parse_fields(search_request.field)
-
-        if search_request.field:
-            for afield in search_request.field:
-                if afield[0] == "-":
-                    exclude_list.append(afield[1:])
+        if self.extension_is_enabled("FieldsExtension"):
+            if search_request.fields:
+                for afield in search_request.fields:
+                    if afield[0] == "-":
+                        exclude_list.append(afield[1:])
 
         sort_list = []
         if search_request.sortby:
@@ -314,7 +315,7 @@ class CoreCrudClient(BaseCoreClient):
 
         for item in items:
             item = self.item_serializer.db_to_stac(item, base_url=base_url)
-            if search_request.field:
+            if search_request.fields:
                 for key in exclude_list:
                     item.pop(key)
             results.append(item)
