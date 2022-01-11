@@ -10,4 +10,5 @@ coverage.xml
 *.log
 .git
 .envrc
+venv
 /mongo_data
