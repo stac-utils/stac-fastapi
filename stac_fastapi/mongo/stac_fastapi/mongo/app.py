@@ -4,6 +4,7 @@ from stac_fastapi.extensions.core import (
     FieldsExtension,
     QueryExtension,
     SortExtension,
+    TokenPaginationExtension,
     TransactionExtension,
 )
 
@@ -25,6 +26,7 @@ api = StacApi(
             client=TransactionsClient(session=session), settings=settings
         ),
         # BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
+        TokenPaginationExtension(),
         FieldsExtension(),
         QueryExtension(),
         SortExtension(),
