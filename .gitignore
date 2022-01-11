@@ -107,7 +107,7 @@ celerybeat-schedule
 *.sage.py
 
 # dotenv
-../pgstac/.env
+**/.env
 
 # Spyder project settings
 .spyderproject
