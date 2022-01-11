@@ -443,7 +443,6 @@ async def test_item_search_temporal_window_post(
 
     params = {
         "collections": [test_item["collection"]],
-        "intersects": test_item["geometry"],
         "datetime": f"{item_date_before.strftime(DATETIME_RFC339)}/{item_date_after.strftime(DATETIME_RFC339)}",
     }
     resp = await app_client.post("/search", json=params)
@@ -472,13 +471,11 @@ async def test_item_search_temporal_open_window(
 
     params = {
         "collections": [test_item["collection"]],
-        "intersects": test_item["geometry"],
         "datetime": "../..",
     }
     resp = await app_client.post("/search", json=params)
     resp_json = resp.json()
-    assert len(resp_json["features"]) == 1
-    assert resp_json["features"][0]["id"] == test_item["id"]
+    assert len(resp_json["features"]) == 2
 
 
 @pytest.mark.asyncio
@@ -610,7 +607,6 @@ async def test_item_search_temporal_window_get(
 
     params = {
         "collections": test_item["collection"],
-        "bbox": ",".join([str(coord) for coord in test_item["bbox"]]),
         "datetime": f"{item_date_before.strftime(DATETIME_RFC339)}/{item_date_after.strftime(DATETIME_RFC339)}",
     }
     resp = await app_client.get("/search", params=params)
