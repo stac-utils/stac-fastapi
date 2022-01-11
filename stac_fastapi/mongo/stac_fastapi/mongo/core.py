@@ -206,7 +206,6 @@ class CoreCrudClient(BaseCoreClient):
 
         return resp
 
-
     def post_search(
         self, search_request: BaseSearchPostRequest, **kwargs
     ) -> ItemCollection:
@@ -276,7 +275,7 @@ class CoreCrudClient(BaseCoreClient):
                     key_filter = {field: {f"${op}": value}}
                     queries.update(**key_filter)
 
-        #included = {}
+        # included = {}
         excluded = {}
         if self.extension_is_enabled("FieldsExtension"):
             if search_request.fields:
@@ -284,7 +283,6 @@ class CoreCrudClient(BaseCoreClient):
                 #     included[field] = True
                 for field in search_request.fields.exclude:
                     excluded[field] = False
-                
 
         sort_list = []
         if search_request.sortby:
@@ -300,7 +298,9 @@ class CoreCrudClient(BaseCoreClient):
             sort_list = [("properties.datetime", pymongo.ASCENDING)]
 
         items = (
-            self.db.stac_item.find(queries, excluded).limit(search_request.limit).sort(sort_list)
+            self.db.stac_item.find(queries, excluded)
+            .limit(search_request.limit)
+            .sort(sort_list)
         )
 
         results = []
