@@ -129,3 +129,6 @@ docs/api/*
 
 # mongo db data
 /mongo_data
+
+# Virtualenv
+venv
