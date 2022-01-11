@@ -13,15 +13,11 @@ jobs:
     services:
       mongo_db_service:
         image: mongo:3.6
-        restart: always
-        environment:
-          MONGO_INITDB_ROOT_USERNAME: "dev"
-          MONGO_INITDB_ROOT_PASSWORD: "stac"
-        volumes:
-          - ./mongo_data:/data/db
+        env:
+          MONGO_INITDB_ROOT_USERNAME: dev
+          MONGO_INITDB_ROOT_PASSWORD: stac
         ports:
-          - "27018:27017"
-    command: mongod
+          - 27018:27017
       db_service:
         image: bitner/pgstac:0.2.7
         env:
