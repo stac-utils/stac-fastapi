@@ -282,15 +282,15 @@ class CoreCrudClient(BaseCoreClient):
                     key_filter = {field: {f"${op}": value}}
                     queries.update(**key_filter)
 
-        exclude_list = []
-
-        # if search_request.field:
-        #     search_request.fields = self._parse_fields(search_request.field)
+        #included = {}
+        excluded = {}
         if self.extension_is_enabled("FieldsExtension"):
             if search_request.fields:
-                for afield in search_request.fields:
-                    if afield[0] == "-":
-                        exclude_list.append(afield[1:])
+                # for field in search_request.fields.include:
+                #     included[field] = True
+                for field in search_request.fields.exclude:
+                    excluded[field] = False
+                
 
         sort_list = []
         if search_request.sortby:
@@ -306,7 +306,7 @@ class CoreCrudClient(BaseCoreClient):
             sort_list = [("properties.datetime", pymongo.ASCENDING)]
 
         items = (
-            self.db.stac_item.find(queries).limit(search_request.limit).sort(sort_list)
+            self.db.stac_item.find(queries, excluded).limit(search_request.limit).sort(sort_list)
         )
 
         results = []
@@ -314,9 +314,6 @@ class CoreCrudClient(BaseCoreClient):
 
         for item in items:
             item = self.item_serializer.db_to_stac(item, base_url=base_url)
-            if search_request.fields:
-                for key in exclude_list:
-                    item.pop(key)
             results.append(item)
 
         count = None

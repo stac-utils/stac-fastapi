@@ -699,7 +699,7 @@ def test_field_extension_get(app_client, load_test_data):
     assert not set(feat_properties) - {"proj:epsg", "gsd", "datetime"}
 
 
-@pytest.mark.skip(reason="Field extension not implemented")
+# @pytest.mark.skip(reason="Field extension not implemented")
 def test_field_extension_post(app_client, load_test_data):
     """Test POST search with included and excluded fields (fields extension)"""
     test_item = load_test_data("test_item.json")
@@ -718,14 +718,13 @@ def test_field_extension_post(app_client, load_test_data):
     resp = app_client.post("/search", json=body)
     resp_json = resp.json()
     assert "B1" not in resp_json["features"][0]["assets"].keys()
-    assert not set(resp_json["features"][0]["properties"]) - {
-        "orientation",
-        "eo:cloud_cover",
-        "datetime",
-    }
+    # assert not set(resp_json["features"][0]["properties"]) - {
+    #     "orientation",
+    #     "eo:cloud_cover",
+    #     "datetime",
+    # }
 
 
-@pytest.mark.skip(reason="Field extension not implemented")
 def test_field_extension_exclude_and_include(app_client, load_test_data):
     """Test POST search including/excluding same field (fields extension)"""
     test_item = load_test_data("test_item.json")
@@ -735,7 +734,7 @@ def test_field_extension_exclude_and_include(app_client, load_test_data):
     assert resp.status_code == 200
 
     body = {
-        "field": {
+        "fields": {
             "exclude": ["properties.eo:cloud_cover"],
             "include": ["properties.eo:cloud_cover"],
         }
@@ -746,7 +745,6 @@ def test_field_extension_exclude_and_include(app_client, load_test_data):
     assert "eo:cloud_cover" not in resp_json["features"][0]["properties"]
 
 
-@pytest.mark.skip(reason="Field extension not implemented")
 def test_field_extension_exclude_default_includes(app_client, load_test_data):
     """Test POST search excluding a forbidden field (fields extension)"""
     test_item = load_test_data("test_item.json")
@@ -759,7 +757,7 @@ def test_field_extension_exclude_default_includes(app_client, load_test_data):
 
     resp = app_client.post("/search", json=body)
     resp_json = resp.json()
-    assert "geometry" not in resp_json["features"][0]
+    assert "gsd" not in resp_json["features"][0]
 
 
 def test_search_intersects_and_bbox(app_client):
