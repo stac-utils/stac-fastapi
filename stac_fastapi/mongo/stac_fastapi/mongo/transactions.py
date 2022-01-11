@@ -87,11 +87,11 @@ class TransactionsClient(BaseTransactionsClient):
             raise NotFoundError(f"Item {item_id} does not exist")
         self.db.stac_item.delete_one({"id": item_id, "collection": collection_id})
 
-    def delete_collection(self, id: str, **kwargs):
+    def delete_collection(self, collection_id: str, **kwargs):
         """Delete collection."""
-        if self.db.stac_collection.count_documents({"id": id}) == 0:
-            raise NotFoundError(f"Collection {id} does not exist")
-        self.db.stac_collection.delete_one({"id": id})
+        if self.db.stac_collection.count_documents({"id": collection_id}) == 0:
+            raise NotFoundError(f"Collection {collection_id} does not exist")
+        self.db.stac_collection.delete_one({"id": collection_id})
 
 
 # @attr.s
