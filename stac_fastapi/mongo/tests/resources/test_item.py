@@ -182,7 +182,6 @@ def test_returns_valid_item(app_client, load_test_data):
     item.validate()
 
 
-@pytest.mark.skip(reason="Context extension is disabled")
 def test_get_item_collection(app_client, load_test_data):
     """Test read an item collection (core)"""
     item_count = randint(1, 4)
