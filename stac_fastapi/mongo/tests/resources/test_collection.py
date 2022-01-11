@@ -14,7 +14,6 @@ def test_create_and_delete_collection(app_client, load_test_data):
     assert resp.status_code == 200
 
 
-@pytest.mark.skip(reason="this should return 409 not pymongo DuplicateKeyError")
 def test_create_collection_conflict(app_client, load_test_data):
     """Test creation of a collection which already exists"""
     # This collection ID is created in the fixture, so this should be a conflict
