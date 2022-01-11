@@ -11,8 +11,8 @@ from stac_fastapi.extensions.core import (
     FieldsExtension,
     QueryExtension,
     SortExtension,
+    TokenPaginationExtension,
     TransactionExtension,
-    TokenPaginationExtension
 )
 from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.core import CoreCrudClient
