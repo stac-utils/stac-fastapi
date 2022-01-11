@@ -13,7 +13,7 @@ from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.errors import ConflictError, NotFoundError
 
 
 def test_create_collection(
@@ -37,7 +37,7 @@ def test_create_collection_already_exists(
     # change id to avoid mongo duplicate key error
     data["_id"] = str(uuid.uuid4())
 
-    with pytest.raises(pymongo.errors.DuplicateKeyError):
+    with pytest.raises(ConflictError):
         mongo_transactions.create_collection(data, request=MockStarletteRequest)
 
 
@@ -148,7 +148,7 @@ def test_create_item_already_exists(
     item = load_test_data("test_item.json")
     mongo_transactions.create_item(item, request=MockStarletteRequest)
 
-    with pytest.raises(pymongo.errors.DuplicateKeyError):
+    with pytest.raises(ConflictError):
         mongo_transactions.create_item(item, request=MockStarletteRequest)
 
 
