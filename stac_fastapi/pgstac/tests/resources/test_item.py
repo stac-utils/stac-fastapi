@@ -366,6 +366,13 @@ async def test_item_search_spatial_query_post(
     )
     assert resp.status_code == 200
 
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
     params = {
         "collections": [test_item["collection"]],
         "intersects": test_item["geometry"],
@@ -373,6 +380,7 @@ async def test_item_search_spatial_query_post(
     resp = await app_client.post("/search", json=params)
     assert resp.status_code == 200
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
@@ -384,6 +392,13 @@ async def test_item_search_temporal_query_post(
     test_item = load_test_data("test_item.json")
     resp = await app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
     )
     assert resp.status_code == 200
 
@@ -400,6 +415,7 @@ async def test_item_search_temporal_query_post(
     resp = await app_client.post("/search", json=params)
     print(resp.content)
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
@@ -414,6 +430,13 @@ async def test_item_search_temporal_window_post(
     )
     assert resp.status_code == 200
 
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
     item_date = datetime.strptime(test_item["properties"]["datetime"], DATETIME_RFC339)
     item_date_before = item_date - timedelta(seconds=1)
     item_date_after = item_date + timedelta(seconds=1)
@@ -425,6 +448,7 @@ async def test_item_search_temporal_window_post(
     }
     resp = await app_client.post("/search", json=params)
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
@@ -439,6 +463,13 @@ async def test_item_search_temporal_open_window(
     )
     assert resp.status_code == 200
 
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
     params = {
         "collections": [test_item["collection"]],
         "intersects": test_item["geometry"],
@@ -446,6 +477,7 @@ async def test_item_search_temporal_open_window(
     }
     resp = await app_client.post("/search", json=params)
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
@@ -508,6 +540,13 @@ async def test_item_search_bbox_get(app_client, load_test_data, load_test_collec
     )
     assert resp.status_code == 200
 
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
     params = {
         "collections": test_item["collection"],
         "bbox": ",".join([str(coord) for coord in test_item["bbox"]]),
@@ -515,6 +554,7 @@ async def test_item_search_bbox_get(app_client, load_test_data, load_test_collec
     resp = await app_client.get("/search", params=params)
     assert resp.status_code == 200
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
@@ -529,12 +569,20 @@ async def test_item_search_get_without_collections(
     )
     assert resp.status_code == 200
 
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
     params = {
         "bbox": ",".join([str(coord) for coord in test_item["bbox"]]),
     }
     resp = await app_client.get("/search", params=params)
     assert resp.status_code == 200
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
@@ -549,6 +597,13 @@ async def test_item_search_temporal_window_get(
     )
     assert resp.status_code == 200
 
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
     item_date = datetime.strptime(test_item["properties"]["datetime"], DATETIME_RFC339)
     item_date_before = item_date - timedelta(seconds=1)
     item_date_after = item_date + timedelta(seconds=1)
@@ -560,6 +615,7 @@ async def test_item_search_temporal_window_get(
     }
     resp = await app_client.get("/search", params=params)
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
@@ -600,6 +656,12 @@ async def test_item_search_post_without_collection(
     )
     assert resp.status_code == 200
 
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
     params = {
         "bbox": test_item["bbox"],
     }
@@ -617,6 +679,12 @@ async def test_item_search_properties_jsonb(
     test_item = load_test_data("test_item.json")
     resp = await app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
     )
     assert resp.status_code == 200
 
@@ -640,7 +708,13 @@ async def test_item_search_properties_field(
     )
     assert resp.status_code == 200
 
-    params = {"query": {"platform": {"eq": "landsat-8"}}}
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
+    params = {"query": {"eo:cloud_cover": {"eq": 0}}}
     print(params)
     resp = await app_client.post("/search", json=params)
     assert resp.status_code == 200
@@ -656,6 +730,12 @@ async def test_item_search_get_query_extension(
     test_item = load_test_data("test_item.json")
     resp = await app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
     )
     assert resp.status_code == 200
 
@@ -691,6 +771,12 @@ async def test_item_search_get_filter_extension_cql(
     test_item = load_test_data("test_item.json")
     resp = await app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
     )
     assert resp.status_code == 200
 
