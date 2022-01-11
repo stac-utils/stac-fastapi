@@ -156,7 +156,7 @@ class CoreCrudClient(BaseCoreClient):
         bbox: Optional[List[NumType]] = None,
         datetime: Optional[Union[str, datetime]] = None,
         limit: Optional[int] = 10,
-        query: Optional[str] = None,
+        # query: Optional[str] = None,
         token: Optional[str] = None,
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
@@ -273,14 +273,14 @@ class CoreCrudClient(BaseCoreClient):
             queries.update(**date_filter)
 
         # {"gsd": {"eq":16}}
-        if search_request.query:
-            if type(search_request.query) == str:
-                search_request.query = json.loads(search_request.query)
-            for (field_name, expr) in search_request.query.items():
-                field = "properties." + field_name
-                for (op, value) in expr.items():
-                    key_filter = {field: {f"${op}": value}}
-                    queries.update(**key_filter)
+        # if search_request.query:
+        #     if type(search_request.query) == str:
+        #         search_request.query = json.loads(search_request.query)
+        #     for (field_name, expr) in search_request.query.items():
+        #         field = "properties." + field_name
+        #         for (op, value) in expr.items():
+        #             key_filter = {field: {f"${op}": value}}
+        #             queries.update(**key_filter)
 
         exclude_list = []
 
