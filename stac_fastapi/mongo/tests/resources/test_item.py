@@ -796,7 +796,6 @@ def test_search_invalid_query_field(app_client):
     assert resp.status_code == 400
 
 
-@pytest.mark.skip(reason="test fails after merge upstream")
 def test_search_bbox_errors(app_client):
     body = {"query": {"bbox": [0]}}
     resp = app_client.post("/search", json=body)
@@ -806,9 +805,9 @@ def test_search_bbox_errors(app_client):
     resp = app_client.post("/search", json=body)
     assert resp.status_code == 400
 
-    # params = {"bbox": "100.0,0.0,0.0,105.0"}
-    # resp = app_client.get("/search", params=params)
-    # assert resp.status_code == 400
+    params = {"bbox": "100.0,0.0,0.0,105.0"}
+    resp = app_client.get("/search", params=params)
+    assert resp.status_code == 400
 
 
 def test_conformance_classes_configurable():
