@@ -206,12 +206,6 @@ class CoreCrudClient(BaseCoreClient):
 
         return resp
 
-    def _parse_fields(self, fields: dict):
-        field_list = []
-        for field in fields["exclude"]:
-            field_string = "-" + field
-            field_list.append(field_string)
-        return field_list
 
     def post_search(
         self, search_request: BaseSearchPostRequest, **kwargs
