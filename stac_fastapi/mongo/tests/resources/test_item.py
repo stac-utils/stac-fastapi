@@ -684,7 +684,6 @@ def test_pagination_token_idempotent(app_client, load_test_data):
     ]
 
 
-@pytest.mark.skip(reason="Field extension includes not implemented")
 def test_field_extension_get_includes(app_client, load_test_data):
     """Test GET search with included fields (fields extension)"""
     test_item = load_test_data("test_item.json")
@@ -714,7 +713,6 @@ def test_field_extension_get_excludes(app_client, load_test_data):
     assert "gsd" not in resp_json["features"][0]["properties"].keys()
 
 
-@pytest.mark.skip(reason="Field extension include not implemented")
 def test_field_extension_post(app_client, load_test_data):
     """Test POST search with included and excluded fields (fields extension)"""
     test_item = load_test_data("test_item.json")

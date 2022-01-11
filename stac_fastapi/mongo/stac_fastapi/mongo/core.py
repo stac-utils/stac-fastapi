@@ -2,15 +2,18 @@
 import json
 import logging
 from datetime import datetime
-from typing import List, Optional, Type, Union
+from re import search
+from typing import List, Optional, Type, Union, Set
 from urllib.parse import urljoin
 
 import attr
 import pymongo
+import stac_pydantic
 from fastapi import HTTPException
 from pydantic import ValidationError
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
+from stac_fastapi.types.config import Settings
 
 from stac_fastapi.mongo import serializers
 from stac_fastapi.mongo.mongo_config import MongoSettings
@@ -275,15 +278,6 @@ class CoreCrudClient(BaseCoreClient):
                     key_filter = {field: {f"${op}": value}}
                     queries.update(**key_filter)
 
-        # included = {}
-        excluded = {}
-        if self.extension_is_enabled("FieldsExtension"):
-            if search_request.fields:
-                # for field in search_request.fields.include:
-                #     included[field] = True
-                for field in search_request.fields.exclude:
-                    excluded[field] = False
-
         sort_list = []
         if search_request.sortby:
             for sort in search_request.sortby:
@@ -298,7 +292,7 @@ class CoreCrudClient(BaseCoreClient):
             sort_list = [("properties.datetime", pymongo.ASCENDING)]
 
         items = (
-            self.db.stac_item.find(queries, excluded)
+            self.db.stac_item.find(queries)
             .limit(search_request.limit)
             .sort(sort_list)
         )
@@ -310,16 +304,37 @@ class CoreCrudClient(BaseCoreClient):
             item = self.item_serializer.db_to_stac(item, base_url=base_url)
             results.append(item)
 
-        count = None
-        if self.extension_is_enabled("ContextExtension"):
-            count = len(results)
+        # Use pydantic includes/excludes syntax to implement fields extension
+        if self.extension_is_enabled("FieldsExtension"):
+            if search_request.query is not None:
+                query_include: Set[str] = set(
+                    [
+                        k
+                        if k in Settings.get().indexed_fields
+                        else f"properties.{k}"
+                        for k in search_request.query.keys()
+                    ]
+                )
+                if not search_request.fields.include:
+                    search_request.fields.include = query_include
+                else:
+                    search_request.fields.include.union(query_include)
+
+            filter_kwargs = search_request.fields.filter_fields
+            # Need to pass through `.json()` for proper serialization
+            # of datetime
+            results = [
+                json.loads(stac_pydantic.Item(**feat).json(**filter_kwargs))
+                for feat in results
+            ]
 
         context_obj = None
         if self.extension_is_enabled("ContextExtension"):
+            count = len(results)
             context_obj = {
-                "returned": count,
+                "returned": count if count <= 10 else search_request.limit,
                 "limit": search_request.limit,
-                "matched": count,
+                "matched": len(results) or None,
             }
 
         return ItemCollection(
