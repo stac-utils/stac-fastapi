@@ -166,7 +166,7 @@ class CoreCrudClient(BaseCoreClient):
             else:
                 start_date = "1900-10-01T00:00:00Z"
                 end_date = "2200-12-01T12:31:12Z"
-                
+
             return {"properties.datetime": {"$lt": end_date, "$gte": start_date}}
 
     def get_search(

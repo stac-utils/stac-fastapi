@@ -1,5 +1,4 @@
 import pystac
-import pytest
 
 
 def test_create_and_delete_collection(app_client, load_test_data):
