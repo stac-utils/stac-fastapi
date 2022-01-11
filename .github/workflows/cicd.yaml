@@ -16,8 +16,6 @@ jobs:
         env:
           MONGO_INITDB_ROOT_USERNAME: dev
           MONGO_INITDB_ROOT_PASSWORD: stac
-        volumes:
-          - ./mongo_data:/data/db
         ports:
           - 27018:27017
       db_service:
