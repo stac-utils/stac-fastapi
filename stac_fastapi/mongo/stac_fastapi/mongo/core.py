@@ -15,10 +15,9 @@ from stac_pydantic.shared import MimeTypes
 from stac_fastapi.mongo import serializers
 from stac_fastapi.mongo.mongo_config import MongoSettings
 from stac_fastapi.mongo.session import Session
-from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.core import BaseCoreClient
-from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 logger = logging.getLogger(__name__)
@@ -91,9 +90,9 @@ class CoreCrudClient(BaseCoreClient):
         links = []
         response_features = []
         base_url = str(kwargs["request"].base_url)
-        collection_children = self.db.stac_item.find({"collection": collection_id}).sort(
-            [("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)]
-        )
+        collection_children = self.db.stac_item.find(
+            {"collection": collection_id}
+        ).sort([("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)])
         count = None
         if self.extension_is_enabled("ContextExtension"):
             if type(collection_children) == list:

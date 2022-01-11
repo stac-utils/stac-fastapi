@@ -17,14 +17,13 @@ from stac_fastapi.mongo.transactions import (  # BulkTransactionsClient,
     TransactionsClient,
 )
 from stac_fastapi.sqlalchemy.extensions import QueryExtension
-from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
 
 settings = MongoSettings()
 session = Session.create_from_settings(settings)
 
 extensions = [
     TransactionExtension(client=TransactionsClient(session=session), settings=settings),
-    #BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
+    # BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
     FieldsExtension(),
     QueryExtension(),
     SortExtension(),
@@ -39,7 +38,7 @@ api = StacApi(
     extensions=extensions,
     client=CoreCrudClient(session=session, post_request_model=post_request_model),
     search_get_request_model=create_get_request_model(extensions),
-    search_post_request_model=post_request_model
+    search_post_request_model=post_request_model,
 )
 app = api.app
 
