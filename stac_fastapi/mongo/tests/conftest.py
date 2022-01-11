@@ -103,7 +103,7 @@ def api_client():
             FieldsExtension(),
             QueryExtension(),
         ],
-        search_request_model=SQLAlchemySTACSearch,
+        # search_request_model=SQLAlchemySTACSearch,
     )
 
 
