@@ -292,20 +292,26 @@ class CoreCrudClient(BaseCoreClient):
                 if afield[0] == "-":
                     exclude_list.append(afield[1:])
 
-        # sort_list = []
+        sort_list = []
         if search_request.sortby:
             for sort in search_request.sortby:
-                pass
+                if(sort.field == 'datetime'):
+                    sort.field = 'properties.datetime'
+                if(sort.direction == "asc"):
+                    sort.direction = pymongo.ASCENDING
+                else: 
+                    sort.direction = pymongo.DESCENDING
+                sort_list.append((sort.field, sort.direction))
+        else:
+            sort_list = [
+                ("properties.datetime", pymongo.ASCENDING)
+            ]
 
-        items = []
         items = (
             self.db.stac_item.find(queries)
             .limit(search_request.limit)
             .sort(
-                [
-                    ("properties.datetime", pymongo.DESCENDING),
-                    ("id", pymongo.DESCENDING),
-                ]
+                    sort_list
             )
         )
 
