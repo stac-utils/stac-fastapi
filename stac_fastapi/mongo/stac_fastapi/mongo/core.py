@@ -100,7 +100,6 @@ class CoreCrudClient(BaseCoreClient):
             if type(collection_children) == list:
                 count = len(collection_children)
 
-        context_obj = None
         if self.extension_is_enabled("ContextExtension"):
             context_obj = {
                 "returned": count,
@@ -111,6 +110,15 @@ class CoreCrudClient(BaseCoreClient):
             response_features.append(
                 self.item_serializer.db_to_stac(item, base_url=base_url)
             )
+
+        context_obj = None
+        if self.extension_is_enabled("ContextExtension"):
+            count = len(response_features)
+            context_obj = {
+                "returned": count if count <= 10 else limit,
+                "limit": limit,
+                "matched": len(response_features) or None,
+            }
 
         return ItemCollection(
             type="FeatureCollection",
@@ -160,7 +168,7 @@ class CoreCrudClient(BaseCoreClient):
                 end_date = "2200-12-01T12:31:12Z"
                 
             return {"properties.datetime": {"$lt": end_date, "$gte": start_date}}
-            
+
     def get_search(
         self,
         collections: Optional[List[str]] = None,
