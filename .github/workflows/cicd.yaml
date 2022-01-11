@@ -21,7 +21,7 @@ jobs:
           - ./mongo_data:/data/db
         ports:
           - "27018:27017"
-    command: mongod
+        command: mongod
       db_service:
         image: bitner/pgstac:0.2.7
         env:
