@@ -9,6 +9,7 @@
 * Refactor to remove hardcoded search request models. Request models are now dynamically created based on the enabled extensions.
   ([#213](https://github.com/stac-utils/stac-fastapi/pull/213))
 * Changed the geometry type in the Item model from Polygon to Geometry.
+* Upgrade pgstac backend to use version 0.4.2 ([#321](https://github.com/stac-utils/stac-fastapi/pull/321))
 
 ### Removed
 
