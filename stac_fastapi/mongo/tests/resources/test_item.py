@@ -13,7 +13,7 @@ from pydantic.datetime_parse import parse_datetime
 from shapely.geometry import Polygon
 from stac_pydantic.shared import DATETIME_RFC339
 
-from stac_fastapi.sqlalchemy.core import CoreCrudClient
+from stac_fastapi.mongo.core import CoreCrudClient
 from stac_fastapi.types.core import LandingPageMixin
 
 

@@ -7,9 +7,9 @@ from stac_pydantic import Item
 from tests.conftest import MockStarletteRequest
 
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.sqlalchemy.core import CoreCrudClient
-from stac_fastapi.sqlalchemy.transactions import (
-    BulkTransactionsClient,
+from stac_fastapi.mongo.core import CoreCrudClient
+from stac_fastapi.mongo.transactions import (
+    # BulkTransactionsClient,
     TransactionsClient,
 )
 from stac_fastapi.types.errors import ConflictError, NotFoundError
@@ -216,7 +216,7 @@ def test_delete_item(
 def test_bulk_item_insert(
     mongo_core: CoreCrudClient,
     mongo_transactions: TransactionsClient,
-    mongo_bulk_transactions: BulkTransactionsClient,
+    # mongo_bulk_transactions: BulkTransactionsClient,
     load_test_data: Callable,
 ):
     coll = load_test_data("test_collection.json")
@@ -247,7 +247,7 @@ def test_bulk_item_insert(
 @pytest.mark.skip(reason="Bulk transactions not implemented yet")
 def test_bulk_item_insert_chunked(
     mongo_transactions: TransactionsClient,
-    mongo_bulk_transactions: BulkTransactionsClient,
+    # mongo_bulk_transactions: BulkTransactionsClient,
     load_test_data: Callable,
 ):
     coll = load_test_data("test_collection.json")
