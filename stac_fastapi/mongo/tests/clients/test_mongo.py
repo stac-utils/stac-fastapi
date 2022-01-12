@@ -8,8 +8,7 @@ from tests.conftest import MockStarletteRequest
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.mongo.core import CoreCrudClient
-from stac_fastapi.mongo.transactions import (
-    # BulkTransactionsClient,
+from stac_fastapi.mongo.transactions import (  # BulkTransactionsClient,
     TransactionsClient,
 )
 from stac_fastapi.types.errors import ConflictError, NotFoundError
@@ -233,7 +232,7 @@ def test_bulk_item_insert(
     fc = mongo_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) == 0
 
-    mongo_bulk_transactions.bulk_item_insert(items=items)
+    # mongo_bulk_transactions.bulk_item_insert(items=items)
 
     fc = mongo_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) == 10
@@ -261,7 +260,7 @@ def test_bulk_item_insert_chunked(
         _item["id"] = str(uuid.uuid4())
         items.append(_item)
 
-    mongo_bulk_transactions.bulk_item_insert(items=items, chunk_size=2)
+    # mongo_bulk_transactions.bulk_item_insert(items=items, chunk_size=2)
 
     for item in items:
         mongo_transactions.delete_item(

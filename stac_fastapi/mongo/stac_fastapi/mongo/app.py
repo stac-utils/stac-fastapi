@@ -12,11 +12,11 @@ from stac_fastapi.extensions.core import (
 # from stac_fastapi.extensions.third_party import BulkTransactionExtension
 from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.core import CoreCrudClient
+from stac_fastapi.mongo.extensions import QueryExtension
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.mongo.transactions import (  # BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_fastapi.mongo.extensions import QueryExtension
 
 settings = MongoSettings()
 session = Session.create_from_settings(settings)
