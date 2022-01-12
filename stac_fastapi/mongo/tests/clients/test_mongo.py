@@ -8,10 +8,7 @@ from tests.conftest import MockStarletteRequest
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.mongo.core import CoreCrudClient
-from stac_fastapi.mongo.transactions import (  
-    BulkTransactionsClient,
-    TransactionsClient,
-)
+from stac_fastapi.mongo.transactions import BulkTransactionsClient, TransactionsClient
 from stac_fastapi.types.errors import ConflictError, NotFoundError
 
 

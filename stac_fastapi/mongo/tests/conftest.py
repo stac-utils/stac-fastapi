@@ -12,12 +12,12 @@ from stac_fastapi.extensions.core import (
     FieldsExtension,
     SortExtension,
     TokenPaginationExtension,
-    TransactionExtension
+    TransactionExtension,
 )
 from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.core import CoreCrudClient
 from stac_fastapi.mongo.extensions import QueryExtension
-from stac_fastapi.mongo.transactions import TransactionsClient, BulkTransactionsClient
+from stac_fastapi.mongo.transactions import BulkTransactionsClient, TransactionsClient
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 

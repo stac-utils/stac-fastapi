@@ -8,7 +8,7 @@ from stac_pydantic.shared import DATETIME_RFC339
 
 from stac_fastapi.extensions.third_party.bulk_transactions import (
     BaseBulkTransactionsClient,
-    Items
+    Items,
 )
 from stac_fastapi.mongo.mongo_config import MongoSettings
 from stac_fastapi.mongo.serializers import ItemSerializer
@@ -149,16 +149,14 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
                 model["properties"]["created"] = str(now)
             return model
 
-    def bulk_item_insert(
-        self, items: Items, **kwargs
-    ) -> str:
+    def bulk_item_insert(self, items: Items, **kwargs) -> str:
         """Bulk item insertion using mongodb and pymongo."""
         try:
             base_url = str(kwargs["request"].base_url)
-        except:
+        except Exception:
             base_url = ""
         processed_items = [self._preprocess_item(item, base_url) for item in items]
         return_msg = f"Successfully added {len(processed_items)} items."
-   
+
         self.db.stac_item.insert_many(processed_items)
         return return_msg
