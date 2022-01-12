@@ -12,7 +12,7 @@ from stac_fastapi.mongo.mongo_config import MongoSettings
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import BaseTransactionsClient
-from stac_fastapi.types.errors import ConflictError, NotFoundError, ForeignKeyError
+from stac_fastapi.types.errors import ConflictError, ForeignKeyError, NotFoundError
 from stac_fastapi.types.links import CollectionLinks, ItemLinks
 
 logger = logging.getLogger(__name__)
@@ -36,9 +36,7 @@ class TransactionsClient(BaseTransactionsClient):
         if not self.db.stac_collection.count_documents(
             {"id": model["collection"]}, limit=1
         ):
-            raise ForeignKeyError(
-                f"Collection {model['collection']} does not exist"
-            )
+            raise ForeignKeyError(f"Collection {model['collection']} does not exist")
 
         if self.db.stac_item.count_documents(
             {"id": model["id"], "collection": model["collection"]}, limit=1
@@ -67,9 +65,7 @@ class TransactionsClient(BaseTransactionsClient):
         if not self.db.stac_collection.count_documents(
             {"id": model["collection"]}, limit=1
         ):
-            raise ForeignKeyError(
-                f"Collection {model['collection']} does not exist"
-            )
+            raise ForeignKeyError(f"Collection {model['collection']} does not exist")
 
         if (
             self.db.stac_item.count_documents(
