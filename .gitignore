@@ -35,6 +35,7 @@ tests/logging.ini
 # Distribution / packaging
 .Python
 env/
+venv/
 build/
 develop-eggs/
 dist/
@@ -106,7 +107,7 @@ celerybeat-schedule
 *.sage.py
 
 # dotenv
-.env
+**/.env
 
 # Spyder project settings
 .spyderproject
