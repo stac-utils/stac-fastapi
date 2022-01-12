@@ -3,13 +3,12 @@ import os
 import time
 import uuid
 from copy import deepcopy
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from random import randint
 from urllib.parse import parse_qs, urlparse, urlsplit
 
 import pystac
 import pytest
-from pydantic.datetime_parse import parse_datetime
 from shapely.geometry import Polygon
 from stac_pydantic.shared import DATETIME_RFC339
 
@@ -230,7 +229,7 @@ def test_item_timestamps(app_client, load_test_data):
     """Test created and updated timestamps (common metadata)"""
     test_item = load_test_data("test_item.json")
     # start_time = datetime.now(timezone.utc)
-    start_time= datetime.utcnow().strftime(DATETIME_RFC339)
+    start_time = datetime.utcnow().strftime(DATETIME_RFC339)
     time.sleep(2)
     # Confirm `created` timestamp
     resp = app_client.post(
@@ -240,7 +239,9 @@ def test_item_timestamps(app_client, load_test_data):
     created_dt = item["properties"]["created"]
     time.sleep(2)
     assert resp.status_code == 200
-    assert str(start_time) < created_dt < str(datetime.utcnow().strftime(DATETIME_RFC339))
+    assert (
+        str(start_time) < created_dt < str(datetime.utcnow().strftime(DATETIME_RFC339))
+    )
 
     time.sleep(2)
     # Confirm `updated` timestamp
