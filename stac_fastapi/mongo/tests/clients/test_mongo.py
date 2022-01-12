@@ -8,7 +8,8 @@ from tests.conftest import MockStarletteRequest
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.mongo.core import CoreCrudClient
-from stac_fastapi.mongo.transactions import (  # BulkTransactionsClient,
+from stac_fastapi.mongo.transactions import (  
+    BulkTransactionsClient,
     TransactionsClient,
 )
 from stac_fastapi.types.errors import ConflictError, NotFoundError
@@ -211,11 +212,10 @@ def test_delete_item(
         )
 
 
-@pytest.mark.skip(reason="Bulk transactions not implemented yet")
 def test_bulk_item_insert(
     mongo_core: CoreCrudClient,
     mongo_transactions: TransactionsClient,
-    # mongo_bulk_transactions: BulkTransactionsClient,
+    mongo_bulk_transactions: BulkTransactionsClient,
     load_test_data: Callable,
 ):
     coll = load_test_data("test_collection.json")
@@ -232,35 +232,10 @@ def test_bulk_item_insert(
     fc = mongo_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) == 0
 
-    # mongo_bulk_transactions.bulk_item_insert(items=items)
+    mongo_bulk_transactions.bulk_item_insert(items=items)
 
     fc = mongo_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) == 10
-
-    for item in items:
-        mongo_transactions.delete_item(
-            item["id"], item["collection"], request=MockStarletteRequest
-        )
-
-
-@pytest.mark.skip(reason="Bulk transactions not implemented yet")
-def test_bulk_item_insert_chunked(
-    mongo_transactions: TransactionsClient,
-    # mongo_bulk_transactions: BulkTransactionsClient,
-    load_test_data: Callable,
-):
-    coll = load_test_data("test_collection.json")
-    mongo_transactions.create_collection(coll, request=MockStarletteRequest)
-
-    item = load_test_data("test_item.json")
-
-    items = []
-    for _ in range(10):
-        _item = deepcopy(item)
-        _item["id"] = str(uuid.uuid4())
-        items.append(_item)
-
-    # mongo_bulk_transactions.bulk_item_insert(items=items, chunk_size=2)
 
     for item in items:
         mongo_transactions.delete_item(
