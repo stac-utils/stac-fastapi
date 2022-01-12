@@ -206,8 +206,10 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             "token": token,
             "query": json.loads(query) if query else query,
         }
+
         if datetime:
             base_args["datetime"] = datetime
+
         if sortby:
             # https://github.com/radiantearth/stac-spec/tree/master/api-spec/extensions/sort#http-get-or-post-form
             sort_param = []
