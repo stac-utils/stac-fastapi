@@ -2,11 +2,12 @@
 import json
 import logging
 from datetime import datetime
-from typing import List, Optional, Type, Union
+from typing import List, Optional, Set, Type, Union
 from urllib.parse import urljoin
 
 import attr
 import pymongo
+import stac_pydantic
 from fastapi import HTTPException
 from pydantic import ValidationError
 from stac_pydantic.links import Relations
@@ -15,9 +16,10 @@ from stac_pydantic.shared import MimeTypes
 from stac_fastapi.mongo import serializers
 from stac_fastapi.mongo.mongo_config import MongoSettings
 from stac_fastapi.mongo.session import Session
-from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
+from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 logger = logging.getLogger(__name__)
@@ -73,9 +75,9 @@ class CoreCrudClient(BaseCoreClient):
         )
         return collection_list
 
-    def get_collection(self, id: str, **kwargs) -> Collection:
+    def get_collection(self, collection_id: str, **kwargs) -> Collection:
         """Get collection by id."""
-        collection = self.db.stac_collection.find_one({"id": id})
+        collection = self.db.stac_collection.find_one({"id": collection_id})
         base_url = str(kwargs["request"].base_url)
 
         if not collection:
@@ -84,21 +86,20 @@ class CoreCrudClient(BaseCoreClient):
         return self.collection_serializer.db_to_stac(collection, base_url)
 
     def item_collection(
-        self, id: str, limit: int = 10, token: str = None, **kwargs
+        self, collection_id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
         """Read an item collection from the database."""
         links = []
         response_features = []
         base_url = str(kwargs["request"].base_url)
-        collection_children = self.db.stac_item.find({"collection": id}).sort(
-            [("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)]
-        )
+        collection_children = self.db.stac_item.find(
+            {"collection": collection_id}
+        ).sort([("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)])
         count = None
         if self.extension_is_enabled("ContextExtension"):
             if type(collection_children) == list:
                 count = len(collection_children)
 
-        context_obj = None
         if self.extension_is_enabled("ContextExtension"):
             context_obj = {
                 "returned": count,
@@ -109,6 +110,15 @@ class CoreCrudClient(BaseCoreClient):
             response_features.append(
                 self.item_serializer.db_to_stac(item, base_url=base_url)
             )
+
+        context_obj = None
+        if self.extension_is_enabled("ContextExtension"):
+            count = len(response_features)
+            context_obj = {
+                "returned": count if count <= 10 else limit,
+                "limit": limit,
+                "matched": len(response_features) or None,
+            }
 
         return ItemCollection(
             type="FeatureCollection",
@@ -140,14 +150,24 @@ class CoreCrudClient(BaseCoreClient):
         return poly
 
     def _return_date(self, datetime):
-        x = datetime.split("/")
-        start_date = x[0]
-        end_date = x[1]
-        if start_date == "..":
-            start_date = "1900-10-01T00:00:00Z"
-        if end_date == "..":
-            end_date = "2200-12-01T12:31:12Z"
-        return {"properties.datetime": {"$lt": end_date, "$gte": start_date}}
+        datetime = datetime.split("/")
+        if len(datetime) == 1:
+            datetime = datetime[0][0:19] + "Z"
+            return {"properties.datetime": {"$eq": datetime}}
+        else:
+            start_date = datetime[0]
+            end_date = datetime[1]
+            if start_date != "..":
+                start_date = datetime[0][0:19] + "Z"
+                end_date = "2200-12-01T12:31:12Z"
+            elif end_date != "..":
+                start_date = "1900-10-01T00:00:00Z"
+                end_date = datetime[1][0:19] + "Z"
+            else:
+                start_date = "1900-10-01T00:00:00Z"
+                end_date = "2200-12-01T12:31:12Z"
+
+            return {"properties.datetime": {"$lt": end_date, "$gte": start_date}}
 
     def get_search(
         self,
@@ -199,22 +219,15 @@ class CoreCrudClient(BaseCoreClient):
 
         # Do the request
         try:
-            search_request = SQLAlchemySTACSearch(**base_args)
+            search_request = self.post_request_model(**base_args)
         except ValidationError:
             raise HTTPException(status_code=400, detail="Invalid parameters provided")
         resp = self.post_search(search_request, request=kwargs["request"])
 
         return resp
 
-    def _parse_fields(self, fields: dict):
-        field_list = []
-        for field in fields["exclude"]:
-            field_string = "-" + field
-            field_list.append(field_string)
-        return field_list
-
     def post_search(
-        self, search_request: SQLAlchemySTACSearch, **kwargs
+        self, search_request: BaseSearchPostRequest, **kwargs
     ) -> ItemCollection:
         """POST search catalog."""
         base_url = str(kwargs["request"].base_url)
@@ -282,31 +295,21 @@ class CoreCrudClient(BaseCoreClient):
                     key_filter = {field: {f"${op}": value}}
                     queries.update(**key_filter)
 
-        exclude_list = []
-
-        # if search_request.field:
-        #     search_request.fields = self._parse_fields(search_request.field)
-
-        if search_request.field:
-            for afield in search_request.field:
-                if afield[0] == "-":
-                    exclude_list.append(afield[1:])
-
-        # sort_list = []
+        sort_list = []
         if search_request.sortby:
             for sort in search_request.sortby:
-                pass
+                if sort.field == "datetime":
+                    sort.field = "properties.datetime"
+                if sort.direction == "asc":
+                    sort.direction = pymongo.ASCENDING
+                else:
+                    sort.direction = pymongo.DESCENDING
+                sort_list.append((sort.field, sort.direction))
+        else:
+            sort_list = [("properties.datetime", pymongo.ASCENDING)]
 
-        items = []
         items = (
-            self.db.stac_item.find(queries)
-            .limit(search_request.limit)
-            .sort(
-                [
-                    ("properties.datetime", pymongo.DESCENDING),
-                    ("id", pymongo.DESCENDING),
-                ]
-            )
+            self.db.stac_item.find(queries).limit(search_request.limit).sort(sort_list)
         )
 
         results = []
@@ -314,21 +317,37 @@ class CoreCrudClient(BaseCoreClient):
 
         for item in items:
             item = self.item_serializer.db_to_stac(item, base_url=base_url)
-            if search_request.field:
-                for key in exclude_list:
-                    item.pop(key)
             results.append(item)
 
-        count = None
-        if self.extension_is_enabled("ContextExtension"):
-            count = len(results)
+        # Use pydantic includes/excludes syntax to implement fields extension
+        if self.extension_is_enabled("FieldsExtension"):
+            if search_request.query is not None:
+                query_include: Set[str] = set(
+                    [
+                        k if k in Settings.get().indexed_fields else f"properties.{k}"
+                        for k in search_request.query.keys()
+                    ]
+                )
+                if not search_request.fields.include:
+                    search_request.fields.include = query_include
+                else:
+                    search_request.fields.include.union(query_include)
+
+            filter_kwargs = search_request.fields.filter_fields
+            # Need to pass through `.json()` for proper serialization
+            # of datetime
+            results = [
+                json.loads(stac_pydantic.Item(**feat).json(**filter_kwargs))
+                for feat in results
+            ]
 
         context_obj = None
         if self.extension_is_enabled("ContextExtension"):
+            count = len(results)
             context_obj = {
-                "returned": count,
+                "returned": count if count <= 10 else search_request.limit,
                 "limit": search_request.limit,
-                "matched": count,
+                "matched": len(results) or None,
             }
 
         return ItemCollection(

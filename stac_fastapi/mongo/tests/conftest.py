@@ -6,18 +6,20 @@ import pytest
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
+from stac_fastapi.api.models import create_request_model
 from stac_fastapi.extensions.core import (
     ContextExtension,
     FieldsExtension,
-    QueryExtension,
     SortExtension,
+    TokenPaginationExtension,
     TransactionExtension,
 )
 from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.core import CoreCrudClient
+from stac_fastapi.mongo.extensions import QueryExtension
 from stac_fastapi.mongo.transactions import TransactionsClient
-from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
+from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
@@ -91,19 +93,41 @@ def mongo_transactions():
 @pytest.fixture
 def api_client():
     settings = MongoSettings()
+    extensions = [
+        TransactionExtension(
+            client=TransactionsClient(session=None), settings=settings
+        ),
+        ContextExtension(),
+        SortExtension(),
+        FieldsExtension(),
+        QueryExtension(),
+        TokenPaginationExtension(),
+    ]
+
+    get_request_model = create_request_model(
+        "SearchGetRequest",
+        base_model=BaseSearchGetRequest,
+        extensions=extensions,
+        request_type="GET",
+    )
+
+    post_request_model = create_request_model(
+        "SearchPostRequest",
+        base_model=BaseSearchPostRequest,
+        extensions=extensions,
+        request_type="POST",
+    )
+
     return StacApi(
         settings=settings,
-        client=CoreCrudClient(session=None),
-        extensions=[
-            TransactionExtension(
-                client=TransactionsClient(session=None), settings=settings
-            ),
-            ContextExtension(),
-            SortExtension(),
-            FieldsExtension(),
-            QueryExtension(),
-        ],
-        search_request_model=SQLAlchemySTACSearch,
+        client=CoreCrudClient(
+            session=None,
+            extensions=extensions,
+            post_request_model=post_request_model,
+        ),
+        extensions=extensions,
+        search_get_request_model=get_request_model,
+        search_post_request_model=post_request_model,
     )
 
 

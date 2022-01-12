@@ -1,3 +1,3 @@
 # Requirements
 
-The SQLAlchemy backend requires **PostGIS>=3**.
+The Mongo backend requires **mongodb**.

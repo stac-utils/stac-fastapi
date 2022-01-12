@@ -1,8 +1,9 @@
 """FastAPI application."""
 from stac_fastapi.api.app import StacApi
+from stac_fastapi.api.models import create_get_request_model, create_post_request_model
 from stac_fastapi.extensions.core import (
+    ContextExtension,
     FieldsExtension,
-    QueryExtension,
     SortExtension,
     TokenPaginationExtension,
     TransactionExtension,
@@ -11,28 +12,33 @@ from stac_fastapi.extensions.core import (
 # from stac_fastapi.extensions.third_party import BulkTransactionExtension
 from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.core import CoreCrudClient
+from stac_fastapi.mongo.extensions import QueryExtension
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.mongo.transactions import (  # BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
 
 settings = MongoSettings()
 session = Session.create_from_settings(settings)
+
+extensions = [
+    TransactionExtension(client=TransactionsClient(session=session), settings=settings),
+    # BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
+    FieldsExtension(),
+    QueryExtension(),
+    SortExtension(),
+    TokenPaginationExtension(),
+    ContextExtension(),
+]
+
+post_request_model = create_post_request_model(extensions)
+
 api = StacApi(
     settings=settings,
-    extensions=[
-        TransactionExtension(
-            client=TransactionsClient(session=session), settings=settings
-        ),
-        # BulkTransactionExtension(client=BulkTransactionsClient(session=session)),
-        TokenPaginationExtension(),
-        FieldsExtension(),
-        QueryExtension(),
-        SortExtension(),
-    ],
-    client=CoreCrudClient(session=session),
-    search_request_model=SQLAlchemySTACSearch,
+    extensions=extensions,
+    client=CoreCrudClient(session=session, post_request_model=post_request_model),
+    search_get_request_model=create_get_request_model(extensions),
+    search_post_request_model=post_request_model,
 )
 app = api.app
 

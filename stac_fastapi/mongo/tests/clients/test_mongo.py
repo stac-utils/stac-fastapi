@@ -2,18 +2,16 @@ import uuid
 from copy import deepcopy
 from typing import Callable
 
-import pymongo
 import pytest
 from stac_pydantic import Item
 from tests.conftest import MockStarletteRequest
 
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.sqlalchemy.core import CoreCrudClient
-from stac_fastapi.sqlalchemy.transactions import (
-    BulkTransactionsClient,
+from stac_fastapi.mongo.core import CoreCrudClient
+from stac_fastapi.mongo.transactions import (  # BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.errors import ConflictError, NotFoundError
 
 
 def test_create_collection(
@@ -37,7 +35,7 @@ def test_create_collection_already_exists(
     # change id to avoid mongo duplicate key error
     data["_id"] = str(uuid.uuid4())
 
-    with pytest.raises(pymongo.errors.DuplicateKeyError):
+    with pytest.raises(ConflictError):
         mongo_transactions.create_collection(data, request=MockStarletteRequest)
 
 
@@ -148,7 +146,7 @@ def test_create_item_already_exists(
     item = load_test_data("test_item.json")
     mongo_transactions.create_item(item, request=MockStarletteRequest)
 
-    with pytest.raises(pymongo.errors.DuplicateKeyError):
+    with pytest.raises(ConflictError):
         mongo_transactions.create_item(item, request=MockStarletteRequest)
 
 
@@ -217,7 +215,7 @@ def test_delete_item(
 def test_bulk_item_insert(
     mongo_core: CoreCrudClient,
     mongo_transactions: TransactionsClient,
-    mongo_bulk_transactions: BulkTransactionsClient,
+    # mongo_bulk_transactions: BulkTransactionsClient,
     load_test_data: Callable,
 ):
     coll = load_test_data("test_collection.json")
@@ -234,7 +232,7 @@ def test_bulk_item_insert(
     fc = mongo_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) == 0
 
-    mongo_bulk_transactions.bulk_item_insert(items=items)
+    # mongo_bulk_transactions.bulk_item_insert(items=items)
 
     fc = mongo_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) == 10
@@ -248,7 +246,7 @@ def test_bulk_item_insert(
 @pytest.mark.skip(reason="Bulk transactions not implemented yet")
 def test_bulk_item_insert_chunked(
     mongo_transactions: TransactionsClient,
-    mongo_bulk_transactions: BulkTransactionsClient,
+    # mongo_bulk_transactions: BulkTransactionsClient,
     load_test_data: Callable,
 ):
     coll = load_test_data("test_collection.json")
@@ -262,7 +260,7 @@ def test_bulk_item_insert_chunked(
         _item["id"] = str(uuid.uuid4())
         items.append(_item)
 
-    mongo_bulk_transactions.bulk_item_insert(items=items, chunk_size=2)
+    # mongo_bulk_transactions.bulk_item_insert(items=items, chunk_size=2)
 
     for item in items:
         mongo_transactions.delete_item(

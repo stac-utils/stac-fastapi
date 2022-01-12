@@ -32,6 +32,7 @@ packages:
 #### Backends
 - **stac_fastapi.sqlalchemy**: Postgres backend implementation with sqlalchemy.
 - **stac_fastapi.pgstac**: Postgres backend implementation with [PGStac](https://github.com/stac-utils/pgstac).
+- **stac_fastapi.mongo**: Nosql mongodb backend implementation with pymongo.
 
 `stac-fastapi` was initially developed by [arturo-ai](https://github.com/arturo-ai).
 
@@ -59,6 +60,8 @@ pip install \
 pip install -e stac_fastapi/sqlalchemy
 # or
 pip install -e stac_fastapi/pgstac
+# or
+pip install -e stac_fastapi/mongo
 ```
 
 ## Local Development
@@ -71,6 +74,8 @@ docker-compose up
 docker-compose up app-sqlalchemy
 # or
 docker-compose up app-pgstac
+# or
+docker-compose -f docker-compose.mongo.yml up
 ```
 
 For local development it is often more convenient to run the application outside of docker-compose:
