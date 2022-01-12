@@ -226,20 +226,21 @@ def test_pagination(app_client, load_test_data):
     assert second_page["context"]["returned"] == 3
 
 
-@pytest.mark.skip(reason="created, updated need more work")
 def test_item_timestamps(app_client, load_test_data):
     """Test created and updated timestamps (common metadata)"""
     test_item = load_test_data("test_item.json")
-    start_time = datetime.now(timezone.utc)
+    # start_time = datetime.now(timezone.utc)
+    start_time= datetime.utcnow().strftime(DATETIME_RFC339)
     time.sleep(2)
     # Confirm `created` timestamp
     resp = app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
     item = resp.json()
-    created_dt = parse_datetime(item["properties"]["created"])
+    created_dt = item["properties"]["created"]
+    time.sleep(2)
     assert resp.status_code == 200
-    assert start_time < created_dt < datetime.now(timezone.utc)
+    assert str(start_time) < created_dt < str(datetime.utcnow().strftime(DATETIME_RFC339))
 
     time.sleep(2)
     # Confirm `updated` timestamp
@@ -250,7 +251,7 @@ def test_item_timestamps(app_client, load_test_data):
 
     # Created shouldn't change on update
     assert item["properties"]["created"] == updated_item["properties"]["created"]
-    assert parse_datetime(updated_item["properties"]["updated"]) > created_dt
+    assert updated_item["properties"]["updated"] > created_dt
 
 
 def test_item_search_by_id_post(app_client, load_test_data):
