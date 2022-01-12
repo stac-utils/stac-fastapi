@@ -12,12 +12,12 @@ from stac_fastapi.extensions.core import (
     FieldsExtension,
     SortExtension,
     TokenPaginationExtension,
-    TransactionExtension,
+    TransactionExtension
 )
 from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.core import CoreCrudClient
 from stac_fastapi.mongo.extensions import QueryExtension
-from stac_fastapi.mongo.transactions import TransactionsClient
+from stac_fastapi.mongo.transactions import TransactionsClient, BulkTransactionsClient
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 
@@ -85,9 +85,9 @@ def mongo_transactions():
     return TransactionsClient(session=None)
 
 
-# @pytest.fixture
-# def postgres_bulk_transactions(db_session):
-#     return BulkTransactionsClient(session=db_session)
+@pytest.fixture
+def mongo_bulk_transactions():
+    return BulkTransactionsClient(session=None)
 
 
 @pytest.fixture
