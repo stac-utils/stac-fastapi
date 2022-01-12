@@ -1,14 +1,17 @@
 """transactions extension client."""
 
 import logging
+from datetime import datetime
 
 import attr
+from stac_pydantic.shared import DATETIME_RFC339
 
 # from stac_fastapi.extensions.third_party.bulk_transactions import (
 #     BaseBulkTransactionsClient,
 #     Items,
 # )
 from stac_fastapi.mongo.mongo_config import MongoSettings
+from stac_fastapi.mongo.serializers import ItemSerializer
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import BaseTransactionsClient
@@ -45,7 +48,11 @@ class TransactionsClient(BaseTransactionsClient):
                 f"Item {model['id']} in collection {model['collection']} already exists"
             )
         else:
+            now = datetime.utcnow().strftime(DATETIME_RFC339)
+            if "created" not in model["properties"]:
+                model["properties"]["created"] = str(now)
             self.db.stac_item.insert_one(model)
+            return ItemSerializer.db_to_stac(model, base_url)
 
     def create_collection(self, model: stac_types.Collection, **kwargs):
         """Create collection."""
@@ -62,6 +69,7 @@ class TransactionsClient(BaseTransactionsClient):
 
     def update_item(self, model: stac_types.Item, **kwargs):
         """Update item."""
+        base_url = str(kwargs["request"].base_url)
         if not self.db.stac_collection.count_documents(
             {"id": model["collection"]}, limit=1
         ):
@@ -77,7 +85,10 @@ class TransactionsClient(BaseTransactionsClient):
                 f"Item {model['id']} in collection {model['collection']} not found"
             )
         self.delete_item(item_id=model["id"], collection_id=model["collection"])
+        now = datetime.utcnow().strftime(DATETIME_RFC339)
+        model["properties"]["updated"] = str(now)
         self.create_item(model, **kwargs)
+        return ItemSerializer.db_to_stac(model, base_url)
 
     def update_collection(self, model: stac_types.Collection, **kwargs):
         """Update collection."""
