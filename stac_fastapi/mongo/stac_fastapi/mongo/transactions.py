@@ -12,7 +12,7 @@ from stac_fastapi.mongo.mongo_config import MongoSettings
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import BaseTransactionsClient
-from stac_fastapi.types.errors import ConflictError, NotFoundError
+from stac_fastapi.types.errors import ConflictError, NotFoundError, ForeignKeyError
 from stac_fastapi.types.links import CollectionLinks, ItemLinks
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,13 @@ class TransactionsClient(BaseTransactionsClient):
             collection_id=model["collection"], item_id=model["id"], base_url=base_url
         ).create_links()
         model["links"] = item_links
+
+        if not self.db.stac_collection.count_documents(
+            {"id": model["collection"]}, limit=1
+        ):
+            raise ForeignKeyError(
+                f"Collection {model['collection']} does not exist"
+            )
 
         if self.db.stac_item.count_documents(
             {"id": model["id"], "collection": model["collection"]}, limit=1
@@ -57,6 +64,13 @@ class TransactionsClient(BaseTransactionsClient):
 
     def update_item(self, model: stac_types.Item, **kwargs):
         """Update item."""
+        if not self.db.stac_collection.count_documents(
+            {"id": model["collection"]}, limit=1
+        ):
+            raise ForeignKeyError(
+                f"Collection {model['collection']} does not exist"
+            )
+
         if (
             self.db.stac_item.count_documents(
                 {"id": model["id"], "collection": model["collection"]}
