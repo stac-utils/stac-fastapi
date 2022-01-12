@@ -16,10 +16,8 @@ from stac_fastapi.extensions.core import (
 )
 from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.core import CoreCrudClient
+from stac_fastapi.mongo.extensions import QueryExtension
 from stac_fastapi.mongo.transactions import TransactionsClient
-from stac_fastapi.sqlalchemy.extensions import QueryExtension
-
-# from stac_fastapi.mongo.types.search import SQLAlchemySTACSearch
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 
