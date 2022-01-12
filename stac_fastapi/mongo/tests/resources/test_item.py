@@ -62,7 +62,6 @@ def test_delete_missing_item(app_client, load_test_data):
     assert resp.status_code == 404
 
 
-@pytest.mark.skip(reason="This should not return 200")
 def test_create_item_missing_collection(app_client, load_test_data):
     """Test creation of an item without a parent collection (transactions extension)"""
     test_item = load_test_data("test_item.json")
@@ -100,9 +99,6 @@ def test_update_new_item(app_client, load_test_data):
     assert resp.status_code == 404
 
 
-@pytest.mark.skip(
-    reason="This should work when items are checked for parent collections"
-)
 def test_update_item_missing_collection(app_client, load_test_data):
     """Test updating an item without a parent collection (transactions extension)"""
     test_item = load_test_data("test_item.json")
