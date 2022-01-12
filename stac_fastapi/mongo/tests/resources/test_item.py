@@ -228,7 +228,6 @@ def test_pagination(app_client, load_test_data):
 def test_item_timestamps(app_client, load_test_data):
     """Test created and updated timestamps (common metadata)"""
     test_item = load_test_data("test_item.json")
-    # start_time = datetime.now(timezone.utc)
     start_time = datetime.utcnow().strftime(DATETIME_RFC339)
     time.sleep(2)
     # Confirm `created` timestamp
