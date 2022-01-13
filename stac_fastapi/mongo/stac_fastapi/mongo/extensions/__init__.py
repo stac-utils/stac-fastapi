@@ -1,4 +1,4 @@
-"""sqlalchemy extensions modifications."""
+"""mongo extensions modifications."""
 
 from .query import Operator, QueryableTypes, QueryExtension
 
