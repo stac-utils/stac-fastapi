@@ -45,7 +45,10 @@ async def pg():
     try:
         await conn.execute("CREATE DATABASE pgstactestdb;")
         await conn.execute(
-            "ALTER DATABASE pgstactestdb SET search_path to pgstac, public;"
+            """
+            ALTER DATABASE pgstactestdb SET search_path to pgstac, public;
+            ALTER DATABASE pgstactestdb SET log_statement to 'all';
+            """
         )
     except asyncpg.exceptions.DuplicateDatabaseError:
         await conn.execute("DROP DATABASE pgstactestdb;")
@@ -78,7 +81,14 @@ async def pgstac(pg):
     yield
     print("Truncating Data")
     conn = await asyncpg.connect(dsn=settings.testing_connection_string)
-    await conn.execute("TRUNCATE items CASCADE; TRUNCATE collections CASCADE;")
+    await conn.execute(
+        """
+        TRUNCATE pgstac.items CASCADE;
+        TRUNCATE pgstac.collections CASCADE;
+        TRUNCATE pgstac.searches CASCADE;
+        TRUNCATE pgstac.search_wheres CASCADE;
+        """
+    )
     await conn.close()
 
 

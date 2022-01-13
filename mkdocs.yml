@@ -35,7 +35,6 @@ nav:
           - transaction: api/stac_fastapi/extensions/core/transaction.md
       - third_party:
           - bulk_transactions: api/stac_fastapi/extensions/third_party/bulk_transactions.md
-          - tiles: api/stac_fastapi/extensions/third_party/tiles.md
     - stac_fastapi.server:
       - app: api/stac_fastapi/server/app.md
     - stac_fastapi.sqlalchemy:

@@ -78,6 +78,21 @@ def test_app_search_response(load_test_data, app_client, postgres_transactions):
     assert resp_json.get("stac_extensions") is None
 
 
+def test_app_search_response_multipolygon(
+    load_test_data, app_client, postgres_transactions
+):
+    item = load_test_data("test_item_multipolygon.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    resp = app_client.get("/search", params={"collections": ["test-collection"]})
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    print(resp_json)
+
+    assert resp_json.get("type") == "FeatureCollection"
+    assert resp_json.get("features")[0]["geometry"]["type"] == "MultiPolygon"
+
+
 def test_app_context_extension(load_test_data, app_client, postgres_transactions):
     item = load_test_data("test_item.json")
     postgres_transactions.create_item(item, request=MockStarletteRequest)

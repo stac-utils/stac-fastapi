@@ -6,30 +6,38 @@
 
 ### Changed
 
-* Upgrade pgstac/pypgstac requirements to 0.4.3
-
 * Refactor to remove hardcoded search request models. Request models are now dynamically created based on the enabled extensions.
   ([#213](https://github.com/stac-utils/stac-fastapi/pull/213))
+* Change example data to use correct `type` for the example Joplin collection ([#314](https://github.com/stac-utils/stac-fastapi/pull/314))
+* Changed the geometry type in the Item model from Polygon to Geometry.
+* Upgrade pgstac backend to use version 0.4.3 ([#321](https://github.com/stac-utils/stac-fastapi/pull/321))
 
 ### Removed
 
+* The tiles extension and all tiles links, added for demonstration purposes, have been removed. ([#309](https://github.com/stac-utils/stac-fastapi/pull/309))
+
 ### Fixed
 
+* Add environment variables required by upgraded pgstac container ([#313](https://github.com/stac-utils/stac-fastapi/pull/313))
 * Enabled `ContextExtension` by default ([#207](https://github.com/stac-utils/stac-fastapi/issues/207))
 * Content-type response headers for the /search endpoint now reflect the geojson response expected in the STAC api spec ([#220](https://github.com/stac-utils/stac-fastapi/issues/220))
 * The minimum `limit` value for searches is now 1 ([#296](https://github.com/stac-utils/stac-fastapi/pull/296))
 * Links stored with Collections and Items (e.g. license links) are now returned with those STAC objects ([#282](https://github.com/stac-utils/stac-fastapi/pull/282))
 * Content-type response headers for the /api endpoint now reflect those expected in the STAC api spec ([#287](https://github.com/stac-utils/stac-fastapi/pull/287))
+* Changed type options for datetime in BaseSearchGetRequest ([#315](https://github.com/stac-utils/stac-fastapi/pull/318))
+* Expanded on tests to ensure properly testing get and post searches ([#315](https://github.com/stac-utils/stac-fastapi/pull/318))
 
 ## [2.2.0]
 
 ### Added
 
+* Add CQL2 support ([#308](https://github.com/stac-utils/stac-fastapi/pull/308))
 * Add ability to override ItemCollectionUri and SearchGetRequest models ([#271](https://github.com/stac-utils/stac-fastapi/pull/271))
 * Added `collections` attribute to list of default fields to include, so that we satisfy the STAC API spec, which requires a `collections` attribute to be output when an item is part of a collection ([#276](https://github.com/stac-utils/stac-fastapi/pull/276))
 
 ### Changed
 
+* Update pgstac to 0.4.0 ([#308](https://github.com/stac-utils/stac-fastapi/pull/308))
 * Update get_item in sqlalchemy backend to allow for querying for items with same ids but in different collections. ([#275](https://github.com/stac-utils/stac-fastapi/pull/275))
 
 ## [2.1.1]
