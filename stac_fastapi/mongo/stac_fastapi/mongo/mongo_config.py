@@ -21,7 +21,7 @@ def MongoSettings():
         database_names = client.list_database_names()
         print("\ndatabases:", database_names)
 
-        return client.stac
+        return client
 
     except errors.ServerSelectionTimeoutError as err:
         client = None
