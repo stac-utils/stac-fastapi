@@ -10,7 +10,7 @@
             "title": "public domain"
         }
     ],
-    "type": "collection",
+    "type": "Collection",
     "extent": {
         "spatial": {
             "bbox": [
