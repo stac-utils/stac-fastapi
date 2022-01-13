@@ -41,7 +41,7 @@ services:
       bash -c "./scripts/wait-for-it.sh mongo_db:27017 && python -m stac_fastapi.mongo.app"
 
   mongo_db:
-    image: mongo:3.6
+    image: mongo:5.0
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: "dev"
