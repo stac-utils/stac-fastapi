@@ -10,7 +10,6 @@ from enum import auto
 from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, Optional, Union
 
-import sqlalchemy as sa
 from pydantic import BaseModel, root_validator
 from stac_pydantic.utils import AutoValueEnum
 
@@ -45,17 +44,15 @@ class Operator(str, AutoValueEnum):
 
 
 class Queryables(str, AutoValueEnum):
-    """Queryable fields.
+    """Queryable fields."""
 
-    """
     ...
 
 
 @dataclass
 class QueryableTypes:
-    """Defines a set of queryable fields.
+    """Defines a set of queryable fields."""
 
-    """
     ...
 
 
@@ -80,4 +77,5 @@ class QueryExtension(QueryExtensionBase):
     Override the POST request model to add validation against
     supported fields
     """
+
     ...
