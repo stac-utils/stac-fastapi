@@ -1,4 +1,4 @@
-"""Connect to mongodb."""
+"""mongodb config."""
 import os
 
 from pymongo import MongoClient, errors
@@ -12,22 +12,15 @@ def MongoSettings():
     try:
         client = MongoClient(
             host=[str(DOMAIN) + ":" + str(PORT)],
-            serverSelectionTimeoutMS=3000,  # 3 second timeout
+            serverSelectionTimeoutMS=3000,
             username=os.getenv("MONGO_USER"),
             password=os.getenv("MONGO_PASS"),
         )
-
-        print("server version:", client.server_info()["version"])
-        database_names = client.list_database_names()
-        print("\ndatabases:", database_names)
 
         return client
 
     except errors.ServerSelectionTimeoutError as err:
         client = None
-        database_names = []
-
-        # catch pymongo.errors.ServerSelectionTimeoutError
         print("pymongo ERROR:", err)
 
         return None

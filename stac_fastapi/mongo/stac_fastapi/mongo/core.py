@@ -51,7 +51,7 @@ class CoreCrudClient(BaseCoreClient):
 
         with self.client.start_session(causal_consistency=True) as session:
             collections = self.client.stac.stac_collection.find({}, session=session)
-        
+
             serialized_collections = [
                 self.collection_serializer.db_to_stac(collection, base_url=base_url)
                 for collection in collections
@@ -81,7 +81,9 @@ class CoreCrudClient(BaseCoreClient):
     def get_collection(self, collection_id: str, **kwargs) -> Collection:
         """Get collection by id."""
         with self.client.start_session(causal_consistency=True) as session:
-            collection = self.client.stac.stac_collection.find_one({"id": collection_id}, session=session)
+            collection = self.client.stac.stac_collection.find_one(
+                {"id": collection_id}, session=session
+            )
         base_url = str(kwargs["request"].base_url)
 
         if not collection:
@@ -96,10 +98,13 @@ class CoreCrudClient(BaseCoreClient):
         links = []
         response_features = []
         base_url = str(kwargs["request"].base_url)
+
         with self.client.start_session() as session:
             collection_children = self.client.stac.stac_item.find(
                 {"collection": collection_id}, session=session
-            ).sort([("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)])
+            ).sort(
+                [("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)]
+            )
 
             for item in collection_children:
                 response_features.append(
@@ -125,7 +130,9 @@ class CoreCrudClient(BaseCoreClient):
     def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by item id, collection id."""
         with self.client.start_session() as session:
-            item = self.client.stac.stac_item.find_one({"id": item_id, "collection": collection_id}, session=session)
+            item = self.client.stac.stac_item.find_one(
+                {"id": item_id, "collection": collection_id}, session=session
+            )
         base_url = str(kwargs["request"].base_url)
 
         if not item:
@@ -235,11 +242,9 @@ class CoreCrudClient(BaseCoreClient):
                 queries.update(**collection_filter)
 
         if search_request.ids:
-            # for id in search_request.ids:
             id_filter = {"id": {"$in": search_request.ids}}
             queries.update(**id_filter)
 
-        # Australia bbox = 101.125653,-46.522368,162.473309,-4.862972
         if search_request.bbox:
             # check for 3d bbox
             if len(search_request.bbox) == 6:
@@ -259,11 +264,6 @@ class CoreCrudClient(BaseCoreClient):
             }
             queries.update(**bbox_filter)
 
-            # bbox_filter = {
-            #     "bbox": {"$geoWithin": { "$box": [[float(bbox[0]), float(bbox[1])], [float(bbox[2]), float(bbox[3])]]}},
-            # }
-            # queries.update(**bbox_filter)
-
         if search_request.intersects:
             intersect_filter = {
                 "geometry": {
@@ -281,7 +281,6 @@ class CoreCrudClient(BaseCoreClient):
             date_filter = self._return_date(str(search_request.datetime))
             queries.update(**date_filter)
 
-        # {"gsd": {"eq":16}}
         if search_request.query:
             if type(search_request.query) == str:
                 search_request.query = json.loads(search_request.query)
@@ -303,9 +302,12 @@ class CoreCrudClient(BaseCoreClient):
                 sort_list.append((sort.field, sort.direction))
         else:
             sort_list = [("properties.datetime", pymongo.ASCENDING)]
+
         with self.client.start_session() as session:
             items = (
-                self.client.stac.stac_item.find(queries, session=session).limit(search_request.limit).sort(sort_list)
+                self.client.stac.stac_item.find(queries, session=session)
+                .limit(search_request.limit)
+                .sort(sort_list)
             )
 
             results = []
@@ -315,7 +317,6 @@ class CoreCrudClient(BaseCoreClient):
                 item = self.item_serializer.db_to_stac(item, base_url=base_url)
                 results.append(item)
 
-        # Use pydantic includes/excludes syntax to implement fields extension
         if self.extension_is_enabled("FieldsExtension"):
             if search_request.query is not None:
                 query_include: Set[str] = set(
@@ -330,8 +331,7 @@ class CoreCrudClient(BaseCoreClient):
                     search_request.fields.include.union(query_include)
 
             filter_kwargs = search_request.fields.filter_fields
-            # Need to pass through `.json()` for proper serialization
-            # of datetime
+
             results = [
                 json.loads(stac_pydantic.Item(**feat).json(**filter_kwargs))
                 for feat in results
