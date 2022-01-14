@@ -24,8 +24,10 @@
 * The minimum `limit` value for searches is now 1 ([#296](https://github.com/stac-utils/stac-fastapi/pull/296))
 * Links stored with Collections and Items (e.g. license links) are now returned with those STAC objects ([#282](https://github.com/stac-utils/stac-fastapi/pull/282))
 * Content-type response headers for the /api endpoint now reflect those expected in the STAC api spec ([#287](https://github.com/stac-utils/stac-fastapi/pull/287))
-* Changed type options for datetime in BaseSearchGetRequest ([#315](https://github.com/stac-utils/stac-fastapi/pull/318))
-* Expanded on tests to ensure properly testing get and post searches ([#315](https://github.com/stac-utils/stac-fastapi/pull/318))
+* Changed type options for datetime in BaseSearchGetRequest ([#318](https://github.com/stac-utils/stac-fastapi/pull/318))
+* Expanded on tests to ensure properly testing get and post searches ([#318](https://github.com/stac-utils/stac-fastapi/pull/318))
+* Ensure invalid datetimes result in 400s ([#323](https://github.com/stac-utils/stac-fastapi/pull/323))
+
 
 ## [2.2.0]
 
