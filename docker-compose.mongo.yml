@@ -7,13 +7,14 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.mongo
     platform: linux/amd64
     environment:
       - APP_HOST=0.0.0.0
       - APP_PORT=8083
       - RELOAD=false
       - ENVIRONMENT=local
+      - WEB_CONCURRENCY=10
       - MONGO_USER=dev
       - MONGO_PASS=stac
       - MONGO_PORT=27017
