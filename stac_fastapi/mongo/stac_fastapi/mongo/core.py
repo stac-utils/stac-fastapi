@@ -9,6 +9,7 @@ import attr
 import pymongo
 import stac_pydantic
 from fastapi import HTTPException
+from geojson_pydantic.geometries import Polygon
 from pydantic import ValidationError
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
@@ -140,18 +141,6 @@ class CoreCrudClient(BaseCoreClient):
 
         return self.item_serializer.db_to_stac(item, base_url)
 
-    def _bbox2poly(self, bbox):
-        poly = [
-            [
-                [float(bbox[0]), float(bbox[1])],
-                [float(bbox[2]), float(bbox[1])],
-                [float(bbox[2]), float(bbox[3])],
-                [float(bbox[0]), float(bbox[3])],
-                [float(bbox[0]), float(bbox[1])],
-            ]
-        ]
-        return poly
-
     def _return_date(self, datetime):
         datetime = datetime.split("/")
         if len(datetime) == 1:
@@ -254,14 +243,8 @@ class CoreCrudClient(BaseCoreClient):
                     search_request.bbox[3],
                     search_request.bbox[4],
                 ]
-            poly = self._bbox2poly(search_request.bbox)
-            bbox_filter = {
-                "geometry": {
-                    "$geoIntersects": {
-                        "$geometry": {"type": "Polygon", "coordinates": poly}
-                    }
-                }
-            }
+            geom = Polygon.from_bounds(*search_request.bbox).dict(exclude_none=True)
+            bbox_filter = {"geometry": {"$geoIntersects": {"$geometry": geom}}}
             queries.update(**bbox_filter)
 
         if search_request.intersects:

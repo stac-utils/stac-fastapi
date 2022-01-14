@@ -12,7 +12,6 @@ install_requires = [
     "stac-fastapi.types",
     "stac-fastapi.api",
     "stac-fastapi.extensions",
-    "shapely",
     "fastapi-utils",
     "pymongo",
 ]
