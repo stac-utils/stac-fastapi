@@ -20,6 +20,7 @@ from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.search import BaseSearchPostRequest
+from geojson_pydantic.geometries import Polygon
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 logger = logging.getLogger(__name__)
@@ -140,17 +141,6 @@ class CoreCrudClient(BaseCoreClient):
 
         return self.item_serializer.db_to_stac(item, base_url)
 
-    def _bbox2poly(self, bbox):
-        poly = [
-            [
-                [float(bbox[0]), float(bbox[1])],
-                [float(bbox[2]), float(bbox[1])],
-                [float(bbox[2]), float(bbox[3])],
-                [float(bbox[0]), float(bbox[3])],
-                [float(bbox[0]), float(bbox[1])],
-            ]
-        ]
-        return poly
 
     def _return_date(self, datetime):
         datetime = datetime.split("/")
@@ -171,6 +161,7 @@ class CoreCrudClient(BaseCoreClient):
                 end_date = "2200-12-01T12:31:12Z"
 
             return {"properties.datetime": {"$lt": end_date, "$gte": start_date}}
+
 
     def get_search(
         self,
@@ -254,11 +245,11 @@ class CoreCrudClient(BaseCoreClient):
                     search_request.bbox[3],
                     search_request.bbox[4],
                 ]
-            poly = self._bbox2poly(search_request.bbox)
+            geom = Polygon.from_bounds(*search_request.bbox).dict(exclude_none=True)
             bbox_filter = {
                 "geometry": {
                     "$geoIntersects": {
-                        "$geometry": {"type": "Polygon", "coordinates": poly}
+                        "$geometry": geom
                     }
                 }
             }
