@@ -1,1 +1,1 @@
-"""stac_fastapi.postgres.models module."""
+"""stac_fastapi.mongo.models module."""

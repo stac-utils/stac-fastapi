@@ -17,10 +17,8 @@ def MongoSettings():
             password=os.getenv("MONGO_PASS"),
         )
 
-        return client
-
     except errors.ServerSelectionTimeoutError as err:
         client = None
         print("pymongo ERROR:", err)
 
-        return None
+    return client
