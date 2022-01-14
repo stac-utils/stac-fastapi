@@ -13,13 +13,7 @@ class PgstacSearch(BaseSearchPostRequest):
     Overrides the validation for datetime from the base request model.
     """
 
-    datetime: Optional[str] = None
     conf: Optional[Dict] = None
-
-    @validator("datetime")
-    def validate_datetime(cls, v):
-        """Pgstac does not require the base validator for datetime."""
-        return v
 
     @validator("filter_lang", pre=False, check_fields=False, always=True)
     def validate_query_uses_cql(cls, v, values):
