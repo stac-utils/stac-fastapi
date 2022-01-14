@@ -22,8 +22,6 @@ services:
       - VSI_CACHE=TRUE
       - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
       - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
-      - DB_MIN_CONN_SIZE=1
-      - DB_MAX_CONN_SIZE=1
     ports:
       - "8081:8081"
     volumes:
