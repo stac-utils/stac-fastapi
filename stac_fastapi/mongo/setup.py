@@ -12,7 +12,6 @@ install_requires = [
     "stac-fastapi.types",
     "stac-fastapi.api",
     "stac-fastapi.extensions",
-    "geoalchemy2<0.8.0",
     "shapely",
     "fastapi-utils",
     "pymongo",
