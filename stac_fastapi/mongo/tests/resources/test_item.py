@@ -9,7 +9,7 @@ from urllib.parse import parse_qs, urlparse, urlsplit
 
 import pystac
 import pytest
-from shapely.geometry import Polygon
+from geojson_pydantic.geometries import Polygon
 from stac_pydantic.shared import DATETIME_RFC339
 
 from stac_fastapi.mongo.core import CoreCrudClient
@@ -772,7 +772,7 @@ def test_field_extension_exclude_default_includes(app_client, load_test_data):
 def test_search_intersects_and_bbox(app_client):
     """Test POST search intersects and bbox are mutually exclusive (core)"""
     bbox = [-118, 34, -117, 35]
-    geoj = Polygon.from_bounds(*bbox).__geo_interface__
+    geoj = Polygon.from_bounds(*bbox).dict(exclude_none=True)
     params = {"bbox": bbox, "intersects": geoj}
     resp = app_client.post("/search", json=params)
     assert resp.status_code == 400
