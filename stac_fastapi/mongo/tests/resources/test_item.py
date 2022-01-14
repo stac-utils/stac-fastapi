@@ -822,6 +822,7 @@ def test_conformance_classes_configurable():
     client = CoreCrudClient(base_conformance_classes=["this is a test"])
     assert client.conformance_classes()[0] == "this is a test"
 
+
 def test_search_datetime_validation_errors(app_client):
     bad_datetimes = [
         "37-01-01T12:00:27.87Z",
