@@ -274,6 +274,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
             "token": token,
             "query": orjson.loads(query) if query else query,
         }
+
         if datetime:
             base_args["datetime"] = datetime
 

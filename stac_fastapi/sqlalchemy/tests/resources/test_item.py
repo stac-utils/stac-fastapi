@@ -926,3 +926,23 @@ def test_conformance_classes_configurable():
     os.environ["WRITER_CONN_STRING"] = "testing"
     client = CoreCrudClient(base_conformance_classes=["this is a test"])
     assert client.conformance_classes()[0] == "this is a test"
+
+
+def test_search_datetime_validation_errors(app_client):
+    bad_datetimes = [
+        "37-01-01T12:00:27.87Z",
+        "1985-13-12T23:20:50.52Z",
+        "1985-12-32T23:20:50.52Z",
+        "1985-12-01T25:20:50.52Z",
+        "1985-12-01T00:60:50.52Z",
+        "1985-12-01T00:06:61.52Z",
+        "1990-12-31T23:59:61Z",
+        "1986-04-12T23:20:50.52Z/1985-04-12T23:20:50.52Z",
+    ]
+    for dt in bad_datetimes:
+        body = {"query": {"datetime": dt}}
+        resp = app_client.post("/search", json=body)
+        assert resp.status_code == 400
+
+        resp = app_client.get("/search?datetime={}".format(dt))
+        assert resp.status_code == 400
