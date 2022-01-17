@@ -1232,3 +1232,24 @@ async def test_item_search_get_filter_extension_cql2(
         resp_json["features"][0]["properties"]["proj:epsg"]
         == test_item["properties"]["proj:epsg"]
     )
+
+
+@pytest.mark.asyncio
+async def test_search_datetime_validation_errors(app_client):
+    bad_datetimes = [
+        "37-01-01T12:00:27.87Z",
+        "1985-13-12T23:20:50.52Z",
+        "1985-12-32T23:20:50.52Z",
+        "1985-12-01T25:20:50.52Z",
+        "1985-12-01T00:60:50.52Z",
+        "1985-12-01T00:06:61.52Z",
+        "1990-12-31T23:59:61Z",
+        "1986-04-12T23:20:50.52Z/1985-04-12T23:20:50.52Z",
+    ]
+    for dt in bad_datetimes:
+        body = {"query": {"datetime": dt}}
+        resp = await app_client.post("/search", json=body)
+        assert resp.status_code == 400
+
+        resp = await app_client.get("/search?datetime={}".format(dt))
+        assert resp.status_code == 400
