@@ -15,7 +15,7 @@ from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 
 from stac_fastapi.mongo import serializers
-from stac_fastapi.mongo.mongo_config import MongoSettings
+from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
@@ -39,7 +39,8 @@ class CoreCrudClient(BaseCoreClient):
     collection_serializer: Type[serializers.Serializer] = attr.ib(
         default=serializers.CollectionSerializer
     )
-    client = MongoSettings()
+    settings = MongoSettings()
+    client = settings.create_client
 
     @staticmethod
     def _lookup_id(id: str, table, session):
