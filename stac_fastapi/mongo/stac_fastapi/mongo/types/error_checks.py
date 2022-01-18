@@ -1,13 +1,17 @@
-from pymongo import MongoClient
-from stac_fastapi.mongo.session import Session
-from stac_fastapi.types import stac as stac_types
+"""common error checks."""
 
 import attr
+from pymongo import MongoClient
 
+from stac_fastapi.mongo.session import Session
+from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.errors import ConflictError, ForeignKeyError, NotFoundError
 
+
 @attr.s
-class ErrorChecks():
+class ErrorChecks:
+    """error checks class."""
+
     session: Session = attr.ib(default=Session)
     client: MongoClient = attr.ib(default=None)
 
@@ -15,9 +19,7 @@ class ErrorChecks():
         if not self.client.stac.stac_collection.count_documents(
             {"id": model["collection"]}, limit=1, session=self.session
         ):
-            raise ForeignKeyError(
-                f"Collection {model['collection']} does not exist"
-            )
+            raise ForeignKeyError(f"Collection {model['collection']} does not exist")
 
     def _check_collection_conflict(self, model):
         if self.client.stac.stac_collection.count_documents(

@@ -13,8 +13,8 @@ from stac_fastapi.extensions.third_party.bulk_transactions import (
 from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.serializers import ItemSerializer
 from stac_fastapi.mongo.session import Session
-from stac_fastapi.types import stac as stac_types
 from stac_fastapi.mongo.types.error_checks import ErrorChecks
+from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.links import CollectionLinks, ItemLinks
 
@@ -112,7 +112,6 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         """Create mongo engine."""
         settings = MongoSettings()
         self.client = settings.create_client
-
 
     def _preprocess_item(self, model: stac_types.Item, base_url) -> stac_types.Item:
         """Preprocess items to match data model."""
