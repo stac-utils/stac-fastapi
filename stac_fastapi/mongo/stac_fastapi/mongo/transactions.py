@@ -5,6 +5,7 @@ from datetime import datetime
 
 import attr
 from stac_pydantic.shared import DATETIME_RFC339
+from pymongo import MongoClient
 
 from stac_fastapi.extensions.third_party.bulk_transactions import (
     BaseBulkTransactionsClient,
@@ -20,6 +21,56 @@ from stac_fastapi.types.links import CollectionLinks, ItemLinks
 
 logger = logging.getLogger(__name__)
 
+@attr.s
+class ErrorChecks():
+    session: Session = attr.ib(default=Session)
+    client: MongoClient = attr.ib(default=None)
+
+    def _check_collection_foreign_key(self, model: stac_types.Item):
+        if not self.client.stac.stac_collection.count_documents(
+            {"id": model["collection"]}, limit=1, session=self.session
+        ):
+            raise ForeignKeyError(
+                f"Collection {model['collection']} does not exist"
+            )
+
+    def _check_collection_conflict(self, model):
+        if self.client.stac.stac_collection.count_documents(
+            {"id": model["id"]}, limit=1, session=self.session
+        ):
+            raise ConflictError(f"Collection {model['id']} already exists")
+
+    def _check_collection_not_found(self, collection_id):
+        if (
+            self.client.stac.stac_collection.count_documents(
+                {"id": collection_id}, session=self.session
+            )
+            == 0
+        ):
+            raise NotFoundError(f"Collection {collection_id} not found")
+
+    def _check_item_conflict(self, model: stac_types.Item):
+        if self.client.stac.stac_item.count_documents(
+            {"id": model["id"], "collection": model["collection"]},
+            limit=1,
+            session=self.session,
+        ):
+            raise ConflictError(
+                f"Item {model['id']} in collection {model['collection']} already exists"
+            )
+
+    def _check_item_not_found(self, item_id, collection_id):
+        if (
+            self.client.stac.stac_item.count_documents(
+                {"id": item_id, "collection": collection_id},
+                session=self.session,
+            )
+            == 0
+        ):
+            raise NotFoundError(
+                f"Item {item_id} in collection {collection_id} not found"
+            )
+
 
 @attr.s
 class TransactionsClient(BaseTransactionsClient):
@@ -29,52 +80,6 @@ class TransactionsClient(BaseTransactionsClient):
     settings = MongoSettings()
     client = settings.create_client
 
-    def _check_collection_foreign_key(self, model: stac_types.Item, session):
-        if not self.client.stac.stac_collection.count_documents(
-            {"id": model["collection"]}, limit=1, session=session
-        ):
-            raise ForeignKeyError(
-                f"Collection {model['collection']} does not exist"
-            )
-
-    def _check_collection_conflict(self, model, session):
-        if self.client.stac.stac_collection.count_documents(
-            {"id": model["id"]}, limit=1, session=session
-        ):
-            raise ConflictError(f"Collection {model['id']} already exists")
-
-    def _check_collection_not_found(self, collection_id, session):
-        if (
-            self.client.stac.stac_collection.count_documents(
-                {"id": collection_id}, session=session
-            )
-            == 0
-        ):
-            raise NotFoundError(f"Collection {collection_id} not found")
-
-    def _check_item_conflict(self, model: stac_types.Item, session):
-        if self.client.stac.stac_item.count_documents(
-            {"id": model["id"], "collection": model["collection"]},
-            limit=1,
-            session=session,
-        ):
-            raise ConflictError(
-                f"Item {model['id']} in collection {model['collection']} already exists"
-            )
-
-    def _check_item_not_found(self, item_id, collection_id, session):
-        if (
-            self.client.stac.stac_item.count_documents(
-                {"id": item_id, "collection": collection_id},
-                session=session,
-            )
-            == 0
-        ):
-            raise NotFoundError(
-                f"Item {item_id} in collection {collection_id} not found"
-            )
-
-
     def create_item(self, model: stac_types.Item, **kwargs):
         """Create item."""
         base_url = str(kwargs["request"].base_url)
@@ -83,8 +88,9 @@ class TransactionsClient(BaseTransactionsClient):
         ).create_links()
         model["links"] = item_links
         with self.client.start_session(causal_consistency=True) as session:
-            self._check_collection_foreign_key(model, session=session)
-            self._check_item_conflict(model, session=session)
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_foreign_key(model)
+            error_check._check_item_conflict(model)
             now = datetime.utcnow().strftime(DATETIME_RFC339)
             if "created" not in model["properties"]:
                 model["properties"]["created"] = str(now)
@@ -100,7 +106,8 @@ class TransactionsClient(BaseTransactionsClient):
         model["links"] = collection_links
 
         with self.client.start_session(causal_consistency=True) as session:
-            self._check_collection_conflict(model, session=session)
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_conflict(model)
             self.client.stac.stac_collection.insert_one(model, session=session)
 
     def update_item(self, model: stac_types.Item, **kwargs):
@@ -108,8 +115,9 @@ class TransactionsClient(BaseTransactionsClient):
         base_url = str(kwargs["request"].base_url)
 
         with self.client.start_session(causal_consistency=True) as session:
-            self._check_collection_foreign_key(model, session=session)
-            self._check_item_not_found(model["id"], model["collection"], session)
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_foreign_key(model)
+            error_check._check_item_not_found(model["id"], model["collection"])
             self.delete_item(
                 item_id=model["id"], collection_id=model["collection"], session=session
             )
@@ -121,14 +129,16 @@ class TransactionsClient(BaseTransactionsClient):
     def update_collection(self, model: stac_types.Collection, **kwargs):
         """Update collection."""
         with self.client.start_session(causal_consistency=True) as session:
-            self._check_collection_not_found(model["id"], session=session)
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_not_found(model["id"])
         self.delete_collection(model["id"])
         self.create_collection(model, **kwargs)
 
     def delete_item(self, item_id: str, collection_id: str, **kwargs):
         """Delete item."""
         with self.client.start_session(causal_consistency=True) as session:
-            self._check_item_not_found(item_id, collection_id, session)
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_item_not_found(item_id, collection_id)
             self.client.stac.stac_item.delete_one(
                 {"id": item_id, "collection": collection_id}, session=session
             )
@@ -136,7 +146,8 @@ class TransactionsClient(BaseTransactionsClient):
     def delete_collection(self, collection_id: str, **kwargs):
         """Delete collection."""
         with self.client.start_session(causal_consistency=True) as session:
-            self._check_collection_not_found(collection_id, session=session)
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_not_found(collection_id)
             self.client.stac.stac_collection.delete_one(
                 {"id": collection_id}, session=session
             )
@@ -153,13 +164,6 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         settings = MongoSettings()
         self.client = settings.create_client
 
-    def _check_collection_exists(self, model: stac_types.Item, session):
-        if not self.client.stac.stac_collection.count_documents(
-            {"id": model["collection"]}, limit=1, session=session
-        ):
-            raise ForeignKeyError(
-                f"Collection {model['collection']} does not exist"
-            )
 
     def _preprocess_item(self, model: stac_types.Item, base_url) -> stac_types.Item:
         """Preprocess items to match data model."""
@@ -169,21 +173,13 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         model["links"] = item_links
 
         with self.client.start_session(causal_consistency=True) as session:
-            self._check_collection_exists(model, session=session)
-
-            if self.client.stac.stac_item.count_documents(
-                {"id": model["id"], "collection": model["collection"]},
-                limit=1,
-                session=session,
-            ):
-                raise ConflictError(
-                    f"Item {model['id']} in collection {model['collection']} already exists"
-                )
-            else:
-                now = datetime.utcnow().strftime(DATETIME_RFC339)
-                if "created" not in model["properties"]:
-                    model["properties"]["created"] = str(now)
-                return model
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_foreign_key(model)
+            error_check._check_item_conflict(model)
+            now = datetime.utcnow().strftime(DATETIME_RFC339)
+            if "created" not in model["properties"]:
+                model["properties"]["created"] = str(now)
+            return model
 
     def bulk_item_insert(self, items: Items, **kwargs) -> str:
         """Bulk item insertion using mongodb and pymongo."""
