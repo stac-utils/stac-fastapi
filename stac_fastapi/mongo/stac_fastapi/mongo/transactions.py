@@ -14,7 +14,7 @@ from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.serializers import ItemSerializer
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.types import stac as stac_types
-from stac_fastapi.mongo.error_checks import ErrorChecks
+from stac_fastapi.mongo.types.error_checks import ErrorChecks
 from stac_fastapi.types.core import BaseTransactionsClient
 from stac_fastapi.types.links import CollectionLinks, ItemLinks
 

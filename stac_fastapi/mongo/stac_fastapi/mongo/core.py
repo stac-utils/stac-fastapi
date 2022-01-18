@@ -17,7 +17,7 @@ from stac_pydantic.shared import MimeTypes
 from stac_fastapi.mongo import serializers
 from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.session import Session
-from stac_fastapi.mongo.error_checks import ErrorChecks
+from stac_fastapi.mongo.types.error_checks import ErrorChecks
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.search import BaseSearchPostRequest
