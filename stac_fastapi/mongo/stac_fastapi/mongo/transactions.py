@@ -10,7 +10,7 @@ from stac_fastapi.extensions.third_party.bulk_transactions import (
     BaseBulkTransactionsClient,
     Items,
 )
-from stac_fastapi.mongo.mongo_config import MongoSettings
+from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.serializers import ItemSerializer
 from stac_fastapi.mongo.session import Session
 from stac_fastapi.types import stac as stac_types
@@ -26,7 +26,8 @@ class TransactionsClient(BaseTransactionsClient):
     """Transactions extension specific CRUD operations."""
 
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
-    client = MongoSettings()
+    settings = MongoSettings()
+    client = settings.create_client
 
     def create_item(self, model: stac_types.Item, **kwargs):
         """Create item."""
@@ -154,7 +155,8 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
 
     def __attrs_post_init__(self):
         """Create mongo engine."""
-        self.client = MongoSettings()
+        settings = MongoSettings()
+        self.client = settings.create_client
 
     def _preprocess_item(self, model: stac_types.Item, base_url) -> stac_types.Item:
         """Preprocess items to match data model."""
