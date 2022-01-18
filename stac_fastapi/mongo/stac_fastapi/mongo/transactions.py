@@ -13,9 +13,9 @@ from stac_fastapi.extensions.third_party.bulk_transactions import (
 from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.serializers import ItemSerializer
 from stac_fastapi.mongo.session import Session
+from stac_fastapi.mongo.types.error_checks import ErrorChecks
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import BaseTransactionsClient
-from stac_fastapi.types.errors import ConflictError, ForeignKeyError, NotFoundError
 from stac_fastapi.types.links import CollectionLinks, ItemLinks
 
 logger = logging.getLogger(__name__)
@@ -37,27 +37,14 @@ class TransactionsClient(BaseTransactionsClient):
         ).create_links()
         model["links"] = item_links
         with self.client.start_session(causal_consistency=True) as session:
-            if not self.client.stac.stac_collection.count_documents(
-                {"id": model["collection"]}, limit=1, session=session
-            ):
-                raise ForeignKeyError(
-                    f"Collection {model['collection']} does not exist"
-                )
-
-            if self.client.stac.stac_item.count_documents(
-                {"id": model["id"], "collection": model["collection"]},
-                limit=1,
-                session=session,
-            ):
-                raise ConflictError(
-                    f"Item {model['id']} in collection {model['collection']} already exists"
-                )
-            else:
-                now = datetime.utcnow().strftime(DATETIME_RFC339)
-                if "created" not in model["properties"]:
-                    model["properties"]["created"] = str(now)
-                self.client.stac.stac_item.insert_one(model, session=session)
-                return ItemSerializer.db_to_stac(model, base_url)
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_foreign_key(model)
+            error_check._check_item_conflict(model)
+            now = datetime.utcnow().strftime(DATETIME_RFC339)
+            if "created" not in model["properties"]:
+                model["properties"]["created"] = str(now)
+            self.client.stac.stac_item.insert_one(model, session=session)
+            return ItemSerializer.db_to_stac(model, base_url)
 
     def create_collection(self, model: stac_types.Collection, **kwargs):
         """Create collection."""
@@ -68,35 +55,18 @@ class TransactionsClient(BaseTransactionsClient):
         model["links"] = collection_links
 
         with self.client.start_session(causal_consistency=True) as session:
-            if self.client.stac.stac_collection.count_documents(
-                {"id": model["id"]}, limit=1, session=session
-            ):
-                raise ConflictError(f"Collection {model['id']} already exists")
-            else:
-                self.client.stac.stac_collection.insert_one(model, session=session)
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_conflict(model)
+            self.client.stac.stac_collection.insert_one(model, session=session)
 
     def update_item(self, model: stac_types.Item, **kwargs):
         """Update item."""
         base_url = str(kwargs["request"].base_url)
 
         with self.client.start_session(causal_consistency=True) as session:
-            if not self.client.stac.stac_collection.count_documents(
-                {"id": model["collection"]}, limit=1, session=session
-            ):
-                raise ForeignKeyError(
-                    f"Collection {model['collection']} does not exist"
-                )
-
-            if (
-                self.client.stac.stac_item.count_documents(
-                    {"id": model["id"], "collection": model["collection"]},
-                    session=session,
-                )
-                == 0
-            ):
-                raise NotFoundError(
-                    f"Item {model['id']} in collection {model['collection']} not found"
-                )
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_foreign_key(model)
+            error_check._check_item_not_found(model["id"], model["collection"])
             self.delete_item(
                 item_id=model["id"], collection_id=model["collection"], session=session
             )
@@ -108,26 +78,16 @@ class TransactionsClient(BaseTransactionsClient):
     def update_collection(self, model: stac_types.Collection, **kwargs):
         """Update collection."""
         with self.client.start_session(causal_consistency=True) as session:
-            if (
-                self.client.stac.stac_collection.count_documents(
-                    {"id": model["id"]}, session=session
-                )
-                == 0
-            ):
-                raise NotFoundError(f"Collection {model['id']} not found")
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_not_found(model["id"])
         self.delete_collection(model["id"])
         self.create_collection(model, **kwargs)
 
     def delete_item(self, item_id: str, collection_id: str, **kwargs):
         """Delete item."""
         with self.client.start_session(causal_consistency=True) as session:
-            if (
-                self.client.stac.stac_item.count_documents(
-                    {"id": item_id, "collection": collection_id}, session=session
-                )
-                == 0
-            ):
-                raise NotFoundError(f"Item {item_id} does not exist")
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_item_not_found(item_id, collection_id)
             self.client.stac.stac_item.delete_one(
                 {"id": item_id, "collection": collection_id}, session=session
             )
@@ -135,13 +95,8 @@ class TransactionsClient(BaseTransactionsClient):
     def delete_collection(self, collection_id: str, **kwargs):
         """Delete collection."""
         with self.client.start_session(causal_consistency=True) as session:
-            if (
-                self.client.stac.stac_collection.count_documents(
-                    {"id": collection_id}, session=session
-                )
-                == 0
-            ):
-                raise NotFoundError(f"Collection {collection_id} does not exist")
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_not_found(collection_id)
             self.client.stac.stac_collection.delete_one(
                 {"id": collection_id}, session=session
             )
@@ -166,26 +121,13 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         model["links"] = item_links
 
         with self.client.start_session(causal_consistency=True) as session:
-            if not self.client.stac.stac_collection.count_documents(
-                {"id": model["collection"]}, limit=1, session=session
-            ):
-                raise ForeignKeyError(
-                    f"Collection {model['collection']} does not exist"
-                )
-
-            if self.client.stac.stac_item.count_documents(
-                {"id": model["id"], "collection": model["collection"]},
-                limit=1,
-                session=session,
-            ):
-                raise ConflictError(
-                    f"Item {model['id']} in collection {model['collection']} already exists"
-                )
-            else:
-                now = datetime.utcnow().strftime(DATETIME_RFC339)
-                if "created" not in model["properties"]:
-                    model["properties"]["created"] = str(now)
-                return model
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_foreign_key(model)
+            error_check._check_item_conflict(model)
+            now = datetime.utcnow().strftime(DATETIME_RFC339)
+            if "created" not in model["properties"]:
+                model["properties"]["created"] = str(now)
+            return model
 
     def bulk_item_insert(self, items: Items, **kwargs) -> str:
         """Bulk item insertion using mongodb and pymongo."""

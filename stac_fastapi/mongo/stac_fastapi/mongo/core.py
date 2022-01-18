@@ -17,9 +17,9 @@ from stac_pydantic.shared import MimeTypes
 from stac_fastapi.mongo import serializers
 from stac_fastapi.mongo.config import MongoSettings
 from stac_fastapi.mongo.session import Session
+from stac_fastapi.mongo.types.error_checks import ErrorChecks
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
-from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
@@ -82,15 +82,14 @@ class CoreCrudClient(BaseCoreClient):
 
     def get_collection(self, collection_id: str, **kwargs) -> Collection:
         """Get collection by id."""
+        base_url = str(kwargs["request"].base_url)
+
         with self.client.start_session(causal_consistency=True) as session:
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_collection_not_found(collection_id)
             collection = self.client.stac.stac_collection.find_one(
                 {"id": collection_id}, session=session
             )
-        base_url = str(kwargs["request"].base_url)
-
-        if not collection:
-            raise NotFoundError(f"{id} not found in database")
-
         return self.collection_serializer.db_to_stac(collection, base_url)
 
     def item_collection(
@@ -131,15 +130,13 @@ class CoreCrudClient(BaseCoreClient):
 
     def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by item id, collection id."""
+        base_url = str(kwargs["request"].base_url)
         with self.client.start_session() as session:
+            error_check = ErrorChecks(session=session, client=self.client)
+            error_check._check_item_not_found(item_id, collection_id)
             item = self.client.stac.stac_item.find_one(
                 {"id": item_id, "collection": collection_id}, session=session
             )
-        base_url = str(kwargs["request"].base_url)
-
-        if not item:
-            raise NotFoundError(f"{item_id} not found in collection {collection_id}")
-
         return self.item_serializer.db_to_stac(item, base_url)
 
     def _return_date(self, datetime):
