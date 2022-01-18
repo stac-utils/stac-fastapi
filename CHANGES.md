@@ -4,6 +4,17 @@
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+
+## [2.3.0]
+
+### Added
+
 * Add link with rel-type of 'service-doc', pointing to HTML API documentation ([#298](https://github.com/stac-utils/stac-fastapi/pull/298))
 
 ### Changed
