@@ -485,6 +485,22 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
+    def get_collection_children(
+        self, collection_id: str, **kwargs
+    ) -> stac_types.Children:
+        """Get  children by parent collection id.
+
+        Called with `GET /collections/{collection_id}/children`.
+
+        Args:
+            collection_id: Id of the collection.
+
+        Returns:
+            Children.
+        """
+        ...
+
+    @abc.abstractmethod
     def item_collection(
         self, collection_id: str, limit: int = 10, token: str = None, **kwargs
     ) -> stac_types.ItemCollection:
@@ -672,6 +688,22 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
 
         Returns:
             Collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_collection_children(
+        self, collection_id: str, **kwargs
+    ) -> stac_types.Children:
+        """Get children by parent's collection id.
+
+        Called with `GET /collections/{collection_id}/children`.
+
+        Args:
+            collection_id: Id of the collection.
+
+        Returns:
+            Children.
         """
         ...
 

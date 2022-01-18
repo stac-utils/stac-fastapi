@@ -78,3 +78,13 @@ class Collections(TypedDict, total=False):
 
     collections: List[Collection]
     links: List[Dict[str, Any]]
+
+
+class Children(TypedDict, total=False):
+    """A catalog or collection's children.
+
+    https://github.com/radiantearth/stac-api-spec/tree/master/children
+    """
+
+    children: List[Union[Catalog, Collection]]
+    links: List[Dict[str, Any]]

@@ -29,7 +29,13 @@ from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.search import BaseSearchPostRequest
-from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
+from stac_fastapi.types.stac import (
+    Children,
+    Collection,
+    Collections,
+    Item,
+    ItemCollection,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +103,19 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         with self.session.reader.context_session() as session:
             collection = self._lookup_id(collection_id, self.collection_table, session)
             return self.collection_serializer.db_to_stac(collection, base_url)
+
+    def get_collection_children(self, collection_id: str, **kwargs) -> Children:
+        """Get  children by parent collection id.
+
+        Called with `GET /collections/{collection_id}/children`.
+
+        Args:
+            collection_id: Id of the collection.
+
+        Returns:
+            Children.
+        """
+        return Children(children=[], links=[])
 
     def item_collection(
         self, collection_id: str, limit: int = 10, token: str = None, **kwargs

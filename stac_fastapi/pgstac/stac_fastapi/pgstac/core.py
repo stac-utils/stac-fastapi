@@ -20,7 +20,13 @@ from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingL
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import InvalidQueryParameter, NotFoundError
-from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
+from stac_fastapi.types.stac import (
+    Children,
+    Collection,
+    Collections,
+    Item,
+    ItemCollection,
+)
 
 NumType = Union[float, int]
 
@@ -102,6 +108,19 @@ class CoreCrudClient(AsyncBaseCoreClient):
         ).get_links(extra_links=collection.get("links"))
 
         return Collection(**collection)
+
+    async def get_collection_children(self, collection_id: str, **kwargs) -> Children:
+        """Get  children by parent collection id.
+
+        Called with `GET /collections/{collection_id}/children`.
+
+        Args:
+            collection_id: Id of the collection.
+
+        Returns:
+            Children.
+        """
+        return Children(children=[], links=[])
 
     async def _search_base(
         self, search_request: PgstacSearch, **kwargs: Any

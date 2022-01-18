@@ -7,7 +7,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.params import Depends
 from pydantic import BaseModel
-from stac_pydantic import Collection, Item, ItemCollection
+from stac_pydantic import Children, Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.version import STAC_VERSION
@@ -266,6 +266,25 @@ class StacApi:
             ),
         )
 
+    def register_get_collection_children(self):
+        """Register get collection children endpoint (GET /collection/{collection_id}/children).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get Collection Children",
+            path="/collections/{collection_id}/children",
+            response_model=Children if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(
+                self.client.get_collection_children, CollectionUri, self.response_class
+            ),
+        )
+
     def register_get_item_collection(self):
         """Register get item collection endpoint (GET /collection/{collection_id}/items).
 
@@ -317,6 +336,7 @@ class StacApi:
         self.register_get_search()
         self.register_get_collections()
         self.register_get_collection()
+        self.register_get_collection_children()
         self.register_get_item_collection()
 
     def customize_openapi(self) -> Optional[Dict[str, Any]]:
