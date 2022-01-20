@@ -23,7 +23,7 @@ class QueryExtension(ApiExtension):
     POST = QueryExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
-        factory=lambda: ["https://api.stacspec.org/v1.0.0-beta.3/item-search/#query"]
+        factory=lambda: ["https://api.stacspec.org/v1.0.0-beta.4/item-search/#query"]
     )
     schema_href: Optional[str] = attr.ib(default=None)
 
