@@ -3,6 +3,7 @@ import os
 from typing import Set
 
 from pymongo import MongoClient, errors
+from pymongo import GEOSPHERE, GEO2D
 
 from stac_fastapi.types.config import ApiSettings
 
@@ -29,6 +30,16 @@ class MongoSettings(ApiSettings):
                 username=os.getenv("MONGO_USER"),
                 password=os.getenv("MONGO_PASS"),
             )
+
+            # create indices - they are only created if they don't already exist
+            item_table = client.stac.stac_item
+            item_table.create_index([("bbox", GEOSPHERE),("properties.datetime", 1)])
+            item_table.create_index([("geometry", GEOSPHERE)])
+            item_table.create_index([("properties.datetime", 1)])
+            item_table.create_index([("properties.created", 1)])
+            item_table.create_index([("properties.updated", 1)])
+            item_table.create_index([("bbox", GEOSPHERE)])
+            item_table.create_index([("bbox", GEO2D)])
 
         except errors.ServerSelectionTimeoutError as err:
             client = None
