@@ -99,9 +99,7 @@ class TransactionsClient(BaseTransactionsClient):
         with self.client.start_session(causal_consistency=True) as session:
             error_check = ErrorChecks(session=session, client=self.client)
             error_check._check_collection_not_found(collection_id)
-            self.collection_table.delete_one(
-                {"id": collection_id}, session=session
-            )
+            self.collection_table.delete_one({"id": collection_id}, session=session)
 
 
 @attr.s
