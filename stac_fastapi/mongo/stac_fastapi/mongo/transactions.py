@@ -28,6 +28,8 @@ class TransactionsClient(BaseTransactionsClient):
     session: Session = attr.ib(default=attr.Factory(Session.create_from_env))
     settings = MongoSettings()
     client = settings.create_client
+    item_table = client.stac.stac_item
+    collection_table = client.stac.stac_collection
 
     def create_item(self, model: stac_types.Item, **kwargs):
         """Create item."""
@@ -43,7 +45,7 @@ class TransactionsClient(BaseTransactionsClient):
             now = datetime.utcnow().strftime(DATETIME_RFC339)
             if "created" not in model["properties"]:
                 model["properties"]["created"] = str(now)
-            self.client.stac.stac_item.insert_one(model, session=session)
+            self.item_table.insert_one(model, session=session)
             return ItemSerializer.db_to_stac(model, base_url)
 
     def create_collection(self, model: stac_types.Collection, **kwargs):
@@ -57,7 +59,7 @@ class TransactionsClient(BaseTransactionsClient):
         with self.client.start_session(causal_consistency=True) as session:
             error_check = ErrorChecks(session=session, client=self.client)
             error_check._check_collection_conflict(model)
-            self.client.stac.stac_collection.insert_one(model, session=session)
+            self.collection_table.insert_one(model, session=session)
 
     def update_item(self, model: stac_types.Item, **kwargs):
         """Update item."""
@@ -88,7 +90,7 @@ class TransactionsClient(BaseTransactionsClient):
         with self.client.start_session(causal_consistency=True) as session:
             error_check = ErrorChecks(session=session, client=self.client)
             error_check._check_item_not_found(item_id, collection_id)
-            self.client.stac.stac_item.delete_one(
+            self.item_table.delete_one(
                 {"id": item_id, "collection": collection_id}, session=session
             )
 
@@ -97,7 +99,7 @@ class TransactionsClient(BaseTransactionsClient):
         with self.client.start_session(causal_consistency=True) as session:
             error_check = ErrorChecks(session=session, client=self.client)
             error_check._check_collection_not_found(collection_id)
-            self.client.stac.stac_collection.delete_one(
+            self.collection_table.delete_one(
                 {"id": collection_id}, session=session
             )
 
@@ -112,6 +114,7 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         """Create mongo engine."""
         settings = MongoSettings()
         self.client = settings.create_client
+        self.item_table = self.client.stac.stac_item
 
     def _preprocess_item(self, model: stac_types.Item, base_url) -> stac_types.Item:
         """Preprocess items to match data model."""
@@ -138,5 +141,5 @@ class BulkTransactionsClient(BaseBulkTransactionsClient):
         processed_items = [self._preprocess_item(item, base_url) for item in items]
         return_msg = f"Successfully added {len(processed_items)} items."
         with self.client.start_session(causal_consistency=True) as session:
-            self.client.stac.stac_item.insert_many(processed_items, session=session)
+            self.item_table.insert_many(processed_items, session=session)
             return return_msg

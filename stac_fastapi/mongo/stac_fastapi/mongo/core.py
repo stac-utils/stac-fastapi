@@ -41,6 +41,8 @@ class CoreCrudClient(BaseCoreClient):
     )
     settings = MongoSettings()
     client = settings.create_client
+    item_table = client.stac.stac_item
+    collection_table = client.stac.stac_collection
 
     @staticmethod
     def _lookup_id(id: str, table, session):
@@ -52,7 +54,7 @@ class CoreCrudClient(BaseCoreClient):
         base_url = str(kwargs["request"].base_url)
 
         with self.client.start_session(causal_consistency=True) as session:
-            collections = self.client.stac.stac_collection.find({}, session=session)
+            collections = self.collection_table.find({}, session=session)
 
             serialized_collections = [
                 self.collection_serializer.db_to_stac(collection, base_url=base_url)
@@ -87,7 +89,7 @@ class CoreCrudClient(BaseCoreClient):
         with self.client.start_session(causal_consistency=True) as session:
             error_check = ErrorChecks(session=session, client=self.client)
             error_check._check_collection_not_found(collection_id)
-            collection = self.client.stac.stac_collection.find_one(
+            collection = self.collection_table.find_one(
                 {"id": collection_id}, session=session
             )
         return self.collection_serializer.db_to_stac(collection, base_url)
@@ -101,7 +103,7 @@ class CoreCrudClient(BaseCoreClient):
         base_url = str(kwargs["request"].base_url)
 
         with self.client.start_session() as session:
-            collection_children = self.client.stac.stac_item.find(
+            collection_children = self.item_table.find(
                 {"collection": collection_id}, session=session
             ).sort(
                 [("properties.datetime", pymongo.ASCENDING), ("id", pymongo.ASCENDING)]
@@ -134,7 +136,7 @@ class CoreCrudClient(BaseCoreClient):
         with self.client.start_session() as session:
             error_check = ErrorChecks(session=session, client=self.client)
             error_check._check_item_not_found(item_id, collection_id)
-            item = self.client.stac.stac_item.find_one(
+            item = self.item_table.find_one(
                 {"id": item_id, "collection": collection_id}, session=session
             )
         return self.item_serializer.db_to_stac(item, base_url)
@@ -286,7 +288,7 @@ class CoreCrudClient(BaseCoreClient):
 
         with self.client.start_session() as session:
             items = (
-                self.client.stac.stac_item.find(queries, session=session)
+                self.item_table.find(queries, session=session)
                 .limit(search_request.limit)
                 .sort(sort_list)
             )
