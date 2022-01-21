@@ -15,19 +15,19 @@ class ErrorChecks:
     session: Session = attr.ib(default=Session)
     client: MongoClient = attr.ib(default=None)
 
-    def _check_collection_foreign_key(self, model: stac_types.Item):
+    def _check_collection_foreign_key(self, model: stac_types.Collection):
         if not self.client.stac.stac_collection.count_documents(
             {"id": model["collection"]}, limit=1, session=self.session
         ):
             raise ForeignKeyError(f"Collection {model['collection']} does not exist")
 
-    def _check_collection_conflict(self, model):
+    def _check_collection_conflict(self, model: stac_types.Collection):
         if self.client.stac.stac_collection.count_documents(
             {"id": model["id"]}, limit=1, session=self.session
         ):
             raise ConflictError(f"Collection {model['id']} already exists")
 
-    def _check_collection_not_found(self, collection_id):
+    def _check_collection_not_found(self, collection_id: str):
         if (
             self.client.stac.stac_collection.count_documents(
                 {"id": collection_id}, session=self.session
@@ -46,7 +46,7 @@ class ErrorChecks:
                 f"Item {model['id']} in collection {model['collection']} already exists"
             )
 
-    def _check_item_not_found(self, item_id, collection_id):
+    def _check_item_not_found(self, item_id: str, collection_id: str):
         if (
             self.client.stac.stac_item.count_documents(
                 {"id": item_id, "collection": collection_id},
