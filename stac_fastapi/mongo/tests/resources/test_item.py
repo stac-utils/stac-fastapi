@@ -125,8 +125,18 @@ def test_update_item_geometry(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
+    new_coordinates = [
+        [
+            [142.15052873427666, -33.82243006904891],
+            [140.1000346138806, -34.257132625788756],
+            [139.5776607193635, -32.514709769700254],
+            [141.6262528041627, -32.08081674221862],
+            [142.15052873427666, -33.82243006904891],
+        ]
+    ]
+
     # Update the geometry of the item
-    test_item["geometry"]["coordinates"] = [[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]]
+    test_item["geometry"]["coordinates"] = new_coordinates
     resp = app_client.put(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
@@ -137,9 +147,7 @@ def test_update_item_geometry(app_client, load_test_data):
         f"/collections/{test_item['collection']}/items/{test_item['id']}"
     )
     assert resp.status_code == 200
-    assert resp.json()["geometry"]["coordinates"] == [
-        [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
-    ]
+    assert resp.json()["geometry"]["coordinates"] == new_coordinates
 
 
 def test_get_item(app_client, load_test_data):
@@ -229,20 +237,20 @@ def test_item_timestamps(app_client, load_test_data):
     """Test created and updated timestamps (common metadata)"""
     test_item = load_test_data("test_item.json")
     start_time = datetime.utcnow().strftime(DATETIME_RFC339)
-    time.sleep(2)
+    time.sleep(1)
     # Confirm `created` timestamp
     resp = app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
     item = resp.json()
     created_dt = item["properties"]["created"]
-    time.sleep(2)
+    time.sleep(1)
     assert resp.status_code == 200
     assert (
         str(start_time) < created_dt < str(datetime.utcnow().strftime(DATETIME_RFC339))
     )
 
-    time.sleep(2)
+    time.sleep(1)
     # Confirm `updated` timestamp
     item["properties"]["proj:epsg"] = 4326
     resp = app_client.put(f"/collections/{test_item['collection']}/items", json=item)

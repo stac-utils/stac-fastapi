@@ -179,13 +179,23 @@ def test_update_geometry(
     item = load_test_data("test_item.json")
     mongo_transactions.create_item(item, request=MockStarletteRequest)
 
-    item["geometry"]["coordinates"] = [[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]]
+    new_coordinates = [
+        [
+            [142.15052873427666, -33.82243006904891],
+            [140.1000346138806, -34.257132625788756],
+            [139.5776607193635, -32.514709769700254],
+            [141.6262528041627, -32.08081674221862],
+            [142.15052873427666, -33.82243006904891],
+        ]
+    ]
+
+    item["geometry"]["coordinates"] = new_coordinates
     mongo_transactions.update_item(item, request=MockStarletteRequest)
 
     updated_item = mongo_core.get_item(
         item["id"], item["collection"], request=MockStarletteRequest
     )
-    assert updated_item["geometry"]["coordinates"] == item["geometry"]["coordinates"]
+    assert updated_item["geometry"]["coordinates"] == new_coordinates
 
 
 def test_delete_item(
