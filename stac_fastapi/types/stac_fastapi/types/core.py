@@ -12,7 +12,11 @@ from stac_pydantic.version import STAC_VERSION
 from starlette.responses import Response
 
 from stac_fastapi.types import stac as stac_types
-from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
+from stac_fastapi.types.conformance import (
+    BASE_CONFORMANCE_CLASSES,
+    BROWSEABLE_CONFORMANCE_CLASS,
+    CHILDREN_CONFORMANCE_CLASS,
+)
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.hierarchy import (
     BrowsableNode,
@@ -327,6 +331,10 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base conformance classes."""
         base_conformance_classes = self.base_conformance_classes.copy()
+        base_conformance_classes = base_conformance_classes + [
+            BROWSEABLE_CONFORMANCE_CLASS,
+            CHILDREN_CONFORMANCE_CLASS,
+        ]
 
         for extension in self.extensions:
             extension_classes = getattr(extension, "conformance_classes", [])
@@ -584,6 +592,11 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base conformance classes."""
         conformance_classes = self.base_conformance_classes.copy()
+
+        conformance_classes = conformance_classes + [
+            BROWSEABLE_CONFORMANCE_CLASS,
+            CHILDREN_CONFORMANCE_CLASS,
+        ]
 
         for extension in self.extensions:
             extension_classes = getattr(extension, "conformance_classes", [])

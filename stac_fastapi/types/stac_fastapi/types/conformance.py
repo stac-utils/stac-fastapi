@@ -28,3 +28,7 @@ BASE_CONFORMANCE_CLASSES = [
     OAFConformanceClasses.OPEN_API,
     OAFConformanceClasses.GEOJSON,
 ]
+
+CHILDREN_CONFORMANCE_CLASS = "https://api.stacspec.org/v1.0.0-beta.5/children"
+
+BROWSEABLE_CONFORMANCE_CLASS = "https://api.stacspec.org/v1.0.0-beta.5/browseable"
