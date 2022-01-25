@@ -19,11 +19,11 @@ from stac_fastapi.types.conformance import (
 )
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.hierarchy import (
-    BrowsableNode,
-    browsable_catalog,
-    browsable_catalog_link,
-    browsable_collection_link,
-    browsable_item_link,
+    BrowseableNode,
+    browseable_catalog,
+    browseable_catalog_link,
+    browseable_collection_link,
+    browseable_item_link,
 )
 from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import Conformance
@@ -326,21 +326,20 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
     post_request_model = attr.ib(default=BaseSearchPostRequest)
-    hierarchy_definition: Optional[BrowsableNode] = attr.ib(default=None)
+    hierarchy_definition: Optional[BrowseableNode] = attr.ib(default=None)
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base conformance classes."""
-        base_conformance_classes = self.base_conformance_classes.copy()
-        base_conformance_classes = base_conformance_classes + [
-            BROWSEABLE_CONFORMANCE_CLASS,
-            CHILDREN_CONFORMANCE_CLASS,
-        ]
+        conformance_classes = self.base_conformance_classes.copy()
+        if self.hierarchy_definition:
+            conformance_classes.append(BROWSEABLE_CONFORMANCE_CLASS)
+            conformance_classes.append(CHILDREN_CONFORMANCE_CLASS)
 
         for extension in self.extensions:
             extension_classes = getattr(extension, "conformance_classes", [])
-            base_conformance_classes.extend(extension_classes)
+            conformance_classes.extend(extension_classes)
 
-        return list(set(base_conformance_classes))
+        return list(set(conformance_classes))
 
     def extension_is_enabled(self, extension: str) -> bool:
         """Check if an api extension is enabled."""
@@ -389,21 +388,34 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 }
             )
 
-        # Add links for browsable conformance
+        # Add links for browseable and children conformance
         if self.hierarchy_definition is not None:
+            # Children
+            landing_page["links"].append(
+                {
+                    "rel": "children",  # todo: add this relation to stac-pydantic
+                    "type": MimeTypes.json.value,
+                    "title": "Child collections and catalogs",
+                    "href": urljoin(base_url, "children"),
+                }
+            )
+
+            # Browseable
             for child in self.hierarchy_definition["children"]:
                 if "collection_id" in child:
                     landing_page["links"].append(
-                        browsable_collection_link(
+                        browseable_collection_link(
                             child, urljoin(base_url, "collections")
                         )
                     )
                 if "catalog_id" in child:
                     landing_page["links"].append(
-                        browsable_catalog_link(child, urljoin(base_url, "catalogs"), "")
+                        browseable_catalog_link(
+                            child, urljoin(base_url, "catalogs"), ""
+                        )
                     )
             for item in self.hierarchy_definition["items"]:
-                landing_page["links"].append(browsable_item_link(item, base_url))
+                landing_page["links"].append(browseable_item_link(item, base_url))
 
         # Add OpenAPI URL
         landing_page["links"].append(
@@ -536,7 +548,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Called with `GET /catalogs/{catalog_path}`.
 
         Args:
-            catalog_path: The full path of the catalog in the browsable hierarchy.
+            catalog_path: The full path of the catalog in the browseable hierarchy.
 
         Returns:
             Catalog.
@@ -551,7 +563,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 for node in remaining_hierarchy["children"]
                 if node["catalog_id"] == fork
             )
-        return browsable_catalog(remaining_hierarchy, base_url, catalog_path).dict(
+        return browseable_catalog(remaining_hierarchy, base_url, catalog_path).dict(
             exclude_unset=True
         )
 
@@ -587,16 +599,15 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
     post_request_model = attr.ib(default=BaseSearchPostRequest)
-    hierarchy_definition: Optional[BrowsableNode] = attr.ib(default=None)
+    hierarchy_definition: Optional[BrowseableNode] = attr.ib(default=None)
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base conformance classes."""
         conformance_classes = self.base_conformance_classes.copy()
 
-        conformance_classes = conformance_classes + [
-            BROWSEABLE_CONFORMANCE_CLASS,
-            CHILDREN_CONFORMANCE_CLASS,
-        ]
+        if self.hierarchy_definition is not None:
+            conformance_classes.append(BROWSEABLE_CONFORMANCE_CLASS)
+            conformance_classes.append(CHILDREN_CONFORMANCE_CLASS)
 
         for extension in self.extensions:
             extension_classes = getattr(extension, "conformance_classes", [])
@@ -639,19 +650,29 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 }
             )
 
-        # Add links for browsable conformance
+        # Add links for children and browseable conformance
         if self.hierarchy_definition is not None:
+            # Children
+            landing_page["links"].append(
+                {
+                    "rel": "children",  # todo: add this relation to stac-pydantic
+                    "type": MimeTypes.json.value,
+                    "title": "Child collections and catalogs",
+                    "href": urljoin(base_url, "children"),
+                }
+            )
+
             for child in self.hierarchy_definition["children"]:
                 if "collection_id" in child:
                     landing_page["links"].append(
-                        browsable_collection_link(child, base_url)
+                        browseable_collection_link(child, base_url)
                     )
                 if "catalog_id" in child:
                     landing_page["links"].append(
-                        browsable_catalog_link(child, base_url, child["catalog_id"])
+                        browseable_catalog_link(child, base_url, child["catalog_id"])
                     )
             for item in self.hierarchy_definition["items"]:
-                landing_page["links"].append(browsable_item_link(item, base_url))
+                landing_page["links"].append(browseable_item_link(item, base_url))
 
         # Add OpenAPI URL
         landing_page["links"].append(
@@ -790,7 +811,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Called with `GET /catalogs/{catalog_path}`.
 
         Args:
-            catalog_path: The full path of the catalog in the browsable hierarchy.
+            catalog_path: The full path of the catalog in the browseable hierarchy.
 
         Returns:
             Catalog.
@@ -805,7 +826,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 for node in remaining_hierarchy["children"]
                 if node["catalog_id"] == fork
             )
-        return browsable_catalog(remaining_hierarchy, base_url, catalog_path).dict(
+        return browseable_catalog(remaining_hierarchy, base_url, catalog_path).dict(
             exclude_unset=True
         )
 

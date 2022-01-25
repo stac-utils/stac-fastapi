@@ -357,9 +357,11 @@ class StacApi:
         self.register_get_search()
         self.register_get_collections()
         self.register_get_collection()
-        self.register_get_root_children()
         self.register_get_catalog()
         self.register_get_item_collection()
+
+        if self.settings.browseable_hierarchy_definition is not None:
+            self.register_get_root_children()
 
     def customize_openapi(self) -> Optional[Dict[str, Any]]:
         """Customize openapi schema."""

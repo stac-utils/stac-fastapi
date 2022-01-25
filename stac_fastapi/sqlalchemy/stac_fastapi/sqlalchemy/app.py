@@ -19,7 +19,7 @@ from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
-from stac_fastapi.types.hierarchy import BrowsableNode, parse_hierarchy
+from stac_fastapi.types.hierarchy import BrowseableNode, parse_hierarchy
 
 settings = SqlalchemySettings()
 session = Session.create_from_settings(settings)
@@ -32,9 +32,9 @@ extensions = [
     TokenPaginationExtension(),
     ContextExtension(),
 ]
-with open(settings.browsable_hierarchy_definition, "r") as definition_file:
+with open(settings.browseable_hierarchy_definition, "r") as definition_file:
     hierarchy_json = json.load(definition_file)
-    hierarchy_definition: BrowsableNode = parse_hierarchy(hierarchy_json)
+    hierarchy_definition: BrowseableNode = parse_hierarchy(hierarchy_json)
 
 post_request_model = create_post_request_model(extensions)
 

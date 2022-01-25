@@ -29,8 +29,8 @@ class ApiSettings(BaseSettings):
     openapi_url: str = "/api"
     docs_url: str = "/api.html"
 
-    # Path to JSON which defines the browsable hierarchy pending backend implementations
-    browsable_hierarchy_definition: Optional[str] = None
+    # Path to JSON which defines the browseable hierarchy pending backend implementations
+    browseable_hierarchy_definition: Optional[str] = None
 
     class Config:
         """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
