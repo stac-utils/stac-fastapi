@@ -9,13 +9,12 @@ function.
 from typing import List, Optional, Tuple, TypedDict, Union
 from urllib.parse import urljoin
 
-from stac_pydantic import Catalog
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
-from stac_pydantic.version import STAC_VERSION
+
+from stac_fastapi.types import stac as stac_types
 
 ItemPath = Tuple[str, str]
-NodeType = str
 
 
 class BrowseableNode(TypedDict):
@@ -57,7 +56,7 @@ def browseable_collection_link(node: BrowseableNode, base_url: str) -> str:
         "rel": Relations.child.value,
         "type": MimeTypes.json,
         "title": node.get("title") or node.get("collection_id"),
-        "href": urljoin([base_url, f"collections/{node['collection_id']}"]),
+        "href": urljoin(base_url, f"collections/{node['collection_id']}"),
     }
 
 
@@ -70,22 +69,31 @@ def browseable_item_link(item_path: ItemPath, base_url: str):
     }
 
 
-def browseable_catalog(node: CatalogNode, base_url: str, catalog_path: str) -> Catalog:
-    """Generate a catalog based on a CatalogNode in a BrowseableNode tree."""
+def browseable_catalog_page(
+    catalog_node: CatalogNode,
+    base_url: str,
+    catalog_path: str,
+    stac_version: str,
+    conformance_classes: List[str],
+    extension_schemas: List[str],
+) -> stac_types.LandingPage:
+    """Generate a STAC API landing page/catalog."""
     catalog_links = [
         browseable_catalog_link(
             child, base_url, "/".join([catalog_path.strip("/"), child["catalog_id"]])
         )
-        for child in node["children"]
+        for child in catalog_node["children"]
         if "catalog_id" in child
     ]
     collection_links = [
         browseable_collection_link(child, base_url)
-        for child in node["children"]
+        for child in catalog_node["children"]
         if "collection_id" in child
     ]
     children_links = catalog_links + collection_links
-    item_links = [browseable_item_link(item, base_url) for item in node["items"]]
+    item_links = [
+        browseable_item_link(item, base_url) for item in catalog_node["items"]
+    ]
 
     split_catalog_path = catalog_path.split("/")
     if len(split_catalog_path) > 1:
@@ -97,25 +105,58 @@ def browseable_catalog(node: CatalogNode, base_url: str, catalog_path: str) -> C
 
     standard_links = [
         {
+            "rel": Relations.self.value,
+            "type": MimeTypes.json,
+            "href": urljoin(base_url, f"/catalogs/{catalog_path.strip('/')}"),
+        },
+        {
             "rel": Relations.root.value,
             "type": MimeTypes.json,
             "href": base_url,
         },
         {
-            "rel": Relations.self.value,
+            "rel": "data",
             "type": MimeTypes.json,
-            "href": urljoin(base_url, f"/catalogs/{catalog_path.strip('/')}"),
+            "href": urljoin(
+                base_url, f"/catalogs/{catalog_path.strip('/')}/collections"
+            ),
+        },
+        {
+            "rel": Relations.conformance.value,
+            "type": MimeTypes.json,
+            "title": "STAC/WFS3 conformance classes implemented by this api",
+            "href": urljoin(
+                base_url, f"/catalogs/{catalog_path.strip('/')}/conformance"
+            ),
+        },
+        {
+            "rel": Relations.search.value,
+            "type": MimeTypes.geojson,
+            "title": "STAC search",
+            "href": urljoin(base_url, f"/catalogs/{catalog_path.strip('/')}/search"),
+            "method": "GET",
+        },
+        {
+            "rel": Relations.search.value,
+            "type": MimeTypes.json,
+            "title": "STAC search",
+            "href": urljoin(base_url, f"/catalogs/{catalog_path.strip('/')}/search"),
+            "method": "POST",
         },
         {"rel": Relations.parent.value, "type": MimeTypes.json, "href": parent_href},
     ]
-    return Catalog(
+
+    catalog_page = stac_types.LandingPage(
         type="Catalog",
-        id=node["catalog_id"],
-        description=node.get("description")
-        or f"Generated description for {node['catalog_id']}",
-        stac_version=STAC_VERSION,
-        links=children_links + item_links + standard_links,
+        id=catalog_node["catalog_id"],
+        title=catalog_node["catalog_id"],
+        description=catalog_node["description"],
+        stac_version=stac_version,
+        conformsTo=conformance_classes,
+        links=standard_links + children_links + item_links,
+        stac_extensions=extension_schemas,
     )
+    return catalog_page
 
 
 def parse_hierarchy(d: dict) -> BrowseableNode:

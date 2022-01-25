@@ -19,7 +19,7 @@ from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingL
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import InvalidQueryParameter, NotFoundError
-from stac_fastapi.types.hierarchy import browseable_catalog
+from stac_fastapi.types.hierarchy import browseable_catalog_page
 from stac_fastapi.types.stac import (
     Children,
     Collection,
@@ -119,9 +119,17 @@ class CoreCrudClient(AsyncBaseCoreClient):
         """
         request: Request = kwargs["request"]
         base_url = str(request.base_url)
+        extension_schemas = [
+            schema.schema_href for schema in self.extensions if schema.schema_href
+        ]
         catalog_children = [
-            browseable_catalog(child, base_url, child["catalog_id"]).dict(
-                exclude_unset=True
+            browseable_catalog_page(
+                child,
+                base_url,
+                child["catalog_id"],
+                self.stac_version,
+                self.conformance_classes(),
+                extension_schemas,
             )
             for child in self.hierarchy_definition["children"]
             if "catalog_id" in child

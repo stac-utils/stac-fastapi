@@ -13,6 +13,10 @@
                 ["joplin", "f7f164c9-cfdf-436d-a3f0-69864c38ba2a"],
                 ["joplin", "f734401c-2df0-4694-a353-cdd3ea760cdc"]
             ] 
+        }, {
+            "collection_id": "joplin",
+            "children": [],
+            "items": []
         }],
         "items": [
             ["joplin", "fe916452-ba6f-4631-9154-c249924a122d"],

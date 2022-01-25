@@ -20,8 +20,8 @@ from stac_fastapi.types.conformance import (
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.hierarchy import (
     BrowseableNode,
-    browseable_catalog,
     browseable_catalog_link,
+    browseable_catalog_page,
     browseable_collection_link,
     browseable_item_link,
 )
@@ -377,16 +377,16 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add Collections links
-        collections = self.all_collections(request=kwargs["request"])
-        for collection in collections["collections"]:
-            landing_page["links"].append(
-                {
-                    "rel": Relations.child.value,
-                    "type": MimeTypes.json.value,
-                    "title": collection.get("title") or collection.get("id"),
-                    "href": urljoin(base_url, f"collections/{collection['id']}"),
-                }
-            )
+        # collections = self.all_collections(request=kwargs["request"])
+        # for collection in collections["collections"]:
+        #     landing_page["links"].append(
+        #         {
+        #             "rel": Relations.child.value,
+        #             "type": MimeTypes.json.value,
+        #             "title": collection.get("title") or collection.get("id"),
+        #             "href": urljoin(base_url, f"collections/{collection['id']}"),
+        #         }
+        #     )
 
         # Add links for browseable and children conformance
         if self.hierarchy_definition is not None:
@@ -563,8 +563,18 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 for node in remaining_hierarchy["children"]
                 if node["catalog_id"] == fork
             )
-        return browseable_catalog(remaining_hierarchy, base_url, catalog_path).dict(
-            exclude_unset=True
+
+        extension_schemas = [
+            schema.schema_href for schema in self.extensions if schema.schema_href
+        ]
+
+        return browseable_catalog_page(
+            remaining_hierarchy,
+            base_url,
+            catalog_path,
+            self.stac_version,
+            self.conformance_classes(),
+            extension_schemas,
         )
 
     @abc.abstractmethod
@@ -638,17 +648,17 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             extension_schemas=extension_schemas,
         )
 
-        # Add Collections links
-        collections = await self.all_collections(request=kwargs["request"])
-        for collection in collections["collections"]:
-            landing_page["links"].append(
-                {
-                    "rel": Relations.child.value,
-                    "type": MimeTypes.json.value,
-                    "title": collection.get("title") or collection.get("id"),
-                    "href": urljoin(base_url, f"collections/{collection['id']}"),
-                }
-            )
+        # # Add Collections links
+        # collections = await self.all_collections(request=kwargs["request"])
+        # for collection in collections["collections"]:
+        #     landing_page["links"].append(
+        #         {
+        #             "rel": Relations.child.value,
+        #             "type": MimeTypes.json.value,
+        #             "title": collection.get("title") or collection.get("id"),
+        #             "href": urljoin(base_url, f"collections/{collection['id']}"),
+        #         }
+        #     )
 
         # Add links for children and browseable conformance
         if self.hierarchy_definition is not None:
@@ -669,7 +679,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                     )
                 if "catalog_id" in child:
                     landing_page["links"].append(
-                        browseable_catalog_link(child, base_url, child["catalog_id"])
+                        browseable_catalog_link(
+                            child, base_url, child["catalog_id"], ""
+                        )
                     )
             for item in self.hierarchy_definition["items"]:
                 landing_page["links"].append(browseable_item_link(item, base_url))
@@ -826,8 +838,18 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 for node in remaining_hierarchy["children"]
                 if node["catalog_id"] == fork
             )
-        return browseable_catalog(remaining_hierarchy, base_url, catalog_path).dict(
-            exclude_unset=True
+
+        extension_schemas = [
+            schema.schema_href for schema in self.extensions if schema.schema_href
+        ]
+
+        return browseable_catalog_page(
+            remaining_hierarchy,
+            base_url,
+            catalog_path,
+            self.stac_version,
+            self.conformance_classes(),
+            extension_schemas,
         )
 
     @abc.abstractmethod

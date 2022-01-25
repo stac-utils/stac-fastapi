@@ -28,7 +28,7 @@ from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.hierarchy import browseable_catalog
+from stac_fastapi.types.hierarchy import browseable_catalog_page
 from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import (
     Children,
@@ -115,10 +115,18 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         """
         request: Request = kwargs["request"]
         base_url = str(request.base_url)
+        extension_schemas = [
+            schema.schema_href for schema in self.extensions if schema.schema_href
+        ]
         catalog_children = [
-            browseable_catalog(child, base_url, child["catalog_id"]).dict(
-                exclude_unset=True
-            )
+            browseable_catalog_page(
+                child,
+                base_url,
+                child["catalog_id"],
+                self.stac_version,
+                self.conformance_classes(),
+                extension_schemas,
+            ).dict(exclude_unset=True)
             for child in self.hierarchy_definition["children"]
             if "catalog_id" in child
         ]
