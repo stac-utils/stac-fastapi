@@ -3,7 +3,17 @@
         "catalog_id": "joplin",
         "title": "Joplin Item Catalog",
         "description": "All joplin items",
-        "children": [],
+        "children": [{
+            "catalog_id": "joplin-subset",
+            "title": "Joplin Item Subset Catalog",
+            "description": "A subset of joplin items",
+            "children": [],
+            "items": [
+                ["joplin", "fe916452-ba6f-4631-9154-c249924a122d"],
+                ["joplin", "f7f164c9-cfdf-436d-a3f0-69864c38ba2a"],
+                ["joplin", "f734401c-2df0-4694-a353-cdd3ea760cdc"]
+            ] 
+        }],
         "items": [
             ["joplin", "fe916452-ba6f-4631-9154-c249924a122d"],
             ["joplin", "f7f164c9-cfdf-436d-a3f0-69864c38ba2a"],

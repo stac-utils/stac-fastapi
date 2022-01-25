@@ -116,7 +116,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         request: Request = kwargs["request"]
         base_url = str(request.base_url)
         catalog_children = [
-            browsable_catalog(child, child["catalog_id"], base_url).dict(
+            browsable_catalog(child, base_url, child["catalog_id"]).dict(
                 exclude_unset=True
             )
             for child in self.hierarchy_definition["children"]

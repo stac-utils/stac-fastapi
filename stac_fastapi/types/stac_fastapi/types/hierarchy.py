@@ -39,25 +39,34 @@ class CatalogNode(BrowsableNode):
     description: Optional[str]
 
 
-def browsable_child_link(node: BrowsableNode, base_url: str) -> str:
+def browsable_catalog_link(
+    node: BrowsableNode, base_url: str, catalog_path: Optional[str]
+) -> str:
     """Produce browsable link to a child."""
-    if "collection_id" in node:
-        return {
-            "rel": Relations.child.value,
-            "type": MimeTypes.json,
-            "title": node.get("title") or node.get("collection_id"),
-            "href": urljoin([base_url, f"collections/{node['collection_id']}"]),
-        }
-    elif "catalog_id" in node:
-        return {
-            "rel": Relations.child.value,
-            "type": MimeTypes.json,
-            "title": node.get("title") or node.get("catalog_id"),
-            "href": "/".join([base_url.strip("/"), node["catalog_id"]]),
-        }
+    print("BASE CAT URL", base_url, catalog_path)
+    catalog_path = catalog_path or ""
+    return {
+        "rel": Relations.child.value,
+        "type": MimeTypes.json,
+        "title": node.get("title") or node.get("catalog_id"),
+        "href": "/".join(
+            [base_url.strip("/"), catalog_path.strip("/"), node["catalog_id"]]
+        ),
+    }
 
 
-def browsable_item_link(item_path: ItemPath, base_url):
+def browsable_collection_link(node: BrowsableNode, base_url: str) -> str:
+    """Produce browsable link to a child."""
+    print("BASE COLL URL", base_url)
+    return {
+        "rel": Relations.child.value,
+        "type": MimeTypes.json,
+        "title": node.get("title") or node.get("collection_id"),
+        "href": urljoin([base_url, f"collections/{node['collection_id']}"]),
+    }
+
+
+def browsable_item_link(item_path: ItemPath, base_url: str):
     """Produce browsable link to an item."""
     return {
         "rel": Relations.item.value,
@@ -66,11 +75,23 @@ def browsable_item_link(item_path: ItemPath, base_url):
     }
 
 
-def browsable_catalog(node: CatalogNode, catalog_path: str, base_url: str) -> Catalog:
+def browsable_catalog(
+    node: CatalogNode, base_url: str, catalog_path: Optional[str]
+) -> Catalog:
     """Generate a catalog based on a CatalogNode in a BrowsableNode tree."""
-    children_links = [
-        browsable_child_link(child, base_url) for child in node["children"]
+    catalog_path = catalog_path or ""
+    print("LINK PATHING", base_url, catalog_path, node["catalog_id"])
+    catalog_links = [
+        browsable_catalog_link(child, base_url, f"/catalogs/{catalog_path.strip('/')}")
+        for child in node["children"]
+        if "catalog_id" in child
     ]
+    collection_links = [
+        browsable_collection_link(child, base_url)
+        for child in node["children"]
+        if "collection_id" in child
+    ]
+    children_links = catalog_links + collection_links
     item_links = [browsable_item_link(item, base_url) for item in node["items"]]
     standard_links = [
         {
