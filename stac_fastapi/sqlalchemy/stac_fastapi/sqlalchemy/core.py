@@ -10,7 +10,7 @@ import attr
 import geoalchemy2 as ga
 import sqlalchemy as sa
 import stac_pydantic
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from pydantic import ValidationError
 from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import shape
@@ -28,6 +28,7 @@ from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
+from stac_fastapi.types.hierarchy import browsable_catalog
 from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import (
     Children,
@@ -104,18 +105,44 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             collection = self._lookup_id(collection_id, self.collection_table, session)
             return self.collection_serializer.db_to_stac(collection, base_url)
 
-    def get_collection_children(self, collection_id: str, **kwargs) -> Children:
-        """Get  children by parent collection id.
+    def get_root_children(self, **kwargs) -> Children:
+        """Get children of root.
 
-        Called with `GET /collections/{collection_id}/children`.
-
-        Args:
-            collection_id: Id of the collection.
+        Called with `GET /children`.
 
         Returns:
             Children.
         """
-        return Children(children=[], links=[])
+        request: Request = kwargs["request"]
+        base_url = str(request.base_url)
+        catalog_children = [
+            browsable_catalog(child, child["catalog_id"], base_url).dict(
+                exclude_unset=True
+            )
+            for child in self.hierarchy_definition["children"]
+            if "catalog_id" in child
+        ]
+        collection_children = self.all_collections(**kwargs)
+        links = [
+            {
+                "rel": Relations.root.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.parent.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.self.value,
+                "type": MimeTypes.json,
+                "href": urljoin(base_url, "children"),
+            },
+        ]
+        return Children(
+            children=catalog_children + collection_children["collections"], links=links
+        )
 
     def item_collection(
         self, collection_id: str, limit: int = 10, token: str = None, **kwargs

@@ -508,9 +508,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_collection_children(
-        self, collection_id: str, **kwargs
-    ) -> stac_types.Children:
+    def get_root_children(self, **kwargs) -> stac_types.Children:
         """Get  children by parent collection id.
 
         Called with `GET /collections/{collection_id}/children`.
@@ -534,11 +532,19 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             Catalog.
         """
+        request: Request = kwargs["request"]
+        base_url = str(request.base_url)
         split_path = catalog_path.split("/")
         remaining_hierarchy = self.hierarchy_definition
         for fork in split_path:
-            remaining_hierarchy = remaining_hierarchy[fork]
-        return browsable_catalog(catalog_path)
+            remaining_hierarchy = next(
+                node
+                for node in remaining_hierarchy["children"]
+                if node["catalog_id"] == fork
+            )
+        return browsable_catalog(remaining_hierarchy, catalog_path, base_url).dict(
+            exclude_unset=True
+        )
 
     @abc.abstractmethod
     def item_collection(
@@ -749,12 +755,12 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_collection_children(
+    async def get_root_children(
         self, collection_id: str, **kwargs
     ) -> stac_types.Children:
         """Get children by parent's collection id.
 
-        Called with `GET /collections/{collection_id}/children`.
+        Called with `GET /children`.
 
         Args:
             collection_id: Id of the collection.
@@ -785,7 +791,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 for node in remaining_hierarchy["children"]
                 if node["catalog_id"] == fork
             )
-        return browsable_catalog(remaining_hierarchy, base_url).dict(exclude_unset=True)
+        return browsable_catalog(remaining_hierarchy, catalog_path, base_url).dict(
+            exclude_unset=True
+        )
 
     @abc.abstractmethod
     async def item_collection(

@@ -287,22 +287,22 @@ class StacApi:
             ),
         )
 
-    def register_get_collection_children(self):
+    def register_get_root_children(self):
         """Register get collection children endpoint (GET /collection/{collection_id}/children).
 
         Returns:
             None
         """
         self.router.add_api_route(
-            name="Get Collection Children",
-            path="/collections/{collection_id}/children",
+            name="Get Root Children",
+            path="/children",
             response_model=Children if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=self._create_endpoint(
-                self.client.get_collection_children, CollectionUri, self.response_class
+                self.client.get_root_children, EmptyRequest, self.response_class
             ),
         )
 
@@ -357,7 +357,7 @@ class StacApi:
         self.register_get_search()
         self.register_get_collections()
         self.register_get_collection()
-        self.register_get_collection_children()
+        self.register_get_root_children()
         self.register_get_catalog()
         self.register_get_item_collection()
 

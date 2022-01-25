@@ -19,6 +19,7 @@ services:
       - POSTGRES_HOST_WRITER=database
       - POSTGRES_PORT=5432
       - WEB_CONCURRENCY=10
+      - BROWSABLE_HIERARCHY_DEFINITION=/app/stac_fastapi/testdata/joplin/hierarchy.json
     ports:
       - "8081:8081"
     volumes:

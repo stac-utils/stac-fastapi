@@ -8,18 +8,18 @@ import attr
 import orjson
 from asyncpg.exceptions import InvalidDatetimeFormatError
 from buildpg import render
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from pydantic import ValidationError
 from pygeofilter.backends.cql2_json import to_cql2
 from pygeofilter.parsers.cql2_text import parse as parse_cql2_text
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
-from starlette.requests import Request
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import InvalidQueryParameter, NotFoundError
+from stac_fastapi.types.hierarchy import browsable_catalog
 from stac_fastapi.types.stac import (
     Children,
     Collection,
@@ -109,18 +109,44 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
         return Collection(**collection)
 
-    async def get_collection_children(self, collection_id: str, **kwargs) -> Children:
-        """Get  children by parent collection id.
+    async def get_root_children(self, **kwargs) -> Children:
+        """Get  children of root catalog.
 
-        Called with `GET /collections/{collection_id}/children`.
-
-        Args:
-            collection_id: Id of the collection.
+        Called with `GET /children`.
 
         Returns:
             Children.
         """
-        return Children(children=[], links=[])
+        request: Request = kwargs["request"]
+        base_url = str(request.base_url)
+        catalog_children = [
+            browsable_catalog(child, child["catalog_id"], base_url).dict(
+                exclude_unset=True
+            )
+            for child in self.hierarchy_definition["children"]
+            if "catalog_id" in child
+        ]
+        collection_children = await self.all_collections(**kwargs)
+        links = [
+            {
+                "rel": Relations.root.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.parent.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.self.value,
+                "type": MimeTypes.json,
+                "href": urljoin(base_url, "children"),
+            },
+        ]
+        return Children(
+            children=catalog_children + collection_children["collections"], links=links
+        )
 
     async def _search_base(
         self, search_request: PgstacSearch, **kwargs: Any
