@@ -6,6 +6,8 @@
 
 ### Changed
 
+* update FastAPI requirement to allow version >=0.73 ([#337](https://github.com/stac-utils/stac-fastapi/pull/337))
+
 ### Removed
 
 ### Fixed
