@@ -40,17 +40,14 @@ class CatalogNode(BrowsableNode):
 
 
 def browsable_catalog_link(
-    node: BrowsableNode, base_url: str, catalog_path: Optional[str]
+    node: BrowsableNode, base_url: str, catalog_path: str
 ) -> str:
     """Produce browsable link to a child."""
-    catalog_path = catalog_path or ""
     return {
         "rel": Relations.child.value,
         "type": MimeTypes.json,
         "title": node.get("title") or node.get("catalog_id"),
-        "href": "/".join(
-            [base_url.strip("/"), catalog_path.strip("/"), node["catalog_id"]]
-        ),
+        "href": "/".join([base_url.strip("/"), "catalogs", catalog_path.strip("/")]),
     }
 
 
@@ -73,13 +70,12 @@ def browsable_item_link(item_path: ItemPath, base_url: str):
     }
 
 
-def browsable_catalog(
-    node: CatalogNode, base_url: str, catalog_path: Optional[str]
-) -> Catalog:
+def browsable_catalog(node: CatalogNode, base_url: str, catalog_path: str) -> Catalog:
     """Generate a catalog based on a CatalogNode in a BrowsableNode tree."""
-    catalog_path = catalog_path or ""
     catalog_links = [
-        browsable_catalog_link(child, base_url, f"/catalogs/{catalog_path.strip('/')}")
+        browsable_catalog_link(
+            child, base_url, "/".join([catalog_path.strip("/"), child["catalog_id"]])
+        )
         for child in node["children"]
         if "catalog_id" in child
     ]
@@ -90,6 +86,15 @@ def browsable_catalog(
     ]
     children_links = catalog_links + collection_links
     item_links = [browsable_item_link(item, base_url) for item in node["items"]]
+
+    split_catalog_path = catalog_path.split("/")
+    if len(split_catalog_path) > 1:
+        parent_href = urljoin(
+            base_url, f"/catalogs/{'/'.join(split_catalog_path[:-1])}"
+        )
+    else:
+        parent_href = base_url
+
     standard_links = [
         {
             "rel": Relations.root.value,
@@ -101,6 +106,7 @@ def browsable_catalog(
             "type": MimeTypes.json,
             "href": urljoin(base_url, f"/catalogs/{catalog_path.strip('/')}"),
         },
+        {"rel": Relations.parent.value, "type": MimeTypes.json, "href": parent_href},
     ]
     return Catalog(
         type="Catalog",
@@ -114,22 +120,21 @@ def browsable_catalog(
 
 def parse_hierarchy(d: dict) -> BrowsableNode:
     """Parse a dictionary as a BrowsableNode tree."""
-    if "children" in d:
-        children = [parse_hierarchy(child) for child in d["children"]]
-    else:
-        children = []
+    d_items = d.get("items") or []
+    d_children = d.get("children") or []
+    parsed_children = [parse_hierarchy(child) for child in d_children]
 
     if "collection_id" in d:
         return CollectionNode(
-            collection_id=d["collection_id"], children=children, items=d.get("items")
+            collection_id=d["collection_id"], children=parsed_children, items=d_items
         )
     elif "catalog_id" in d:
         return CatalogNode(
             catalog_id=d["catalog_id"],
-            children=children,
-            items=d.get("items"),
+            children=parsed_children,
+            items=d_items,
             title=d.get("title"),
             description=d.get("description"),
         )
     else:
-        return BrowsableNode(children=children, items=d.get("items"))
+        return BrowsableNode(children=d_children, items=d_items)

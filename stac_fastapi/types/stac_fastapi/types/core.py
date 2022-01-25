@@ -392,7 +392,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                     )
                 if "catalog_id" in child:
                     landing_page["links"].append(
-                        browsable_catalog_link(child, urljoin(base_url, "catalogs"))
+                        browsable_catalog_link(child, urljoin(base_url, "catalogs"), "")
                     )
             for item in self.hierarchy_definition["items"]:
                 landing_page["links"].append(browsable_item_link(item, base_url))
@@ -635,7 +635,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                     )
                 if "catalog_id" in child:
                     landing_page["links"].append(
-                        browsable_catalog_link(child, base_url)
+                        browsable_catalog_link(child, base_url, child["catalog_id"])
                     )
             for item in self.hierarchy_definition["items"]:
                 landing_page["links"].append(browsable_item_link(item, base_url))
