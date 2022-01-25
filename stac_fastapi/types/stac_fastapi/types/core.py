@@ -14,6 +14,14 @@ from starlette.responses import Response
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.hierarchy import (
+    BrowsableNode,
+    CatalogNode,
+    CollectionNode,
+    browsable_catalog,
+    browsable_child_link,
+    browsable_item_link,
+)
 from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import Conformance
 
@@ -315,6 +323,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
     post_request_model = attr.ib(default=BaseSearchPostRequest)
+    hierarchy_definition: Optional[BrowsableNode] = attr.ib(default=None)
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base conformance classes."""
@@ -372,6 +381,20 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                     "href": urljoin(base_url, f"collections/{collection['id']}"),
                 }
             )
+
+        # Add links for browsable conformance
+        if self.hierarchy_definition is not None:
+            for child in self.hierarchy_definition["children"]:
+                if isinstance(child, CollectionNode):
+                    landing_page["links"].append(
+                        browsable_child_link(child, urljoin(base_url, "collections"))
+                    )
+                if isinstance(child, CatalogNode):
+                    landing_page["links"].append(
+                        browsable_child_link(child, urljoin(base_url, "catalogs"))
+                    )
+            for item in self.hierarchy_definition["items"]:
+                landing_page["links"].append(browsable_item_link(item, base_url))
 
         # Add OpenAPI URL
         landing_page["links"].append(
@@ -500,6 +523,23 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         """
         ...
 
+    def get_catalog(self, catalog_path: str, **kwargs) -> stac_types.Catalog:
+        """Get collection by id.
+
+        Called with `GET /catalogs/{catalog_path}`.
+
+        Args:
+            catalog_path: The full path of the catalog in the browsable hierarchy.
+
+        Returns:
+            Catalog.
+        """
+        split_path = catalog_path.split("/")
+        remaining_hierarchy = self.hierarchy_definition
+        for fork in split_path:
+            remaining_hierarchy = remaining_hierarchy[fork]
+        return browsable_catalog(catalog_path)
+
     @abc.abstractmethod
     def item_collection(
         self, collection_id: str, limit: int = 10, token: str = None, **kwargs
@@ -532,6 +572,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
     post_request_model = attr.ib(default=BaseSearchPostRequest)
+    hierarchy_definition: Optional[BrowsableNode] = attr.ib(default=None)
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base conformance classes."""
@@ -565,6 +606,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             conformance_classes=self.conformance_classes(),
             extension_schemas=extension_schemas,
         )
+
+        # Add Collections links
         collections = await self.all_collections(request=kwargs["request"])
         for collection in collections["collections"]:
             landing_page["links"].append(
@@ -575,6 +618,20 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                     "href": urljoin(base_url, f"collections/{collection['id']}"),
                 }
             )
+
+        # Add links for browsable conformance
+        if self.hierarchy_definition is not None:
+            for child in self.hierarchy_definition["children"]:
+                if "collection_id" in child:
+                    landing_page["links"].append(
+                        browsable_child_link(child, urljoin(base_url, "collections"))
+                    )
+                if "catalog_id" in child:
+                    landing_page["links"].append(
+                        browsable_child_link(child, urljoin(base_url, "catalogs"))
+                    )
+            for item in self.hierarchy_definition["items"]:
+                landing_page["links"].append(browsable_item_link(item, base_url))
 
         # Add OpenAPI URL
         landing_page["links"].append(
@@ -706,6 +763,29 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             Children.
         """
         ...
+
+    async def get_catalog(self, catalog_path: str, **kwargs) -> stac_types.Catalog:
+        """Get collection by id.
+
+        Called with `GET /catalogs/{catalog_path}`.
+
+        Args:
+            catalog_path: The full path of the catalog in the browsable hierarchy.
+
+        Returns:
+            Catalog.
+        """
+        request: Request = kwargs["request"]
+        base_url = str(request.base_url)
+        split_path = catalog_path.split("/")
+        remaining_hierarchy = self.hierarchy_definition
+        for fork in split_path:
+            remaining_hierarchy = next(
+                node
+                for node in remaining_hierarchy["children"]
+                if node["catalog_id"] == fork
+            )
+        return browsable_catalog(remaining_hierarchy, base_url).dict(exclude_unset=True)
 
     @abc.abstractmethod
     async def item_collection(

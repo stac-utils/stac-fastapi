@@ -7,7 +7,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.params import Depends
 from pydantic import BaseModel
-from stac_pydantic import Children, Collection, Item, ItemCollection
+from stac_pydantic import Catalog, Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.version import STAC_VERSION
@@ -16,6 +16,7 @@ from starlette.responses import JSONResponse, Response
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.models import (
     APIRequest,
+    CatalogUri,
     CollectionUri,
     EmptyRequest,
     GeoJSONResponse,
@@ -37,6 +38,7 @@ from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
+from stac_fastapi.types.stac import Children
 
 
 @attr.s
@@ -266,6 +268,25 @@ class StacApi:
             ),
         )
 
+    def register_get_catalog(self):
+        """Register get collection endpoint (GET /catalog/{catalog_path}).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get Catalog",
+            path="/catalogs/{catalog_path:path}",
+            response_model=Catalog if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(
+                self.client.get_catalog, CatalogUri, self.response_class
+            ),
+        )
+
     def register_get_collection_children(self):
         """Register get collection children endpoint (GET /collection/{collection_id}/children).
 
@@ -337,6 +358,7 @@ class StacApi:
         self.register_get_collections()
         self.register_get_collection()
         self.register_get_collection_children()
+        self.register_get_catalog()
         self.register_get_item_collection()
 
     def customize_openapi(self) -> Optional[Dict[str, Any]]:

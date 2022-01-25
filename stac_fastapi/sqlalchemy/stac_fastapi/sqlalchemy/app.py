@@ -1,4 +1,6 @@
 """FastAPI application."""
+import json
+
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import create_get_request_model, create_post_request_model
 from stac_fastapi.extensions.core import (
@@ -17,6 +19,7 @@ from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
     TransactionsClient,
 )
+from stac_fastapi.types.hierarchy import BrowsableNode, parse_hierarchy
 
 settings = SqlalchemySettings()
 session = Session.create_from_settings(settings)
@@ -29,6 +32,9 @@ extensions = [
     TokenPaginationExtension(),
     ContextExtension(),
 ]
+with open(settings.browsable_hierarchy_definition, "r") as definition_file:
+    hierarchy_json = json.load(definition_file)
+    hierarchy_definition: BrowsableNode = parse_hierarchy(hierarchy_json)
 
 post_request_model = create_post_request_model(extensions)
 
@@ -36,7 +42,10 @@ api = StacApi(
     settings=settings,
     extensions=extensions,
     client=CoreCrudClient(
-        session=session, extensions=extensions, post_request_model=post_request_model
+        session=session,
+        extensions=extensions,
+        post_request_model=post_request_model,
+        hierarchy_definition=hierarchy_definition,
     ),
     search_get_request_model=create_get_request_model(extensions),
     search_post_request_model=post_request_model,

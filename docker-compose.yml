@@ -50,6 +50,7 @@ services:
       - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
       - DB_MIN_CONN_SIZE=1
       - DB_MAX_CONN_SIZE=1
+      - BROWSABLE_HIERARCHY_DEFINITION=/app/stac_fastapi/testdata/joplin/hierarchy.json
     ports:
       - "8082:8082"
     volumes:

@@ -1,4 +1,6 @@
 """FastAPI application using PGStac."""
+import json
+
 from fastapi.responses import ORJSONResponse
 
 from stac_fastapi.api.app import StacApi
@@ -16,6 +18,7 @@ from stac_fastapi.pgstac.db import close_db_connection, connect_to_db
 from stac_fastapi.pgstac.extensions import QueryExtension
 from stac_fastapi.pgstac.transactions import TransactionsClient
 from stac_fastapi.pgstac.types.search import PgstacSearch
+from stac_fastapi.types.hierarchy import BrowsableNode, parse_hierarchy
 
 settings = Settings()
 extensions = [
@@ -30,13 +33,18 @@ extensions = [
     TokenPaginationExtension(),
     ContextExtension(),
 ]
+with open(settings.browsable_hierarchy_definition, "r") as definition_file:
+    hierarchy_json = json.load(definition_file)
+    hierarchy_definition: BrowsableNode = parse_hierarchy(hierarchy_json)
 
 post_request_model = create_post_request_model(extensions, base_model=PgstacSearch)
 
 api = StacApi(
     settings=settings,
     extensions=extensions,
-    client=CoreCrudClient(post_request_model=post_request_model),
+    client=CoreCrudClient(
+        post_request_model=post_request_model, hierarchy_definition=hierarchy_definition
+    ),
     response_class=ORJSONResponse,
     search_get_request_model=create_get_request_model(extensions),
     search_post_request_model=post_request_model,
