@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-import time
 from typing import Callable, Dict
 
 import asyncpg
@@ -92,8 +91,7 @@ async def pgstac(pg):
     await conn.close()
 
 
-@pytest.fixture(scope="session")
-def api_client(pg):
+def _api_client_provider():
     print("creating client with settings")
 
     extensions = [
@@ -118,23 +116,24 @@ def api_client(pg):
     return api
 
 
-@pytest.mark.asyncio
 @pytest.fixture(scope="session")
-async def app(api_client):
-    time.time()
-    app = api_client.app
-    await connect_to_db(app)
-
-    yield app
-
-    await close_db_connection(app)
+def api_client(pg):
+    return _api_client_provider()
 
 
 @pytest.mark.asyncio
 @pytest.fixture(scope="session")
-async def app_client(app):
+async def app_client(pg, request):
+    setup_func = request.param.get("setup_func") if hasattr(request, "param") else None
+    if setup_func is not None:
+        setup_func()
+    app = _api_client_provider().app
     async with AsyncClient(app=app, base_url="http://test") as c:
+        await connect_to_db(app)
+
         yield c
+
+        await close_db_connection(app)
 
 
 @pytest.fixture
