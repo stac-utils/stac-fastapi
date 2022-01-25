@@ -104,8 +104,7 @@ def postgres_bulk_transactions(db_session):
     return BulkTransactionsClient(session=db_session)
 
 
-@pytest.fixture
-def api_client(db_session):
+def _api_client_provider(db_session):
     settings = SqlalchemySettings()
     extensions = [
         TransactionExtension(
@@ -146,9 +145,17 @@ def api_client(db_session):
 
 
 @pytest.fixture
-def app_client(api_client, load_test_data, postgres_transactions):
+def api_client(db_session):
+    return _api_client_provider(db_session)
+
+
+@pytest.fixture
+def app_client(db_session, load_test_data, postgres_transactions, request):
+    setup_func = request.param.get("setup_func") if hasattr(request, "param") else None
+    if setup_func is not None:
+        setup_func()
     coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    with TestClient(api_client.app) as test_app:
+    with TestClient(_api_client_provider(db_session).app) as test_app:
         yield test_app

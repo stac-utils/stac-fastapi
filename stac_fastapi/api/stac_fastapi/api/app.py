@@ -14,6 +14,7 @@ from stac_pydantic.version import STAC_VERSION
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
+from stac_fastapi.api.middleware import MiddlewareConfig, append_runtime_middlewares
 from stac_fastapi.api.models import (
     APIRequest,
     CollectionUri,

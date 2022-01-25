@@ -1,4 +1,16 @@
 from datetime import datetime, timedelta
+from http import HTTPStatus
+from os import environ
+
+import pytest
+from tests.api.cors_support import (
+    cors_config_location_key,
+    cors_deny_origin,
+    cors_disable,
+    cors_enable,
+    cors_missing,
+    cors_permit_origin,
+)
 
 STAC_CORE_ROUTES = [
     "GET /",
@@ -19,6 +31,10 @@ STAC_TRANSACTION_ROUTES = [
     "PUT /collections",
     "PUT /collections/{collection_id}/items",
 ]
+
+
+def teardown_function():
+    environ.pop(cors_config_location_key, None)
 
 
 async def test_post_search_content_type(app_client):
@@ -281,3 +297,58 @@ async def test_search_line_string_intersects(
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
+
+
+@pytest.mark.parametrize("app_client", [{"setup_func": cors_disable}], indirect=True)
+async def test_without_cors(app_client):
+    resp = await app_client.get("/", headers={"Origin": cors_permit_origin})
+    assert resp.status_code == HTTPStatus.OK
+    assert (
+        len(
+            [
+                header
+                for header in resp.headers
+                if header.startswith("access-control-allow-")
+            ]
+        )
+        == 0
+    )
+
+
+@pytest.mark.parametrize("app_client", [{"setup_func": cors_enable}], indirect=True)
+async def test_with_match_cors(app_client):
+    resp = await app_client.get("/", headers={"Origin": cors_permit_origin})
+    assert resp.status_code == HTTPStatus.OK
+    assert resp.headers["access-control-allow-origin"] == cors_permit_origin
+
+
+@pytest.mark.parametrize("app_client", [{"setup_func": cors_enable}], indirect=True)
+async def test_with_mismatch_cors(app_client):
+    resp = await app_client.get("/", headers={"Origin": cors_deny_origin})
+    assert resp.status_code == HTTPStatus.OK
+    assert (
+        len(
+            [
+                header
+                for header in resp.headers
+                if header.startswith("access-control-allow-")
+            ]
+        )
+        == 0
+    )
+
+
+@pytest.mark.parametrize("app_client", [{"setup_func": cors_missing}], indirect=True)
+async def test_with_missing_config(app_client):
+    resp = await app_client.get("/", headers={"Origin": cors_permit_origin})
+    assert resp.status_code == HTTPStatus.OK
+    assert (
+        len(
+            [
+                header
+                for header in resp.headers
+                if header.startswith("access-control-allow-")
+            ]
+        )
+        == 0
+    )
