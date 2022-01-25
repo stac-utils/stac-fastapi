@@ -43,7 +43,6 @@ def browsable_catalog_link(
     node: BrowsableNode, base_url: str, catalog_path: Optional[str]
 ) -> str:
     """Produce browsable link to a child."""
-    print("BASE CAT URL", base_url, catalog_path)
     catalog_path = catalog_path or ""
     return {
         "rel": Relations.child.value,
@@ -57,7 +56,6 @@ def browsable_catalog_link(
 
 def browsable_collection_link(node: BrowsableNode, base_url: str) -> str:
     """Produce browsable link to a child."""
-    print("BASE COLL URL", base_url)
     return {
         "rel": Relations.child.value,
         "type": MimeTypes.json,
@@ -80,7 +78,6 @@ def browsable_catalog(
 ) -> Catalog:
     """Generate a catalog based on a CatalogNode in a BrowsableNode tree."""
     catalog_path = catalog_path or ""
-    print("LINK PATHING", base_url, catalog_path, node["catalog_id"])
     catalog_links = [
         browsable_catalog_link(child, base_url, f"/catalogs/{catalog_path.strip('/')}")
         for child in node["children"]
