@@ -1,7 +1,7 @@
 """api request/response models."""
 
 import importlib.util
-from typing import Optional, Type, Union
+from typing import List, Optional, Type, Union
 
 import attr
 from fastapi import Body, Path
@@ -19,8 +19,8 @@ from stac_fastapi.types.search import (
 def create_request_model(
     model_name="SearchGetRequest",
     base_model: Union[Type[BaseModel], APIRequest] = BaseSearchGetRequest,
-    extensions: Optional[ApiExtension] = None,
-    mixins: Optional[Union[BaseModel, APIRequest]] = None,
+    extensions: Optional[List[ApiExtension]] = None,
+    mixins: Optional[List[Union[BaseModel, APIRequest]]] = None,
     request_type: Optional[str] = "GET",
 ) -> Union[Type[BaseModel], APIRequest]:
     """Create a pydantic model for validating request bodies."""
@@ -74,25 +74,27 @@ def create_request_model(
 
 
 def create_get_request_model(
-    extensions, base_model: BaseSearchGetRequest = BaseSearchGetRequest
+    extensions, base_model: BaseSearchGetRequest = BaseSearchGetRequest, mixins=None
 ):
     """Wrap create_request_model to create the GET request model."""
     return create_request_model(
         "SearchGetRequest",
         base_model=base_model,
         extensions=extensions,
+        mixins=mixins,
         request_type="GET",
     )
 
 
 def create_post_request_model(
-    extensions, base_model: BaseSearchPostRequest = BaseSearchPostRequest
+    extensions, base_model: BaseSearchPostRequest = BaseSearchPostRequest, mixins=None
 ):
     """Wrap create_request_model to create the POST request model."""
     return create_request_model(
         "SearchPostRequest",
         base_model=base_model,
         extensions=extensions,
+        mixins=mixins,
         request_type="POST",
     )
 

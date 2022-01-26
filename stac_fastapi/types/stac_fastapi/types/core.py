@@ -1,11 +1,13 @@
 """Base clients."""
 import abc
+import asyncio
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
-from fastapi import Request
+from fastapi import HTTPException, Request
+from stac_pydantic.api import Search
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
@@ -377,16 +379,16 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add Collections links
-        # collections = self.all_collections(request=kwargs["request"])
-        # for collection in collections["collections"]:
-        #     landing_page["links"].append(
-        #         {
-        #             "rel": Relations.child.value,
-        #             "type": MimeTypes.json.value,
-        #             "title": collection.get("title") or collection.get("id"),
-        #             "href": urljoin(base_url, f"collections/{collection['id']}"),
-        #         }
-        #     )
+        collections = self.all_collections(request=kwargs["request"])
+        for collection in collections["collections"]:
+            landing_page["links"].append(
+                {
+                    "rel": Relations.child.value,
+                    "type": MimeTypes.json.value,
+                    "title": collection.get("title") or collection.get("id"),
+                    "href": urljoin(base_url, f"collections/{collection['id']}"),
+                }
+            )
 
         # Add links for browseable and children conformance
         if self.hierarchy_definition is not None:
@@ -410,9 +412,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                     )
                 if "catalog_id" in child:
                     landing_page["links"].append(
-                        browseable_catalog_link(
-                            child, urljoin(base_url, "catalogs"), ""
-                        )
+                        browseable_catalog_link(child, base_url, child["catalog_id"])
                     )
             for item in self.hierarchy_definition["items"]:
                 landing_page["links"].append(browseable_item_link(item, base_url))
@@ -542,6 +542,144 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         """
         ...
 
+    def post_catalog_search(
+        self, search_request: Search, **kwargs
+    ) -> stac_types.ItemCollection:
+        """Catalog refined search (POST).
+
+        Called with `POST /search`.
+
+        Args:
+            search_request: search request parameters.
+
+        Returns:
+            ItemCollection containing items which match the search criteria.
+        """
+        # Pydantic is fine for specifying body parameters but proves difficult to
+        # use for Path parameters. Here, the starlette request is inspected instead
+        request_path = kwargs["request"]["path"]
+        split_path = request_path.split("/")[2:-1]
+        remaining_hierarchy = self.hierarchy_definition.copy()
+        for fork in split_path:
+            try:
+                remaining_hierarchy = next(
+                    node
+                    for node in remaining_hierarchy["children"]
+                    if "catalog_id" in node and node["catalog_id"] == fork
+                )
+            except StopIteration:
+                raise HTTPException(status_code=404, detail="Catalog not found")
+        child_collections = [
+            node["collection_id"]
+            for node in remaining_hierarchy["children"]
+            if "collection_id" in node
+        ]
+        search_request.collections = child_collections
+        return self.post_search(search_request, **kwargs)
+
+    def get_catalog_search(
+        self,
+        catalog_path: str,
+        collections: Optional[List[str]] = None,
+        ids: Optional[List[str]] = None,
+        bbox: Optional[List[NumType]] = None,
+        datetime: Optional[Union[str, datetime]] = None,
+        limit: Optional[int] = 10,
+        query: Optional[str] = None,
+        token: Optional[str] = None,
+        fields: Optional[List[str]] = None,
+        sortby: Optional[str] = None,
+        **kwargs,
+    ) -> stac_types.ItemCollection:
+        """Catalog refined search (GET).
+
+        Called with `GET /search`.
+
+        Returns:
+            ItemCollection containing items which match the search criteria.
+        """
+        remaining_hierarchy = self.hierarchy_definition.copy()
+        split_path = catalog_path.split("/")
+        for fork in split_path:
+            try:
+                remaining_hierarchy = next(
+                    node
+                    for node in remaining_hierarchy["children"]
+                    if "catalog_id" in node and node["catalog_id"] == fork
+                )
+            except StopIteration:
+                raise HTTPException(status_code=404, detail="Catalog not found")
+        # What should we do with the collections provided by the user?
+        # Xor/toggle search collections as gathered via the hierarchy? I'm guessing people would
+        # be surprised by just about any behavior we pick. Maybe just ignore provided collections?
+        child_collections = [
+            node["collection_id"]
+            for node in remaining_hierarchy["children"]
+            if "collection_id" in node
+        ]
+        return self.get_search(
+            child_collections,
+            ids,
+            bbox,
+            datetime,
+            limit,
+            query,
+            token,
+            fields,
+            sortby,
+            **kwargs,
+        )
+
+    def get_catalog_collections(
+        self, catalog_path: str, **kwargs
+    ) -> stac_types.Collections:
+        """Get all subcollections of a catalog.
+
+        Called with `GET /catalogs/{catalog_path}/collections`.
+
+        Args:
+            catalog_path: The full path of the catalog in the browseable hierarchy.
+
+        Returns:
+            Collections.
+        """
+        remaining_hierarchy = self.hierarchy_definition.copy()
+        split_path = catalog_path.split("/")
+        for fork in split_path:
+            try:
+                remaining_hierarchy = next(
+                    node
+                    for node in remaining_hierarchy["children"]
+                    if "catalog_id" in node and node["catalog_id"] == fork
+                )
+            except StopIteration:
+                raise HTTPException(status_code=404, detail="Catalog not found")
+        child_collections = [
+            self.get_collection(node["collection_id"], **kwargs)
+            for node in remaining_hierarchy["children"]
+            if "collection_id" in node
+        ]
+
+        base_url = str(kwargs["request"].base_url).strip("/")
+        links = [
+            {
+                "rel": Relations.root.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.parent.value,
+                "type": MimeTypes.json,
+                "href": "/".join([base_url, "catalogs", catalog_path]),
+            },
+            {
+                "rel": Relations.self.value,
+                "type": MimeTypes.json,
+                "href": "/".join([base_url, "catalogs", catalog_path, "collections"]),
+            },
+        ]
+        return stac_types.Collections(collections=child_collections or [], links=links)
+
     def get_catalog(self, catalog_path: str, **kwargs) -> stac_types.Catalog:
         """Get collection by id.
 
@@ -556,13 +694,16 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         request: Request = kwargs["request"]
         base_url = str(request.base_url)
         split_path = catalog_path.split("/")
-        remaining_hierarchy = self.hierarchy_definition
+        remaining_hierarchy = self.hierarchy_definition.copy()
         for fork in split_path:
-            remaining_hierarchy = next(
-                node
-                for node in remaining_hierarchy["children"]
-                if node["catalog_id"] == fork
-            )
+            try:
+                remaining_hierarchy = next(
+                    node
+                    for node in remaining_hierarchy["children"]
+                    if "catalog_id" in node and node["catalog_id"] == fork
+                )
+            except StopIteration:
+                raise HTTPException(status_code=404, detail="Catalog not found")
 
         extension_schemas = [
             schema.schema_href for schema in self.extensions if schema.schema_href
@@ -648,17 +789,17 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             extension_schemas=extension_schemas,
         )
 
-        # # Add Collections links
-        # collections = await self.all_collections(request=kwargs["request"])
-        # for collection in collections["collections"]:
-        #     landing_page["links"].append(
-        #         {
-        #             "rel": Relations.child.value,
-        #             "type": MimeTypes.json.value,
-        #             "title": collection.get("title") or collection.get("id"),
-        #             "href": urljoin(base_url, f"collections/{collection['id']}"),
-        #         }
-        #     )
+        # Add Collections links
+        collections = await self.all_collections(request=kwargs["request"])
+        for collection in collections["collections"]:
+            landing_page["links"].append(
+                {
+                    "rel": Relations.child.value,
+                    "type": MimeTypes.json.value,
+                    "title": collection.get("title") or collection.get("id"),
+                    "href": urljoin(base_url, f"collections/{collection['id']}"),
+                }
+            )
 
         # Add links for children and browseable conformance
         if self.hierarchy_definition is not None:
@@ -679,9 +820,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                     )
                 if "catalog_id" in child:
                     landing_page["links"].append(
-                        browseable_catalog_link(
-                            child, base_url, child["catalog_id"], ""
-                        )
+                        browseable_catalog_link(child, base_url, child["catalog_id"])
                     )
             for item in self.hierarchy_definition["items"]:
                 landing_page["links"].append(browseable_item_link(item, base_url))
@@ -817,6 +956,145 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         """
         ...
 
+    async def post_catalog_search(
+        self, search_request: Search, **kwargs
+    ) -> stac_types.ItemCollection:
+        """Catalog refined search (POST).
+
+        Called with `POST /search`.
+
+        Args:
+            search_request: search request parameters.
+
+        Returns:
+            ItemCollection containing items which match the search criteria.
+        """
+        # Pydantic is fine for specifying body parameters but proves difficult to
+        # use for Path parameters. Here, the starlette request is inspected instead
+        request_path = kwargs["request"]["path"]
+        split_path = request_path.split("/")[2:-1]
+        remaining_hierarchy = self.hierarchy_definition.copy()
+        for fork in split_path:
+            try:
+                remaining_hierarchy = next(
+                    node
+                    for node in remaining_hierarchy["children"]
+                    if "catalog_id" in node and node["catalog_id"] == fork
+                )
+            except StopIteration:
+                raise HTTPException(status_code=404, detail="Catalog not found")
+        child_collections = [
+            node["collection_id"]
+            for node in remaining_hierarchy["children"]
+            if "collection_id" in node
+        ]
+        search_request.collections = child_collections
+        return await self.post_search(search_request, **kwargs)
+
+    async def get_catalog_search(
+        self,
+        catalog_path: str,
+        collections: Optional[List[str]] = None,
+        ids: Optional[List[str]] = None,
+        bbox: Optional[List[NumType]] = None,
+        datetime: Optional[Union[str, datetime]] = None,
+        limit: Optional[int] = 10,
+        query: Optional[str] = None,
+        token: Optional[str] = None,
+        fields: Optional[List[str]] = None,
+        sortby: Optional[str] = None,
+        **kwargs,
+    ) -> stac_types.ItemCollection:
+        """Cross catalog search (GET).
+
+        Called with `GET /search`.
+
+        Returns:
+            ItemCollection containing items which match the search criteria.
+        """
+        remaining_hierarchy = self.hierarchy_definition.copy()
+        split_path = catalog_path.split("/")
+        for fork in split_path:
+            try:
+                remaining_hierarchy = next(
+                    node
+                    for node in remaining_hierarchy["children"]
+                    if "catalog_id" in node and node["catalog_id"] == fork
+                )
+            except StopIteration:
+                raise HTTPException(status_code=404, detail="Catalog not found")
+        # What should we do with the collections provided by the user?
+        # Xor/toggle search collections as gathered via the hierarchy? I'm guessing people would
+        # be surprised by just about any behavior we pick. Maybe just ignore provided collections?
+        child_collections = [
+            node["collection_id"]
+            for node in remaining_hierarchy["children"]
+            if "collection_id" in node
+        ]
+        return await self.get_search(
+            child_collections,
+            ids,
+            bbox,
+            datetime,
+            limit,
+            query,
+            token,
+            fields,
+            sortby,
+            **kwargs,
+        )
+
+    async def get_catalog_collections(
+        self, catalog_path: str, **kwargs
+    ) -> stac_types.Collections:
+        """Get all subcollections of a catalog.
+
+        Called with `GET /catalogs/{catalog_path}/collections`.
+
+        Args:
+            catalog_path: The full path of the catalog in the browseable hierarchy.
+
+        Returns:
+            Collections.
+        """
+        remaining_hierarchy = self.hierarchy_definition.copy()
+        split_path = catalog_path.split("/")
+        for fork in split_path:
+            try:
+                remaining_hierarchy = next(
+                    node
+                    for node in remaining_hierarchy["children"]
+                    if "catalog_id" in node and node["catalog_id"] == fork
+                )
+            except StopIteration:
+                raise HTTPException(status_code=404, detail="Catalog not found")
+        child_collections_io = [
+            self.get_collection(node["collection_id"], **kwargs)
+            for node in remaining_hierarchy["children"]
+            if "collection_id" in node
+        ]
+        child_collections = await asyncio.gather(*child_collections_io)
+
+        base_url = str(kwargs["request"].base_url).strip("/")
+        links = [
+            {
+                "rel": Relations.root.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.parent.value,
+                "type": MimeTypes.json,
+                "href": "/".join([base_url, "catalogs", catalog_path]),
+            },
+            {
+                "rel": Relations.self.value,
+                "type": MimeTypes.json,
+                "href": "/".join([base_url, "catalogs", catalog_path, "collections"]),
+            },
+        ]
+        return stac_types.Collections(collections=child_collections or [], links=links)
+
     async def get_catalog(self, catalog_path: str, **kwargs) -> stac_types.Catalog:
         """Get collection by id.
 
@@ -833,11 +1111,14 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         split_path = catalog_path.split("/")
         remaining_hierarchy = self.hierarchy_definition
         for fork in split_path:
-            remaining_hierarchy = next(
-                node
-                for node in remaining_hierarchy["children"]
-                if node["catalog_id"] == fork
-            )
+            try:
+                remaining_hierarchy = next(
+                    node
+                    for node in remaining_hierarchy["children"]
+                    if "catalog_id" in node and node["catalog_id"] == fork
+                )
+            except StopIteration:
+                raise HTTPException(status_code=404, detail="Catalog not found")
 
         extension_schemas = [
             schema.schema_href for schema in self.extensions if schema.schema_href

@@ -85,8 +85,14 @@ class StacApi:
     api_version: str = attr.ib(default="0.1")
     stac_version: str = attr.ib(default=STAC_VERSION)
     description: str = attr.ib(default="stac-fastapi")
+    search_get_request_base_model: Type[BaseSearchGetRequest] = attr.ib(
+        default=BaseSearchGetRequest
+    )
     search_get_request_model: Type[BaseSearchGetRequest] = attr.ib(
         default=BaseSearchGetRequest
+    )
+    search_post_request_base_model: Type[BaseSearchPostRequest] = attr.ib(
+        default=BaseSearchPostRequest
     )
     search_post_request_model: Type[BaseSearchPostRequest] = attr.ib(
         default=BaseSearchPostRequest
@@ -268,25 +274,6 @@ class StacApi:
             ),
         )
 
-    def register_get_catalog(self):
-        """Register get collection endpoint (GET /catalog/{catalog_path}).
-
-        Returns:
-            None
-        """
-        self.router.add_api_route(
-            name="Get Catalog",
-            path="/catalogs/{catalog_path:path}",
-            response_model=Catalog if self.settings.enable_response_models else None,
-            response_class=self.response_class,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
-            methods=["GET"],
-            endpoint=self._create_endpoint(
-                self.client.get_catalog, CatalogUri, self.response_class
-            ),
-        )
-
     def register_get_root_children(self):
         """Register get collection children endpoint (GET /collection/{collection_id}/children).
 
@@ -333,6 +320,119 @@ class StacApi:
             ),
         )
 
+    def register_catalog_conformance_classes(self):
+        """Register catalog conformance class endpoint (GET /catalogs/{catalog_path}/conformance).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Conformance Classes",
+            path="/catalogs/{catalog_path:path}/conformance",
+            response_model=ConformanceClasses
+            if self.settings.enable_response_models
+            else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(
+                self.client.conformance, EmptyRequest, self.response_class
+            ),
+        )
+
+    def register_post_catalog_search(self):
+        """Register search endpoint (POST /search).
+
+        Returns:
+            None
+        """
+        fields_ext = self.get_extension(FieldsExtension)
+        self.router.add_api_route(
+            name="Search",
+            path="/catalogs/{catalog_path:path}/search",
+            response_model=(ItemCollection if not fields_ext else None)
+            if self.settings.enable_response_models
+            else None,
+            response_class=GeoJSONResponse,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["POST"],
+            endpoint=self._create_endpoint(
+                self.client.post_catalog_search,
+                self.search_post_request_model,
+                GeoJSONResponse,
+            ),
+        )
+
+    def register_get_catalog_search(self):
+        """Register catalog search endpoint (GET /catalogs/{catalog_path}/search).
+
+        Returns:
+            None
+        """
+        fields_ext = self.get_extension(FieldsExtension)
+        request_model = create_request_model(
+            "GetSearchWithCatalogUri",
+            base_model=self.search_get_request_base_model,
+            extensions=self.extensions,
+            mixins=[CatalogUri],
+        )
+        self.router.add_api_route(
+            name="Catalog Search",
+            path="/catalogs/{catalog_path:path}/search",
+            response_model=(ItemCollection if not fields_ext else None)
+            if self.settings.enable_response_models
+            else None,
+            response_class=GeoJSONResponse,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(
+                self.client.get_catalog_search, request_model, GeoJSONResponse
+            ),
+        )
+
+    def register_get_catalog_collections(self):
+        """Register get collections endpoint (GET /collections).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get Collections",
+            path="/catalogs/{catalog_path:path}/collections",
+            response_model=Collections
+            if self.settings.enable_response_models
+            else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(
+                self.client.get_catalog_collections, CatalogUri, self.response_class
+            ),
+        )
+
+    def register_get_catalog(self):
+        """Register get collection endpoint (GET /catalog/{catalog_path}).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get Catalog",
+            path="/catalogs/{catalog_path:path}",
+            response_model=Catalog if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(
+                self.client.get_catalog, CatalogUri, self.response_class
+            ),
+        )
+
     def register_core(self):
         """Register core STAC endpoints.
 
@@ -357,9 +457,14 @@ class StacApi:
         self.register_get_search()
         self.register_get_collections()
         self.register_get_collection()
-        self.register_get_catalog()
         self.register_get_item_collection()
 
+        # Browseable endpoints
+        self.register_catalog_conformance_classes()
+        self.register_post_catalog_search()
+        self.register_get_catalog_search()
+        self.register_get_catalog_collections()
+        self.register_get_catalog()
         if self.settings.browseable_hierarchy_definition is not None:
             self.register_get_root_children()
 
