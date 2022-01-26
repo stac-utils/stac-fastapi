@@ -89,7 +89,7 @@ class StacApi:
     pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
     middlewares: List[MiddlewareConfig] = attr.ib(
-        default=attr.Factory(lambda: [MiddlewareConfig(middleware=BrotliMiddleware)])
+        default=attr.Factory(lambda: [MiddlewareConfig(BrotliMiddleware)])
     )
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
