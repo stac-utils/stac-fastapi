@@ -149,12 +149,15 @@ class CoreCrudClient(BaseCoreClient):
         else:
             start_date = datetime[0]
             end_date = datetime[1]
-            if start_date != "..":
-                start_date = datetime[0][0:19] + "Z"
+            if start_date != ".." and end_date != "..":
+                start_date = start_date[0:19] + "Z"
+                end_date = end_date[0:19] + "Z"
+            elif start_date != "..":
+                start_date = start_date[0:19] + "Z"
                 end_date = "2200-12-01T12:31:12Z"
             elif end_date != "..":
                 start_date = "1900-10-01T00:00:00Z"
-                end_date = datetime[1][0:19] + "Z"
+                end_date = end_date[0:19] + "Z"
             else:
                 start_date = "1900-10-01T00:00:00Z"
                 end_date = "2200-12-01T12:31:12Z"
