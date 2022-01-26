@@ -5,16 +5,26 @@ This page contains a few 'tips and tricks' for getting stac-fastapi working in v
 CORS (Cross-Origin Resource Sharing) support may be required to use stac-fastapi in certain situations. For example, if you are running
 [stac-browser](https://github.com/radiantearth/stac-browser) to browse the STAC catalog created by stac-fastapi, then you will need to enable CORS support.
 
-To do this, edit `stac_fastapi/sqlalchemy/stac_fastapi/sqlalchemy/app.py` (or the equivalent in the `pgstac` folder) and add the following import:
+To do this, create a JSON configuration file whose schema matches the options described in the [FastAPI docs](https://fastapi.tiangolo.com/tutorial/cors/), e.g.
 
 ```
-from fastapi.middleware.cors import CORSMiddleware
+{
+    "allow_origins": ["*"],
+    "allow_methods": ["*"]
+}
 ```
 
-and then edit the `api = StacApi(...` call to add the following parameter:
+Deploy this file to a location accessible by stac-fastapi, e.g. in Dockerfile
 
 ```
-middlewares=[lambda app: CORSMiddleware(app, allow_origins=["*"])]
+RUN mkdir /config
+COPY cors.json /config/cors.json
+```
+
+Set an environment variable `CORS_CONFIG_LOCATION` pointing to this file, e.g. in Dockerfile
+
+```
+ENV CORS_CONFIG_LOCATION=/config/cors.json
 ```
 
 If needed, you can edit the `allow_origins` parameter to only allow CORS requests from specific origins.
