@@ -47,38 +47,47 @@ class MiddlewareConfig:
 
 
 def append_runtime_middlewares(
-    middlewares: List[MiddlewareConfig],
+    existing_middlewares: List[MiddlewareConfig],
 ) -> List[MiddlewareConfig]:
     """Add any middlewares specified via environment variable and configure if appropriate."""
-    extended_middlewares = middlewares.copy()
+    return existing_middlewares + [
+        addition
+        for addition in [_append_cors_middleware(existing_middlewares)]
+        if addition is not None
+    ]
+
+
+def _append_cors_middleware(
+    existing_middlewares: List[MiddlewareConfig],
+) -> Optional[MiddlewareConfig]:
     has_cors_middleware = (
         len(
             [
                 entry
-                for entry in middlewares
-                if isinstance(entry.middleware, CORSMiddleware)
+                for entry in existing_middlewares
+                if entry.middleware == CORSMiddleware
             ]
         )
         > 0
     )
-    if not has_cors_middleware:
-        cors_config_location_key: Final = "CORS_CONFIG_LOCATION"
-        if cors_config_location_key in environ:
-            cors_config_path = environ[cors_config_location_key]
+    cors_config_location_key: Final = "CORS_CONFIG_LOCATION"
+    if cors_config_location_key in environ:
+        cors_config_path = environ[cors_config_location_key]
+        if has_cors_middleware:
+            logger.warning(
+                f"CORSMiddleware already configured; ignoring config at {cors_config_path}"
+            )
+        else:
             logger.info(f"looking for CORS config file at {cors_config_path}")
             if path.exists(cors_config_path):
                 try:
                     with open(cors_config_path, "r") as cors_config_file:
-                        cors_config = loads("".join(cors_config_file.readlines()))
-                        extended_middlewares.append(
-                            MiddlewareConfig(CORSMiddleware, cors_config)
-                        )
+                        cors_config = loads(cors_config_file.read())
                         logger.debug(f"loaded CORS config {cors_config}")
+                        return MiddlewareConfig(CORSMiddleware, cors_config)
                 except ValueError as e:
                     logger.error(f"error parsing JSON at {cors_config_path}: {e}")
                 except OSError as e:
                     logger.error(f"error reading {cors_config_path}: {e}")
             else:
                 logger.warning(f"CORS config not found at {cors_config_path}")
-
-    return extended_middlewares
