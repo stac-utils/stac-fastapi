@@ -375,7 +375,7 @@ def test_with_missing_config(app_client):
     ],
     indirect=True,
 )
-async def test_with_existing_cors(app_client):
+def test_with_existing_cors(app_client):
     resp = app_client.get("/", headers={"Origin": cors_permit_origin})
     assert resp.status_code == HTTPStatus.OK
     assert (
