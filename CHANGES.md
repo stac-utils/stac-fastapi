@@ -9,7 +9,7 @@
 ### Removed
 
 ### Fixed
-
+* Bumped uvicorn version to 0.17 (from >=0.12, <=0.14) to resolve security vulnerability related to websockets dependency version ([#343](https://github.com/stac-utils/stac-fastapi/pull/343))
 
 ## [2.3.0]
 
