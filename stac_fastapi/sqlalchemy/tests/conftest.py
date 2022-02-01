@@ -1,12 +1,11 @@
 import json
 import os
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict
 
 import pytest
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.api.middleware import MiddlewareConfig
 from stac_fastapi.api.models import create_request_model
 from stac_fastapi.extensions.core import (
     ContextExtension,
@@ -105,9 +104,7 @@ def postgres_bulk_transactions(db_session):
     return BulkTransactionsClient(session=db_session)
 
 
-def _api_client_provider(
-    db_session, middleware_configs: Optional[MiddlewareConfig] = []
-):
+def _api_client_provider(db_session):
     settings = SqlalchemySettings()
     extensions = [
         TransactionExtension(
@@ -144,7 +141,6 @@ def _api_client_provider(
         extensions=extensions,
         search_get_request_model=get_request_model,
         search_post_request_model=post_request_model,
-        middlewares=middleware_configs,
     )
 
 
@@ -156,16 +152,12 @@ def api_client(db_session):
 @pytest.fixture
 def app_client(db_session, load_test_data, postgres_transactions, request):
     # support custom behaviours driven by fixture caller
-    middleware_configs = []
     if hasattr(request, "param"):
         setup_func = request.param.get("setup_func")
         if setup_func is not None:
             setup_func()
-        middleware_configs = request.param.get("middleware_configs", [])
     coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
-    with TestClient(
-        _api_client_provider(db_session, middleware_configs=middleware_configs).app
-    ) as test_app:
+    with TestClient(_api_client_provider(db_session).app) as test_app:
         yield test_app

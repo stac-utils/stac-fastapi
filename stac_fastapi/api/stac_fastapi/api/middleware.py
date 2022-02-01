@@ -1,15 +1,16 @@
 """api middleware."""
 
-from json import loads
 from logging import getLogger
-from os import environ, path
-from typing import Any, Callable, Dict, Final, List, Optional
+from typing import Callable, Final, Optional, Sequence
 
 from fastapi import APIRouter, FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware import cors
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.routing import Match
+from starlette.types import ASGIApp
+
+from stac_fastapi.api.config import env_to_bool, env_to_int, env_to_sequence, env_to_str
 
 logger: Final = getLogger(__file__)
 
@@ -37,57 +38,76 @@ def router_middleware(app: FastAPI, router: APIRouter):
     return deco
 
 
-class MiddlewareConfig:
-    """Represents a middleware class plus any configuration detail."""
+class CORSMiddleware(cors.CORSMiddleware):
+    """Starlette CORS Middleware with default."""
 
-    def __init__(self, middleware: Any, config: Optional[Dict[str, Any]] = None):
-        """Defaults config to empty dictionary if not provided."""
-        self.middleware = middleware
-        self.config = {} if config is None else config
-
-
-def append_runtime_middlewares(
-    existing_middlewares: List[MiddlewareConfig],
-) -> List[MiddlewareConfig]:
-    """Add any middlewares specified via environment variable and configure if appropriate."""
-    return existing_middlewares + [
-        addition
-        for addition in [_append_cors_middleware(existing_middlewares)]
-        if addition is not None
-    ]
-
-
-def _append_cors_middleware(
-    existing_middlewares: List[MiddlewareConfig],
-) -> Optional[MiddlewareConfig]:
-    has_cors_middleware = (
-        len(
-            [
-                entry
-                for entry in existing_middlewares
-                if entry.middleware == CORSMiddleware
-            ]
+    def __init__(
+        self,
+        app: ASGIApp,
+        allow_origins: Optional[Sequence[str]] = None,
+        allow_methods: Optional[Sequence[str]] = None,
+        allow_headers: Optional[Sequence[str]] = None,
+        allow_credentials: Optional[bool] = None,
+        allow_origin_regex: Optional[str] = None,
+        expose_headers: Optional[Sequence[str]] = None,
+        max_age: Optional[int] = None,
+    ) -> None:
+        """Create CORSMiddleware Object."""
+        allow_origins = (
+            env_to_sequence("CORS_ALLOW_ORIGINS", ("*",))
+            if allow_origins is None
+            else allow_origins
         )
-        > 0
-    )
-    cors_config_location_key: Final = "CORS_CONFIG_LOCATION"
-    if cors_config_location_key in environ:
-        cors_config_path = environ[cors_config_location_key]
-        if has_cors_middleware:
-            logger.warning(
-                f"CORSMiddleware already configured; ignoring config at {cors_config_path}"
+        allow_methods = (
+            env_to_sequence("CORS_ALLOW_METHODS", ("*",))
+            if allow_methods is None
+            else allow_methods
+        )
+        allow_headers = (
+            env_to_sequence("CORS_ALLOW_HEADERS", ("*",))
+            if allow_headers is None
+            else allow_headers
+        )
+        allow_credentials = (
+            env_to_bool("CORS_ALLOW_CREDENTIALS", False)
+            if allow_credentials is None
+            else allow_credentials
+        )
+        allow_origin_regex = (
+            env_to_str("CORS_ALLOW_ORIGIN_REGEX", None)
+            if allow_origin_regex is None
+            else allow_origin_regex
+        )
+        if allow_origin_regex is not None:
+            logger.info(
+                "CORS_ALLOW_ORIGIN_REGEX present and will override CORS_ALLOW_ORIGINS"
             )
-        else:
-            logger.info(f"looking for CORS config file at {cors_config_path}")
-            if path.exists(cors_config_path):
-                try:
-                    with open(cors_config_path, "r") as cors_config_file:
-                        cors_config = loads(cors_config_file.read())
-                        logger.debug(f"loaded CORS config {cors_config}")
-                        return MiddlewareConfig(CORSMiddleware, cors_config)
-                except ValueError as e:
-                    logger.error(f"error parsing JSON at {cors_config_path}: {e}")
-                except OSError as e:
-                    logger.error(f"error reading {cors_config_path}: {e}")
-            else:
-                logger.warning(f"CORS config not found at {cors_config_path}")
+            allow_origins = ""
+        expose_headers = (
+            env_to_sequence("CORS_EXPOSE_HEADERS", ("*",))
+            if expose_headers is None
+            else expose_headers
+        )
+        max_age = env_to_int("CORS_MAX_AGE", 600) if max_age is None else max_age
+        logger.debug(
+            f"""
+            CORS configuration
+            allow_origins: {allow_origins}
+            allow_methods: {allow_methods}
+            allow_headers: {allow_headers}
+            allow_credentials: {allow_credentials}
+            allow_origin_regex: {allow_origin_regex}
+            expose_headers: {expose_headers}
+            max_age: {max_age}
+        """
+        )
+        super().__init__(
+            app,
+            allow_origins=allow_origins,
+            allow_methods=allow_methods,
+            allow_headers=allow_headers,
+            allow_credentials=allow_credentials,
+            allow_origin_regex=allow_origin_regex,
+            expose_headers=expose_headers,
+            max_age=max_age,
+        )
