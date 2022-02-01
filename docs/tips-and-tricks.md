@@ -9,7 +9,6 @@ To do this, configure environment variables for the configuration options descri
 
 ```
 CORS_ALLOW_ORIGINS=http://domain.one|http://domain.two
-CORS_ALLOW_METHODS="*"
 ```
 
 ## Enable the Context extension
