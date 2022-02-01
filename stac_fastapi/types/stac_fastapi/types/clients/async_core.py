@@ -53,6 +53,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         """Generate conformance classes by adding extension conformance to base conformance classes."""
         conformance_classes = self.base_conformance_classes.copy()
 
+        # TODO: replace hierarchy_definition with a flag
         if self.hierarchy_definition is not None:
             conformance_classes.append(BROWSEABLE_CONFORMANCE_CLASS)
             conformance_classes.append(CHILDREN_CONFORMANCE_CLASS)
@@ -99,6 +100,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             )
 
         # Add links for children and browseable conformance
+        # PGSTAC TODO: generate links for collections and catalogs to avoid gathering all collections
         if self.hierarchy_definition is not None:
             # Children
             landing_page["links"].append(
@@ -237,9 +239,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         """
         ...
 
-    async def get_root_children(
-        self, collection_id: str, **kwargs
-    ) -> stac_types.Children:
+    async def get_root_children(self, **kwargs) -> stac_types.Children:
         """Get children by parent's collection id.
 
         Called with `GET /children`.
@@ -307,6 +307,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         request_path = kwargs["request"]["path"]
         split_path = request_path.split("/")[2:-1]
         remaining_hierarchy = self.hierarchy_definition.copy()
+        # PGSTAC TODO: Add optional 'catalog' parameter to search, which will determine which
+        # collections will be included in search
         selected_catalog = find_catalog(remaining_hierarchy, split_path)
         if not selected_catalog:
             raise HTTPException(
@@ -370,6 +372,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             **kwargs,
         )
 
+    # PGSTAC TODO: add function for assembling all collection children of a catalog
+    # (all children simpliciter?)
     async def get_catalog_collections(
         self, catalog_path: str, **kwargs
     ) -> stac_types.Collections:

@@ -38,6 +38,8 @@ class CatalogNode(BrowseableNode):
     description: Optional[str]
 
 
+# PGSTAC TODO: function to look up catalog (could be as simple as selecting
+# 'where catalog_id = full/catalog/path' which implementers will have to sort out)
 def find_catalog(
     hierarchy: BrowseableNode, split_path: List[str]
 ) -> Optional[BrowseableNode]:
@@ -175,6 +177,7 @@ def browseable_catalog_page(
     return catalog_page
 
 
+# PGSTAC TODO: function to allow ingest of hierarchy
 def parse_hierarchy(d: dict) -> BrowseableNode:
     """Parse a dictionary as a BrowseableNode tree."""
     d_items = d.get("items") or []
