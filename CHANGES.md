@@ -8,6 +8,7 @@
 * Ability to POST an ItemCollection to the collections/{collectionId}/items route. ([#367](https://github.com/stac-utils/stac-fastapi/pull/367))
 * Add STAC API - Collections conformance class. ([383](https://github.com/stac-utils/stac-fastapi/pull/383))
 * Added ability to configure CORS middleware via JSON configuration file and environment variable, rather than having to modify code. ([341](https://github.com/stac-utils/stac-fastapi/pull/341))
+* Added ability to configure CORS middleware via environment variables ([#341](https://github.com/stac-utils/stac-fastapi/pull/341))
 
 ### Changed
 
