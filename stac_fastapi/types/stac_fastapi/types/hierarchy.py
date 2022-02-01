@@ -38,6 +38,22 @@ class CatalogNode(BrowseableNode):
     description: Optional[str]
 
 
+def find_catalog(
+    hierarchy: BrowseableNode, split_path: List[str]
+) -> Optional[BrowseableNode]:
+    """Find catalog within a hierarchy at provided path or return None."""
+    try:
+        for fork in split_path:
+            hierarchy = next(
+                node
+                for node in hierarchy["children"]
+                if "catalog_id" in node and node["catalog_id"] == fork
+            )
+        return hierarchy
+    except StopIteration:
+        return None
+
+
 def browseable_catalog_link(
     node: BrowseableNode, base_url: str, catalog_path: str
 ) -> str:

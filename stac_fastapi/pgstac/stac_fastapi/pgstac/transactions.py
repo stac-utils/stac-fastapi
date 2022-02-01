@@ -8,7 +8,7 @@ from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.pgstac.db import dbfunc
 from stac_fastapi.types import stac as stac_types
-from stac_fastapi.types.core import AsyncBaseTransactionsClient
+from stac_fastapi.types.clients.transaction import AsyncBaseTransactionsClient
 
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)

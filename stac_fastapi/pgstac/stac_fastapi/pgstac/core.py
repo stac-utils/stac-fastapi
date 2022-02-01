@@ -17,7 +17,7 @@ from stac_pydantic.shared import MimeTypes
 
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
-from stac_fastapi.types.core import AsyncBaseCoreClient
+from stac_fastapi.types.clients.async_core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import InvalidQueryParameter, NotFoundError
 from stac_fastapi.types.hierarchy import browseable_catalog_page
 from stac_fastapi.types.stac import (

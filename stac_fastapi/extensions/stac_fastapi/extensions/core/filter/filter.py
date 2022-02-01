@@ -9,7 +9,7 @@ from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.models import APIRequest, CollectionUri, EmptyRequest
 from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
-from stac_fastapi.types.core import AsyncBaseFiltersClient, BaseFiltersClient
+from stac_fastapi.types.clients.filter import AsyncBaseFiltersClient, BaseFiltersClient
 from stac_fastapi.types.extension import ApiExtension
 
 from .request import FilterExtensionGetRequest, FilterExtensionPostRequest

@@ -34,8 +34,9 @@ from stac_fastapi.api.routes import (
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
 from stac_fastapi.extensions.core import FieldsExtension, TokenPaginationExtension
+from stac_fastapi.types.clients.async_core import AsyncBaseCoreClient
+from stac_fastapi.types.clients.sync_core import BaseCoreClient
 from stac_fastapi.types.config import ApiSettings, Settings
-from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 from stac_fastapi.types.stac import Children
@@ -275,7 +276,7 @@ class StacApi:
         )
 
     def register_get_root_children(self):
-        """Register get collection children endpoint (GET /collection/{collection_id}/children).
+        """Register get collection children endpoint (GET /children).
 
         Returns:
             None
@@ -290,6 +291,25 @@ class StacApi:
             methods=["GET"],
             endpoint=self._create_endpoint(
                 self.client.get_root_children, EmptyRequest, self.response_class
+            ),
+        )
+
+    def register_get_catalog_children(self):
+        """Register get collection children endpoint (GET /collection/{collection_id}/children).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get Root Children",
+            path="/catalogs/{catalog_path:path}/children",
+            response_model=Children if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=self._create_endpoint(
+                self.client.get_root_children, CatalogUri, self.response_class
             ),
         )
 
@@ -467,6 +487,7 @@ class StacApi:
         self.register_get_catalog()
         if self.settings.browseable_hierarchy_definition is not None:
             self.register_get_root_children()
+            self.register_get_catalog_children()
 
     def customize_openapi(self) -> Optional[Dict[str, Any]]:
         """Customize openapi schema."""

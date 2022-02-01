@@ -10,7 +10,7 @@ import attr
 import geoalchemy2 as ga
 import sqlalchemy as sa
 import stac_pydantic
-from fastapi import HTTPException, Request
+from fastapi import HTTPException
 from pydantic import ValidationError
 from shapely.geometry import Polygon as ShapelyPolygon
 from shapely.geometry import shape
@@ -25,18 +25,11 @@ from stac_fastapi.sqlalchemy.extensions.query import Operator
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
+from stac_fastapi.types.clients.sync_core import BaseCoreClient
 from stac_fastapi.types.config import Settings
-from stac_fastapi.types.core import BaseCoreClient
 from stac_fastapi.types.errors import NotFoundError
-from stac_fastapi.types.hierarchy import browseable_catalog_page
 from stac_fastapi.types.search import BaseSearchPostRequest
-from stac_fastapi.types.stac import (
-    Children,
-    Collection,
-    Collections,
-    Item,
-    ItemCollection,
-)
+from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 logger = logging.getLogger(__name__)
 
@@ -104,53 +97,6 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         with self.session.reader.context_session() as session:
             collection = self._lookup_id(collection_id, self.collection_table, session)
             return self.collection_serializer.db_to_stac(collection, base_url)
-
-    def get_root_children(self, **kwargs) -> Children:
-        """Get children of root.
-
-        Called with `GET /children`.
-
-        Returns:
-            Children.
-        """
-        request: Request = kwargs["request"]
-        base_url = str(request.base_url)
-        extension_schemas = [
-            schema.schema_href for schema in self.extensions if schema.schema_href
-        ]
-        catalog_children = [
-            browseable_catalog_page(
-                child,
-                base_url,
-                child["catalog_id"],
-                self.stac_version,
-                self.conformance_classes(),
-                extension_schemas,
-            ).dict(exclude_unset=True)
-            for child in self.hierarchy_definition["children"]
-            if "catalog_id" in child
-        ]
-        collection_children = self.all_collections(**kwargs)
-        links = [
-            {
-                "rel": Relations.root.value,
-                "type": MimeTypes.json,
-                "href": base_url,
-            },
-            {
-                "rel": Relations.parent.value,
-                "type": MimeTypes.json,
-                "href": base_url,
-            },
-            {
-                "rel": Relations.self.value,
-                "type": MimeTypes.json,
-                "href": urljoin(base_url, "children"),
-            },
-        ]
-        return Children(
-            children=catalog_children + collection_children["collections"], links=links
-        )
 
     def item_collection(
         self, collection_id: str, limit: int = 10, token: str = None, **kwargs

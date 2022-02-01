@@ -14,7 +14,7 @@ from stac_fastapi.sqlalchemy import serializers
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.types import stac as stac_types
-from stac_fastapi.types.core import BaseTransactionsClient
+from stac_fastapi.types.clients.transaction import BaseTransactionsClient
 from stac_fastapi.types.errors import NotFoundError
 
 logger = logging.getLogger(__name__)

@@ -13,7 +13,7 @@ from pystac.utils import datetime_to_str
 from shapely.geometry import Polygon
 
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
-from stac_fastapi.types.core import LandingPageMixin
+from stac_fastapi.types.clients import LandingPageMixin
 from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime
 
 
