@@ -285,3 +285,23 @@ def test_search_line_string_intersects(
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
+
+
+def test_app_fields_extension_return_all_properties(
+    load_test_data, app_client, postgres_transactions
+):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    resp = app_client.get(
+        "/search", params={"collections": ["test-collection"], "fields": "properties"}
+    )
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    feature = resp_json["features"][0]
+    assert len(feature["properties"]) >= len(item["properties"])
+    for expected_prop, expected_value in item["properties"].items():
+        if expected_prop in ("datetime", "created", "updated"):
+            assert feature["properties"][expected_prop][0:19] == expected_value[0:19]
+        else:
+            assert feature["properties"][expected_prop] == expected_value
