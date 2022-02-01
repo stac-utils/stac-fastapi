@@ -13,7 +13,7 @@ from stac_pydantic.version import STAC_VERSION
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
-from stac_fastapi.api.middleware import MiddlewareConfig, append_runtime_middlewares
+from stac_fastapi.api.middleware import CORSMiddleware
 from stac_fastapi.api.models import (
     APIRequest,
     CollectionUri,
@@ -88,8 +88,8 @@ class StacApi:
     )
     pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
-    middlewares: List[MiddlewareConfig] = attr.ib(
-        default=attr.Factory(lambda: [MiddlewareConfig(BrotliMiddleware)])
+    middlewares: List = attr.ib(
+        default=attr.Factory(lambda: [BrotliMiddleware, CORSMiddleware])
     )
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
@@ -379,5 +379,5 @@ class StacApi:
         self.app.openapi = self.customize_openapi
 
         # add middlewares
-        for entry in append_runtime_middlewares(self.middlewares):
-            self.app.add_middleware(entry.middleware, **entry.config)
+        for middleware in self.middlewares:
+            self.app.add_middleware(middleware)
