@@ -10,7 +10,7 @@ from starlette.requests import Request
 from starlette.routing import Match
 from starlette.types import ASGIApp
 
-from stac_fastapi.api import settings
+from stac_fastapi.api.config import settings
 
 logger: Final = getLogger(__file__)
 

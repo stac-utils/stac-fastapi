@@ -2,7 +2,7 @@ from copy import deepcopy
 from json import dumps
 from typing import Final
 
-from stac_fastapi.api import settings
+from stac_fastapi.api.config import settings
 
 settings_fallback = deepcopy(settings)
 cors_origin_1: Final = "http://permit.one"

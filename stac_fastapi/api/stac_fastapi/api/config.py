@@ -40,3 +40,6 @@ class Settings(BaseSettings):
     allow_origin_regex: str = Field(None, env="cors_allow_origin_regex")
     expose_headers: Sequence[str] = Field(("*",), env="cors_expose_headers")
     max_age: int = Field(600, env="cors_max_age")
+
+
+settings: Final = Settings()
