@@ -10,7 +10,7 @@ from starlette.requests import Request
 from starlette.routing import Match
 from starlette.types import ASGIApp
 
-from stac_fastapi.api.config import env_to_bool, env_to_int, env_to_sequence, env_to_str
+from stac_fastapi.api import settings
 
 logger: Final = getLogger(__file__)
 
@@ -39,7 +39,7 @@ def router_middleware(app: FastAPI, router: APIRouter):
 
 
 class CORSMiddleware(cors.CORSMiddleware):
-    """Starlette CORS Middleware with default."""
+    """Starlette CORS Middleware with configuration."""
 
     def __init__(
         self,
@@ -54,41 +54,31 @@ class CORSMiddleware(cors.CORSMiddleware):
     ) -> None:
         """Create CORSMiddleware Object."""
         allow_origins = (
-            env_to_sequence("CORS_ALLOW_ORIGINS", ("*",))
-            if allow_origins is None
-            else allow_origins
+            settings.allow_origins if allow_origins is None else allow_origins
         )
         allow_methods = (
-            env_to_sequence("CORS_ALLOW_METHODS", ("*",))
-            if allow_methods is None
-            else allow_methods
+            settings.allow_methods if allow_methods is None else allow_methods
         )
         allow_headers = (
-            env_to_sequence("CORS_ALLOW_HEADERS", ("*",))
-            if allow_headers is None
-            else allow_headers
+            settings.allow_headers if allow_headers is None else allow_headers
         )
         allow_credentials = (
-            env_to_bool("CORS_ALLOW_CREDENTIALS", False)
+            settings.allow_credentials
             if allow_credentials is None
             else allow_credentials
         )
         allow_origin_regex = (
-            env_to_str("CORS_ALLOW_ORIGIN_REGEX", None)
+            settings.allow_origin_regex
             if allow_origin_regex is None
             else allow_origin_regex
         )
         if allow_origin_regex is not None:
-            logger.info(
-                "CORS_ALLOW_ORIGIN_REGEX present and will override CORS_ALLOW_ORIGINS"
-            )
+            logger.info("allow_origin_regex present and will override allow_origins")
             allow_origins = ""
         expose_headers = (
-            env_to_sequence("CORS_EXPOSE_HEADERS", ("*",))
-            if expose_headers is None
-            else expose_headers
+            settings.expose_headers if expose_headers is None else expose_headers
         )
-        max_age = env_to_int("CORS_MAX_AGE", 600) if max_age is None else max_age
+        max_age = settings.max_age if max_age is None else max_age
         logger.debug(
             f"""
             CORS configuration
