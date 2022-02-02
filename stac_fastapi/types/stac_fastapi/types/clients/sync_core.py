@@ -247,12 +247,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     def get_root_children(self, **kwargs) -> stac_types.Children:
-        """Get  children by parent collection id.
+        """Get  children at root.
 
-        Called with `GET /collections/{collection_id}/children`.
-
-        Args:
-            collection_id: Id of the collection.
+        Called with `GET /children`.
 
         Returns:
             Children.
@@ -270,7 +267,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 self.stac_version,
                 self.conformance_classes(),
                 extension_schemas,
-            ).dict(exclude_unset=True)
+            )
             for child in self.hierarchy_definition["children"]
             if "catalog_id" in child
         ]
@@ -294,6 +291,70 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ]
         return stac_types.Children(
             children=catalog_children + collection_children["collections"], links=links
+        )
+
+    def get_catalog_children(self, catalog_path: str, **kwargs) -> stac_types.Children:
+        """Get children by catalog path.
+
+        Called with `GET /catalogs/{catalog_path}/children`.
+
+        Args:
+            catalog_path: Path through hierarchy to catalog.
+
+        Returns:
+            Children.
+        """
+        hierarchy = self.hierarchy_definition.copy()
+        split_path = catalog_path.split("/")
+        selected_catalog = find_catalog(hierarchy, split_path)
+        request: Request = kwargs["request"]
+        base_url = str(request.base_url)
+        extension_schemas = [
+            schema.schema_href for schema in self.extensions if schema.schema_href
+        ]
+        catalog_children = [
+            browseable_catalog_page(
+                child,
+                base_url,
+                child["catalog_id"],
+                self.stac_version,
+                self.conformance_classes(),
+                extension_schemas,
+            )
+            for child in self.hierarchy_definition["children"]
+            if "catalog_id" in child
+        ]
+
+        child_collection_ids = [
+            child["collection_id"]
+            for child in selected_catalog["children"]
+            if "collection_id" in child
+        ]
+        all_collections = self.all_collections(**kwargs)
+        collection_children = [
+            coll
+            for coll in all_collections["collections"]
+            if coll["id"] in child_collection_ids
+        ]
+        links = [
+            {
+                "rel": Relations.root.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.parent.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.self.value,
+                "type": MimeTypes.json,
+                "href": urljoin(base_url, "children"),
+            },
+        ]
+        return stac_types.Children(
+            children=catalog_children + collection_children, links=links
         )
 
     def post_catalog_search(

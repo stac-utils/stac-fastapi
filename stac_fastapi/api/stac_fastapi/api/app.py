@@ -309,7 +309,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=self._create_endpoint(
-                self.client.get_root_children, CatalogUri, self.response_class
+                self.client.get_catalog_children, CatalogUri, self.response_class
             ),
         )
 
@@ -484,10 +484,10 @@ class StacApi:
         self.register_post_catalog_search()
         self.register_get_catalog_search()
         self.register_get_catalog_collections()
-        self.register_get_catalog()
         if self.settings.browseable_hierarchy_definition is not None:
             self.register_get_root_children()
             self.register_get_catalog_children()
+        self.register_get_catalog()
 
     def customize_openapi(self) -> Optional[Dict[str, Any]]:
         """Customize openapi schema."""
