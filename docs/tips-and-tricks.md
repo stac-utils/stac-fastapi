@@ -5,10 +5,13 @@ This page contains a few 'tips and tricks' for getting stac-fastapi working in v
 CORS (Cross-Origin Resource Sharing) support may be required to use stac-fastapi in certain situations. For example, if you are running
 [stac-browser](https://github.com/radiantearth/stac-browser) to browse the STAC catalog created by stac-fastapi, then you will need to enable CORS support.
 
-To do this, configure environment variables for the configuration options described in [FastAPI docs](https://fastapi.tiangolo.com/tutorial/cors/), using a `CORS_` prefix and upper-case, e.g.
-
+To do this, configure environment variables for the configuration options described in [FastAPI docs](https://fastapi.tiangolo.com/tutorial/cors/) using a `cors_` prefix e.g.
 ```
-CORS_ALLOW_ORIGINS=http://domain.one|http://domain.two
+cors_allow_credentials=true [or 1]
+```
+Sequences, such as `allow_origins`, should be in JSON format e.g.
+```
+cors_allow_origins='["http://domain.one", "http://domain.two"]'
 ```
 
 ## Enable the Context extension
