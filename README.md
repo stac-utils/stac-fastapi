@@ -1,4 +1,4 @@
-<p align="center">
+<div/><p align="center">
   <img src="https://github.com/radiantearth/stac-site/raw/master/images/logo/stac-030-long.png" width=400>
   <p align="center">FastAPI implemention of the STAC API spec.</p>
 </p>
