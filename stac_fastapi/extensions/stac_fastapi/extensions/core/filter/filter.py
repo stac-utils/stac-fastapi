@@ -18,25 +18,25 @@ from .request import FilterExtensionGetRequest, FilterExtensionPostRequest
 class FilterConformanceClasses(str, Enum):
     """Conformance classes for the Filter extension.
 
-    See https://github.com/radiantearth/stac-api-spec/tree/v1.0.0-rc.1/fragments/filter
+    See https://github.com/radiantearth/stac-api-spec/tree/v1.0.0-beta.5/fragments/filter
     """
 
-    FILTER = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:filter"
+    FILTER = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:filter"
     ITEM_SEARCH_FILTER = (
-        "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:item-search-filter"
+        "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:item-search-filter"
     )
-    CQL_TEXT = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:cql-text"
-    CQL_JSON = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:cql-json"
-    BASIC_CQL = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:basic-cql"
-    BASIC_SPATIAL_OPERATORS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:basic-spatial-operators"
-    BASIC_TEMPORAL_OPERATORS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:basic-temporal-operators"
-    ENHANCED_COMPARISON_OPERATORS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:enhanced-comparison-operators"
-    ENHANCED_SPATIAL_OPERATORS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:enhanced-spatial-operators"
-    ENHANCED_TEMPORAL_OPERATORS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:enhanced-temporal-operators"
-    FUNCTIONS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:functions"
-    ARITHMETIC = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:arithmetic"
-    ARRAYS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:arrays"
-    QUERYABLE_SECOND_OPERAND = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:queryable-second-operand"
+    CQL_TEXT = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:cql-text"
+    CQL_JSON = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:cql-json"
+    BASIC_CQL = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:basic-cql"
+    BASIC_SPATIAL_OPERATORS = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:basic-spatial-operators"
+    BASIC_TEMPORAL_OPERATORS = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:basic-temporal-operators"
+    ENHANCED_COMPARISON_OPERATORS = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:enhanced-comparison-operators"
+    ENHANCED_SPATIAL_OPERATORS = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:enhanced-spatial-operators"
+    ENHANCED_TEMPORAL_OPERATORS = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:enhanced-temporal-operators"
+    FUNCTIONS = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:functions"
+    ARITHMETIC = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:arithmetic"
+    ARRAYS = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:arrays"
+    QUERYABLE_SECOND_OPERAND = "https://api.stacspec.org/v1.0.0-beta.5/item-search#filter:queryable-second-operand"
 
 
 @attr.s
