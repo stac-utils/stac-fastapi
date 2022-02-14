@@ -34,7 +34,8 @@ class PostFieldsExtension(BaseModel):
                 if parent not in field_dict:
                     field_dict[parent] = {key}
                 else:
-                    field_dict[parent].add(key)
+                    if field_dict[parent] is not ...:
+                        field_dict[parent].add(key)
             else:
                 field_dict[field] = ...  # type:ignore
         return field_dict
