@@ -10,6 +10,8 @@ from asyncpg.exceptions import InvalidDatetimeFormatError
 from buildpg import render
 from fastapi import HTTPException
 from pydantic import ValidationError
+from pygeofilter.backends.cql2_json import to_cql2
+from pygeofilter.parsers.cql2_text import parse as parse_cql2_text
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
@@ -256,6 +258,8 @@ class CoreCrudClient(AsyncBaseCoreClient):
         token: Optional[str] = None,
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
+        filter: Optional[str] = None,
+        filter_lang: Optional[str] = None,
         **kwargs,
     ) -> ItemCollection:
         """Cross catalog search (GET).
@@ -265,6 +269,15 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             ItemCollection containing items which match the search criteria.
         """
+        request = kwargs["request"]
+        query_params = str(request.query_params)
+
+        # Kludgy fix because using factory does not allow alias for filter-lang
+        if filter_lang is None:
+            match = re.search(r"filter-lang=([a-z0-9-]+)", query_params, re.IGNORECASE)
+            if match:
+                filter_lang = match.group(1)
+
         # Parse request parameters
         base_args = {
             "collections": collections,
@@ -274,6 +287,12 @@ class CoreCrudClient(AsyncBaseCoreClient):
             "token": token,
             "query": orjson.loads(query) if query else query,
         }
+
+        if filter:
+            if filter_lang == "cql2-text":
+                ast = parse_cql2_text(filter)
+                base_args["filter"] = orjson.loads(to_cql2(ast))
+                base_args["filter-lang"] = "cql2-json"
 
         if datetime:
             base_args["datetime"] = datetime
@@ -304,9 +323,17 @@ class CoreCrudClient(AsyncBaseCoreClient):
                     includes.add(field)
             base_args["fields"] = {"include": includes, "exclude": excludes}
 
+        # Remove None values from dict
+        clean = {}
+        for k, v in base_args.items():
+            if v is not None and v != []:
+                clean[k] = v
+
         # Do the request
         try:
-            search_request = self.post_request_model(**base_args)
-        except ValidationError:
-            raise HTTPException(status_code=400, detail="Invalid parameters provided")
+            search_request = self.post_request_model(**clean)
+        except ValidationError as e:
+            raise HTTPException(
+                status_code=400, detail=f"Invalid parameters provided {e}"
+            )
         return await self.post_search(search_request, request=kwargs["request"])
