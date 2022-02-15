@@ -44,7 +44,7 @@ class TestRouteDependencies:
                 response = make_request(
                     path,
                     auth=("bob", "dobbs"),
-                    data='{"foo": "bar"}',
+                    data='{"dummy": "payload"}',
                     headers={"content-type": "application/json"},
                 )
                 assert (
