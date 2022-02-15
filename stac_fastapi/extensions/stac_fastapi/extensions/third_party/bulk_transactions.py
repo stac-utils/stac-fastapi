@@ -6,7 +6,7 @@ import attr
 from fastapi import APIRouter, FastAPI
 from pydantic import BaseModel
 
-from stac_fastapi.api.models import _create_request_model
+from stac_fastapi.api.models import create_request_model
 from stac_fastapi.api.routes import create_sync_endpoint
 from stac_fastapi.types.extension import ApiExtension
 
@@ -55,7 +55,7 @@ class BaseBulkTransactionsClient(abc.ABC):
 class BulkTransactionExtension(ApiExtension):
     """Bulk Transaction Extension.
 
-    Bulk Transaction extension adds the `POST /collections/{collectionId}/bulk_items` endpoint to the application
+    Bulk Transaction extension adds the `POST /collections/{collection_id}/bulk_items` endpoint to the application
     for efficient bulk insertion of items.
     """
 
@@ -72,12 +72,12 @@ class BulkTransactionExtension(ApiExtension):
         Returns:
             None
         """
-        items_request_model = _create_request_model(Items)
+        items_request_model = create_request_model("Items", base_model=Items)
 
         router = APIRouter()
         router.add_api_route(
             name="Bulk Create Item",
-            path="/collections/{collectionId}/bulk_items",
+            path="/collections/{collection_id}/bulk_items",
             response_model=str,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,

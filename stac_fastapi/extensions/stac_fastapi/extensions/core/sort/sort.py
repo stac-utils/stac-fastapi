@@ -6,6 +6,8 @@ from fastapi import FastAPI
 
 from stac_fastapi.types.extension import ApiExtension
 
+from .request import SortExtensionGetRequest, SortExtensionPostRequest
+
 
 @attr.s
 class SortExtension(ApiExtension):
@@ -17,8 +19,11 @@ class SortExtension(ApiExtension):
     https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#sort
     """
 
+    GET = SortExtensionGetRequest
+    POST = SortExtensionPostRequest
+
     conformance_classes: List[str] = attr.ib(
-        factory=lambda: ["https://api.stacspec.org/v1.0.0-beta.3/item-search/#sort"]
+        factory=lambda: ["https://api.stacspec.org/v1.0.0-beta.4/item-search/#sort"]
     )
     schema_href: Optional[str] = attr.ib(default=None)
 

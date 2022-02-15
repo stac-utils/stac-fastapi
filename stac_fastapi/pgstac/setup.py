@@ -25,12 +25,12 @@ extra_reqs = {
         "pytest-asyncio",
         "pre-commit",
         "requests",
-        "pypgstac==0.3.4",
+        "pypgstac==0.4.3",
         "httpx",
         "shapely",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
-    "server": ["uvicorn[standard]>=0.12.0,<0.14.0"],
+    "server": ["uvicorn[standard]==0.17.0"],
     "awslambda": ["mangum"],
 }
 

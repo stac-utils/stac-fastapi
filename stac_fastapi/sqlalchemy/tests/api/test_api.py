@@ -5,22 +5,41 @@ from ..conftest import MockStarletteRequest
 STAC_CORE_ROUTES = [
     "GET /",
     "GET /collections",
-    "GET /collections/{collectionId}",
-    "GET /collections/{collectionId}/items",
-    "GET /collections/{collectionId}/items/{itemId}",
+    "GET /collections/{collection_id}",
+    "GET /collections/{collection_id}/items",
+    "GET /collections/{collection_id}/items/{item_id}",
     "GET /conformance",
     "GET /search",
     "POST /search",
 ]
 
 STAC_TRANSACTION_ROUTES = [
-    "DELETE /collections/{collectionId}",
-    "DELETE /collections/{collectionId}/items/{itemId}",
+    "DELETE /collections/{collection_id}",
+    "DELETE /collections/{collection_id}/items/{item_id}",
     "POST /collections",
-    "POST /collections/{collectionId}/items",
+    "POST /collections/{collection_id}/items",
     "PUT /collections",
-    "PUT /collections/{collectionId}/items",
+    "PUT /collections/{collection_id}/items",
 ]
+
+
+def test_post_search_content_type(app_client):
+    params = {"limit": 1}
+    resp = app_client.post("search", json=params)
+    assert resp.headers["content-type"] == "application/geo+json"
+
+
+def test_get_search_content_type(app_client):
+    resp = app_client.get("search")
+    assert resp.headers["content-type"] == "application/geo+json"
+
+
+def test_api_headers(app_client):
+    resp = app_client.get("/api")
+    assert (
+        resp.headers["content-type"] == "application/vnd.oai.openapi+json;version=3.0"
+    )
+    assert resp.status_code == 200
 
 
 def test_core_router(api_client):
@@ -57,6 +76,21 @@ def test_app_search_response(load_test_data, app_client, postgres_transactions):
     # stac_version and stac_extensions were removed in v1.0.0-beta.3
     assert resp_json.get("stac_version") is None
     assert resp_json.get("stac_extensions") is None
+
+
+def test_app_search_response_multipolygon(
+    load_test_data, app_client, postgres_transactions
+):
+    item = load_test_data("test_item_multipolygon.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    resp = app_client.get("/search", params={"collections": ["test-collection"]})
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    print(resp_json)
+
+    assert resp_json.get("type") == "FeatureCollection"
+    assert resp_json.get("features")[0]["geometry"]["type"] == "MultiPolygon"
 
 
 def test_app_context_extension(load_test_data, app_client, postgres_transactions):
@@ -100,6 +134,12 @@ def test_app_query_extension_gte(load_test_data, app_client, postgres_transactio
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
+
+
+def test_app_query_extension_limit_eq0(app_client):
+    params = {"limit": 0}
+    resp = app_client.post("/search", json=params)
+    assert resp.status_code == 400
 
 
 def test_app_query_extension_limit_lt0(
@@ -245,3 +285,23 @@ def test_search_line_string_intersects(
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
+
+
+def test_app_fields_extension_return_all_properties(
+    load_test_data, app_client, postgres_transactions
+):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    resp = app_client.get(
+        "/search", params={"collections": ["test-collection"], "fields": "properties"}
+    )
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    feature = resp_json["features"][0]
+    assert len(feature["properties"]) >= len(item["properties"])
+    for expected_prop, expected_value in item["properties"].items():
+        if expected_prop in ("datetime", "created", "updated"):
+            assert feature["properties"][expected_prop][0:19] == expected_value[0:19]
+        else:
+            assert feature["properties"][expected_prop] == expected_value

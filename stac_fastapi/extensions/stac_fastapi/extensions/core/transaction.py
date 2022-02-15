@@ -22,11 +22,11 @@ class TransactionExtension(ApiExtension):
     The transaction extension adds several endpoints which allow the creation, deletion, and updating of items and
     collections:
         POST /collections
-        PUT /collections/{collectionId}
-        DELETE /collections/{collectionId}
-        POST /collections/{collectionId}/items
-        PUT /collections/{collectionId}/items
-        DELETE /collections/{collectionId}/items
+        PUT /collections/{collection_id}
+        DELETE /collections/{collection_id}
+        POST /collections/{collection_id}/items
+        PUT /collections/{collection_id}/items
+        DELETE /collections/{collection_id}/items
 
     https://github.com/radiantearth/stac-api-spec/blob/master/ogcapi-features/extensions/transaction/README.md
 
@@ -38,7 +38,7 @@ class TransactionExtension(ApiExtension):
     settings: ApiSettings = attr.ib()
     conformance_classes: List[str] = attr.ib(
         factory=lambda: [
-            "https://api.stacspec.org/v1.0.0-beta.3/ogcapi-features/extensions/transaction/",
+            "https://api.stacspec.org/v1.0.0-beta.4/ogcapi-features/extensions/transaction/",
             "http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/simpletx",
         ]
     )
@@ -68,10 +68,10 @@ class TransactionExtension(ApiExtension):
         raise NotImplementedError
 
     def register_create_item(self):
-        """Register create item endpoint (POST /collections/{collectionId}/items)."""
+        """Register create item endpoint (POST /collections/{collection_id}/items)."""
         self.router.add_api_route(
             name="Create Item",
-            path="/collections/{collectionId}/items",
+            path="/collections/{collection_id}/items",
             response_model=Item if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
@@ -81,10 +81,10 @@ class TransactionExtension(ApiExtension):
         )
 
     def register_update_item(self):
-        """Register update item endpoint (PUT /collections/{collectionId}/items)."""
+        """Register update item endpoint (PUT /collections/{collection_id}/items)."""
         self.router.add_api_route(
             name="Update Item",
-            path="/collections/{collectionId}/items",
+            path="/collections/{collection_id}/items",
             response_model=Item if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
@@ -94,10 +94,10 @@ class TransactionExtension(ApiExtension):
         )
 
     def register_delete_item(self):
-        """Register delete item endpoint (DELETE /collections/{collectionId}/items/{itemId})."""
+        """Register delete item endpoint (DELETE /collections/{collection_id}/items/{item_id})."""
         self.router.add_api_route(
             name="Delete Item",
-            path="/collections/{collectionId}/items/{itemId}",
+            path="/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
@@ -137,10 +137,10 @@ class TransactionExtension(ApiExtension):
         )
 
     def register_delete_collection(self):
-        """Register delete collection endpoint (DELETE /collections/{collectionId})."""
+        """Register delete collection endpoint (DELETE /collections/{collection_id})."""
         self.router.add_api_route(
             name="Delete Collection",
-            path="/collections/{collectionId}",
+            path="/collections/{collection_id}",
             response_model=Collection if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,

@@ -6,6 +6,8 @@ from fastapi import FastAPI
 
 from stac_fastapi.types.extension import ApiExtension
 
+from .request import FieldsExtensionGetRequest, FieldsExtensionPostRequest
+
 
 @attr.s
 class FieldsExtension(ApiExtension):
@@ -24,10 +26,12 @@ class FieldsExtension(ApiExtension):
 
     """
 
+    GET = FieldsExtensionGetRequest
+    POST = FieldsExtensionPostRequest
+
     conformance_classes: List[str] = attr.ib(
-        factory=lambda: ["https://api.stacspec.org/v1.0.0-beta.3/item-search/#fields"]
+        factory=lambda: ["https://api.stacspec.org/v1.0.0-beta.4/item-search/#fields"]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
     default_includes: Set[str] = attr.ib(
         factory=lambda: {
             "id",
@@ -41,6 +45,7 @@ class FieldsExtension(ApiExtension):
             "collection",
         }
     )
+    schema_href: Optional[str] = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

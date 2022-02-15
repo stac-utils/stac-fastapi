@@ -1,85 +1,121 @@
 """api request/response models."""
 
-import abc
-from typing import Dict, Optional, Type, Union
+import importlib.util
+from typing import Optional, Type, Union
 
 import attr
 from fastapi import Body, Path
 from pydantic import BaseModel, create_model
 from pydantic.fields import UndefinedType
 
+from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.search import (
+    APIRequest,
+    BaseSearchGetRequest,
+    BaseSearchPostRequest,
+)
 
-def _create_request_model(model: Type[BaseModel]) -> Type[BaseModel]:
+
+def create_request_model(
+    model_name="SearchGetRequest",
+    base_model: Union[Type[BaseModel], APIRequest] = BaseSearchGetRequest,
+    extensions: Optional[ApiExtension] = None,
+    mixins: Optional[Union[BaseModel, APIRequest]] = None,
+    request_type: Optional[str] = "GET",
+) -> Union[Type[BaseModel], APIRequest]:
     """Create a pydantic model for validating request bodies."""
     fields = {}
-    for (k, v) in model.__fields__.items():
-        # TODO: Filter out fields based on which extensions are present
-        field_info = v.field_info
-        body = Body(
-            None
-            if isinstance(field_info.default, UndefinedType)
-            else field_info.default,
-            default_factory=field_info.default_factory,
-            alias=field_info.alias,
-            alias_priority=field_info.alias_priority,
-            title=field_info.title,
-            description=field_info.description,
-            const=field_info.const,
-            gt=field_info.gt,
-            ge=field_info.ge,
-            lt=field_info.lt,
-            le=field_info.le,
-            multiple_of=field_info.multiple_of,
-            min_items=field_info.min_items,
-            max_items=field_info.max_items,
-            min_length=field_info.min_length,
-            max_length=field_info.max_length,
-            regex=field_info.regex,
-            extra=field_info.extra,
-        )
-        fields[k] = (v.outer_type_, body)
-    return create_model(model.__name__, **fields, __base__=model)
+    extension_models = []
+
+    # Check extensions for additional parameters to search
+    for extension in extensions or []:
+        if extension_model := extension.get_request_model(request_type):
+            extension_models.append(extension_model)
+
+    mixins = mixins or []
+
+    models = [base_model] + extension_models + mixins
+
+    # Handle GET requests
+    if all([issubclass(m, APIRequest) for m in models]):
+        return attr.make_class(model_name, attrs={}, bases=tuple(models))
+
+    # Handle POST requests
+    elif all([issubclass(m, BaseModel) for m in models]):
+        for model in models:
+            for (k, v) in model.__fields__.items():
+                field_info = v.field_info
+                body = Body(
+                    None
+                    if isinstance(field_info.default, UndefinedType)
+                    else field_info.default,
+                    default_factory=field_info.default_factory,
+                    alias=field_info.alias,
+                    alias_priority=field_info.alias_priority,
+                    title=field_info.title,
+                    description=field_info.description,
+                    const=field_info.const,
+                    gt=field_info.gt,
+                    ge=field_info.ge,
+                    lt=field_info.lt,
+                    le=field_info.le,
+                    multiple_of=field_info.multiple_of,
+                    min_items=field_info.min_items,
+                    max_items=field_info.max_items,
+                    min_length=field_info.min_length,
+                    max_length=field_info.max_length,
+                    regex=field_info.regex,
+                    extra=field_info.extra,
+                )
+                fields[k] = (v.outer_type_, body)
+        return create_model(model_name, **fields, __base__=base_model)
+
+    raise TypeError("Mixed Request Model types. Check extension request types.")
 
 
-@attr.s  # type:ignore
-class APIRequest(abc.ABC):
-    """Generic API Request base class."""
+def create_get_request_model(
+    extensions, base_model: BaseSearchGetRequest = BaseSearchGetRequest
+):
+    """Wrap create_request_model to create the GET request model."""
+    return create_request_model(
+        "SearchGetRequest",
+        base_model=base_model,
+        extensions=extensions,
+        request_type="GET",
+    )
 
-    @abc.abstractmethod
-    def kwargs(self) -> Dict:
-        """Transform api request params into format which matches the signature of the endpoint."""
-        ...
+
+def create_post_request_model(
+    extensions, base_model: BaseSearchPostRequest = BaseSearchPostRequest
+):
+    """Wrap create_request_model to create the POST request model."""
+    return create_request_model(
+        "SearchPostRequest",
+        base_model=base_model,
+        extensions=extensions,
+        request_type="POST",
+    )
 
 
 @attr.s  # type:ignore
 class CollectionUri(APIRequest):
     """Delete collection."""
 
-    collectionId: str = attr.ib(default=Path(..., description="Collection ID"))
-
-    def kwargs(self) -> Dict:
-        """kwargs."""
-        return {"id": self.collectionId}
+    collection_id: str = attr.ib(default=Path(..., description="Collection ID"))
 
 
 @attr.s
 class ItemUri(CollectionUri):
     """Delete item."""
 
-    itemId: str = attr.ib(default=Path(..., description="Item ID"))
-
-    def kwargs(self) -> Dict:
-        """kwargs."""
-        return {"collection_id": self.collectionId, "item_id": self.itemId}
+    item_id: str = attr.ib(default=Path(..., description="Item ID"))
 
 
 @attr.s
 class EmptyRequest(APIRequest):
     """Empty request."""
 
-    def kwargs(self) -> Dict:
-        """kwargs."""
-        return {}
+    ...
 
 
 @attr.s
@@ -87,43 +123,48 @@ class ItemCollectionUri(CollectionUri):
     """Get item collection."""
 
     limit: int = attr.ib(default=10)
-    token: str = attr.ib(default=None)
 
-    def kwargs(self) -> Dict:
-        """kwargs."""
-        return {
-            "id": self.collectionId,
-            "limit": self.limit,
-            "token": self.token,
-        }
+
+class POSTTokenPagination(BaseModel):
+    """Token pagination model for POST requests."""
+
+    token: Optional[str] = None
 
 
 @attr.s
-class SearchGetRequest(APIRequest):
-    """GET search request."""
+class GETTokenPagination(APIRequest):
+    """Token pagination for GET requests."""
 
-    collections: Optional[str] = attr.ib(default=None)
-    ids: Optional[str] = attr.ib(default=None)
-    bbox: Optional[str] = attr.ib(default=None)
-    datetime: Optional[Union[str]] = attr.ib(default=None)
-    limit: Optional[int] = attr.ib(default=10)
-    query: Optional[str] = attr.ib(default=None)
     token: Optional[str] = attr.ib(default=None)
-    fields: Optional[str] = attr.ib(default=None)
-    sortby: Optional[str] = attr.ib(default=None)
 
-    def kwargs(self) -> Dict:
-        """kwargs."""
-        return {
-            "collections": self.collections.split(",")
-            if self.collections
-            else self.collections,
-            "ids": self.ids.split(",") if self.ids else self.ids,
-            "bbox": self.bbox.split(",") if self.bbox else self.bbox,
-            "datetime": self.datetime,
-            "limit": self.limit,
-            "query": self.query,
-            "token": self.token,
-            "fields": self.fields.split(",") if self.fields else self.fields,
-            "sortby": self.sortby.split(",") if self.sortby else self.sortby,
-        }
+
+class POSTPagination(BaseModel):
+    """Page based pagination for POST requests."""
+
+    page: Optional[str] = None
+
+
+@attr.s
+class GETPagination(APIRequest):
+    """Page based pagination for GET requests."""
+
+    page: Optional[str] = attr.ib(default=None)
+
+
+# Test for ORJSON and use it rather than stdlib JSON where supported
+if importlib.util.find_spec("orjson") is not None:
+    from fastapi.responses import ORJSONResponse
+
+    class GeoJSONResponse(ORJSONResponse):
+        """JSON with custom, vendor content-type."""
+
+        media_type = "application/geo+json"
+
+
+else:
+    from starlette.responses import JSONResponse
+
+    class GeoJSONResponse(JSONResponse):
+        """JSON with custom, vendor content-type."""
+
+        media_type = "application/geo+json"
