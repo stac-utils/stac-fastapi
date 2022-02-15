@@ -1,10 +1,11 @@
 """fastapi app creation."""
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import attr
 from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
+from fastapi.params import Depends
 from pydantic import BaseModel
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
@@ -23,7 +24,12 @@ from stac_fastapi.api.models import (
     create_request_model,
 )
 from stac_fastapi.api.openapi import update_openapi
-from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
+from stac_fastapi.api.routes import (
+    Scope,
+    add_route_dependencies,
+    create_async_endpoint,
+    create_sync_endpoint,
+)
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
 from stac_fastapi.extensions.core import FieldsExtension, TokenPaginationExtension
@@ -42,19 +48,17 @@ class StacApi:
 
     Attributes:
         settings:
-            API settings and configuration, potentially using environment variables.
-            See https://pydantic-docs.helpmanual.io/usage/settings/.
+            API settings and configuration, potentially using environment variables. See https://pydantic-docs.helpmanual.io/usage/settings/.
         client:
-            A subclass of `stac_api.clients.BaseCoreClient`.  Defines the application logic which is injected
-            into the API.
+            A subclass of `stac_api.clients.BaseCoreClient`.  Defines the application logic which is injected into the API.
         extensions:
-            API extensions to include with the application.  This may include official STAC extensions as well as
-            third-party add ons.
+            API extensions to include with the application.  This may include official STAC extensions as well as third-party add ons.
         exceptions:
-            Defines a global mapping between exceptions and status codes, allowing configuration of response behavior on
-            certain exceptions (https://fastapi.tiangolo.com/tutorial/handling-errors/#install-custom-exception-handlers).
+            Defines a global mapping between exceptions and status codes, allowing configuration of response behavior on certain exceptions (https://fastapi.tiangolo.com/tutorial/handling-errors/#install-custom-exception-handlers).
         app:
             The FastAPI application, defaults to a fresh application.
+        route_dependencies (list of tuples of route scope dicts (eg `{'path': '/collections', 'method': 'POST'}`) and list of dependencies (e.g. `[Depends(oauth2_scheme)]`)):
+            Applies specified dependencies to specified routes. This is useful for applying custom auth requirements to routes defined elsewhere in the application.
     """
 
     settings: ApiSettings = attr.ib()
@@ -88,6 +92,7 @@ class StacApi:
     pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
     middlewares: List = attr.ib(default=attr.Factory(lambda: [BrotliMiddleware]))
+    route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -337,6 +342,20 @@ class StacApi:
 
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
 
+    def add_route_dependencies(
+        self, scopes: List[Scope], dependencies=List[Depends]
+    ) -> None:
+        """Add custom dependencies to routes.
+
+        Args:
+            scopes: list of scopes. Each scope should be a dict with a `path` and `method` property.
+            dependencies: list of [FastAPI dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/) to apply to each scope.
+
+        Returns:
+            None
+        """
+        return add_route_dependencies(self.app.router.routes, scopes, dependencies)
+
     def __attrs_post_init__(self):
         """Post-init hook.
 
@@ -378,3 +397,7 @@ class StacApi:
         # add middlewares
         for middleware in self.middlewares:
             self.app.add_middleware(middleware)
+
+        # customize route dependencies
+        for scopes, dependencies in self.route_dependencies:
+            self.add_route_dependencies(scopes=scopes, dependencies=dependencies)
