@@ -346,11 +346,11 @@ class StacApi:
         self, scopes: List[Scope], dependencies=List[Depends]
     ) -> None:
         """Add custom dependencies to routes.
-        
+
         Args:
             scopes: list of scopes. Each scope should be a dict with a `path` and `method` property.
             dependencies: list of [FastAPI dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/) to apply to each scope.
-        
+
         Returns:
             None
         """
