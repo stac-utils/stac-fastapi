@@ -48,19 +48,17 @@ class StacApi:
 
     Attributes:
         settings:
-            API settings and configuration, potentially using environment variables.
-            See https://pydantic-docs.helpmanual.io/usage/settings/.
+            API settings and configuration, potentially using environment variables. See https://pydantic-docs.helpmanual.io/usage/settings/.
         client:
-            A subclass of `stac_api.clients.BaseCoreClient`.  Defines the application logic which is injected
-            into the API.
+            A subclass of `stac_api.clients.BaseCoreClient`.  Defines the application logic which is injected into the API.
         extensions:
-            API extensions to include with the application.  This may include official STAC extensions as well as
-            third-party add ons.
+            API extensions to include with the application.  This may include official STAC extensions as well as third-party add ons.
         exceptions:
-            Defines a global mapping between exceptions and status codes, allowing configuration of response behavior on
-            certain exceptions (https://fastapi.tiangolo.com/tutorial/handling-errors/#install-custom-exception-handlers).
+            Defines a global mapping between exceptions and status codes, allowing configuration of response behavior on certain exceptions (https://fastapi.tiangolo.com/tutorial/handling-errors/#install-custom-exception-handlers).
         app:
             The FastAPI application, defaults to a fresh application.
+        route_dependencies (list of tuples of route scope dicts (eg `{'path': '/collections', 'method': 'POST'}`) and list of dependencies (e.g. `[Depends(oauth2_scheme)]`)):
+            Applies specified dependencies to specified routes. This is useful for applying custom auth requirements to routes defined elsewhere in the application.
     """
 
     settings: ApiSettings = attr.ib()
@@ -347,7 +345,15 @@ class StacApi:
     def add_route_dependencies(
         self, scopes: List[Scope], dependencies=List[Depends]
     ) -> None:
-        """Add custom dependencies to routes."""
+        """Add custom dependencies to routes.
+        
+        Args:
+            scopes: list of scopes. Each scope should be a dict with a `path` and `method` property.
+            dependencies: list of [FastAPI dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/) to apply to each scope.
+        
+        Returns:
+            None
+        """
         return add_route_dependencies(self.app.router.routes, scopes, dependencies)
 
     def __attrs_post_init__(self):
