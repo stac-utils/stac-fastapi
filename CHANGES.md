@@ -5,8 +5,11 @@
 ### Added
 
 * Added ability to configure CORS middleware via environment variables ([#341](https://github.com/stac-utils/stac-fastapi/pull/341))
+* Add hook to allow adding dependencies to routes. ([#295](https://github.com/stac-utils/stac-fastapi/pull/295))
 
 ### Changed
+
+* update FastAPI requirement to allow version >=0.73 ([#337](https://github.com/stac-utils/stac-fastapi/pull/337))
 
 ### Removed
 
