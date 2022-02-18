@@ -118,6 +118,19 @@ services:
       - database
       - app-pgstac
 
+  api-tester:
+    image: stac-utils/stac-fastapi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    profiles:
+      # prevent tester from starting with `docker-compose up`
+      - api-test
+    working_dir: /app/stac_fastapi/api
+    volumes:
+      - ./:/app
+    command: pytest -svvv
+
 networks:
   default:
     name: stac-fastapi-network

@@ -46,6 +46,10 @@ test-sqlalchemy: run-joplin-sqlalchemy
 test-pgstac:
 	$(run_pgstac) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/pgstac/tests/ && pytest -vvv'
 
+.PHONY: test-api
+test-api:
+	docker-compose run api-tester
+
 .PHONY: run-database
 run-database:
 	docker-compose run --rm database
@@ -59,7 +63,7 @@ run-joplin-pgstac:
 	docker-compose run --rm loadjoplin-pgstac
 
 .PHONY: test
-test: test-sqlalchemy test-pgstac
+test: test-sqlalchemy test-pgstac test-api
 
 .PHONY: pybase-install
 pybase-install:
