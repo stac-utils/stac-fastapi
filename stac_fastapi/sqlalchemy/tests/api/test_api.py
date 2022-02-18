@@ -1,16 +1,4 @@
 from datetime import datetime, timedelta
-from http import HTTPStatus
-
-import pytest
-from tests.api.cors_support import (
-    cors_clear_config,
-    cors_deny,
-    cors_origin_1,
-    cors_origin_deny,
-    cors_permit_1,
-    cors_permit_12,
-    cors_permit_123_regex,
-)
 
 from ..conftest import MockStarletteRequest
 
@@ -33,10 +21,6 @@ STAC_TRANSACTION_ROUTES = [
     "PUT /collections",
     "PUT /collections/{collection_id}/items",
 ]
-
-
-def teardown_function():
-    cors_clear_config()
 
 
 def test_post_search_content_type(app_client):
@@ -321,48 +305,3 @@ def test_app_fields_extension_return_all_properties(
             assert feature["properties"][expected_prop][0:19] == expected_value[0:19]
         else:
             assert feature["properties"][expected_prop] == expected_value
-
-
-def test_with_default_cors_origin(app_client):
-    resp = app_client.get("/", headers={"Origin": cors_origin_1})
-    assert resp.status_code == HTTPStatus.OK
-    assert resp.headers["access-control-allow-origin"] == "*"
-
-
-@pytest.mark.parametrize("app_client", [{"setup_func": cors_permit_1}], indirect=True)
-def test_with_match_cors_single(app_client):
-    resp = app_client.get("/", headers={"Origin": cors_origin_1})
-    assert resp.status_code == HTTPStatus.OK
-    assert resp.headers["access-control-allow-origin"] == cors_origin_1
-
-
-@pytest.mark.parametrize("app_client", [{"setup_func": cors_permit_12}], indirect=True)
-def test_with_match_cors_double(app_client):
-    resp = app_client.get("/", headers={"Origin": cors_origin_1})
-    assert resp.status_code == HTTPStatus.OK
-    assert resp.headers["access-control-allow-origin"] == cors_origin_1
-
-
-@pytest.mark.parametrize(
-    "app_client", [{"setup_func": cors_permit_123_regex}], indirect=True
-)
-def test_with_match_cors_all_regex_match(app_client):
-    resp = app_client.get("/", headers={"Origin": cors_origin_1})
-    assert resp.status_code == HTTPStatus.OK
-    assert resp.headers["access-control-allow-origin"] == cors_origin_1
-
-
-@pytest.mark.parametrize(
-    "app_client", [{"setup_func": cors_permit_123_regex}], indirect=True
-)
-def test_with_match_cors_all_regex_mismatch(app_client):
-    resp = app_client.get("/", headers={"Origin": cors_origin_deny})
-    assert resp.status_code == HTTPStatus.OK
-    assert "access-control-allow-origin" not in resp.headers
-
-
-@pytest.mark.parametrize("app_client", [{"setup_func": cors_deny}], indirect=True)
-def test_with_mismatch_cors_origin(app_client):
-    resp = app_client.get("/", headers={"Origin": cors_origin_1})
-    assert resp.status_code == HTTPStatus.OK
-    assert "access-control-allow-origin" not in resp.headers
