@@ -1,16 +1,6 @@
 from datetime import datetime, timedelta
-from http import HTTPStatus
 
 import pytest
-from tests.api.cors_support import (
-    cors_clear_config,
-    cors_deny,
-    cors_origin_1,
-    cors_origin_deny,
-    cors_permit_1,
-    cors_permit_12,
-    cors_permit_123_regex,
-)
 
 STAC_CORE_ROUTES = [
     "GET /",
