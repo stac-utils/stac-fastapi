@@ -41,26 +41,27 @@ from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostReques
 
 @attr.s
 class StacApi:
-    """StacApi factory.
+    """Creates a STAC compliant FastAPI application.
 
-    Factory for creating a STAC-compliant FastAPI application.  After instantation, the application is accessible from
-    the `StacApi.app` attribute.
+    This objects provides an API layer implementing the `STAC API specification
+    <https://github.com/radiantearth/stac-api-spec>`_.  It wraps most of the
+    functionality provided by the rest of the library, and allows users to
+    inject their own business logic defining how the API interacts with the
+    underlying datastore (postgres, elasticsearch etc.).  The API layer is almost
+    entirely decoupled from the backend and aims to be a transparent implementation
+    of the specification.
 
+    # TODO: This is a WIP.
     Attributes:
-        settings:
-            API settings and configuration, potentially using environment variables. See https://pydantic-docs.helpmanual.io/usage/settings/.
-        client:
-            A subclass of `stac_api.clients.BaseCoreClient`.  Defines the application logic which is injected into the API.
-        extensions:
-            API extensions to include with the application.  This may include official STAC extensions as well as third-party add ons.
-        exceptions:
-            Defines a global mapping between exceptions and status codes, allowing configuration of response behavior on certain exceptions (https://fastapi.tiangolo.com/tutorial/handling-errors/#install-custom-exception-handlers).
-        app:
-            The FastAPI application, defaults to a fresh application.
-        route_dependencies (list of tuples of route scope dicts (eg `{'path': '/collections', 'method': 'POST'}`) and list of dependencies (e.g. `[Depends(oauth2_scheme)]`)):
-            Applies specified dependencies to specified routes. This is useful for applying custom auth requirements to routes defined elsewhere in the application.
+        settings: API settings and configuration
+        client: An implementation of :class:`stac_fastapi.types.core.BaseCoreClient`
+            or it's asynchronous version.  This class defines the business logic
+            injected into the API, and generally contains one method for each
+            endpoint in the specification.
+        extensions: A list of :class:`stac_fastapi.types.extension.ApiExtension` defining
+            STAC and third-party extensions implemented by the API.  Extensions allow the
+            user to customize API behavior.
     """
-
     settings: ApiSettings = attr.ib()
     client: Union[AsyncBaseCoreClient, BaseCoreClient] = attr.ib()
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
@@ -345,15 +346,6 @@ class StacApi:
     def add_route_dependencies(
         self, scopes: List[Scope], dependencies=List[Depends]
     ) -> None:
-        """Add custom dependencies to routes.
-
-        Args:
-            scopes: list of scopes. Each scope should be a dict with a `path` and `method` property.
-            dependencies: list of [FastAPI dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/) to apply to each scope.
-
-        Returns:
-            None
-        """
         return add_route_dependencies(self.app.router.routes, scopes, dependencies)
 
     def __attrs_post_init__(self):

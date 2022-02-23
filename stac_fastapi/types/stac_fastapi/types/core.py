@@ -23,7 +23,12 @@ StacType = Dict[str, Any]
 
 @attr.s  # type:ignore
 class BaseTransactionsClient(abc.ABC):
-    """Defines a pattern for implementing the STAC transaction extension."""
+    """Defines an interface for implementing the STAC API transaction extension.
+
+    The transaction extension adds support for creating, editing, and deletion
+    of items and collections through several RESTful endpoints.  The interface
+    requires implementing one method for each endpoint in the extension.
+    """
 
     @abc.abstractmethod
     def create_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
@@ -32,10 +37,10 @@ class BaseTransactionsClient(abc.ABC):
         Called with `POST /collections/{collection_id}/items`.
 
         Args:
-            item: the item
+            item: The item.
 
         Returns:
-            The item that was created.
+            Item: The item that was created.
 
         """
         ...
@@ -44,15 +49,16 @@ class BaseTransactionsClient(abc.ABC):
     def update_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
         """Perform a complete update on an existing item.
 
-        Called with `PUT /collections/{collection_id}/items`. It is expected that this item already exists.  The update
-        should do a diff against the saved item and perform any necessary updates.  Partial updates are not supported
-        by the transactions extension.
+        Called with `PUT /collections/{collection_id}/items`. It is expected that this
+        item already exists.  The update should do a diff against the saved item and
+        perform any necessary updates.  Partial updates are not supported by the transactions
+        extension.
 
         Args:
-            item: the item (must be complete)
+            item: The item (must be complete).
 
         Returns:
-            The updated item.
+            Item: The updated item.
         """
         ...
 
@@ -69,7 +75,7 @@ class BaseTransactionsClient(abc.ABC):
             collection_id: id of the collection.
 
         Returns:
-            The deleted item.
+            Item: The deleted item.
         """
         ...
 
@@ -82,10 +88,10 @@ class BaseTransactionsClient(abc.ABC):
         Called with `POST /collections`.
 
         Args:
-            collection: the collection
+            collection: The collection.
 
         Returns:
-            The collection that was created.
+            Collection: The collection that was created.
         """
         ...
 
@@ -95,15 +101,16 @@ class BaseTransactionsClient(abc.ABC):
     ) -> stac_types.Collection:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections`. It is expected that this item already exists.  The update should do a diff
-        against the saved collection and perform any necessary updates.  Partial updates are not supported by the
+        Called with `PUT /collections`. It is expected that this collection already
+        exists.  The update should do a diff against the existing collection and
+        perform any necessary updates.  Partial updates are not supported by the
         transactions extension.
 
         Args:
-            collection: the collection (must be complete)
+            collection: The collection (must be complete)
 
         Returns:
-            The updated collection.
+            Collection: The updated collection.
         """
         ...
 
@@ -114,17 +121,25 @@ class BaseTransactionsClient(abc.ABC):
         Called with `DELETE /collections/{collection_id}`
 
         Args:
-            collection_id: id of the collection.
+            collection_id: Id of the collection.
 
         Returns:
-            The deleted collection.
+            Collection: The deleted collection.
         """
         ...
 
 
 @attr.s  # type:ignore
 class AsyncBaseTransactionsClient(abc.ABC):
-    """Defines a pattern for implementing the STAC transaction extension."""
+    """Defines an interface for implementing the STAC API transaction extension.
+
+    The transaction extension adds support for creating, editing, and deletion
+    of items and collections through several RESTful endpoints.  The interface
+    requires implementing one method for each endpoint in the extension.
+
+    This is the same interface as :class:`stac_fastapi.types.core.BaseTransactionsClient`
+    but implements async/await syntax.
+    """
 
     @abc.abstractmethod
     async def create_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
@@ -133,10 +148,10 @@ class AsyncBaseTransactionsClient(abc.ABC):
         Called with `POST /collections/{collection_id}/items`.
 
         Args:
-            item: the item
+            item: The item.
 
         Returns:
-            The item that was created.
+            Item: The item that was created.
 
         """
         ...
@@ -145,15 +160,16 @@ class AsyncBaseTransactionsClient(abc.ABC):
     async def update_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
         """Perform a complete update on an existing item.
 
-        Called with `PUT /collections/{collection_id}/items`. It is expected that this item already exists.  The update
-        should do a diff against the saved item and perform any necessary updates.  Partial updates are not supported
-        by the transactions extension.
+        Called with `PUT /collections/{collection_id}/items`. It is expected that this
+        item already exists.  The update should do a diff against the saved item and
+        perform any necessary updates.  Partial updates are not supported by the transactions
+        extension.
 
         Args:
-            item: the item (must be complete)
+            item: The item (must be complete).
 
         Returns:
-            The updated item.
+            Item: The updated item.
         """
         ...
 
@@ -170,7 +186,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
             collection_id: id of the collection.
 
         Returns:
-            The deleted item.
+            Item: The deleted item.
         """
         ...
 
@@ -183,10 +199,10 @@ class AsyncBaseTransactionsClient(abc.ABC):
         Called with `POST /collections`.
 
         Args:
-            collection: the collection
+            collection: The collection.
 
         Returns:
-            The collection that was created.
+            Collection: The collection that was created.
         """
         ...
 
@@ -196,15 +212,16 @@ class AsyncBaseTransactionsClient(abc.ABC):
     ) -> stac_types.Collection:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections`. It is expected that this item already exists.  The update should do a diff
-        against the saved collection and perform any necessary updates.  Partial updates are not supported by the
+        Called with `PUT /collections`. It is expected that this collection already
+        exists.  The update should do a diff against the existing collection and
+        perform any necessary updates.  Partial updates are not supported by the
         transactions extension.
 
         Args:
-            collection: the collection (must be complete)
+            collection: The collection (must be complete)
 
         Returns:
-            The updated collection.
+            Collection: The updated collection.
         """
         ...
 
@@ -220,15 +237,22 @@ class AsyncBaseTransactionsClient(abc.ABC):
             collection_id: id of the collection.
 
         Returns:
-            The deleted collection.
+            Collection: The deleted collection.
         """
         ...
 
 
 @attr.s
 class LandingPageMixin(abc.ABC):
-    """Create a STAC landing page (GET /)."""
+    """Create a STAC landing page (GET /).
 
+    Attributes:
+        stac_version: The STAC version implemented by the API, defaults
+            to 1.0.0.
+        landing_page_id: The id of the catalog.
+        title: The title of the catalog.
+        description: The description of the catalog.
+    """
     stac_version: str = attr.ib(default=STAC_VERSION)
     landing_page_id: str = attr.ib(default="stac-fastapi")
     title: str = attr.ib(default="stac-fastapi")
@@ -291,12 +315,24 @@ class LandingPageMixin(abc.ABC):
 
 @attr.s  # type:ignore
 class BaseCoreClient(LandingPageMixin, abc.ABC):
-    """Defines a pattern for implementing STAC api core endpoints.
+    """Defines an interface for implementing the STAC API - Core Conformance
+    class.
+
+    The Core Conformance class defines a set of endpoint that must be implemented
+    by an API to be considered compliant.  The core spec has been split apart
+    since the time this interface was written.  It also implements the OAF Features
+    and ItemSearch conformance classes in addition to Core.
+
+    The interface requires implementing one method for each method in these conformance
+    classes.
 
     Attributes:
-        extensions: list of registered api extensions.
+        base_conformance_classes: The set of conformance classes implemented by
+            the API not including extensions.
+        extensions: The list of API extensions implemented by the API.
+        post_request_model: The pydantic model used to serialize and validate
+            request bodies required by ItemSearch.
     """
-
     base_conformance_classes: List[str] = attr.ib(
         factory=lambda: BASE_CONFORMANCE_CLASSES
     )
@@ -304,7 +340,14 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     post_request_model = attr.ib(default=BaseSearchPostRequest)
 
     def conformance_classes(self) -> List[str]:
-        """Generate conformance classes by adding extension conformance to base conformance classes."""
+        """Generates a list of conformance classes used by the API.
+
+        The final list of classes is generated by combining the `base_conformance_classes`
+        with any conformance classes from extensions implemented by the API.
+
+        Returns:
+            List[str]: A list of conformance classes (http(s) references).
+        """
         base_conformance_classes = self.base_conformance_classes.copy()
 
         for extension in self.extensions:
@@ -314,32 +357,39 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         return list(set(base_conformance_classes))
 
     def extension_is_enabled(self, extension: str) -> bool:
-        """Check if an api extension is enabled."""
+        """Check if the given extension is enabled.
+
+        Allows the API to determine if an extension is enabled within an
+        active request.
+
+        Args:
+            extension: The extension to check.
+
+        Returns:
+            bool: True if enabled, otherwise False.
+        """
         return any([type(ext).__name__ == extension for ext in self.extensions])
-
-    def list_conformance_classes(self):
-        """Return a list of conformance classes, including implemented extensions."""
-        base_conformance = BASE_CONFORMANCE_CLASSES
-
-        for extension in self.extensions:
-            extension_classes = getattr(extension, "conformance_classes", [])
-            base_conformance.extend(extension_classes)
-
-        return base_conformance
 
     def landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
 
+        The landing page is a STAC Catalog which serves as an entrypoint into
+        the API.  It allows the caller to browse through the API by following
+        links, perform spatio-temporal searches into the STAC through search
+        requests, and links to important metadata describing the specific
+        API implementation such as conformance classes, STAC version, and
+        available extensions.
+
         Called with `GET /`.
 
         Returns:
-            API landing page, serving as an entry point to the API.
+            LandingPage: An API landing page, serving as the entrypoint to the API.
         """
-        request: Request = kwargs["request"]
-        base_url = str(request.base_url)
         extension_schemas = [
             schema.schema_href for schema in self.extensions if schema.schema_href
         ]
+
+        # Create the initial landing page
         request: Request = kwargs["request"]
         base_url = str(request.base_url)
         landing_page = self._landing_page(
@@ -388,7 +438,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Called with `GET /conformance`.
 
         Returns:
-            Conformance classes which the server conforms to.
+            Conformance: Conformance classes implemented by the server.
         """
         return Conformance(conformsTo=self.conformance_classes())
 
@@ -396,15 +446,20 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     def post_search(
         self, search_request: Search, **kwargs
     ) -> stac_types.ItemCollection:
-        """Cross catalog search (POST).
+        """Cross collection search (POST).
+
+        Enables spatio-temporal queries into the STAC with support for additional
+        behavior like sorting, pagination, and query-by-attribute through several
+        STAC API extensions.  Please refer to the STAC API spec for expected behavior
+        and search semantics.
 
         Called with `POST /search`.
 
         Args:
-            search_request: search request parameters.
+            search_request: Search request parameters.
 
         Returns:
-            ItemCollection containing items which match the search criteria.
+            ItemCollection: A set of items matching the search criteria.
         """
         ...
 
@@ -424,10 +479,27 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     ) -> stac_types.ItemCollection:
         """Cross catalog search (GET).
 
+        Enables spatio-temporal queries into the STAC with support for additional
+        behavior like sorting, pagination, and query-by-attribute through several
+        STAC API extensions.  Please refer to the STAC API spec for expected behavior
+        and search semantics.
+
         Called with `GET /search`.
 
+        Args:
+            collections: The list of collections to search across.
+            ids: The list of item ids to search across.
+            bbox: Bounding box used as spatial filter.
+            datetime: Single datetime or daterange defining temporal window.
+            limit: The number of items returned by the search request.
+            query: Comparison operators used by the search (see STAC API - Item Search - Query Extension).
+            token: A pagination token (see OGC API - Common - Part 2).
+            fields: Determines what fields are included/excluded from the search
+                response (see STAC API - Item Search - Fields Extension).
+            sortby: Applies a sort to the returned items (see STAC API - Item Search - Sort Extension).
+
         Returns:
-            ItemCollection containing items which match the search criteria.
+            ItemCollection: A set of items matching the search criteria.
         """
         ...
 
@@ -442,7 +514,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
             collection_id: Id of the collection.
 
         Returns:
-            Item.
+            Item: The matching item.
         """
         ...
 
@@ -453,7 +525,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Called with `GET /collections`.
 
         Returns:
-            A list of collections.
+            Collections: A list of collections.
         """
         ...
 
@@ -467,7 +539,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
             collection_id: Id of the collection.
 
         Returns:
-            Collection.
+            Collection: The matching collection.
         """
         ...
 
@@ -480,22 +552,36 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Called with `GET /collections/{collection_id}/items`
 
         Args:
-            collection_id: id of the collection.
-            limit: number of items to return.
-            token: pagination token.
+            collection_id: Id of the collection.
+            limit: Number of items to return.
+            token: A pagination token (see OGC API - Common - Part 2).
 
         Returns:
-            An ItemCollection.
+            ItemCollection: A set of items belonging to the collection.
         """
         ...
 
 
 @attr.s  # type:ignore
 class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
-    """Defines a pattern for implementing STAC api core endpoints.
+    """Defines an interface for implementing the STAC API - Core Conformance
+    class.
+
+    The Core Conformance class defines a set of endpoint that must be implemented
+    by an API to be considered compliant.  The core spec has been split apart
+    since the time this interface was written.  It also implements the OAF Features
+    and ItemSearch conformance classes in addition to Core.
+
+    The interface requires implementing one method for each method in these conformance
+    classes, and is the same as :class:`stac_fastapi.types.core.BaseCoreClient` but
+    implements async/await syntax.
 
     Attributes:
-        extensions: list of registered api extensions.
+        base_conformance_classes: The set of conformance classes implemented by
+            the API not including extensions.
+        extensions: The list of API extensions implemented by the API.
+        post_request_model: The pydantic model used to serialize and validate
+            request bodies required by ItemSearch.
     """
 
     base_conformance_classes: List[str] = attr.ib(
@@ -505,7 +591,14 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     post_request_model = attr.ib(default=BaseSearchPostRequest)
 
     def conformance_classes(self) -> List[str]:
-        """Generate conformance classes by adding extension conformance to base conformance classes."""
+        """Generates a list of conformance classes used by the API.
+
+        The final list of classes is generated by combining the `base_conformance_classes`
+        with any conformance classes from extensions implemented by the API.
+
+        Returns:
+            List[str]: A list of conformance classes (http(s) references).
+        """
         conformance_classes = self.base_conformance_classes.copy()
 
         for extension in self.extensions:
@@ -515,16 +608,33 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         return list(set(conformance_classes))
 
     def extension_is_enabled(self, extension: str) -> bool:
-        """Check if an api extension is enabled."""
+        """Check if the given extension is enabled.
+
+        Allows the API to determine if an extension is enabled within an
+        active request.
+
+        Args:
+            extension: The extension to check.
+
+        Returns:
+            bool: True if enabled, otherwise False.
+        """
         return any([type(ext).__name__ == extension for ext in self.extensions])
 
     async def landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
 
+        The landing page is a STAC Catalog which serves as an entrypoint into
+        the API.  It allows the caller to browse through the API by following
+        links, perform spatio-temporal searches into the STAC through search
+        requests, and links to important metadata describing the specific
+        API implementation such as conformance classes, STAC version, and
+        available extensions.
+
         Called with `GET /`.
 
         Returns:
-            API landing page, serving as an entry point to the API.
+            LandingPage: An API landing page, serving as the entrypoint to the API.
         """
         request: Request = kwargs["request"]
         base_url = str(request.base_url)
@@ -575,7 +685,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Called with `GET /conformance`.
 
         Returns:
-            Conformance classes which the server conforms to.
+            Conformance: Conformance classes implemented by the server.
         """
         return Conformance(conformsTo=self.conformance_classes())
 
@@ -583,15 +693,20 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     async def post_search(
         self, search_request: Search, **kwargs
     ) -> stac_types.ItemCollection:
-        """Cross catalog search (POST).
+        """Cross collection search (POST).
+
+        Enables spatio-temporal queries into the STAC with support for additional
+        behavior like sorting, pagination, and query-by-attribute through several
+        STAC API extensions.  Please refer to the STAC API spec for expected behavior
+        and search semantics.
 
         Called with `POST /search`.
 
         Args:
-            search_request: search request parameters.
+            search_request: Search request parameters.
 
         Returns:
-            ItemCollection containing items which match the search criteria.
+            ItemCollection: A set of items matching the search criteria.
         """
         ...
 
@@ -611,10 +726,27 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     ) -> stac_types.ItemCollection:
         """Cross catalog search (GET).
 
+        Enables spatio-temporal queries into the STAC with support for additional
+        behavior like sorting, pagination, and query-by-attribute through several
+        STAC API extensions.  Please refer to the STAC API spec for expected behavior
+        and search semantics.
+
         Called with `GET /search`.
 
+        Args:
+            collections: The list of collections to search across.
+            ids: The list of item ids to search across.
+            bbox: Bounding box used as spatial filter.
+            datetime: Single datetime or daterange defining temporal window.
+            limit: The number of items returned by the search request.
+            query: Comparison operators used by the search (see STAC API - Item Search - Query Extension).
+            token: A pagination token (see OGC API - Common - Part 2).
+            fields: Determines what fields are included/excluded from the search
+                response (see STAC API - Item Search - Fields Extension).
+            sortby: Applies a sort to the returned items (see STAC API - Item Search - Sort Extension).
+
         Returns:
-            ItemCollection containing items which match the search criteria.
+            ItemCollection: A set of items matching the search criteria.
         """
         ...
 
@@ -631,7 +763,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             collection_id: Id of the collection.
 
         Returns:
-            Item.
+            Item: The matching item.
         """
         ...
 
@@ -642,7 +774,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Called with `GET /collections`.
 
         Returns:
-            A list of collections.
+            Collections: A list of collections.
         """
         ...
 
@@ -658,7 +790,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             collection_id: Id of the collection.
 
         Returns:
-            Collection.
+            Collection: The matching collection.
         """
         ...
 
@@ -671,32 +803,39 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Called with `GET /collections/{collection_id}/items`
 
         Args:
-            collection_id: id of the collection.
-            limit: number of items to return.
-            token: pagination token.
+            collection_id: Id of the collection.
+            limit: Number of items to return.
+            token: A pagination token (see OGC API - Common - Part 2).
 
         Returns:
-            An ItemCollection.
+            ItemCollection: A set of items belonging to the collection.
         """
         ...
 
 
 @attr.s
 class AsyncBaseFiltersClient(abc.ABC):
-    """Defines a pattern for implementing the STAC filter extension."""
+    """Defines a pattern for implementing the STAC filter extension.
+
+    The filter extension provides a more robust query language than what is
+    provided by the STAC API - Item Search - Query extension using the CQL2
+    standard.  This is the same as :class:`stac_fastapi.types.core.BaseFiltersClient`
+    but implements async/await syntax.
+    """
 
     async def get_queryables(
         self, collection_id: Optional[str] = None, **kwargs
     ) -> Dict[str, Any]:
-        """Get the queryables available for the given collection_id.
+        """Get the queryables available for the given collection.
 
-        If collection_id is None, returns the intersection of all
-        queryables over all collections.
+        This base implementation returns a black queryable schema.  This is not allowed
+        under OGC CQL but it is permitted by the STAC API Filter Extension.
 
-        This base implementation returns a blank queryable schema. This is not allowed
-        under OGC CQL but it is allowed by the STAC API Filter Extension
+        Args:
+            collection_id: Id of the collection.
 
-        https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
+        Returns:
+            Dict[str, Any]: Queryables available for the collection.
         """
         return {
             "$schema": "https://json-schema.org/draft/2019-09/schema",
@@ -710,20 +849,25 @@ class AsyncBaseFiltersClient(abc.ABC):
 
 @attr.s
 class BaseFiltersClient(abc.ABC):
-    """Defines a pattern for implementing the STAC filter extension."""
+    """Defines a pattern for implementing the STAC filter extension.
 
+    The filter extension provides a more robust query language than what is
+    provided by the STAC API - Item Search - Query extension using the CQL2
+    standard.
+    """
     def get_queryables(
         self, collection_id: Optional[str] = None, **kwargs
     ) -> Dict[str, Any]:
-        """Get the queryables available for the given collection_id.
+        """Get the queryables available for the given collection.
 
-        If collection_id is None, returns the intersection of all
-        queryables over all collections.
+        This base implementation returns a black queryable schema.  This is not allowed
+        under OGC CQL but it is permitted by the STAC API Filter Extension.
 
-        This base implementation returns a blank queryable schema. This is not allowed
-        under OGC CQL but it is allowed by the STAC API Filter Extension
+        Args:
+            collection_id: Id of the collection.
 
-        https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
+        Returns:
+            Dict[str, Any]: Queryables available for the collection.
         """
         return {
             "$schema": "https://json-schema.org/draft/2019-09/schema",

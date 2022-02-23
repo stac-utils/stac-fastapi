@@ -5,19 +5,25 @@ from pydantic import BaseSettings
 
 
 class ApiSettings(BaseSettings):
-    """ApiSettings.
+    """Settings for configuring API and serving behavior.
 
-    Defines api configuration, potentially through environment variables.
-    See https://pydantic-docs.helpmanual.io/usage/settings/.
+    Any of the attributes defined in this class may be overridden through
+    environment variables (https://pydantic-docs.helpmanual.io/usage/settings/).
+
     Attributes:
-        environment: name of the environment (ex. dev/prod).
-        debug: toggles debug mode.
-        forbidden_fields: set of fields defined by STAC but not included in the database.
-        indexed_fields:
-            set of fields which are usually in `item.properties` but are indexed as distinct columns in
-            the database.
+        default_includes: The default set of fields returned by the API
+            on `/search` requests.
+        app_host: The hostname used by the ASGI server.
+        app_port: The port used by the ASGI server.
+        reload: Determines if the ASGI server is re-loaded on code-changes.
+            Very useful for local development.
+        enable_response_models: Determines if the application uses `FastAPI response
+            models <https://github.com/radiantearth/stac-api-spec>`_ to validate and
+            serialize API responses.
+        openapi_url: Specifies the endpoint used to serve auto-generated OpenAPI schema.
+        docs_url: Specifies the endpoint used to serve auto-generated API documentation
+            using Swagger UI and ReDoc.
     """
-
     # TODO: Remove `default_includes` attribute so we can use `pydantic.BaseSettings` instead
     default_includes: Optional[Set[str]] = None
 
@@ -30,25 +36,35 @@ class ApiSettings(BaseSettings):
     docs_url: str = "/api.html"
 
     class Config:
-        """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
-
+        """Model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
         extra = "allow"
         env_file = ".env"
 
 
 class Settings:
-    """Holds the global instance of settings."""
+    """Holds the global instance of settings.
+
+    Allows backends to access the :class:`~stac_fastapi.api.config.ApiSettings` object
+    from within an active request.
+    """
 
     _instance: Optional[ApiSettings] = None
 
     @classmethod
     def set(cls, base_settings: ApiSettings):
-        """Set the global settings."""
+        """Set the global API settings."""
         cls._instance = base_settings
 
     @classmethod
     def get(cls) -> ApiSettings:
-        """Get the settings. If they have not yet been set, throws an exception."""
+        """Get the settings.
+
+        Returns:
+            ApiSettings
+
+        Raises:
+            ValueError: Throws an exception if settings have not been set.
+        """
         if cls._instance is None:
             raise ValueError("Settings have not yet been set.")
         return cls._instance
