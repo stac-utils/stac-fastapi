@@ -10,14 +10,16 @@
 
 ### Changed
 
-* update FastAPI requirement to allow version >=0.73 ([#337](https://github.com/stac-utils/stac-fastapi/pull/337))
+* Update FastAPI requirement to allow version >=0.73 ([#337](https://github.com/stac-utils/stac-fastapi/pull/337))
+* Bulk Transactions object Items iterator now returns the Item objects rather than the string IDs of the Item objects
+  ([#355](https://github.com/stac-utils/stac-fastapi/issues/355))
 
 ### Removed
 
 ### Fixed
 * Bumped uvicorn version to 0.17 (from >=0.12, <=0.14) to resolve security vulnerability related to websockets dependency version ([#343](https://github.com/stac-utils/stac-fastapi/pull/343))
 * `AttributeError` and/or missing properties when requesting the complete `properties`-field in searches. Added test. ([#339](https://github.com/stac-utils/stac-fastapi/pull/339))
-
+* SQLAlchemy backend bulk item insert now works ([#356]https://github.com/stac-utils/stac-fastapi/issues/356))
 
 ## [2.3.0]
 
