@@ -39,9 +39,9 @@ class ErrorResponse(TypedDict):
         code: A code representing the error, semantics are up to implementor.
         description: A description of the error.
     """
+
     code: str
     description: str
-
 
 
 def exception_handler_factory(status_code: int) -> Callable:
@@ -58,12 +58,10 @@ def exception_handler_factory(status_code: int) -> Callable:
         """I handle exceptions!!."""
         logger.error(exc, exc_info=True)
         return JSONResponse(
-            content=ErrorResponse(
-                code=exc.__class__.__name__,
-                description=str(exc)
-            ),
-            status_code=status_code
+            content=ErrorResponse(code=exc.__class__.__name__, description=str(exc)),
+            status_code=status_code,
         )
+
     return handler
 
 
@@ -88,11 +86,8 @@ def add_exception_handlers(
         request: Request, exc: RequestValidationError
     ) -> JSONResponse:
         return JSONResponse(
-            content=ErrorResponse(
-                code=exc.__class__.__name__,
-                description=str(exc)
-            ),
-            status_code=status.HTTP_400_BAD_REQUEST
+            content=ErrorResponse(code=exc.__class__.__name__, description=str(exc)),
+            status_code=status.HTTP_400_BAD_REQUEST,
         )
 
     app.add_exception_handler(
