@@ -39,7 +39,7 @@ class TransactionsClient(BaseTransactionsClient):
 
         # If a feature collection is posted
         if model["type"] == "FeatureCollection":
-            bulk_client = BulkTransactionsClient()
+            bulk_client = BulkTransactionsClient(session=self.session)
             return_msg = bulk_client.bulk_item_insert(items=model["features"])
 
             return return_msg
