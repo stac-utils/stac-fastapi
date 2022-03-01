@@ -36,6 +36,15 @@ class TransactionsClient(BaseTransactionsClient):
     def create_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
         """Create item."""
         base_url = str(kwargs["request"].base_url)
+
+        # If a feature collection is posted
+        if model["type"] == "FeatureCollection":
+            bulk_client = BulkTransactionsClient()
+            return_msg = bulk_client.bulk_item_insert(items=model["features"])
+
+            return return_msg
+
+        # Otherwise a single item has been posted
         data = self.item_serializer.stac_to_db(model)
         with self.session.writer.context_session() as session:
             session.add(data)
