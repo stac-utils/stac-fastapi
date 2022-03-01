@@ -310,6 +310,7 @@ def test_bulk_item_insert_chunked(
             item["id"], item["collection"], request=MockStarletteRequest
         )
 
+
 def test_feature_collection_insert(
     postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,
@@ -337,6 +338,7 @@ def test_feature_collection_insert(
         postgres_transactions.delete_item(
             item["id"], item["collection"], request=MockStarletteRequest
         )
+
 
 def test_landing_page_no_collection_title(
     postgres_core: CoreCrudClient,
