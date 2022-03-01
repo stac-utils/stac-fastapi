@@ -330,7 +330,7 @@ def test_feature_collection_insert(
     feature_collection = {"type": "FeatureCollection", "features": features}
 
     postgres_transactions.create_item(feature_collection, request=MockStarletteRequest)
-    # time.sleep(3)
+    
     fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) >= 10
 
