@@ -97,31 +97,27 @@ class BaseSearchPostRequest(BaseModel):
     datetime: Optional[str]
     limit: Optional[conint(gt=0, le=10000)] = 10
 
-    @property
-    def start_date(self) -> Optional[datetime]:
+    def _interval_date(self, position: int) -> Optional[datetime]:
         """Extract the start date from the datetime string."""
         if not self.datetime:
             return
 
         values = self.datetime.split("/")
-        if len(values) == 1:
+        if len(values) != 2:
             return None
-        if values[0] == "..":
+        if values[position] in ["..", ""]:
             return None
-        return parse_datetime(values[0])
+        return parse_datetime(values[position])
+
+    @property
+    def start_date(self) -> Optional[datetime]:
+        """Extract the start date from the datetime string."""
+        return self._interval_date(self.datetime, 0)
 
     @property
     def end_date(self) -> Optional[datetime]:
         """Extract the end date from the datetime string."""
-        if not self.datetime:
-            return
-
-        values = self.datetime.split("/")
-        if len(values) == 1:
-            return parse_datetime(values[0])
-        if values[1] == "..":
-            return None
-        return parse_datetime(values[1])
+        return self._interval_date(self.datetime, 1)
 
     @validator("intersects")
     def validate_spatial(cls, v, values):

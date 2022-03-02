@@ -73,9 +73,15 @@ docker-compose up app-sqlalchemy
 docker-compose up app-pgstac
 ```
 
-For local development it is often more convenient to run the application outside of docker-compose:
+For local development it is often more convenient to run the application outside docker-compose:
 ```bash
 make docker-run
+```
+
+Before commit, install the [pre-commit](https://pre-commit.com) hooks with:
+
+```shell
+pre-commit install
 ```
 
 #### Note to Docker for Windows users

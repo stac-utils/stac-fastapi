@@ -11,6 +11,7 @@ install_requires = [
     "stac_pydantic==2.0.*",
     "brotli_asgi",
     "stac-fastapi.types",
+    "ciso8601~=2.2.0",
 ]
 
 extra_reqs = {
