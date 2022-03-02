@@ -1,7 +1,7 @@
 """rfc3339."""
 
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Tuple
 
 import ciso8601
 
@@ -33,7 +33,7 @@ def now_as_rfc3339_str() -> str:
 
 def parse_interval(
     value: str,
-) -> Optional[tuple[Optional[datetime], Optional[datetime]]]:
+) -> Optional[Tuple[Optional[datetime], Optional[datetime]]]:
     """Extract a tuple of datetimes from an interval string."""
     if not value:
         return
