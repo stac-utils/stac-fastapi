@@ -110,7 +110,6 @@ class BaseSearchPostRequest(BaseModel):
         interval = parse_interval(self.datetime)
         return interval[1] if interval else None
 
-    @classmethod
     @validator("intersects")
     def validate_spatial(cls, v, values):
         """Check bbox and intersects are not both supplied."""
@@ -118,7 +117,6 @@ class BaseSearchPostRequest(BaseModel):
             raise ValueError("intersects and bbox parameters are mutually exclusive")
         return v
 
-    @classmethod
     @validator("bbox")
     def validate_bbox(cls, v: BBox):
         """Check order of supplied bbox coordinates."""
@@ -149,7 +147,6 @@ class BaseSearchPostRequest(BaseModel):
 
         return v
 
-    @classmethod
     @validator("datetime")
     def validate_datetime(cls, v):
         """Validate datetime."""
@@ -161,7 +158,7 @@ class BaseSearchPostRequest(BaseModel):
 
         dates = []
         for value in values:
-            if value == "..":
+            if value == ".." or value == "":
                 dates.append(value)
                 continue
 

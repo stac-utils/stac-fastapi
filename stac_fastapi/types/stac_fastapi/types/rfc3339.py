@@ -36,7 +36,7 @@ def parse_interval(
 ) -> Optional[Tuple[Optional[datetime], Optional[datetime]]]:
     """Extract a tuple of datetimes from an interval string."""
     if not value:
-        return
+        return None
 
     values = value.split("/")
     if len(values) != 2:
