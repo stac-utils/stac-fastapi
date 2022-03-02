@@ -24,7 +24,7 @@ from pydantic.datetime_parse import parse_datetime
 from stac_pydantic.shared import BBox
 from stac_pydantic.utils import AutoValueEnum
 
-from stac_fastapi.types import parse_interval
+from stac_fastapi.types.rfc3339 import parse_interval
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
