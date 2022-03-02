@@ -62,6 +62,7 @@ pip install -e stac_fastapi/pgstac
 ```
 
 ## Local Development
+
 Use docker-compose to deploy the application, migrate the database, and ingest some example data:
 ```bash
 docker-compose build

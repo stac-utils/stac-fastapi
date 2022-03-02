@@ -109,6 +109,7 @@ jobs:
   test-docs:
     runs-on: ubuntu-latest
     steps:
+      - run: apt update && apt install build-essential
       - uses: actions/checkout@v2
       - name: Test generating docs
         run: make docs
