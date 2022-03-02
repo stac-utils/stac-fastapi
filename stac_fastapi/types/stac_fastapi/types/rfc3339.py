@@ -52,4 +52,4 @@ def parse_interval(
     if start is None and end is None:
         return None
     else:
-        return (start, end)
+        return start, end
