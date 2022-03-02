@@ -5,7 +5,6 @@
 
 import abc
 import operator
-from datetime import datetime
 from enum import auto
 from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, List, Optional, Union
@@ -24,6 +23,8 @@ from pydantic import BaseModel, conint, validator
 from pydantic.datetime_parse import parse_datetime
 from stac_pydantic.shared import BBox
 from stac_pydantic.utils import AutoValueEnum
+
+from stac_fastapi.types import parse_interval
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
@@ -97,28 +98,19 @@ class BaseSearchPostRequest(BaseModel):
     datetime: Optional[str]
     limit: Optional[conint(gt=0, le=10000)] = 10
 
-    def _interval_date(self, position: int) -> Optional[datetime]:
+    @property
+    def start_date(self):
         """Extract the start date from the datetime string."""
-        if not self.datetime:
-            return
-
-        values = self.datetime.split("/")
-        if len(values) != 2:
-            return None
-        if values[position] in ["..", ""]:
-            return None
-        return parse_datetime(values[position])
+        interval = parse_interval(self.datetime)
+        return interval[0] if interval else None
 
     @property
-    def start_date(self) -> Optional[datetime]:
-        """Extract the start date from the datetime string."""
-        return self._interval_date(self.datetime, 0)
-
-    @property
-    def end_date(self) -> Optional[datetime]:
+    def end_date(self):
         """Extract the end date from the datetime string."""
-        return self._interval_date(self.datetime, 1)
+        interval = parse_interval(self.datetime)
+        return interval[1] if interval else None
 
+    @classmethod
     @validator("intersects")
     def validate_spatial(cls, v, values):
         """Check bbox and intersects are not both supplied."""
@@ -126,6 +118,7 @@ class BaseSearchPostRequest(BaseModel):
             raise ValueError("intersects and bbox parameters are mutually exclusive")
         return v
 
+    @classmethod
     @validator("bbox")
     def validate_bbox(cls, v: BBox):
         """Check order of supplied bbox coordinates."""
@@ -156,6 +149,7 @@ class BaseSearchPostRequest(BaseModel):
 
         return v
 
+    @classmethod
     @validator("datetime")
     def validate_datetime(cls, v):
         """Validate datetime."""
