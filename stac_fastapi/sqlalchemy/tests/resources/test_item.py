@@ -11,9 +11,9 @@ import pystac
 from pydantic.datetime_parse import parse_datetime
 from shapely.geometry import Polygon
 
-from stac_fastapi.api.rfc3339 import parse_rfc3339, rfc3339_str
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
 from stac_fastapi.types.core import LandingPageMixin
+from stac_fastapi.types.rfc3339 import parse_rfc3339, rfc3339_str
 
 
 def test_create_and_delete_item(app_client, load_test_data):

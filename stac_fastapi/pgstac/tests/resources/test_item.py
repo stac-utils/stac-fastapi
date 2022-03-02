@@ -11,8 +11,8 @@ from shapely.geometry import Polygon
 from stac_pydantic import Collection, Item
 from starlette.requests import Request
 
-from stac_fastapi.api.rfc3339 import parse_rfc3339, rfc3339_str
 from stac_fastapi.pgstac.models.links import CollectionLinks
+from stac_fastapi.types.rfc3339 import parse_rfc3339, rfc3339_str
 
 
 @pytest.mark.asyncio

@@ -6,11 +6,11 @@ from typing import TypedDict
 import attr
 import geoalchemy2 as ga
 
-from stac_fastapi.api.rfc3339 import now_as_rfc3339_str, parse_rfc3339, rfc3339_str
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.links import CollectionLinks, ItemLinks, resolve_links
+from stac_fastapi.types.rfc3339 import now_as_rfc3339_str, parse_rfc3339, rfc3339_str
 
 
 @attr.s  # type:ignore
