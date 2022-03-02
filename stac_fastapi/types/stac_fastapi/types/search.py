@@ -5,6 +5,7 @@
 
 import abc
 import operator
+from datetime import datetime
 from enum import auto
 from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, List, Optional, Union
@@ -20,11 +21,10 @@ from geojson_pydantic.geometries import (
     _GeometryBase,
 )
 from pydantic import BaseModel, conint, validator
-from pydantic.datetime_parse import parse_datetime
 from stac_pydantic.shared import BBox
 from stac_pydantic.utils import AutoValueEnum
 
-from stac_fastapi.types.rfc3339 import parse_interval
+from stac_fastapi.types.rfc3339 import parse_interval, parse_rfc3339
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
@@ -99,13 +99,13 @@ class BaseSearchPostRequest(BaseModel):
     limit: Optional[conint(gt=0, le=10000)] = 10
 
     @property
-    def start_date(self):
+    def start_date(self) -> Optional[datetime]:
         """Extract the start date from the datetime string."""
         interval = parse_interval(self.datetime)
         return interval[0] if interval else None
 
     @property
-    def end_date(self):
+    def end_date(self) -> Optional[datetime]:
         """Extract the end date from the datetime string."""
         interval = parse_interval(self.datetime)
         return interval[1] if interval else None
@@ -165,11 +165,11 @@ class BaseSearchPostRequest(BaseModel):
                 dates.append(value)
                 continue
 
-            parse_datetime(value)
+            parse_rfc3339(value)
             dates.append(value)
 
         if ".." not in dates:
-            if parse_datetime(dates[0]) > parse_datetime(dates[1]):
+            if parse_rfc3339(dates[0]) > parse_rfc3339(dates[1]):
                 raise ValueError(
                     "Invalid datetime range, must match format (begin_date, end_date)"
                 )

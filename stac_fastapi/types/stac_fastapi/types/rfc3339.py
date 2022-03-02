@@ -1,7 +1,7 @@
 """rfc3339."""
 
 from datetime import datetime, timezone
-from typing import Optional, tuple
+from typing import Optional
 
 import ciso8601
 
