@@ -39,6 +39,7 @@ class Operator(str, AutoValueEnum):
     lte = auto()
     gt = auto()
     gte = auto()
+
     # TODO: These are defined in the spec but aren't currently implemented by the api
     # startsWith = auto()
     # endsWith = auto()
@@ -159,17 +160,21 @@ class BaseSearchPostRequest(BaseModel):
         dates = []
         for value in values:
             if value == ".." or value == "":
-                dates.append(value)
+                dates.append("..")
                 continue
 
-            parse_rfc3339(value)
-            dates.append(value)
+            # throws ValueError if invalid RFC 3339 string
+            dates.append(parse_rfc3339(value))
 
-        if ".." not in dates:
-            if parse_rfc3339(dates[0]) > parse_rfc3339(dates[1]):
-                raise ValueError(
-                    "Invalid datetime range, must match format (begin_date, end_date)"
-                )
+        if dates[0] == ".." and dates[1] == "..":
+            raise ValueError(
+                "Invalid datetime range, both ends of range may not be open"
+            )
+
+        if ".." not in dates and dates[0] > dates[1]:
+            raise ValueError(
+                "Invalid datetime range, must match format (begin_date, end_date)"
+            )
 
         return v
 

@@ -85,6 +85,12 @@ Before commit, install the [pre-commit](https://pre-commit.com) hooks with:
 pre-commit install
 ```
 
+The pre-commit hooks can be run manually with:
+
+```shell
+pre-commit run --all-files
+```
+
 #### Note to Docker for Windows users
 
 You'll need to enable experimental features on Docker for Windows in order to run the docker-compose, due to the "--platform" flag that is required to allow the project to run on some Apple architectures. To do this, open Docker Desktop, go to settings, select "Docker Engine", and modify the configuration JSON to have `"experimental": true`.
