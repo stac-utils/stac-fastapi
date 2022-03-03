@@ -13,7 +13,7 @@ from stac_pydantic import Collection, Item
 from starlette.requests import Request
 
 from stac_fastapi.pgstac.models.links import CollectionLinks
-from stac_fastapi.types.rfc3339 import parse_rfc3339
+from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime
 
 
 @pytest.mark.asyncio
@@ -403,7 +403,7 @@ async def test_item_search_temporal_query_post(
     )
     assert resp.status_code == 200
 
-    item_date = parse_rfc3339(test_item["properties"]["datetime"])
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     print(item_date)
     item_date = item_date + timedelta(seconds=1)
 
@@ -438,7 +438,7 @@ async def test_item_search_temporal_window_post(
     )
     assert resp.status_code == 200
 
-    item_date = parse_rfc3339(test_item["properties"]["datetime"])
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     item_date_before = item_date - timedelta(seconds=1)
     item_date_after = item_date + timedelta(seconds=1)
 
@@ -484,7 +484,7 @@ async def test_item_search_temporal_open_window(
 async def test_item_search_sort_post(app_client, load_test_data, load_test_collection):
     """Test POST search with sorting (sort extension)"""
     first_item = load_test_data("test_item.json")
-    item_date = parse_rfc3339(first_item["properties"]["datetime"])
+    item_date = rfc3339_str_to_datetime(first_item["properties"]["datetime"])
     resp = await app_client.post(
         f"/collections/{first_item['collection']}/items", json=first_item
     )
@@ -603,7 +603,7 @@ async def test_item_search_temporal_window_get(
     )
     assert resp.status_code == 200
 
-    item_date = parse_rfc3339(test_item["properties"]["datetime"])
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     item_date_before = item_date - timedelta(seconds=1)
     item_date_after = item_date + timedelta(seconds=1)
 
@@ -621,7 +621,7 @@ async def test_item_search_temporal_window_get(
 async def test_item_search_sort_get(app_client, load_test_data, load_test_collection):
     """Test GET search with sorting (sort extension)"""
     first_item = load_test_data("test_item.json")
-    item_date = parse_rfc3339(first_item["properties"]["datetime"])
+    item_date = rfc3339_str_to_datetime(first_item["properties"]["datetime"])
     resp = await app_client.post(
         f"/collections/{first_item['collection']}/items", json=first_item
     )

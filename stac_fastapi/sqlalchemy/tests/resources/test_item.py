@@ -14,7 +14,7 @@ from shapely.geometry import Polygon
 
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
 from stac_fastapi.types.core import LandingPageMixin
-from stac_fastapi.types.rfc3339 import parse_rfc3339
+from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime
 
 
 def test_create_and_delete_item(app_client, load_test_data):
@@ -420,7 +420,7 @@ def test_item_search_temporal_query_post(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    item_date = parse_rfc3339(test_item["properties"]["datetime"])
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     item_date = item_date + timedelta(seconds=1)
 
     params = {
@@ -441,7 +441,7 @@ def test_item_search_temporal_window_post(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    item_date = parse_rfc3339(test_item["properties"]["datetime"])
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     item_date_before = item_date - timedelta(seconds=1)
     item_date_after = item_date + timedelta(seconds=1)
 
@@ -476,7 +476,7 @@ def test_item_search_temporal_open_window(app_client, load_test_data):
 def test_item_search_sort_post(app_client, load_test_data):
     """Test POST search with sorting (sort extension)"""
     first_item = load_test_data("test_item.json")
-    item_date = parse_rfc3339(first_item["properties"]["datetime"])
+    item_date = rfc3339_str_to_datetime(first_item["properties"]["datetime"])
     resp = app_client.post(
         f"/collections/{first_item['collection']}/items", json=first_item
     )
@@ -564,7 +564,7 @@ def test_item_search_temporal_window_get(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    item_date = parse_rfc3339(test_item["properties"]["datetime"])
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     item_date_before = item_date - timedelta(seconds=1)
     item_date_after = item_date + timedelta(seconds=1)
 
@@ -581,7 +581,7 @@ def test_item_search_temporal_window_get(app_client, load_test_data):
 def test_item_search_sort_get(app_client, load_test_data):
     """Test GET search with sorting (sort extension)"""
     first_item = load_test_data("test_item.json")
-    item_date = parse_rfc3339(first_item["properties"]["datetime"])
+    item_date = rfc3339_str_to_datetime(first_item["properties"]["datetime"])
     resp = app_client.post(
         f"/collections/{first_item['collection']}/items", json=first_item
     )

@@ -24,7 +24,7 @@ from pydantic import BaseModel, conint, validator
 from stac_pydantic.shared import BBox
 from stac_pydantic.utils import AutoValueEnum
 
-from stac_fastapi.types.rfc3339 import parse_interval, parse_rfc3339
+from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime, str_to_interval
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
@@ -102,13 +102,13 @@ class BaseSearchPostRequest(BaseModel):
     @property
     def start_date(self) -> Optional[datetime]:
         """Extract the start date from the datetime string."""
-        interval = parse_interval(self.datetime)
+        interval = str_to_interval(self.datetime)
         return interval[0] if interval else None
 
     @property
     def end_date(self) -> Optional[datetime]:
         """Extract the end date from the datetime string."""
-        interval = parse_interval(self.datetime)
+        interval = str_to_interval(self.datetime)
         return interval[1] if interval else None
 
     @validator("intersects")
@@ -164,7 +164,7 @@ class BaseSearchPostRequest(BaseModel):
                 continue
 
             # throws ValueError if invalid RFC 3339 string
-            dates.append(parse_rfc3339(value))
+            dates.append(rfc3339_str_to_datetime(value))
 
         if dates[0] == ".." and dates[1] == "..":
             raise ValueError(

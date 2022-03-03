@@ -4,43 +4,72 @@ from datetime import datetime, timezone
 from typing import Optional, Tuple
 
 import ciso8601
-import pystac
+from pystac.utils import datetime_to_str
 
 
-def parse_rfc3339(value: str) -> datetime:
-    """Doc."""
-    return ciso8601.parse_rfc3339(value)
+def rfc3339_str_to_datetime(s: str) -> datetime:
+    """Convert a string conforming to RFC 3339 to a :class:`datetime.datetime`.
+
+    Uses :meth:`ciso8601.parse_rfc3339` under the hood.
+
+    Args:
+        s (str) : The string to convert to :class:`datetime.datetime`.
+
+    Returns:
+        str: The datetime represented by the ISO8601 (RFC 3339) formatted string.
+
+    Raises:
+        ValueError: If the string is not a valid RFC 3339 string.
+    """
+    return ciso8601.rfc3339_str_to_datetime(s)
 
 
-def now_in_utc() -> datetime:
-    """Doc."""
-    return datetime.now(timezone.utc)
-
-
-def now_as_rfc3339_str() -> str:
-    """Doc."""
-    return pystac.utils.datetime_to_str(now_in_utc())
-
-
-def parse_interval(
-    value: str,
+def str_to_interval(
+    interval: str,
 ) -> Optional[Tuple[Optional[datetime], Optional[datetime]]]:
-    """Extract a tuple of datetimes from an interval string."""
-    if not value:
-        return None
+    """Extract a tuple of datetimes from an interval string.
 
-    values = value.split("/")
+    Interval strings are defined by
+    OGC API - Features Part 1 for the datetime query parameter value. These follow the
+    form '1985-04-12T23:20:50.52Z/1986-04-12T23:20:50.52Z', and allow either the start
+    or end (but not both) to be open-ended with '..' or ''.
+
+    Args:
+        interval (str) : The interval string to convert to a :class:`datetime.datetime`
+        tuple.
+
+    Raises:
+        ValueError: If the string is not a valid interval string.
+    """
+    if not interval:
+        raise ValueError("Empty interval string is invalid.")
+
+    values = interval.split("/")
     if len(values) != 2:
-        return None
+        raise ValueError(
+            f"Interval string '{interval}' contains more than one forward slash."
+        )
 
     start = None
     end = None
     if not values[0] in ["..", ""]:
-        start = parse_rfc3339(values[0])
+        start = rfc3339_str_to_datetime(values[0])
     if not values[1] in ["..", ""]:
-        end = parse_rfc3339(values[1])
+        end = rfc3339_str_to_datetime(values[1])
 
     if start is None and end is None:
-        return None
+        raise ValueError("Double open-ended intervals are not allowed.")
+    if start is not None and end is not None and start > end:
+        raise ValueError("Start datetime cannot be before end datetime.")
     else:
         return start, end
+
+
+def now_in_utc() -> datetime:
+    """Return a datetime value of now with the UTC timezone applied."""
+    return datetime.now(timezone.utc)
+
+
+def now_to_rfc3339_str() -> str:
+    """Return an RFC 3339 string representing now."""
+    return datetime_to_str(now_in_utc())

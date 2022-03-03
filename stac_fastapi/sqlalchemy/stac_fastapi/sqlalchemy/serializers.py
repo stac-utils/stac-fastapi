@@ -11,7 +11,7 @@ from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.links import CollectionLinks, ItemLinks, resolve_links
-from stac_fastapi.types.rfc3339 import now_as_rfc3339_str, parse_rfc3339
+from stac_fastapi.types.rfc3339 import now_to_rfc3339_str, rfc3339_str_to_datetime
 
 
 @attr.s  # type:ignore
@@ -101,12 +101,12 @@ class ItemSerializer(Serializer):
             # Use getattr to accommodate extension namespaces
             field_value = stac_data["properties"][field]
             if field == "datetime":
-                field_value = parse_rfc3339(field_value)
+                field_value = rfc3339_str_to_datetime(field_value)
             indexed_fields[field.split(":")[-1]] = field_value
 
             # TODO: Exclude indexed fields from the properties jsonb field to prevent duplication
 
-            now = now_as_rfc3339_str()
+            now = now_to_rfc3339_str()
             if "created" not in stac_data["properties"]:
                 stac_data["properties"]["created"] = now
             stac_data["properties"]["updated"] = now

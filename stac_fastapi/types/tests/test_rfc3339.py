@@ -1,6 +1,6 @@
 import pytest
 
-from stac_fastapi.types.rfc3339 import parse_interval, parse_rfc3339
+from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime, str_to_interval
 
 invalid_datetimes = [
     "1985-04-12",  # date only
@@ -69,23 +69,23 @@ valid_intervals = [
 @pytest.mark.parametrize("test_input", invalid_datetimes)
 def test_parse_invalid_str_to_datetime(test_input):
     with pytest.raises(ValueError):
-        parse_rfc3339(test_input)
+        rfc3339_str_to_datetime(test_input)
 
 
 @pytest.mark.parametrize("test_input", valid_datetimes)
 def test_parse_valid_str_to_datetime(test_input):
-    assert parse_rfc3339(test_input)
+    assert rfc3339_str_to_datetime(test_input)
 
 
 @pytest.mark.parametrize("test_input", invalid_intervals)
 def test_parse_invalid_interval_to_datetime(test_input):
     with pytest.raises(ValueError):
-        parse_interval(test_input)
+        str_to_interval(test_input)
 
 
 @pytest.mark.parametrize("test_input", valid_intervals)
 def test_parse_valid_interval_to_datetime(test_input):
-    assert parse_interval(test_input)
+    assert str_to_interval(test_input)
 
 
 # TODO: add tests for now and str functions
