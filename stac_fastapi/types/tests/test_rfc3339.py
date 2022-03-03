@@ -77,12 +77,15 @@ def test_parse_valid_str_to_datetime(test_input):
     assert parse_rfc3339(test_input)
 
 
-# @pytest.mark.parametrize("test_input", invalid_intervals)
-# def test_parse_invalid_interval_to_datetime(test_input):
-#     with pytest.raises(ValueError):
-#         parse_interval(test_input)
+@pytest.mark.parametrize("test_input", invalid_intervals)
+def test_parse_invalid_interval_to_datetime(test_input):
+    with pytest.raises(ValueError):
+        parse_interval(test_input)
 
 
 @pytest.mark.parametrize("test_input", valid_intervals)
 def test_parse_valid_interval_to_datetime(test_input):
     assert parse_interval(test_input)
+
+
+# TODO: add tests for now and str functions

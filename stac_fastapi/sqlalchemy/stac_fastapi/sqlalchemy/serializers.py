@@ -5,12 +5,13 @@ from typing import TypedDict
 
 import attr
 import geoalchemy2 as ga
+from pystac.utils import datetime_to_str
 
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.links import CollectionLinks, ItemLinks, resolve_links
-from stac_fastapi.types.rfc3339 import now_as_rfc3339_str, parse_rfc3339, rfc3339_str
+from stac_fastapi.types.rfc3339 import now_as_rfc3339_str, parse_rfc3339
 
 
 @attr.s  # type:ignore
@@ -54,7 +55,7 @@ class ItemSerializer(Serializer):
             # Use getattr to accommodate extension namespaces
             field_value = getattr(db_model, field.split(":")[-1])
             if field == "datetime":
-                field_value = rfc3339_str(field_value)
+                field_value = datetime_to_str(field_value)
             properties[field] = field_value
         item_id = db_model.id
         collection_id = db_model.collection_id

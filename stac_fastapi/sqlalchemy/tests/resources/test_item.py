@@ -9,11 +9,12 @@ from urllib.parse import parse_qs, urlparse, urlsplit
 
 import pystac
 from pydantic.datetime_parse import parse_datetime
+from pystac.utils import datetime_to_str
 from shapely.geometry import Polygon
 
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
 from stac_fastapi.types.core import LandingPageMixin
-from stac_fastapi.types.rfc3339 import parse_rfc3339, rfc3339_str
+from stac_fastapi.types.rfc3339 import parse_rfc3339
 
 
 def test_create_and_delete_item(app_client, load_test_data):
@@ -425,7 +426,7 @@ def test_item_search_temporal_query_post(app_client, load_test_data):
     params = {
         "collections": [test_item["collection"]],
         "intersects": test_item["geometry"],
-        "datetime": f"../{rfc3339_str(item_date)}",
+        "datetime": f"../{datetime_to_str(item_date)}",
     }
     resp = app_client.post("/search", json=params)
     resp_json = resp.json()
@@ -447,7 +448,7 @@ def test_item_search_temporal_window_post(app_client, load_test_data):
     params = {
         "collections": [test_item["collection"]],
         "intersects": test_item["geometry"],
-        "datetime": f"{rfc3339_str(item_date_before)}/{rfc3339_str(item_date_after)}",
+        "datetime": f"{datetime_to_str(item_date_before)}/{datetime_to_str(item_date_after)}",
     }
     resp = app_client.post("/search", json=params)
     resp_json = resp.json()
@@ -484,7 +485,7 @@ def test_item_search_sort_post(app_client, load_test_data):
     second_item = load_test_data("test_item.json")
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = rfc3339_str(another_item_date)
+    second_item["properties"]["datetime"] = datetime_to_str(another_item_date)
     resp = app_client.post(
         f"/collections/{second_item['collection']}/items", json=second_item
     )
@@ -570,7 +571,7 @@ def test_item_search_temporal_window_get(app_client, load_test_data):
     params = {
         "collections": test_item["collection"],
         "bbox": ",".join([str(coord) for coord in test_item["bbox"]]),
-        "datetime": f"{rfc3339_str(item_date_before)}/{rfc3339_str(item_date_after)}",
+        "datetime": f"{datetime_to_str(item_date_before)}/{datetime_to_str(item_date_after)}",
     }
     resp = app_client.get("/search", params=params)
     resp_json = resp.json()
@@ -589,7 +590,7 @@ def test_item_search_sort_get(app_client, load_test_data):
     second_item = load_test_data("test_item.json")
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = rfc3339_str(another_item_date)
+    second_item["properties"]["datetime"] = datetime_to_str(another_item_date)
     resp = app_client.post(
         f"/collections/{second_item['collection']}/items", json=second_item
     )

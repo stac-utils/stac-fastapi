@@ -7,12 +7,13 @@ from urllib.parse import parse_qs, urljoin, urlparse
 import pystac
 import pytest
 from httpx import AsyncClient
+from pystac.utils import datetime_to_str
 from shapely.geometry import Polygon
 from stac_pydantic import Collection, Item
 from starlette.requests import Request
 
 from stac_fastapi.pgstac.models.links import CollectionLinks
-from stac_fastapi.types.rfc3339 import parse_rfc3339, rfc3339_str
+from stac_fastapi.types.rfc3339 import parse_rfc3339
 
 
 @pytest.mark.asyncio
@@ -409,7 +410,7 @@ async def test_item_search_temporal_query_post(
     params = {
         "collections": [test_item["collection"]],
         "intersects": test_item["geometry"],
-        "datetime": rfc3339_str(item_date),
+        "datetime": datetime_to_str(item_date),
     }
 
     resp = await app_client.post("/search", json=params)
@@ -443,7 +444,7 @@ async def test_item_search_temporal_window_post(
 
     params = {
         "collections": [test_item["collection"]],
-        "datetime": f"{rfc3339_str(item_date_before)}/{rfc3339_str(item_date_after)}",
+        "datetime": f"{datetime_to_str(item_date_before)}/{datetime_to_str(item_date_after)}",
     }
 
     resp = await app_client.post("/search", json=params)
@@ -492,7 +493,7 @@ async def test_item_search_sort_post(app_client, load_test_data, load_test_colle
     second_item = load_test_data("test_item.json")
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = rfc3339_str(another_item_date)
+    second_item["properties"]["datetime"] = datetime_to_str(another_item_date)
     resp = await app_client.post(
         f"/collections/{second_item['collection']}/items", json=second_item
     )
@@ -608,7 +609,7 @@ async def test_item_search_temporal_window_get(
 
     params = {
         "collections": test_item["collection"],
-        "datetime": f"{rfc3339_str(item_date_before)}/{rfc3339_str(item_date_after)}",
+        "datetime": f"{datetime_to_str(item_date_before)}/{datetime_to_str(item_date_after)}",
     }
     resp = await app_client.get("/search", params=params)
     resp_json = resp.json()
@@ -629,7 +630,7 @@ async def test_item_search_sort_get(app_client, load_test_data, load_test_collec
     second_item = load_test_data("test_item.json")
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = rfc3339_str(another_item_date)
+    second_item["properties"]["datetime"] = datetime_to_str(another_item_date)
     resp = await app_client.post(
         f"/collections/{second_item['collection']}/items", json=second_item
     )

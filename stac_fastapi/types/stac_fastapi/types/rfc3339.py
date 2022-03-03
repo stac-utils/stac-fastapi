@@ -4,21 +4,12 @@ from datetime import datetime, timezone
 from typing import Optional, Tuple
 
 import ciso8601
+import pystac
 
 
 def parse_rfc3339(value: str) -> datetime:
     """Doc."""
     return ciso8601.parse_rfc3339(value)
-
-
-def rfc3339_str(value: datetime, use_z: bool = True) -> str:
-    """Doc."""
-    if not value.tzinfo:
-        value = value.replace(tzinfo=timezone.utc)
-
-    str_value = value.isoformat()
-    str_value = str_value.replace("+00:00", "Z") if use_z else str_value
-    return str_value
 
 
 def now_in_utc() -> datetime:
@@ -28,7 +19,7 @@ def now_in_utc() -> datetime:
 
 def now_as_rfc3339_str() -> str:
     """Doc."""
-    return rfc3339_str(now_in_utc())
+    return pystac.utils.datetime_to_str(now_in_utc())
 
 
 def parse_interval(
