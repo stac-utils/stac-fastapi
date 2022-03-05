@@ -457,27 +457,17 @@ async def test_item_search_temporal_window_post(
 async def test_item_search_temporal_open_window(
     app_client, load_test_data, load_test_collection
 ):
-    """Test POST search with open spatio-temporal query (core)"""
-    test_item = load_test_data("test_item.json")
-    resp = await app_client.post(
-        f"/collections/{test_item['collection']}/items", json=test_item
-    )
-    assert resp.status_code == 200
-
-    # Add second item with a different datetime.
-    second_test_item = load_test_data("test_item2.json")
-    resp = await app_client.post(
-        f"/collections/{test_item['collection']}/items", json=second_test_item
-    )
-    assert resp.status_code == 200
-
     params = {
-        "collections": [test_item["collection"]],
         "datetime": "../..",
     }
     resp = await app_client.post("/search", json=params)
-    resp_json = resp.json()
-    assert len(resp_json["features"]) == 2
+    assert resp.status_code == 400
+
+    params = {
+        "datetime": "/",
+    }
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 400
 
 
 @pytest.mark.asyncio

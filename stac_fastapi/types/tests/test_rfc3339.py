@@ -1,6 +1,13 @@
+from datetime import timezone
+
 import pytest
 
-from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime, str_to_interval
+from stac_fastapi.types.rfc3339 import (
+    now_in_utc,
+    now_to_rfc3339_str,
+    rfc3339_str_to_datetime,
+    str_to_interval,
+)
 
 invalid_datetimes = [
     "1985-04-12",  # date only
@@ -88,4 +95,11 @@ def test_parse_valid_interval_to_datetime(test_input):
     assert str_to_interval(test_input)
 
 
-# TODO: add tests for now and str functions
+def test_now_functions() -> None:
+    now1 = now_in_utc()
+    now2 = now_in_utc()
+
+    assert now1 < now2
+    assert now1.tzinfo == timezone.utc
+
+    rfc3339_str_to_datetime(now_to_rfc3339_str())
