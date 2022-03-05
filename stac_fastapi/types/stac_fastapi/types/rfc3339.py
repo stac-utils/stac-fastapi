@@ -21,7 +21,7 @@ def rfc3339_str_to_datetime(s: str) -> datetime:
     Raises:
         ValueError: If the string is not a valid RFC 3339 string.
     """
-    return ciso8601.rfc3339_str_to_datetime(s)
+    return ciso8601.parse_rfc3339(s)
 
 
 def str_to_interval(
