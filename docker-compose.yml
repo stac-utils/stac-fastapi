@@ -32,9 +32,6 @@ services:
   app-pgstac:
     container_name: stac-fastapi-pgstac
     image: stac-utils/stac-fastapi
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
     platform: linux/amd64
     environment:
       - APP_HOST=0.0.0.0
