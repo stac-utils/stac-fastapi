@@ -97,7 +97,6 @@ async def test_delete_item(app_client, load_test_collection, load_test_item):
     item = load_test_item
 
     resp = await app_client.delete(f"/collections/{coll.id}/items/{item.id}")
-    print(resp.content)
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
