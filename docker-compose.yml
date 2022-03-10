@@ -32,9 +32,6 @@ services:
   app-pgstac:
     container_name: stac-fastapi-pgstac
     image: stac-utils/stac-fastapi
-    build:
-      context: .
-      dockerfile: Dockerfile
     platform: linux/amd64
     environment:
       - APP_HOST=0.0.0.0
@@ -65,7 +62,7 @@ services:
 
   database:
     container_name: stac-db
-    image: ghcr.io/stac-utils/pgstac:v0.4.3
+    image: ghcr.io/stac-utils/pgstac:v0.4.5
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
