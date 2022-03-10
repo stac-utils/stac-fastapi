@@ -2,7 +2,11 @@
 
 ## Unreleased
 
+* Update error response payloads to match the API spec. ([#361](https://github.com/stac-utils/stac-fastapi/pull/361))
+
 ### Added
+
+* Add hook to allow adding dependencies to routes. ([#295](https://github.com/stac-utils/stac-fastapi/pull/295))
 
 ### Changed
 
