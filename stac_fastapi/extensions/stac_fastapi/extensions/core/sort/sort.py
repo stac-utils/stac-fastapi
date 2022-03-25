@@ -23,7 +23,7 @@ class SortExtension(ApiExtension):
     POST = SortExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
-        factory=lambda: ["https://api.stacspec.org/v1.0.0-beta.4/item-search/#sort"]
+        factory=lambda: ["https://api.stacspec.org/v1.0.0-rc.1/item-search#sort"]
     )
     schema_href: Optional[str] = attr.ib(default=None)
 
