@@ -17,21 +17,10 @@ class PgstacSearch(BaseSearchPostRequest):
 
     @validator("filter_lang", pre=False, check_fields=False, always=True)
     def validate_query_uses_cql(cls, v, values):
-        """If using query syntax, forces cql-json."""
-        retval = v
-        if values.get("query", None) is not None:
-            retval = "cql-json"
-        if values.get("collections", None) is not None:
-            retval = "cql-json"
-        if values.get("ids", None) is not None:
-            retval = "cql-json"
-        if values.get("datetime", None) is not None:
-            retval = "cql-json"
-        if values.get("bbox", None) is not None:
-            retval = "cql-json"
-        if v == "cql2-json" and retval == "cql-json":
+        """Use of Query Extension is not allowed with cql2."""
+        if values.get("query", None) is not None and v != "cql-json":
             raise ValueError(
-                "query, collections, ids, datetime, and bbox"
-                "parameters are not available in cql2-json"
+                "Query extension is not available when using pgstac with cql2"
             )
-        return retval
+
+        return v

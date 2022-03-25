@@ -811,6 +811,98 @@ async def test_item_search_get_filter_extension_cql(
 
 
 @pytest.mark.asyncio
+async def test_item_search_get_filter_extension_cql2(
+    app_client, load_test_data, load_test_collection
+):
+    """Test GET search with JSONB query (cql2 json filter extension)"""
+    test_item = load_test_data("test_item.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
+    # EPSG is a JSONB key
+    params = {
+        "collections": [test_item["collection"]],
+        "filter-lang": "cql2-json",
+        "filter": {
+            "op": "gt",
+            "args": [
+                {"property": "proj:epsg"},
+                test_item["properties"]["proj:epsg"] + 1,
+            ],
+        },
+    }
+    print(params)
+    resp = await app_client.post("/search", json=params)
+    resp_json = resp.json()
+
+    assert resp.status_code == 200
+    assert len(resp_json.get("features")) == 0
+
+    params = {
+        "collections": [test_item["collection"]],
+        "filter-lang": "cql2-json",
+        "filter": {
+            "op": "eq",
+            "args": [
+                {"property": "proj:epsg"},
+                test_item["properties"]["proj:epsg"],
+            ],
+        },
+    }
+    resp = await app_client.post("/search", json=params)
+    resp_json = resp.json()
+    assert len(resp.json()["features"]) == 1
+    assert (
+        resp_json["features"][0]["properties"]["proj:epsg"]
+        == test_item["properties"]["proj:epsg"]
+    )
+
+
+@pytest.mark.asyncio
+async def test_item_search_get_filter_extension_cql2_with_query_fails(
+    app_client, load_test_data, load_test_collection
+):
+    """Test GET search with JSONB query (cql2 json filter extension)"""
+    test_item = load_test_data("test_item.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
+    # EPSG is a JSONB key
+    params = {
+        "collections": [test_item["collection"]],
+        "filter-lang": "cql2-json",
+        "filter": {
+            "op": "gt",
+            "args": [
+                {"property": "proj:epsg"},
+                test_item["properties"]["proj:epsg"] + 1,
+            ],
+        },
+        "query": {"eo:cloud_cover": {"eq": 0}},
+    }
+    print(params)
+    resp = await app_client.post("/search", json=params)
+    print(resp.content)
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
 async def test_get_missing_item_collection(app_client):
     """Test reading a collection which does not exist"""
     resp = await app_client.get("/collections/invalid-collection/items")
@@ -888,7 +980,12 @@ async def test_pagination_post(app_client, load_test_data, load_test_collection)
         ids.append(uid)
 
     # Paginate through all 5 items with a limit of 1 (expecting 5 requests)
-    request_body = {"ids": ids, "limit": 1}
+    request_body = {
+        "filter-lang": "cql2-json",
+        "filter": {"op": "in", "args": [{"property": "id"}, ids]},
+        "limit": 1,
+    }
+    print(f"REQUEST BODY: {request_body}")
     page = await app_client.post("/search", json=request_body)
     idx = 0
     item_ids = []
@@ -896,6 +993,7 @@ async def test_pagination_post(app_client, load_test_data, load_test_collection)
         idx += 1
         page_data = page.json()
         item_ids.append(page_data["features"][0]["id"])
+        print(f"PAGING: {page_data['links']}")
         next_link = list(filter(lambda l: l["rel"] == "next", page_data["links"]))
         if not next_link:
             break
@@ -907,6 +1005,7 @@ async def test_pagination_post(app_client, load_test_data, load_test_collection)
             assert False
 
     # Our limit is 1 so we expect len(ids) number of requests before we run out of pages
+    print(idx, ids)
     assert idx == len(ids)
 
     # Confirm we have paginated through all items
@@ -931,8 +1030,16 @@ async def test_pagination_token_idempotent(
         assert resp.status_code == 200
         ids.append(uid)
 
-    page = await app_client.get("/search", params={"ids": ",".join(ids), "limit": 3})
+    page = await app_client.post(
+        "/search",
+        json={
+            "filter-lang": "cql2-json",
+            "filter": {"op": "in", "args": [{"property": "id"}, ids]},
+            "limit": 3,
+        },
+    )
     page_data = page.json()
+    print(f"LINKS: {page_data['links']}")
     next_link = list(filter(lambda l: l["rel"] == "next", page_data["links"]))
 
     # Confirm token is idempotent
@@ -1161,7 +1268,7 @@ async def test_item_search_get_filter_extension_cql_explicitlang(
 
 
 @pytest.mark.asyncio
-async def test_item_search_get_filter_extension_cql2(
+async def test_item_search_get_filter_extension_cql2_2(
     app_client, load_test_data, load_test_collection
 ):
     """Test GET search with JSONB query (cql json filter extension)"""
@@ -1253,3 +1360,34 @@ async def test_search_datetime_validation_errors(app_client):
 
         resp = await app_client.get("/search?datetime={}".format(dt))
         assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_filter_cql2text(app_client, load_test_data, load_test_collection):
+    """Test GET search with cql2-text"""
+    test_item = load_test_data("test_item.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    epsg = test_item["properties"]["proj:epsg"]
+    collection = test_item["collection"]
+
+    filter = f"proj:epsg={epsg} AND collection = '{collection}'"
+    params = {"filter": filter, "filter-lang": "cql2-text"}
+    resp = await app_client.get("/search", params=params)
+    resp_json = resp.json()
+    print(resp_json)
+    assert len(resp.json()["features"]) == 1
+    assert (
+        resp_json["features"][0]["properties"]["proj:epsg"]
+        == test_item["properties"]["proj:epsg"]
+    )
+
+    filter = f"proj:epsg={epsg + 1} AND collection = '{collection}'"
+    params = {"filter": filter, "filter-lang": "cql2-text"}
+    resp = await app_client.get("/search", params=params)
+    resp_json = resp.json()
+    print(resp_json)
+    assert len(resp.json()["features"]) == 0
