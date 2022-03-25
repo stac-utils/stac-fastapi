@@ -10,9 +10,11 @@
 
 ### Changed
 
-* update FastAPI requirement to allow version >=0.73 ([#337](https://github.com/stac-utils/stac-fastapi/pull/337))
+* Update FastAPI requirement to allow version >=0.73 ([#337](https://github.com/stac-utils/stac-fastapi/pull/337))
 * Bump version of PGStac to 0.4.5  ([#346](https://github.com/stac-utils/stac-fastapi/pull/346))
 * Add support for PGStac Backend to use PyGeofilter to convert Get Request with cql2-text into cql2-json to send to PGStac backend ([#346](https://github.com/stac-utils/stac-fastapi/pull/346))
+* Bulk Transactions object Items iterator now returns the Item objects rather than the string IDs of the Item objects
+  ([#355](https://github.com/stac-utils/stac-fastapi/issues/355))
 
 ### Removed
 
@@ -20,7 +22,7 @@
 * Bumped uvicorn version to 0.17 (from >=0.12, <=0.14) to resolve security vulnerability related to websockets dependency version ([#343](https://github.com/stac-utils/stac-fastapi/pull/343))
 * `AttributeError` and/or missing properties when requesting the complete `properties`-field in searches. Added test. ([#339](https://github.com/stac-utils/stac-fastapi/pull/339))
 * Fixes issues (and adds tests) for issues caused by regression in pgstac ([#345](https://github.com/stac-utils/stac-fastapi/issues/345)
-
+* SQLAlchemy backend bulk item insert now works ([#356]https://github.com/stac-utils/stac-fastapi/issues/356))
 
 ## [2.3.0]
 
