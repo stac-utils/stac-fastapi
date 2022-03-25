@@ -7,6 +7,7 @@ class STACConformanceClasses(str, Enum):
 
     CORE = "https://api.stacspec.org/v1.0.0-rc.1/core"
     OGC_API_FEAT = "https://api.stacspec.org/v1.0.0-rc.1/ogcapi-features"
+    COLLECTIONS = "https://api.stacspec.org/v1.0.0-rc.1/collections"
     ITEM_SEARCH = "https://api.stacspec.org/v1.0.0-rc.1/item-search"
 
 
@@ -21,6 +22,7 @@ class OAFConformanceClasses(str, Enum):
 BASE_CONFORMANCE_CLASSES = [
     STACConformanceClasses.CORE,
     STACConformanceClasses.OGC_API_FEAT,
+    STACConformanceClasses.COLLECTIONS,
     STACConformanceClasses.ITEM_SEARCH,
     OAFConformanceClasses.CORE,
     OAFConformanceClasses.OPEN_API,
