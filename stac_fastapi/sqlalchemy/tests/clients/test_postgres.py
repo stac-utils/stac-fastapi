@@ -7,6 +7,7 @@ from stac_pydantic import Collection, Item
 from tests.conftest import MockStarletteRequest
 
 from stac_fastapi.api.app import StacApi
+from stac_fastapi.extensions.third_party.bulk_transactions import Items
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
 from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
@@ -267,21 +268,21 @@ def test_bulk_item_insert(
 
     item = load_test_data("test_item.json")
 
-    items = []
+    items = {}
     for _ in range(10):
         _item = deepcopy(item)
         _item["id"] = str(uuid.uuid4())
-        items.append(_item)
+        items[_item["id"]] = _item
 
     fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) == 0
 
-    postgres_bulk_transactions.bulk_item_insert(items=items)
+    postgres_bulk_transactions.bulk_item_insert(Items(items=items))
 
     fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) == 10
 
-    for item in items:
+    for item in items.values():
         postgres_transactions.delete_item(
             item["id"], item["collection"], request=MockStarletteRequest
         )
