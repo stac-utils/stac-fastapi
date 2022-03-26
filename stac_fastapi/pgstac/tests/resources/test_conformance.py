@@ -38,7 +38,6 @@ link_tests = [
 ]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("rel_type,expected_media_type,expected_path", link_tests)
 async def test_landing_page_links(
     response_json, app_client, rel_type, expected_media_type, expected_path
