@@ -63,46 +63,67 @@ pip install -e stac_fastapi/pgstac
 
 ## Local Development
 
-Use docker-compose to deploy the application, migrate the database, and ingest some example data:
+Use docker-compose via make to start the application, migrate the database, and ingest some example data:
 ```bash
-docker-compose build
-docker-compose up
-
-# You can also launch application with specific backend (PGSTac or sqlalchemy)
-docker-compose up app-sqlalchemy
-# or
-docker-compose up app-pgstac
+make image
+make docker-run-all
 ```
 
-For local development it is often more convenient to run the application outside docker-compose:
-```bash
-make docker-run
-```
+- The SQLAlchemy backend app will be available on <http://localhost:8081>.
+- The PGStac backend app will be available on <http://localhost:8082>.
 
-Before commit, install the [pre-commit](https://pre-commit.com) hooks with:
+You can also launch only one of the applications with either of these commands:
 
 ```shell
-pre-commit install
+make docker-run-pgstac
+make docker-run-sqlalchemy
 ```
 
-The pre-commit hooks can be run manually with:
-
-```shell
-pre-commit run --all-files
-```
+The application will be started on <http://localhost:8080>.
 
 #### Note to Docker for Windows users
 
-You'll need to enable experimental features on Docker for Windows in order to run the docker-compose, due to the "--platform" flag that is required to allow the project to run on some Apple architectures. To do this, open Docker Desktop, go to settings, select "Docker Engine", and modify the configuration JSON to have `"experimental": true`.
+You'll need to enable experimental features on Docker for Windows in order to run the docker-compose,
+due to the "--platform" flag that is required to allow the project to run on some Apple architectures.
+To do this, open Docker Desktop, go to settings, select "Docker Engine", and modify the configuration
+JSON to have `"experimental": true`.
 
 ### Testing
-The database container provided by the docker-compose stack must be running.  Run all tests:
-```bash
+
+Before running the tests, ensure the database and apps run with docker-compose are down:
+
+```shell
+docker-compose down
+```
+
+The database container provided by the docker-compose stack must be running. This can be started with:
+
+```shell
+make run-database
+```
+
+To run tests for both the pgstac and sqlalchemy backends, execute:
+
+```shell
 make test
 ```
 
-Run individual tests by running pytest within the docker container:
-```bash
-make docker-shell
-$ pytest -v
+To only run pgstac backend tests:
+
+```shell
+make test-pgstac
+```
+
+To only run sqlalchemy backend tests:
+
+```shell
+make test-sqlalchemy
+```
+
+Run individual tests by running pytest within a docker container:
+
+```shell
+make docker-shell-pgstac # or docker-shell-sqlalchemy
+$ pip install -e stac_fastapi/pgstac[dev]
+$ pytest -v stac_fastapi/pgstac/tests/api/test_api.py 
 ```
