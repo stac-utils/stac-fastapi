@@ -42,7 +42,7 @@ class TransactionsClient(BaseTransactionsClient):
             bulk_client = BulkTransactionsClient(session=self.session)
             bulk_client.bulk_item_insert(items=model["features"])
             return None
-            
+
         # Otherwise a single item has been posted
         data = self.item_serializer.stac_to_db(model)
         with self.session.writer.context_session() as session:
