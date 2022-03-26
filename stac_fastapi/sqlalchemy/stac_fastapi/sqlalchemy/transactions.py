@@ -40,10 +40,9 @@ class TransactionsClient(BaseTransactionsClient):
         # If a feature collection is posted
         if model["type"] == "FeatureCollection":
             bulk_client = BulkTransactionsClient(session=self.session)
-            return_msg = bulk_client.bulk_item_insert(items=model["features"])
-
-            return return_msg
-
+            bulk_client.bulk_item_insert(items=model["features"])
+            return None
+            
         # Otherwise a single item has been posted
         data = self.item_serializer.stac_to_db(model)
         with self.session.writer.context_session() as session:
