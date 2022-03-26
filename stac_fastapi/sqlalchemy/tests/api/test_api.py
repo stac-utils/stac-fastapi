@@ -87,7 +87,6 @@ def test_app_search_response_multipolygon(
     resp = app_client.get("/search", params={"collections": ["test-collection"]})
     assert resp.status_code == 200
     resp_json = resp.json()
-    print(resp_json)
 
     assert resp_json.get("type") == "FeatureCollection"
     assert resp_json.get("features")[0]["geometry"]["type"] == "MultiPolygon"
