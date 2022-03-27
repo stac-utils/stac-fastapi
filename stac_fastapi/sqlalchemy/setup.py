@@ -25,7 +25,6 @@ extra_reqs = {
     "dev": [
         "pytest",
         "pytest-cov",
-        "pytest-asyncio",
         "pre-commit",
         "requests",
     ],
