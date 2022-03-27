@@ -32,7 +32,7 @@ Hot-reloading docs:
 $ mkdocs serve
 ```
 
-To manually deploy docs (note you should never need to do this because Github
+To manually deploy docs (note you should never need to do this because GitHub
 Actions deploys automatically for new commits.):
 
 ```bash

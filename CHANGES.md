@@ -9,10 +9,12 @@
 
 ### Changed
 
-* update FastAPI requirement to allow version >=0.73 ([#337](https://github.com/stac-utils/stac-fastapi/pull/337))
+* Update FastAPI requirement to allow version >=0.73 ([#337](https://github.com/stac-utils/stac-fastapi/pull/337))
 * Bump version of PGStac to 0.4.5  ([#346](https://github.com/stac-utils/stac-fastapi/pull/346))
 * Add support for PGStac Backend to use PyGeofilter to convert Get Request with cql2-text into cql2-json to send to PGStac backend ([#346](https://github.com/stac-utils/stac-fastapi/pull/346))
 * Updated all conformance classes to 1.0.0-rc.1. ([383](https://github.com/stac-utils/stac-fastapi/pull/383))
+* Bulk Transactions object Items iterator now returns the Item objects rather than the string IDs of the Item objects
+  ([#355](https://github.com/stac-utils/stac-fastapi/issues/355))
 
 ### Removed
 
@@ -23,7 +25,7 @@
 * Fixes issues (and adds tests) for issues caused by regression in pgstac ([#345](https://github.com/stac-utils/stac-fastapi/issues/345)
 * Update error response payloads to match the API spec. ([#361](https://github.com/stac-utils/stac-fastapi/pull/361))
 * Fixed stray `/` before the `#` in several extension conformance class strings ([383](https://github.com/stac-utils/stac-fastapi/pull/383))
-
+* SQLAlchemy backend bulk item insert now works ([#356]https://github.com/stac-utils/stac-fastapi/issues/356))
 
 ## [2.3.0]
 
