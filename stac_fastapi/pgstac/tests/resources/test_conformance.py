@@ -1,5 +1,6 @@
 import urllib.parse
 from typing import Dict, Optional
+
 import pytest
 
 
@@ -16,8 +17,11 @@ async def response_json(response) -> Dict:
 def get_link(landing_page, rel_type, method: Optional[str] = None):
     return next(
         filter(
-            lambda link: link["rel"] == rel_type and (not method or link.get("method") == method),
-            landing_page["links"]), None
+            lambda link: link["rel"] == rel_type
+            and (not method or link.get("method") == method),
+            landing_page["links"],
+        ),
+        None,
     )
 
 
@@ -43,7 +47,7 @@ link_tests = [
 @pytest.mark.asyncio
 @pytest.mark.parametrize("rel_type,expected_media_type,expected_path", link_tests)
 async def test_landing_page_links(
-        response_json: Dict, app_client, rel_type, expected_media_type, expected_path
+    response_json: Dict, app_client, rel_type, expected_media_type, expected_path
 ):
     link = get_link(response_json, rel_type)
 
@@ -62,7 +66,10 @@ async def test_landing_page_links(
 # https://github.com/stac-utils/stac-fastapi/pull/227 has been merged we can add this to the
 # parameterized tests above.
 def test_search_link(response_json: Dict):
-    for search_link in [get_link(response_json, "search", "GET"), get_link(response_json, "search", "POST")]:
+    for search_link in [
+        get_link(response_json, "search", "GET"),
+        get_link(response_json, "search", "POST"),
+    ]:
         assert search_link is not None
         assert search_link.get("type") == "application/geo+json"
 
