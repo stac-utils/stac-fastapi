@@ -463,14 +463,9 @@ def test_item_search_temporal_open_window(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    params = {
-        "collections": [test_item["collection"]],
-        "intersects": test_item["geometry"],
-        "datetime": "../..",
-    }
-    resp = app_client.post("/search", json=params)
-    resp_json = resp.json()
-    assert resp_json["features"][0]["id"] == test_item["id"]
+    for dt in ["/", "../", "/..", "../.."]:
+        resp = app_client.post("/search", json={"datetime": dt})
+        assert resp.status_code == 400
 
 
 def test_item_search_sort_post(app_client, load_test_data):
