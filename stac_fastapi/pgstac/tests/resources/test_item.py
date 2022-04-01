@@ -457,17 +457,9 @@ async def test_item_search_temporal_window_post(
 async def test_item_search_temporal_open_window(
     app_client, load_test_data, load_test_collection
 ):
-    params = {
-        "datetime": "../..",
-    }
-    resp = await app_client.post("/search", json=params)
-    assert resp.status_code == 400
-
-    params = {
-        "datetime": "/",
-    }
-    resp = await app_client.post("/search", json=params)
-    assert resp.status_code == 400
+    for dt in ["/", "../", "/..", "../.."]:
+        resp = app_client.post("/search", json={"datetime": dt})
+        assert resp.status_code == 400
 
 
 @pytest.mark.asyncio
