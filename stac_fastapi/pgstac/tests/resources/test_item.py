@@ -457,18 +457,8 @@ async def test_item_search_temporal_window_post(
 async def test_item_search_temporal_open_window(
     app_client, load_test_data, load_test_collection
 ):
-    for dt in ["../.."]:
-        resp = app_client.post("/search", json={"datetime": dt})
-        assert resp.status_code == 400
-
-
-# when these work, incorporate them into test_item_search_temporal_open_window
-@pytest.mark.skip(reason="empty string and mixed double-open-ended doesn't fail")
-async def test_item_search_temporal_open_window_mixed(
-    app_client, load_test_data, load_test_collection
-):
-    for dt in ["/", "../", "/.."]:
-        resp = app_client.post("/search", json={"datetime": dt})
+    for dt in ["/", "../..", "../", "/.."]:
+        resp = await app_client.post("/search", json={"datetime": dt})
         assert resp.status_code == 400
 
 
