@@ -10,6 +10,7 @@ install_requires = [
     "attrs",
     "pydantic[dotenv]",
     "stac_pydantic==2.0.*",
+    "pystac==1.*",
     "ciso8601~=2.2.0",
 ]
 
