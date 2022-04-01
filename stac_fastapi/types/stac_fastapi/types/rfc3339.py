@@ -3,14 +3,14 @@
 from datetime import datetime, timezone
 from typing import Optional, Tuple
 
-import ciso8601
+import dateutil
 from pystac.utils import datetime_to_str
 
 
 def rfc3339_str_to_datetime(s: str) -> datetime:
     """Convert a string conforming to RFC 3339 to a :class:`datetime.datetime`.
 
-    Uses :meth:`ciso8601.parse_rfc3339` under the hood.
+    Uses :meth:`dateutil.parser.isoparse` under the hood.
 
     Args:
         s (str) : The string to convert to :class:`datetime.datetime`.
@@ -21,7 +21,7 @@ def rfc3339_str_to_datetime(s: str) -> datetime:
     Raises:
         ValueError: If the string is not a valid RFC 3339 string.
     """
-    return ciso8601.parse_rfc3339(s)
+    return dateutil.parser.isoparse(s)
 
 
 def str_to_interval(
