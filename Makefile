@@ -2,7 +2,7 @@
 APP_HOST ?= 0.0.0.0
 APP_PORT ?= 8080
 EXTERNAL_APP_PORT ?= ${APP_PORT}
-run_docker = docker-compose run --rm \
+run_sqlalchemy = docker-compose run --rm \
 				-p ${EXTERNAL_APP_PORT}:${APP_PORT} \
 				-e APP_HOST=${APP_HOST} \
 				-e APP_PORT=${APP_PORT} \
@@ -18,17 +18,21 @@ run_pgstac = docker-compose run --rm \
 image:
 	docker-compose build
 
-.PHONY: docker-run
-docker-run: image
-	$(run_docker)
+.PHONY: docker-run-all
+docker-run-all:
+	docker-compose up
+
+.PHONY: docker-run-sqlalchemy
+docker-run-sqlalchemy: image
+	$(run_sqlalchemy)
 
 .PHONY: docker-run-pgstac
 docker-run-pgstac: image
 	$(run_pgstac)
 
-.PHONY: docker-shell
-docker-shell:
-	$(run_docker) /bin/bash
+.PHONY: docker-shell-sqlalchemy
+docker-shell-sqlalchemy:
+	$(run_sqlalchemy) /bin/bash
 
 .PHONY: docker-shell-pgstac
 docker-shell-pgstac:
@@ -36,7 +40,7 @@ docker-shell-pgstac:
 
 .PHONY: test-sqlalchemy
 test-sqlalchemy: run-joplin-sqlalchemy
-	$(run_docker) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/sqlalchemy/tests/ && pytest'
+	$(run_sqlalchemy) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/sqlalchemy/tests/ && pytest -vvv'
 
 .PHONY: test-pgstac
 test-pgstac:
