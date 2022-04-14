@@ -160,7 +160,6 @@ if importlib.util.find_spec("orjson") is not None:
 
         media_type = "application/geo+json"
 
-
 else:
     from starlette.responses import JSONResponse
 
