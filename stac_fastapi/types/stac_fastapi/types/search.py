@@ -21,9 +21,10 @@ from geojson_pydantic.geometries import (
     _GeometryBase,
 )
 from pydantic import BaseModel, conint, validator
-from pydantic.datetime_parse import parse_datetime
 from stac_pydantic.shared import BBox
 from stac_pydantic.utils import AutoValueEnum
+
+from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime, str_to_interval
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
@@ -38,6 +39,7 @@ class Operator(str, AutoValueEnum):
     lte = auto()
     gt = auto()
     gte = auto()
+
     # TODO: These are defined in the spec but aren't currently implemented by the api
     # startsWith = auto()
     # endsWith = auto()
@@ -100,28 +102,14 @@ class BaseSearchPostRequest(BaseModel):
     @property
     def start_date(self) -> Optional[datetime]:
         """Extract the start date from the datetime string."""
-        if not self.datetime:
-            return
-
-        values = self.datetime.split("/")
-        if len(values) == 1:
-            return None
-        if values[0] == "..":
-            return None
-        return parse_datetime(values[0])
+        interval = str_to_interval(self.datetime)
+        return interval[0] if interval else None
 
     @property
     def end_date(self) -> Optional[datetime]:
         """Extract the end date from the datetime string."""
-        if not self.datetime:
-            return
-
-        values = self.datetime.split("/")
-        if len(values) == 1:
-            return parse_datetime(values[0])
-        if values[1] == "..":
-            return None
-        return parse_datetime(values[1])
+        interval = str_to_interval(self.datetime)
+        return interval[1] if interval else None
 
     @validator("intersects")
     def validate_spatial(cls, v, values):
@@ -171,18 +159,22 @@ class BaseSearchPostRequest(BaseModel):
 
         dates = []
         for value in values:
-            if value == "..":
-                dates.append(value)
+            if value == ".." or value == "":
+                dates.append("..")
                 continue
 
-            parse_datetime(value)
-            dates.append(value)
+            # throws ValueError if invalid RFC 3339 string
+            dates.append(rfc3339_str_to_datetime(value))
 
-        if ".." not in dates:
-            if parse_datetime(dates[0]) > parse_datetime(dates[1]):
-                raise ValueError(
-                    "Invalid datetime range, must match format (begin_date, end_date)"
-                )
+        if dates[0] == ".." and dates[1] == "..":
+            raise ValueError(
+                "Invalid datetime range, both ends of range may not be open"
+            )
+
+        if ".." not in dates and dates[0] > dates[1]:
+            raise ValueError(
+                "Invalid datetime range, must match format (begin_date, end_date)"
+            )
 
         return v
 
