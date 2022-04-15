@@ -15,6 +15,7 @@
 * Add support for PGStac Backend to use PyGeofilter to convert Get Request with cql2-text into cql2-json to send to PGStac backend ([#346](https://github.com/stac-utils/stac-fastapi/pull/346))
 * Bulk Transactions object Items iterator now returns the Item objects rather than the string IDs of the Item objects
   ([#355](https://github.com/stac-utils/stac-fastapi/issues/355))
+* docker-compose now runs uvicorn with hot-reloading enabled
 
 ### Removed
 
