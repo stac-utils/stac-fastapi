@@ -77,7 +77,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Called with `GET /collections/{collection_id}`.
 
         Args:
-            id: Id of the collection.
+            collection_id: ID of the collection.
 
         Returns:
             Collection.
@@ -186,7 +186,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Called with `GET /collections/{collection_id}/items`
 
         Args:
-            id: id of the collection.
+            collection_id: id of the collection.
             limit: number of items to return.
             token: pagination token.
 
@@ -212,7 +212,8 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Called with `GET /collections/{collection_id}/items/{item_id}`.
 
         Args:
-            id: Id of the item.
+            item_id: ID of the item.
+            collection_id: ID of the collection the item is in.
 
         Returns:
             Item.

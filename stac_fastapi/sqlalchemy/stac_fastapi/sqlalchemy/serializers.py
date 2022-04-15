@@ -1,17 +1,17 @@
 """Serializers."""
 import abc
 import json
-from datetime import datetime
 from typing import TypedDict
 
 import attr
 import geoalchemy2 as ga
-from stac_pydantic.shared import DATETIME_RFC339
+from pystac.utils import datetime_to_str
 
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.links import CollectionLinks, ItemLinks, resolve_links
+from stac_fastapi.types.rfc3339 import now_to_rfc3339_str, rfc3339_str_to_datetime
 
 
 @attr.s  # type:ignore
@@ -55,7 +55,7 @@ class ItemSerializer(Serializer):
             # Use getattr to accommodate extension namespaces
             field_value = getattr(db_model, field.split(":")[-1])
             if field == "datetime":
-                field_value = field_value.strftime(DATETIME_RFC339)
+                field_value = datetime_to_str(field_value)
             properties[field] = field_value
         item_id = db_model.id
         collection_id = db_model.collection_id
@@ -101,12 +101,12 @@ class ItemSerializer(Serializer):
             # Use getattr to accommodate extension namespaces
             field_value = stac_data["properties"][field]
             if field == "datetime":
-                field_value = datetime.strptime(field_value, DATETIME_RFC339)
+                field_value = rfc3339_str_to_datetime(field_value)
             indexed_fields[field.split(":")[-1]] = field_value
 
             # TODO: Exclude indexed fields from the properties jsonb field to prevent duplication
 
-            now = datetime.utcnow().strftime(DATETIME_RFC339)
+            now = now_to_rfc3339_str()
             if "created" not in stac_data["properties"]:
                 stac_data["properties"]["created"] = now
             stac_data["properties"]["updated"] = now

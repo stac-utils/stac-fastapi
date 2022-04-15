@@ -15,6 +15,7 @@
 * Updated all conformance classes to 1.0.0-rc.1. ([383](https://github.com/stac-utils/stac-fastapi/pull/383))
 * Bulk Transactions object Items iterator now returns the Item objects rather than the string IDs of the Item objects
   ([#355](https://github.com/stac-utils/stac-fastapi/issues/355))
+* docker-compose now runs uvicorn with hot-reloading enabled
 
 ### Removed
 
