@@ -5,7 +5,6 @@ from typing import Callable
 from urllib.parse import parse_qs, urljoin, urlparse
 
 import pystac
-import pytest
 from httpx import AsyncClient
 from pystac.utils import datetime_to_str
 from shapely.geometry import Polygon
@@ -16,7 +15,6 @@ from stac_fastapi.pgstac.models.links import CollectionLinks
 from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime
 
 
-@pytest.mark.asyncio
 async def test_create_collection(app_client, load_test_data: Callable):
     in_json = load_test_data("test_collection.json")
     in_coll = Collection.parse_obj(in_json)
@@ -33,7 +31,6 @@ async def test_create_collection(app_client, load_test_data: Callable):
     assert post_coll.dict(exclude={"links"}) == get_coll.dict(exclude={"links"})
 
 
-@pytest.mark.asyncio
 async def test_update_collection(app_client, load_test_data, load_test_collection):
     in_coll = load_test_collection
     in_coll.keywords.append("newkeyword")
@@ -49,7 +46,6 @@ async def test_update_collection(app_client, load_test_data, load_test_collectio
     assert "newkeyword" in get_coll.keywords
 
 
-@pytest.mark.asyncio
 async def test_delete_collection(
     app_client, load_test_data: Callable, load_test_collection
 ):
@@ -62,7 +58,6 @@ async def test_delete_collection(
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_create_item(app_client, load_test_data: Callable, load_test_collection):
     coll = load_test_collection
 
@@ -84,7 +79,6 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
     assert in_item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
 
 
-@pytest.mark.asyncio
 async def test_fetches_valid_item(
     app_client, load_test_data: Callable, load_test_collection
 ):
@@ -113,7 +107,6 @@ async def test_fetches_valid_item(
     item.validate()
 
 
-@pytest.mark.asyncio
 async def test_update_item(
     app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
@@ -133,7 +126,6 @@ async def test_update_item(
     assert get_item.properties.description == "Update Test"
 
 
-@pytest.mark.asyncio
 async def test_delete_item(
     app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
@@ -148,7 +140,6 @@ async def test_delete_item(
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_get_collection_items(app_client, load_test_collection, load_test_item):
     coll = load_test_collection
     item = load_test_item
@@ -170,7 +161,6 @@ async def test_get_collection_items(app_client, load_test_collection, load_test_
     assert len(fc["features"]) == 5
 
 
-@pytest.mark.asyncio
 async def test_create_item_conflict(
     app_client, load_test_data: Callable, load_test_collection
 ):
@@ -191,7 +181,6 @@ async def test_create_item_conflict(
     assert resp.status_code == 409
 
 
-@pytest.mark.asyncio
 async def test_delete_missing_item(
     app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
@@ -207,7 +196,6 @@ async def test_delete_missing_item(
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_create_item_missing_collection(
     app_client, load_test_data: Callable, load_test_collection
 ):
@@ -219,7 +207,6 @@ async def test_create_item_missing_collection(
     assert resp.status_code == 424
 
 
-@pytest.mark.asyncio
 async def test_update_new_item(
     app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
@@ -231,7 +218,6 @@ async def test_update_new_item(
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_update_item_missing_collection(
     app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
@@ -243,7 +229,6 @@ async def test_update_item_missing_collection(
     assert resp.status_code == 424
 
 
-@pytest.mark.asyncio
 async def test_pagination(app_client, load_test_data, load_test_collection):
     """Test item collection pagination (paging extension)"""
     coll = load_test_collection
@@ -320,7 +305,6 @@ async def test_pagination(app_client, load_test_data, load_test_collection):
     ]
 
 
-@pytest.mark.asyncio
 async def test_item_search_by_id_post(app_client, load_test_data, load_test_collection):
     """Test POST search by item id (core)"""
     ids = ["test1", "test2", "test3"]
@@ -340,7 +324,6 @@ async def test_item_search_by_id_post(app_client, load_test_data, load_test_coll
     assert set([feat["id"] for feat in resp_json["features"]]) == set(ids)
 
 
-@pytest.mark.asyncio
 async def test_item_search_by_id_no_results_post(
     app_client, load_test_data, load_test_collection
 ):
@@ -356,7 +339,6 @@ async def test_item_search_by_id_no_results_post(
     assert len(resp_json["features"]) == 0
 
 
-@pytest.mark.asyncio
 async def test_item_search_spatial_query_post(
     app_client, load_test_data, load_test_collection
 ):
@@ -385,7 +367,6 @@ async def test_item_search_spatial_query_post(
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_temporal_query_post(
     app_client, load_test_data, load_test_collection
 ):
@@ -420,7 +401,6 @@ async def test_item_search_temporal_query_post(
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_temporal_window_post(
     app_client, load_test_data, load_test_collection
 ):
@@ -453,7 +433,6 @@ async def test_item_search_temporal_window_post(
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_temporal_open_window(
     app_client, load_test_data, load_test_collection
 ):
@@ -462,7 +441,6 @@ async def test_item_search_temporal_open_window(
         assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_item_search_sort_post(app_client, load_test_data, load_test_collection):
     """Test POST search with sorting (sort extension)"""
     first_item = load_test_data("test_item.json")
@@ -492,7 +470,6 @@ async def test_item_search_sort_post(app_client, load_test_data, load_test_colle
     assert resp_json["features"][1]["id"] == second_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_by_id_get(app_client, load_test_data, load_test_collection):
     """Test GET search by item id (core)"""
     ids = ["test1", "test2", "test3"]
@@ -512,7 +489,6 @@ async def test_item_search_by_id_get(app_client, load_test_data, load_test_colle
     assert set([feat["id"] for feat in resp_json["features"]]) == set(ids)
 
 
-@pytest.mark.asyncio
 async def test_item_search_bbox_get(app_client, load_test_data, load_test_collection):
     """Test GET search with spatial query (core)"""
     test_item = load_test_data("test_item.json")
@@ -539,7 +515,6 @@ async def test_item_search_bbox_get(app_client, load_test_data, load_test_collec
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_get_without_collections(
     app_client, load_test_data, load_test_collection
 ):
@@ -567,7 +542,6 @@ async def test_item_search_get_without_collections(
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_temporal_window_get(
     app_client, load_test_data, load_test_collection
 ):
@@ -599,7 +573,6 @@ async def test_item_search_temporal_window_get(
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_sort_get(app_client, load_test_data, load_test_collection):
     """Test GET search with sorting (sort extension)"""
     first_item = load_test_data("test_item.json")
@@ -625,7 +598,6 @@ async def test_item_search_sort_get(app_client, load_test_data, load_test_collec
     assert resp_json["features"][1]["id"] == second_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_post_without_collection(
     app_client, load_test_data, load_test_collection
 ):
@@ -651,7 +623,6 @@ async def test_item_search_post_without_collection(
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_properties_jsonb(
     app_client, load_test_data, load_test_collection
 ):
@@ -677,7 +648,6 @@ async def test_item_search_properties_jsonb(
     assert len(resp_json["features"]) == 1
 
 
-@pytest.mark.asyncio
 async def test_item_search_properties_field(
     app_client, load_test_data, load_test_collection
 ):
@@ -702,7 +672,6 @@ async def test_item_search_properties_field(
     assert len(resp_json["features"]) == 1
 
 
-@pytest.mark.asyncio
 async def test_item_search_get_query_extension(
     app_client, load_test_data, load_test_collection
 ):
@@ -743,7 +712,6 @@ async def test_item_search_get_query_extension(
     )
 
 
-@pytest.mark.asyncio
 async def test_item_search_get_filter_extension_cql(
     app_client, load_test_data, load_test_collection
 ):
@@ -794,7 +762,6 @@ async def test_item_search_get_filter_extension_cql(
     )
 
 
-@pytest.mark.asyncio
 async def test_item_search_get_filter_extension_cql2(
     app_client, load_test_data, load_test_collection
 ):
@@ -850,7 +817,6 @@ async def test_item_search_get_filter_extension_cql2(
     )
 
 
-@pytest.mark.asyncio
 async def test_item_search_get_filter_extension_cql2_with_query_fails(
     app_client, load_test_data, load_test_collection
 ):
@@ -886,21 +852,18 @@ async def test_item_search_get_filter_extension_cql2_with_query_fails(
     assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_get_missing_item_collection(app_client):
     """Test reading a collection which does not exist"""
     resp = await app_client.get("/collections/invalid-collection/items")
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_get_item_from_missing_item_collection(app_client):
     """Test reading an item from a collection which does not exist"""
     resp = await app_client.get("/collections/invalid-collection/items/some-item")
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_pagination_item_collection(
     app_client, load_test_data, load_test_collection
 ):
@@ -947,7 +910,6 @@ async def test_pagination_item_collection(
     assert not set(item_ids) - set(ids)
 
 
-@pytest.mark.asyncio
 async def test_pagination_post(app_client, load_test_data, load_test_collection):
     """Test POST pagination (paging extension)"""
     test_item = load_test_data("test_item.json")
@@ -996,7 +958,6 @@ async def test_pagination_post(app_client, load_test_data, load_test_collection)
     assert not set(item_ids) - set(ids)
 
 
-@pytest.mark.asyncio
 async def test_pagination_token_idempotent(
     app_client, load_test_data, load_test_collection
 ):
@@ -1042,7 +1003,6 @@ async def test_pagination_token_idempotent(
     ]
 
 
-@pytest.mark.asyncio
 async def test_field_extension_get(app_client, load_test_data, load_test_collection):
     """Test GET search with included fields (fields extension)"""
     test_item = load_test_data("test_item.json")
@@ -1057,7 +1017,6 @@ async def test_field_extension_get(app_client, load_test_data, load_test_collect
     assert not set(feat_properties) - {"proj:epsg", "gsd", "datetime"}
 
 
-@pytest.mark.asyncio
 async def test_field_extension_post(app_client, load_test_data, load_test_collection):
     """Test POST search with included and excluded fields (fields extension)"""
     test_item = load_test_data("test_item.json")
@@ -1089,7 +1048,6 @@ async def test_field_extension_post(app_client, load_test_data, load_test_collec
     }
 
 
-@pytest.mark.asyncio
 async def test_field_extension_exclude_and_include(
     app_client, load_test_data, load_test_collection
 ):
@@ -1112,7 +1070,6 @@ async def test_field_extension_exclude_and_include(
     assert "properties" not in resp_json["features"][0]
 
 
-@pytest.mark.asyncio
 async def test_field_extension_exclude_default_includes(
     app_client, load_test_data, load_test_collection
 ):
@@ -1130,7 +1087,6 @@ async def test_field_extension_exclude_default_includes(
     assert "geometry" not in resp_json["features"][0]
 
 
-@pytest.mark.asyncio
 async def test_search_intersects_and_bbox(app_client):
     """Test POST search intersects and bbox are mutually exclusive (core)"""
     bbox = [-118, 34, -117, 35]
@@ -1140,7 +1096,6 @@ async def test_search_intersects_and_bbox(app_client):
     assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_get_missing_item(app_client, load_test_data):
     """Test read item which does not exist (transactions extension)"""
     test_coll = load_test_data("test_collection.json")
@@ -1148,7 +1103,6 @@ async def test_get_missing_item(app_client, load_test_data):
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_relative_link_construction():
     req = Request(
         scope={
@@ -1166,7 +1120,6 @@ async def test_relative_link_construction():
     assert links.link_items()["href"] == "http://test/stac/collections/naip/items"
 
 
-@pytest.mark.asyncio
 async def test_search_bbox_errors(app_client):
     body = {"query": {"bbox": [0]}}
     resp = await app_client.post("/search", json=body)
@@ -1181,7 +1134,6 @@ async def test_search_bbox_errors(app_client):
     assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_preserves_extra_link(
     app_client: AsyncClient, load_test_data, load_test_collection
 ):
@@ -1204,7 +1156,6 @@ async def test_preserves_extra_link(
     assert extra_link[0]["href"] == expected_href
 
 
-@pytest.mark.asyncio
 async def test_item_search_get_filter_extension_cql_explicitlang(
     app_client, load_test_data, load_test_collection
 ):
@@ -1251,7 +1202,6 @@ async def test_item_search_get_filter_extension_cql_explicitlang(
     )
 
 
-@pytest.mark.asyncio
 async def test_item_search_get_filter_extension_cql2_2(
     app_client, load_test_data, load_test_collection
 ):
@@ -1325,7 +1275,6 @@ async def test_item_search_get_filter_extension_cql2_2(
     )
 
 
-@pytest.mark.asyncio
 async def test_search_datetime_validation_errors(app_client):
     bad_datetimes = [
         "37-01-01T12:00:27.87Z",
@@ -1346,7 +1295,6 @@ async def test_search_datetime_validation_errors(app_client):
         assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_filter_cql2text(app_client, load_test_data, load_test_collection):
     """Test GET search with cql2-text"""
     test_item = load_test_data("test_item.json")

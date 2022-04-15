@@ -44,7 +44,7 @@ test-sqlalchemy: run-joplin-sqlalchemy
 
 .PHONY: test-pgstac
 test-pgstac:
-	$(run_pgstac) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/pgstac/tests/ && pytest -vvv --asyncio-mode=auto'
+	$(run_pgstac) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/pgstac/tests/ && pytest -vvv'
 
 .PHONY: run-database
 run-database:
