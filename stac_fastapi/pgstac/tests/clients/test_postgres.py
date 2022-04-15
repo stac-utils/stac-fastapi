@@ -1,13 +1,11 @@
 import uuid
 from typing import Callable
 
-import pytest
 from stac_pydantic import Collection, Item
 
 # from tests.conftest import MockStarletteRequest
 
 
-@pytest.mark.asyncio
 async def test_create_collection(app_client, load_test_data: Callable):
     in_json = load_test_data("test_collection.json")
     in_coll = Collection.parse_obj(in_json)
@@ -24,7 +22,6 @@ async def test_create_collection(app_client, load_test_data: Callable):
     assert post_coll.dict(exclude={"links"}) == get_coll.dict(exclude={"links"})
 
 
-@pytest.mark.asyncio
 async def test_update_collection(app_client, load_test_collection):
     in_coll = load_test_collection
     in_coll.keywords.append("newkeyword")
@@ -40,7 +37,6 @@ async def test_update_collection(app_client, load_test_collection):
     assert "newkeyword" in get_coll.keywords
 
 
-@pytest.mark.asyncio
 async def test_delete_collection(app_client, load_test_collection):
     in_coll = load_test_collection
 
@@ -51,7 +47,6 @@ async def test_delete_collection(app_client, load_test_collection):
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_create_item(app_client, load_test_data: Callable, load_test_collection):
     coll = load_test_collection
 
@@ -73,7 +68,6 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
     assert in_item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
 
 
-@pytest.mark.asyncio
 async def test_update_item(app_client, load_test_collection, load_test_item):
     coll = load_test_collection
     item = load_test_item
@@ -91,7 +85,6 @@ async def test_update_item(app_client, load_test_collection, load_test_item):
     assert get_item.properties.description == "Update Test"
 
 
-@pytest.mark.asyncio
 async def test_delete_item(app_client, load_test_collection, load_test_item):
     coll = load_test_collection
     item = load_test_item
@@ -103,7 +96,6 @@ async def test_delete_item(app_client, load_test_collection, load_test_item):
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_get_collection_items(app_client, load_test_collection, load_test_item):
     coll = load_test_collection
     item = load_test_item
