@@ -23,7 +23,7 @@ extra_reqs = {
     "dev": [
         "pytest",
         "pytest-cov",
-        "pytest-asyncio",
+        "pytest-asyncio>=0.17",
         "pre-commit",
         "requests",
         "pypgstac==0.4.5",
