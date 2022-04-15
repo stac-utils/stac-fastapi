@@ -10,6 +10,8 @@ install_requires = [
     "attrs",
     "pydantic[dotenv]",
     "stac_pydantic==2.0.*",
+    "pystac==1.*",
+    "ciso8601~=2.2.0",
 ]
 
 extra_reqs = {
@@ -38,7 +40,7 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],
     keywords="STAC FastAPI COG",
-    author=u"Arturo Engineering",
+    author="Arturo Engineering",
     author_email="engineering@arturo.ai",
     url="https://github.com/stac-utils/stac-fastapi",
     license="MIT",

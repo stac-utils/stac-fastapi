@@ -1,17 +1,18 @@
 import json
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Callable
 from urllib.parse import parse_qs, urljoin, urlparse
 
 import pystac
 from httpx import AsyncClient
+from pystac.utils import datetime_to_str
 from shapely.geometry import Polygon
 from stac_pydantic import Collection, Item
-from stac_pydantic.shared import DATETIME_RFC339
 from starlette.requests import Request
 
 from stac_fastapi.pgstac.models.links import CollectionLinks
+from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime
 
 
 async def test_create_collection(app_client, load_test_data: Callable):
@@ -383,14 +384,14 @@ async def test_item_search_temporal_query_post(
     )
     assert resp.status_code == 200
 
-    item_date = datetime.strptime(test_item["properties"]["datetime"], DATETIME_RFC339)
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     print(item_date)
     item_date = item_date + timedelta(seconds=1)
 
     params = {
         "collections": [test_item["collection"]],
         "intersects": test_item["geometry"],
-        "datetime": item_date.strftime(DATETIME_RFC339),
+        "datetime": datetime_to_str(item_date),
     }
 
     resp = await app_client.post("/search", json=params)
@@ -417,14 +418,15 @@ async def test_item_search_temporal_window_post(
     )
     assert resp.status_code == 200
 
-    item_date = datetime.strptime(test_item["properties"]["datetime"], DATETIME_RFC339)
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     item_date_before = item_date - timedelta(seconds=1)
     item_date_after = item_date + timedelta(seconds=1)
 
     params = {
         "collections": [test_item["collection"]],
-        "datetime": f"{item_date_before.strftime(DATETIME_RFC339)}/{item_date_after.strftime(DATETIME_RFC339)}",
+        "datetime": f"{datetime_to_str(item_date_before)}/{datetime_to_str(item_date_after)}",
     }
+
     resp = await app_client.post("/search", json=params)
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
@@ -434,33 +436,15 @@ async def test_item_search_temporal_window_post(
 async def test_item_search_temporal_open_window(
     app_client, load_test_data, load_test_collection
 ):
-    """Test POST search with open spatio-temporal query (core)"""
-    test_item = load_test_data("test_item.json")
-    resp = await app_client.post(
-        f"/collections/{test_item['collection']}/items", json=test_item
-    )
-    assert resp.status_code == 200
-
-    # Add second item with a different datetime.
-    second_test_item = load_test_data("test_item2.json")
-    resp = await app_client.post(
-        f"/collections/{test_item['collection']}/items", json=second_test_item
-    )
-    assert resp.status_code == 200
-
-    params = {
-        "collections": [test_item["collection"]],
-        "datetime": "../..",
-    }
-    resp = await app_client.post("/search", json=params)
-    resp_json = resp.json()
-    assert len(resp_json["features"]) == 2
+    for dt in ["/", "../..", "../", "/.."]:
+        resp = await app_client.post("/search", json={"datetime": dt})
+        assert resp.status_code == 400
 
 
 async def test_item_search_sort_post(app_client, load_test_data, load_test_collection):
     """Test POST search with sorting (sort extension)"""
     first_item = load_test_data("test_item.json")
-    item_date = datetime.strptime(first_item["properties"]["datetime"], DATETIME_RFC339)
+    item_date = rfc3339_str_to_datetime(first_item["properties"]["datetime"])
     resp = await app_client.post(
         f"/collections/{first_item['collection']}/items", json=first_item
     )
@@ -469,7 +453,7 @@ async def test_item_search_sort_post(app_client, load_test_data, load_test_colle
     second_item = load_test_data("test_item.json")
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = another_item_date.strftime(DATETIME_RFC339)
+    second_item["properties"]["datetime"] = datetime_to_str(another_item_date)
     resp = await app_client.post(
         f"/collections/{second_item['collection']}/items", json=second_item
     )
@@ -575,13 +559,13 @@ async def test_item_search_temporal_window_get(
     )
     assert resp.status_code == 200
 
-    item_date = datetime.strptime(test_item["properties"]["datetime"], DATETIME_RFC339)
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     item_date_before = item_date - timedelta(seconds=1)
     item_date_after = item_date + timedelta(seconds=1)
 
     params = {
         "collections": test_item["collection"],
-        "datetime": f"{item_date_before.strftime(DATETIME_RFC339)}/{item_date_after.strftime(DATETIME_RFC339)}",
+        "datetime": f"{datetime_to_str(item_date_before)}/{datetime_to_str(item_date_after)}",
     }
     resp = await app_client.get("/search", params=params)
     resp_json = resp.json()
@@ -592,7 +576,7 @@ async def test_item_search_temporal_window_get(
 async def test_item_search_sort_get(app_client, load_test_data, load_test_collection):
     """Test GET search with sorting (sort extension)"""
     first_item = load_test_data("test_item.json")
-    item_date = datetime.strptime(first_item["properties"]["datetime"], DATETIME_RFC339)
+    item_date = rfc3339_str_to_datetime(first_item["properties"]["datetime"])
     resp = await app_client.post(
         f"/collections/{first_item['collection']}/items", json=first_item
     )
@@ -601,7 +585,7 @@ async def test_item_search_sort_get(app_client, load_test_data, load_test_collec
     second_item = load_test_data("test_item.json")
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = another_item_date.strftime(DATETIME_RFC339)
+    second_item["properties"]["datetime"] = datetime_to_str(another_item_date)
     resp = await app_client.post(
         f"/collections/{second_item['collection']}/items", json=second_item
     )
