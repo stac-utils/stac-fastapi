@@ -118,7 +118,6 @@ def api_client(pg):
     return api
 
 
-@pytest.mark.asyncio
 @pytest.fixture(scope="session")
 async def app(api_client):
     time.time()
@@ -130,7 +129,6 @@ async def app(api_client):
     await close_db_connection(app)
 
 
-@pytest.mark.asyncio
 @pytest.fixture(scope="session")
 async def app_client(app):
     async with AsyncClient(app=app, base_url="http://test") as c:
