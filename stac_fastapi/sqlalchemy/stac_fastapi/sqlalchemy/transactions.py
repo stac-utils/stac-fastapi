@@ -36,7 +36,7 @@ class TransactionsClient(BaseTransactionsClient):
 
     def create_item(
         self, model: Union[stac_types.Item, stac_types.ItemCollection], **kwargs
-    ) -> Optional[Union[stac_types.Item, Response]]:
+    ) -> Optional[stac_types.Item]:
         """Create item."""
         base_url = str(kwargs["request"].base_url)
 
