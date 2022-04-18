@@ -1,11 +1,9 @@
 from typing import Callable
 
 import pystac
-import pytest
 from stac_pydantic import Collection
 
 
-@pytest.mark.asyncio
 async def test_create_collection(app_client, load_test_data: Callable):
     in_json = load_test_data("test_collection.json")
     in_coll = Collection.parse_obj(in_json)
@@ -22,7 +20,6 @@ async def test_create_collection(app_client, load_test_data: Callable):
     assert post_coll.dict(exclude={"links"}) == get_coll.dict(exclude={"links"})
 
 
-@pytest.mark.asyncio
 async def test_update_collection(app_client, load_test_data, load_test_collection):
     in_coll = load_test_collection
     in_coll.keywords.append("newkeyword")
@@ -38,7 +35,6 @@ async def test_update_collection(app_client, load_test_data, load_test_collectio
     assert "newkeyword" in get_coll.keywords
 
 
-@pytest.mark.asyncio
 async def test_delete_collection(
     app_client, load_test_data: Callable, load_test_collection
 ):
@@ -51,7 +47,6 @@ async def test_delete_collection(
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_create_collection_conflict(app_client, load_test_data: Callable):
     in_json = load_test_data("test_collection.json")
     Collection.parse_obj(in_json)
@@ -68,7 +63,6 @@ async def test_create_collection_conflict(app_client, load_test_data: Callable):
     assert resp.status_code == 409
 
 
-@pytest.mark.asyncio
 async def test_delete_missing_collection(
     app_client,
 ):
@@ -76,7 +70,6 @@ async def test_delete_missing_collection(
     assert resp.status_code == 405
 
 
-@pytest.mark.asyncio
 async def test_update_new_collection(app_client, load_test_collection):
     in_coll = load_test_collection
     in_coll.id = "test-updatenew"
@@ -85,7 +78,6 @@ async def test_update_new_collection(app_client, load_test_collection):
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_nocollections(
     app_client,
 ):
@@ -93,7 +85,6 @@ async def test_nocollections(
     assert resp.status_code == 200
 
 
-@pytest.mark.asyncio
 async def test_returns_valid_collection(app_client, load_test_data):
     """Test updating a collection which already exists"""
     in_json = load_test_data("test_collection.json")
@@ -117,7 +108,6 @@ async def test_returns_valid_collection(app_client, load_test_data):
     collection.validate()
 
 
-@pytest.mark.asyncio
 async def test_returns_valid_links_in_collections(app_client, load_test_data):
     """Test links from listing collections"""
     in_json = load_test_data("test_collection.json")
@@ -166,7 +156,6 @@ async def test_returns_valid_links_in_collections(app_client, load_test_data):
     ] == []
 
 
-@pytest.mark.asyncio
 async def test_returns_license_link(app_client, load_test_collection):
     coll = load_test_collection
 

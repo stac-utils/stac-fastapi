@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
 
-import pytest
-
 STAC_CORE_ROUTES = [
     "GET /",
     "GET /collections",
@@ -23,20 +21,17 @@ STAC_TRANSACTION_ROUTES = [
 ]
 
 
-@pytest.mark.asyncio
 async def test_post_search_content_type(app_client):
     params = {"limit": 1}
     resp = await app_client.post("search", json=params)
     assert resp.headers["content-type"] == "application/geo+json"
 
 
-@pytest.mark.asyncio
 async def test_get_search_content_type(app_client):
     resp = await app_client.get("search")
     assert resp.headers["content-type"] == "application/geo+json"
 
 
-@pytest.mark.asyncio
 async def test_api_headers(app_client):
     resp = await app_client.get("/api")
     assert (
@@ -45,7 +40,6 @@ async def test_api_headers(app_client):
     assert resp.status_code == 200
 
 
-@pytest.mark.asyncio
 async def test_core_router(api_client):
     core_routes = set(STAC_CORE_ROUTES)
     api_routes = set(
@@ -54,7 +48,6 @@ async def test_core_router(api_client):
     assert not core_routes - api_routes
 
 
-@pytest.mark.asyncio
 async def test_transactions_router(api_client):
     transaction_routes = set(STAC_TRANSACTION_ROUTES)
     api_routes = set(
@@ -63,7 +56,6 @@ async def test_transactions_router(api_client):
     assert not transaction_routes - api_routes
 
 
-@pytest.mark.asyncio
 async def test_app_transaction_extension(
     app_client, load_test_data, load_test_collection
 ):
@@ -73,7 +65,6 @@ async def test_app_transaction_extension(
     assert resp.status_code == 200
 
 
-@pytest.mark.asyncio
 async def test_app_query_extension(load_test_data, app_client, load_test_collection):
     coll = load_test_collection
     item = load_test_data("test_item.json")
@@ -87,7 +78,6 @@ async def test_app_query_extension(load_test_data, app_client, load_test_collect
     assert len(resp_json["features"]) == 1
 
 
-@pytest.mark.asyncio
 async def test_app_query_extension_limit_1(
     load_test_data, app_client, load_test_collection
 ):
@@ -103,14 +93,12 @@ async def test_app_query_extension_limit_1(
     assert len(resp_json["features"]) == 1
 
 
-@pytest.mark.asyncio
 async def test_app_query_extension_limit_eq0(app_client):
     params = {"limit": 0}
     resp = await app_client.post("/search", json=params)
     assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_app_query_extension_limit_lt0(
     load_test_data, app_client, load_test_collection
 ):
@@ -124,7 +112,6 @@ async def test_app_query_extension_limit_lt0(
     assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_app_query_extension_limit_gt10000(
     load_test_data, app_client, load_test_collection
 ):
@@ -138,7 +125,6 @@ async def test_app_query_extension_limit_gt10000(
     assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_app_query_extension_gt(load_test_data, app_client, load_test_collection):
     coll = load_test_collection
     item = load_test_data("test_item.json")
@@ -152,7 +138,6 @@ async def test_app_query_extension_gt(load_test_data, app_client, load_test_coll
     assert len(resp_json["features"]) == 0
 
 
-@pytest.mark.asyncio
 async def test_app_query_extension_gte(
     load_test_data, app_client, load_test_collection
 ):
@@ -168,7 +153,6 @@ async def test_app_query_extension_gte(
     assert len(resp_json["features"]) == 1
 
 
-@pytest.mark.asyncio
 async def test_app_sort_extension(load_test_data, app_client, load_test_collection):
     coll = load_test_collection
     first_item = load_test_data("test_item.json")
@@ -209,7 +193,6 @@ async def test_app_sort_extension(load_test_data, app_client, load_test_collecti
     assert resp_json["features"][0]["id"] == second_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_search_invalid_date(load_test_data, app_client, load_test_collection):
     coll = load_test_collection
     first_item = load_test_data("test_item.json")
@@ -225,7 +208,6 @@ async def test_search_invalid_date(load_test_data, app_client, load_test_collect
     assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_bbox_3d(load_test_data, app_client, load_test_collection):
     coll = load_test_collection
     first_item = load_test_data("test_item.json")
@@ -244,7 +226,6 @@ async def test_bbox_3d(load_test_data, app_client, load_test_collection):
     assert len(resp_json["features"]) == 1
 
 
-@pytest.mark.asyncio
 async def test_app_search_response(load_test_data, app_client, load_test_collection):
     coll = load_test_collection
     params = {
@@ -260,7 +241,6 @@ async def test_app_search_response(load_test_data, app_client, load_test_collect
     assert resp_json.get("stac_extensions") is None
 
 
-@pytest.mark.asyncio
 async def test_search_point_intersects(
     load_test_data, app_client, load_test_collection
 ):
@@ -282,7 +262,6 @@ async def test_search_point_intersects(
     assert len(resp_json["features"]) == 1
 
 
-@pytest.mark.asyncio
 async def test_search_line_string_intersects(
     load_test_data, app_client, load_test_collection
 ):
