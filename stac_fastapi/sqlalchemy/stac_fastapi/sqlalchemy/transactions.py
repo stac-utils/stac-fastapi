@@ -35,11 +35,19 @@ class TransactionsClient(BaseTransactionsClient):
     )
 
     def create_item(
-        self, item: stac_types.Item, **kwargs
-    ) -> Optional[Union[stac_types.Item, Response]]:
+        self, model: Union[stac_types.Item, stac_types.ItemCollection], **kwargs
+    ) -> Optional[stac_types.Item]:
         """Create item."""
         base_url = str(kwargs["request"].base_url)
-        data = self.item_serializer.stac_to_db(item)
+
+        # If a feature collection is posted
+        if model["type"] == "FeatureCollection":
+            bulk_client = BulkTransactionsClient(session=self.session)
+            bulk_client.bulk_item_insert(items=model["features"])
+            return None
+
+        # Otherwise a single item has been posted
+        data = self.item_serializer.stac_to_db(model)
         with self.session.writer.context_session() as session:
             session.add(data)
             return self.item_serializer.db_to_stac(data, base_url)
