@@ -25,7 +25,6 @@ extra_reqs = {
     "dev": [
         "pytest",
         "pytest-cov",
-        "pytest-asyncio",
         "pre-commit",
         "requests",
     ],
@@ -48,7 +47,7 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],
     keywords="STAC FastAPI COG",
-    author=u"Arturo Engineering",
+    author="Arturo Engineering",
     author_email="engineering@arturo.ai",
     url="https://github.com/stac-utils/stac-fastapi",
     license="MIT",
