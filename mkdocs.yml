@@ -28,11 +28,12 @@ nav:
     - stac_fastapi.extensions:
       - core:
           - context: api/stac_fastapi/extensions/core/context.md
-          - filter: api/stac_fastapi/extensions/core/filter.md
-          - fields: api/stac_fastapi/extensions/core/fields.md
-          - query: api/stac_fastapi/extensions/core/query.md
-          - sort: api/stac_fastapi/extensions/core/sort.md
+          - filter: api/stac_fastapi/extensions/core/filter/filter.md
+          - fields: api/stac_fastapi/extensions/core/fields/fields.md
+          - query: api/stac_fastapi/extensions/core/query/query.md
+          - sort: api/stac_fastapi/extensions/core/sort/sort.md
           - transaction: api/stac_fastapi/extensions/core/transaction.md
+          - pagination: api/stac_fastapi/extensions/core/pagination/pagination.md
       - third_party:
           - bulk_transactions: api/stac_fastapi/extensions/third_party/bulk_transactions.md
     - stac_fastapi.server:

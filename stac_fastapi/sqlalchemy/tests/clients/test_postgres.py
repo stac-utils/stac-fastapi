@@ -312,6 +312,35 @@ def test_bulk_item_insert_chunked(
         )
 
 
+def test_feature_collection_insert(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    coll = load_test_data("test_collection.json")
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+
+    item = load_test_data("test_item.json")
+
+    features = []
+    for _ in range(10):
+        _item = deepcopy(item)
+        _item["id"] = str(uuid.uuid4())
+        features.append(_item)
+
+    feature_collection = {"type": "FeatureCollection", "features": features}
+
+    postgres_transactions.create_item(feature_collection, request=MockStarletteRequest)
+
+    fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
+    assert len(fc["features"]) >= 10
+
+    for item in features:
+        postgres_transactions.delete_item(
+            item["id"], item["collection"], request=MockStarletteRequest
+        )
+
+
 def test_landing_page_no_collection_title(
     postgres_core: CoreCrudClient,
     postgres_transactions: TransactionsClient,
