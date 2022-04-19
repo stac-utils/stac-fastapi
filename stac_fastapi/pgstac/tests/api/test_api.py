@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
 
-import pytest
-
 STAC_CORE_ROUTES = [
     "GET /",
     "GET /collections",
@@ -21,10 +19,6 @@ STAC_TRANSACTION_ROUTES = [
     "PUT /collections",
     "PUT /collections/{collection_id}/items",
 ]
-
-
-def teardown_function():
-    cors_clear_config()
 
 
 async def test_post_search_content_type(app_client):
