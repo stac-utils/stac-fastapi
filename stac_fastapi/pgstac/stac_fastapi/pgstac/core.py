@@ -16,6 +16,7 @@ from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
+from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.types.core import AsyncBaseCoreClient
@@ -23,6 +24,8 @@ from stac_fastapi.types.errors import InvalidQueryParameter, NotFoundError
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
 NumType = Union[float, int]
+
+settings = Settings()
 
 
 @attr.s
@@ -103,8 +106,37 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
         return Collection(**collection)
 
+    async def get_base_item(self, collection_id: str, **kwargs: Any) -> Dict[str, Any]:
+        """Get the base item of a collection for use in rehydrating full item collection properties.
+
+        Args:
+            collection: ID of the collection.
+
+        Returns:
+            Item.
+        """
+        item: Optional[Dict[str, Any]]
+
+        request: Request = kwargs["request"]
+        pool = request.app.state.readpool
+        async with pool.acquire() as conn:
+            q, p = render(
+                """
+                SELECT * FROM collection_base_item(:collection_id::text);
+                """,
+                collection_id=collection_id,
+            )
+            item = await conn.fetchval(q, *p)
+
+        if item is None:
+            raise NotFoundError(f"A base item for {collection_id} does not exist.")
+
+        return item
+
     async def _search_base(
-        self, search_request: PgstacSearch, **kwargs: Any
+        self,
+        search_request: PgstacSearch,
+        **kwargs: Any,
     ) -> ItemCollection:
         """Cross catalog search (POST).
 
@@ -121,7 +153,8 @@ class CoreCrudClient(AsyncBaseCoreClient):
         request: Request = kwargs["request"]
         pool = request.app.state.readpool
 
-        # pool = kwargs["request"].app.state.readpool
+        search_request.conf = search_request.conf or {}
+        search_request.conf["nohydrate"] = settings.no_hydrate
         req = search_request.json(exclude_none=True, by_alias=True)
 
         try:
@@ -143,27 +176,38 @@ class CoreCrudClient(AsyncBaseCoreClient):
         collection = ItemCollection(**items)
         cleaned_features: List[Item] = []
 
+        exclude = search_request.fields.exclude
+        if exclude and len(exclude) == 0:
+            exclude = None
+        include = search_request.fields.include
+        if include and len(include) == 0:
+            include = None
+
+        search_content = settings.search_content_class(client=self, request=request)
+
         for feature in collection.get("features") or []:
-            feature = Item(**feature)
+            if settings.no_hydrate:
+                feature = await search_content.hydrate(
+                    feature,
+                    include,
+                    exclude,
+                )
+            else:
+                feature = Item(**feature)
+
             if (
                 search_request.fields.exclude is None
                 or "links" not in search_request.fields.exclude
             ):
                 # TODO: feature.collection is not always included
                 # This code fails if it's left outside of the fields expression
-                # I've fields extension updated test cases to always include feature.collection
+                # I've update fields extension test cases to always include feature.collection
                 feature["links"] = await ItemLinks(
                     collection_id=feature["collection"],
                     item_id=feature["id"],
                     request=request,
                 ).get_links(extra_links=feature.get("links"))
 
-                exclude = search_request.fields.exclude
-                if exclude and len(exclude) == 0:
-                    exclude = None
-                include = search_request.fields.include
-                if include and len(include) == 0:
-                    include = None
             cleaned_features.append(feature)
 
         collection["features"] = cleaned_features
