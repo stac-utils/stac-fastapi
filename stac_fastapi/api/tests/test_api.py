@@ -3,7 +3,9 @@ from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import TokenPaginationExtension, TransactionExtension
-from stac_fastapi.types import config, core
+from stac_fastapi.types import config
+from stac_fastapi.types.clients.sync_core import BaseCoreClient
+from stac_fastapi.types.clients.transaction import BaseTransactionsClient
 
 
 class TestRouteDependencies:
@@ -76,7 +78,7 @@ class TestRouteDependencies:
         self._assert_dependency_applied(api, routes)
 
 
-class DummyCoreClient(core.BaseCoreClient):
+class DummyCoreClient(BaseCoreClient):
     def all_collections(self, *args, **kwargs):
         ...
 
@@ -95,8 +97,11 @@ class DummyCoreClient(core.BaseCoreClient):
     def item_collection(self, *args, **kwargs):
         ...
 
+    def get_root_children(self, **kwargs):
+        ...
 
-class DummyTransactionsClient(core.BaseTransactionsClient):
+
+class DummyTransactionsClient(BaseTransactionsClient):
     """Defines a pattern for implementing the STAC transaction extension."""
 
     def create_item(self, *args, **kwargs):

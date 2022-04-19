@@ -7,6 +7,7 @@
 * Add hook to allow adding dependencies to routes. ([#295](https://github.com/stac-utils/stac-fastapi/pull/295))
 * Ability to POST an ItemCollection to the collections/{collectionId}/items route. ([#367](https://github.com/stac-utils/stac-fastapi/pull/367))
 * Add STAC API - Collections conformance class. ([383](https://github.com/stac-utils/stac-fastapi/pull/383))
+* Add support for children and browsable STAC apis ([336](https://github.com/stac-utils/stac-fastapi/pull/336))
 
 ### Changed
 
@@ -17,6 +18,7 @@
 * Bulk Transactions object Items iterator now returns the Item objects rather than the string IDs of the Item objects
   ([#355](https://github.com/stac-utils/stac-fastapi/issues/355))
 * docker-compose now runs uvicorn with hot-reloading enabled
+* Organize clients to avoid extremely long source files ([336](https://github.com/stac-utils/stac-fastapi/pull/336))
 
 ### Removed
 
