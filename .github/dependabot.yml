@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: "/.github/workflows"
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: "/stac_fastapi/api"
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: "/stac_fastapi/api"
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: "/stac_fastapi/types"
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: "/stac_fastapi/extensions"
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: "/stac_fastapi/pgstac"
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: "/stac_fastapi/sqlalchemy"
+    schedule:
+      interval: weekly

@@ -6,10 +6,10 @@ from urllib.parse import urljoin
 
 import attr
 from fastapi import Request
-from stac_pydantic.api import Search
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
+from starlette.responses import Response
 
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
@@ -31,7 +31,9 @@ class BaseTransactionsClient(abc.ABC):
     """
 
     @abc.abstractmethod
-    def create_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
+    def create_item(
+        self, item: stac_types.Item, **kwargs
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
@@ -46,7 +48,9 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def update_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
+    def update_item(
+        self, item: stac_types.Item, **kwargs
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
         Called with `PUT /collections/{collection_id}/items`. It is expected that this
@@ -65,7 +69,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def delete_item(
         self, item_id: str, collection_id: str, **kwargs
-    ) -> stac_types.Item:
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collection_id}/items/{item_id}`
@@ -82,7 +86,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def create_collection(
         self, collection: stac_types.Collection, **kwargs
-    ) -> stac_types.Collection:
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Create a new collection.
 
         Called with `POST /collections`.
@@ -98,7 +102,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def update_collection(
         self, collection: stac_types.Collection, **kwargs
-    ) -> stac_types.Collection:
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
         Called with `PUT /collections`. It is expected that this collection already
@@ -115,7 +119,9 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def delete_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
+    def delete_collection(
+        self, collection_id: str, **kwargs
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Delete a collection.
 
         Called with `DELETE /collections/{collection_id}`
@@ -142,7 +148,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
     """
 
     @abc.abstractmethod
-    async def create_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
+    async def create_item(
+        self, item: stac_types.Item, **kwargs
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
@@ -157,7 +165,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def update_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
+    async def update_item(
+        self, item: stac_types.Item, **kwargs
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
         Called with `PUT /collections/{collection_id}/items`. It is expected that this
@@ -176,7 +186,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def delete_item(
         self, item_id: str, collection_id: str, **kwargs
-    ) -> stac_types.Item:
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collection_id}/items/{item_id}`
@@ -193,7 +203,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def create_collection(
         self, collection: stac_types.Collection, **kwargs
-    ) -> stac_types.Collection:
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Create a new collection.
 
         Called with `POST /collections`.
@@ -209,7 +219,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def update_collection(
         self, collection: stac_types.Collection, **kwargs
-    ) -> stac_types.Collection:
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
         Called with `PUT /collections`. It is expected that this collection already
@@ -228,7 +238,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def delete_collection(
         self, collection_id: str, **kwargs
-    ) -> stac_types.Collection:
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Delete a collection.
 
         Called with `DELETE /collections/{collection_id}`
@@ -253,6 +263,7 @@ class LandingPageMixin(abc.ABC):
         title: The title of the catalog.
         description: The description of the catalog.
     """
+
     stac_version: str = attr.ib(default=STAC_VERSION)
     landing_page_id: str = attr.ib(default="stac-fastapi")
     title: str = attr.ib(default="stac-fastapi")
@@ -302,7 +313,7 @@ class LandingPageMixin(abc.ABC):
                 },
                 {
                     "rel": Relations.search.value,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.geojson,
                     "title": "STAC search",
                     "href": urljoin(base_url, "search"),
                     "method": "POST",
@@ -315,8 +326,7 @@ class LandingPageMixin(abc.ABC):
 
 @attr.s  # type:ignore
 class BaseCoreClient(LandingPageMixin, abc.ABC):
-    """Defines an interface for implementing the STAC API - Core Conformance
-    class.
+    """Defines an interface for implementing the STAC API - Core Conformance class.
 
     The Core Conformance class defines a set of endpoint that must be implemented
     by an API to be considered compliant.  The core spec has been split apart
@@ -333,6 +343,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         post_request_model: The pydantic model used to serialize and validate
             request bodies required by ItemSearch.
     """
+
     base_conformance_classes: List[str] = attr.ib(
         factory=lambda: BASE_CONFORMANCE_CLASSES
     )
@@ -444,7 +455,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     def post_search(
-        self, search_request: Search, **kwargs
+        self, search_request: BaseSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         """Cross collection search (POST).
 
@@ -564,8 +575,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
 @attr.s  # type:ignore
 class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
-    """Defines an interface for implementing the STAC API - Core Conformance
-    class.
+    """Defines an interface for implementing the STAC API - Core Conformance class.
 
     The Core Conformance class defines a set of endpoint that must be implemented
     by an API to be considered compliant.  The core spec has been split apart
@@ -691,7 +701,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     async def post_search(
-        self, search_request: Search, **kwargs
+        self, search_request: BaseSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         """Cross collection search (POST).
 
@@ -855,6 +865,7 @@ class BaseFiltersClient(abc.ABC):
     provided by the STAC API - Item Search - Query extension using the CQL2
     standard.
     """
+
     def get_queryables(
         self, collection_id: Optional[str] = None, **kwargs
     ) -> Dict[str, Any]:

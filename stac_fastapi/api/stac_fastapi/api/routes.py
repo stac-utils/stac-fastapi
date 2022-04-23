@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import BaseRoute, Match
+from starlette.status import HTTP_204_NO_CONTENT
 
 from stac_fastapi.api.models import APIRequest
 
@@ -14,8 +15,10 @@ from stac_fastapi.api.models import APIRequest
 def _wrap_response(resp: Any, response_class: Type[Response]) -> Response:
     if isinstance(resp, Response):
         return resp
-    else:
+    elif resp is not None:
         return response_class(resp)
+    else:  # None is returned as 204 No Content
+        return Response(status_code=HTTP_204_NO_CONTENT)
 
 
 def create_async_endpoint(

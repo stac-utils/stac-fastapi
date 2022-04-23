@@ -16,18 +16,18 @@ install_requires = [
     "asyncpg",
     "buildpg",
     "brotli_asgi",
+    "pygeofilter @ git+https://github.com/geopython/pygeofilter@v0.1.1#egg=pygeofilter",
 ]
 
 extra_reqs = {
     "dev": [
         "pytest",
         "pytest-cov",
-        "pytest-asyncio",
+        "pytest-asyncio>=0.17",
         "pre-commit",
         "requests",
-        "pypgstac==0.4.3",
+        "pypgstac==0.4.5",
         "httpx",
-        "shapely",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
     "server": ["uvicorn[standard]==0.17.0"],
@@ -49,7 +49,7 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],
     keywords="STAC FastAPI COG",
-    author=u"David Bitner",
+    author="David Bitner",
     author_email="david@developmentseed.org",
     url="https://github.com/stac-utils/stac-fastapi",
     license="MIT",

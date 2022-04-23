@@ -1,4 +1,5 @@
 import urllib.parse
+from typing import Dict, Optional
 
 import pytest
 
@@ -9,13 +10,18 @@ async def response(app_client):
 
 
 @pytest.fixture(scope="module")
-async def response_json(response):
+async def response_json(response) -> Dict:
     return response.json()
 
 
-def get_link(landing_page, rel_type):
+def get_link(landing_page, rel_type, method: Optional[str] = None):
     return next(
-        filter(lambda link: link["rel"] == rel_type, landing_page["links"]), None
+        filter(
+            lambda link: link["rel"] == rel_type
+            and (not method or link.get("method") == method),
+            landing_page["links"],
+        ),
+        None,
     )
 
 
@@ -38,10 +44,9 @@ link_tests = [
 ]
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("rel_type,expected_media_type,expected_path", link_tests)
 async def test_landing_page_links(
-    response_json, app_client, rel_type, expected_media_type, expected_path
+    response_json: Dict, app_client, rel_type, expected_media_type, expected_path
 ):
     link = get_link(response_json, rel_type)
 
@@ -59,11 +64,13 @@ async def test_landing_page_links(
 # code here seems meaningless since it would be the same as if the endpoint did not exist. Once
 # https://github.com/stac-utils/stac-fastapi/pull/227 has been merged we can add this to the
 # parameterized tests above.
-def test_search_link(response_json):
-    search_link = get_link(response_json, "search")
+def test_search_link(response_json: Dict):
+    for search_link in [
+        get_link(response_json, "search", "GET"),
+        get_link(response_json, "search", "POST"),
+    ]:
+        assert search_link is not None
+        assert search_link.get("type") == "application/geo+json"
 
-    assert search_link is not None
-    assert search_link.get("type") == "application/geo+json"
-
-    search_path = urllib.parse.urlsplit(search_link.get("href")).path
-    assert search_path == "/search"
+        search_path = urllib.parse.urlsplit(search_link.get("href")).path
+        assert search_path == "/search"
