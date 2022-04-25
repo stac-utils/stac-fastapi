@@ -113,7 +113,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
             # Children
             landing_page["links"].append(
                 {
-                    "rel": "children",  # todo: add this relation to stac-pydantic
+                    "rel": "children",  # todo: https://github.com/stac-utils/stac-pydantic/pull/112
                     "type": MimeTypes.json.value,
                     "title": "Child collections and catalogs",
                     "href": urljoin(base_url, "children"),

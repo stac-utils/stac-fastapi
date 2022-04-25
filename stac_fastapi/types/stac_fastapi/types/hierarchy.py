@@ -6,6 +6,7 @@ json.load. A minimal, STAC compliant catalog can be generated from a catalog nod
 node's id field name: it will either be catalog_id or collection_id) with the browseable_catalog
 function.
 """
+import json
 from typing import List, Optional, Tuple, TypedDict, Union
 from urllib.parse import urljoin
 
@@ -38,8 +39,6 @@ class CatalogNode(BrowseableNode):
     description: Optional[str]
 
 
-# PGSTAC TODO: function to look up catalog (could be as simple as selecting
-# 'where catalog_id = full/catalog/path' which implementers will have to sort out)
 def find_catalog(
     hierarchy: BrowseableNode, split_path: List[str]
 ) -> Optional[BrowseableNode]:
@@ -177,7 +176,6 @@ def browseable_catalog_page(
     return catalog_page
 
 
-# PGSTAC TODO: function to allow ingest of hierarchy
 def parse_hierarchy(d: dict) -> BrowseableNode:
     """Parse a dictionary as a BrowseableNode tree."""
     d_items = d.get("items") or []
@@ -198,3 +196,10 @@ def parse_hierarchy(d: dict) -> BrowseableNode:
         )
     else:
         return BrowseableNode(children=d_children, items=d_items)
+
+
+def parse_hierarchy_file(hierarchy_file_path: str) -> BrowseableNode:
+    """Parse contents of a file as a BrowseableNode tree."""
+    with open(hierarchy_file_path, "r") as definition_file:
+        hierarchy_json = json.load(definition_file)
+        return parse_hierarchy(hierarchy_json)
