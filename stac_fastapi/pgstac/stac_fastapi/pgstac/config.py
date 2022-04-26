@@ -1,6 +1,6 @@
 """Postgres API configuration."""
 
-from stac_fastapi.pgstac.types.search import PgStacSearchContent
+from stac_fastapi.pgstac.types.search import PgstacSearchContent
 from stac_fastapi.types.config import ApiSettings
 
 
@@ -14,7 +14,7 @@ class Settings(ApiSettings):
         postgres_host_writer: hostname for the writer connection.
         postgres_port: database port.
         postgres_dbname: database name.
-        no_hydrate: disable hydration of stac items within pgstac.
+        use_api_hydrate: perform hydration of stac items within stac-fastapi.
     """
 
     postgres_user: str
@@ -29,8 +29,8 @@ class Settings(ApiSettings):
     db_max_queries: int = 50000
     db_max_inactive_conn_lifetime: float = 300
 
-    no_hydrate: bool = False
-    search_content_class = PgStacSearchContent
+    use_api_hydrate: bool = False
+    search_content_class: PgstacSearchContent = PgstacSearchContent
 
     testing: bool = False
 

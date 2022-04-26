@@ -25,8 +25,6 @@ from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollectio
 
 NumType = Union[float, int]
 
-settings = Settings()
-
 
 @attr.s
 class CoreCrudClient(AsyncBaseCoreClient):
@@ -151,10 +149,11 @@ class CoreCrudClient(AsyncBaseCoreClient):
         items: Dict[str, Any]
 
         request: Request = kwargs["request"]
+        settings: Settings = request.app.state.settings
         pool = request.app.state.readpool
 
         search_request.conf = search_request.conf or {}
-        search_request.conf["nohydrate"] = settings.no_hydrate
+        search_request.conf["nohydrate"] = settings.use_api_hydrate
         req = search_request.json(exclude_none=True, by_alias=True)
 
         try:
@@ -186,7 +185,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         search_content = settings.search_content_class(client=self, request=request)
 
         for feature in collection.get("features") or []:
-            if settings.no_hydrate:
+            if settings.use_api_hydrate:
                 feature = await search_content.hydrate(
                     feature,
                     include,
