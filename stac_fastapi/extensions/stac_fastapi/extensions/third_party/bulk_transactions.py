@@ -12,13 +12,13 @@ from stac_fastapi.types.extension import ApiExtension
 
 
 class Items(BaseModel):
-    """A list of STAC items."""
+    """A group of STAC Item objects, in the form of a dictionary from Item.id -> Item."""
 
     items: Dict[str, Any]
 
     def __iter__(self):
-        """Return an iterable of STAC items."""
-        return iter(self.items)
+        """Return an iterable of STAC Item objects."""
+        return iter(self.items.values())
 
 
 @attr.s  # type: ignore
@@ -56,7 +56,16 @@ class BulkTransactionExtension(ApiExtension):
     """Bulk Transaction Extension.
 
     Bulk Transaction extension adds the `POST /collections/{collection_id}/bulk_items` endpoint to the application
-    for efficient bulk insertion of items.
+    for efficient bulk insertion of items. The input to this is an object with an attribute  "items", that has a value
+    that is an object with a group of attributes that are the ids of each Item, and the value is the Item entity.
+
+        {
+        "items": {
+            "id1": { "type": "Feature", ... },
+            "id2": { "type": "Feature", ... },
+            "id3": { "type": "Feature", ... }
+        }
+
     """
 
     client: BaseBulkTransactionsClient = attr.ib()

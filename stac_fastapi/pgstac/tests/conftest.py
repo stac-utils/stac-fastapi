@@ -121,7 +121,6 @@ def api_client(pg):
     return _api_client_provider()
 
 
-@pytest.mark.asyncio
 @pytest.fixture(scope="session")
 async def app_client(pg, request):
     # support custom behaviours driven by fixture caller

@@ -20,7 +20,7 @@ class FilterLang(str, Enum):
 
     cql_json = "cql-json"
     cql2_json = "cql2-json"
-    cql_text = "cql-text"
+    cql2_text = "cql2-text"
 
 
 @attr.s
@@ -28,6 +28,8 @@ class FilterExtensionGetRequest(APIRequest):
     """Filter extension GET request model."""
 
     filter: Optional[str] = attr.ib(default=None)
+    filter_crs: Optional[str] = Field(alias="filter-crs", default=None)
+    filter_lang: Optional[FilterLang] = Field(alias="filter-lang", default="cql2-text")
 
 
 class FilterExtensionPostRequest(BaseModel):
@@ -35,4 +37,4 @@ class FilterExtensionPostRequest(BaseModel):
 
     filter: Optional[Dict[str, Any]] = None
     filter_crs: Optional[str] = Field(alias="filter-crs", default=None)
-    filter_lang: Optional[FilterLang] = Field(alias="filter-lang", default=None)
+    filter_lang: Optional[FilterLang] = Field(alias="filter-lang", default="cql-json")

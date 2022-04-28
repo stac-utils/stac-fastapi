@@ -125,7 +125,7 @@ class PagingLinks(BaseLinks):
                 href = merge_params(self.url, {"token": f"next:{self.next}"})
                 link = dict(
                     rel=Relations.next.value,
-                    type=MimeTypes.json.value,
+                    type=MimeTypes.geojson.value,
                     method=method,
                     href=href,
                 )
@@ -133,7 +133,7 @@ class PagingLinks(BaseLinks):
             if method == "POST":
                 return {
                     "rel": Relations.next,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.geojson,
                     "method": method,
                     "href": f"{self.request.url}",
                     "body": {**self.request.postbody, "token": f"next:{self.next}"},
@@ -149,14 +149,14 @@ class PagingLinks(BaseLinks):
                 href = merge_params(self.url, {"token": f"prev:{self.prev}"})
                 return dict(
                     rel=Relations.previous.value,
-                    type=MimeTypes.json.value,
+                    type=MimeTypes.geojson.value,
                     method=method,
                     href=href,
                 )
             if method == "POST":
                 return {
                     "rel": Relations.previous,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.geojson,
                     "method": method,
                     "href": f"{self.request.url}",
                     "body": {**self.request.postbody, "token": f"prev:{self.prev}"},
