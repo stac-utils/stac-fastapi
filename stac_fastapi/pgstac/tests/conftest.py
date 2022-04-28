@@ -8,7 +8,8 @@ import asyncpg
 import pytest
 from fastapi.responses import ORJSONResponse
 from httpx import AsyncClient
-from pypgstac import pypgstac
+from pypgstac.db import PgstacDB
+from pypgstac.migrate import Migrate
 from stac_pydantic import Collection, Item
 
 from stac_fastapi.api.app import StacApi
@@ -63,7 +64,9 @@ async def pg():
     val = await conn.fetchval("SELECT true")
     print(val)
     await conn.close()
-    version = await pypgstac.run_migration(dsn=settings.testing_connection_string)
+    db = PgstacDB(dsn=settings.testing_connection_string)
+    migrator = Migrate(db)
+    version = migrator.run_migration()
     print(f"PGStac Migrated to {version}")
 
     yield settings.testing_connection_string
@@ -83,13 +86,14 @@ async def pgstac(pg):
     conn = await asyncpg.connect(dsn=settings.testing_connection_string)
     await conn.execute(
         """
-        TRUNCATE pgstac.items CASCADE;
-        TRUNCATE pgstac.collections CASCADE;
-        TRUNCATE pgstac.searches CASCADE;
-        TRUNCATE pgstac.search_wheres CASCADE;
+        DROP SCHEMA IF EXISTS pgstac CASCADE;
         """
     )
     await conn.close()
+    db = PgstacDB(dsn=settings.testing_connection_string)
+    migrator = Migrate(db)
+    version = migrator.run_migration()
+    print(f"PGStac Migrated to {version}")
 
 
 @pytest.fixture(scope="session")
