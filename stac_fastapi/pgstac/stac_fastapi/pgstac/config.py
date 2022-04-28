@@ -1,6 +1,10 @@
 """Postgres API configuration."""
 
-from stac_fastapi.pgstac.types.search import PgstacSearchContent
+from typing import Type
+from stac_fastapi.pgstac.types.base_item_cache import (
+    BaseItemCache,
+    DefaultBaseItemCache,
+)
 from stac_fastapi.types.config import ApiSettings
 
 
@@ -30,7 +34,7 @@ class Settings(ApiSettings):
     db_max_inactive_conn_lifetime: float = 300
 
     use_api_hydrate: bool = False
-    search_content_class: PgstacSearchContent = PgstacSearchContent
+    base_item_cache: Type[BaseItemCache] = DefaultBaseItemCache
 
     testing: bool = False
 

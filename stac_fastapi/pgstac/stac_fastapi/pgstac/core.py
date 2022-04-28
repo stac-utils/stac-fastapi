@@ -19,6 +19,7 @@ from starlette.requests import Request
 from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
+from stac_fastapi.pgstac.utils import filter_fields, hydrate, remove_invalid_assets
 from stac_fastapi.types.core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import InvalidQueryParameter, NotFoundError
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
@@ -104,7 +105,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
         return Collection(**collection)
 
-    async def get_base_item(self, collection_id: str, **kwargs: Any) -> Dict[str, Any]:
+    async def _get_base_item(
+        self, collection_id: str, request: Request
+    ) -> Dict[str, Any]:
         """Get the base item of a collection for use in rehydrating full item collection properties.
 
         Args:
@@ -115,7 +118,6 @@ class CoreCrudClient(AsyncBaseCoreClient):
         """
         item: Optional[Dict[str, Any]]
 
-        request: Request = kwargs["request"]
         pool = request.app.state.readpool
         async with pool.acquire() as conn:
             q, p = render(
@@ -155,7 +157,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         search_request.conf = search_request.conf or {}
         search_request.conf["nohydrate"] = settings.use_api_hydrate
         req = search_request.json(exclude_none=True, by_alias=True)
-
+        print("==req", req, flush=True)
         try:
             async with pool.acquire() as conn:
                 q, p = render(
@@ -173,7 +175,6 @@ class CoreCrudClient(AsyncBaseCoreClient):
         next: Optional[str] = items.pop("next", None)
         prev: Optional[str] = items.pop("prev", None)
         collection = ItemCollection(**items)
-        cleaned_features: List[Item] = []
 
         exclude = search_request.fields.exclude
         if exclude and len(exclude) == 0:
@@ -182,18 +183,11 @@ class CoreCrudClient(AsyncBaseCoreClient):
         if include and len(include) == 0:
             include = None
 
-        search_content = settings.search_content_class(client=self, request=request)
+        async def _add_item_links(feature: Item) -> None:
+            """Add ItemLinks to the Item.
 
-        for feature in collection.get("features") or []:
-            if settings.use_api_hydrate:
-                feature = await search_content.hydrate(
-                    feature,
-                    include,
-                    exclude,
-                )
-            else:
-                feature = Item(**feature)
-
+            If the fields extension is excluding links, then don't add them.
+            """
             if (
                 search_request.fields.exclude is None
                 or "links" not in search_request.fields.exclude
@@ -207,7 +201,26 @@ class CoreCrudClient(AsyncBaseCoreClient):
                     request=request,
                 ).get_links(extra_links=feature.get("links"))
 
-            cleaned_features.append(feature)
+        cleaned_features: List[Item] = []
+
+        if settings.use_api_hydrate:
+
+            async def _get_base_item(collection_id: str) -> Dict[str, Any]:
+                return await self._get_base_item(collection_id, request)
+
+            base_item_cache = settings.base_item_cache(fetch_base_item=_get_base_item)
+
+            for feature in collection.get("features") or []:
+                feature = await hydrate(feature, base_item_cache=base_item_cache)
+                feature = filter_fields(feature, include, exclude)
+                remove_invalid_assets(feature)
+                await _add_item_links(feature)
+
+                cleaned_features.append(feature)
+        else:
+            for feature in collection.get("features") or []:
+                await _add_item_links(feature)
+                cleaned_features.append(feature)
 
         collection["features"] = cleaned_features
         collection["links"] = await PagingLinks(
