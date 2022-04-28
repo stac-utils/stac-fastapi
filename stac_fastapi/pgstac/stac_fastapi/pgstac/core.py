@@ -183,21 +183,27 @@ class CoreCrudClient(AsyncBaseCoreClient):
         if include and len(include) == 0:
             include = None
 
-        async def _add_item_links(feature: Item) -> None:
+        async def _add_item_links(
+            feature: Item,
+            collection_id: Optional[str] = None,
+            item_id: Optional[str] = None,
+        ) -> None:
             """Add ItemLinks to the Item.
 
             If the fields extension is excluding links, then don't add them.
+            Also skip links if the item doesn't provide collection and item ids.
             """
+            collection_id = feature.get("collection") or collection_id
+            item_id = feature.get("id") or item_id
+
             if (
                 search_request.fields.exclude is None
                 or "links" not in search_request.fields.exclude
+                and all([collection_id, item_id])
             ):
-                # TODO: feature.collection is not always included
-                # This code fails if it's left outside of the fields expression
-                # I've update fields extension test cases to always include feature.collection
                 feature["links"] = await ItemLinks(
-                    collection_id=feature["collection"],
-                    item_id=feature["id"],
+                    collection_id=collection_id,
+                    item_id=item_id,
                     request=request,
                 ).get_links(extra_links=feature.get("links"))
 
@@ -212,9 +218,14 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
             for feature in collection.get("features") or []:
                 feature = await hydrate(feature, base_item_cache=base_item_cache)
+
+                # Grab ids needed for links that may be removed by the fields extension.
+                collection_id = feature.get("collection")
+                item_id = feature.get("id")
+
                 feature = filter_fields(feature, include, exclude)
                 remove_invalid_assets(feature)
-                await _add_item_links(feature)
+                await _add_item_links(feature, collection_id, item_id)
 
                 cleaned_features.append(feature)
         else:
