@@ -25,6 +25,7 @@ from stac_fastapi.pgstac.db import close_db_connection, connect_to_db
 from stac_fastapi.pgstac.extensions import QueryExtension
 from stac_fastapi.pgstac.transactions import TransactionsClient
 from stac_fastapi.pgstac.types.search import PgstacSearch
+from stac_fastapi.types.errors import ConflictError
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
@@ -147,20 +148,30 @@ def load_test_data() -> Callable[[str], Dict]:
 @pytest.fixture
 async def load_test_collection(app_client, load_test_data):
     data = load_test_data("test_collection.json")
-    resp = await app_client.post(
-        "/collections",
-        json=data,
-    )
-    assert resp.status_code == 200
+    try:
+        resp = await app_client.post(
+            "/collections",
+            json=data,
+        )
+        assert resp.status_code == 200
+    except ConflictError:
+        resp = await app_client.get(f"/collections/{data['id']}")
+        assert resp.status_code == 200
     return Collection.parse_obj(resp.json())
 
 
 @pytest.fixture
-async def load_test_item(app_client, load_test_data, load_test_collection):
+async def load_test_item(app_client, load_test_data):
     data = load_test_data("test_item.json")
-    resp = await app_client.post(
-        "/collections/{coll.id}/items",
-        json=data,
-    )
-    assert resp.status_code == 200
+    try:
+        resp = await app_client.post(
+            "/collections/{coll.id}/items",
+            json=data,
+        )
+        assert resp.status_code == 200
+    except ConflictError:
+        resp = await app_client.get(
+            f"/collections/{data['collection']}/items/{data['id']}"
+        )
+        assert resp.status_code == 200
     return Item.parse_obj(resp.json())

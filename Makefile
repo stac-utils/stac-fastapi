@@ -23,19 +23,19 @@ docker-run-all:
 	docker-compose up
 
 .PHONY: docker-run-sqlalchemy
-docker-run-sqlalchemy: image
+docker-run-sqlalchemy: image run-joplin-sqlalchemy
 	$(run_sqlalchemy)
 
 .PHONY: docker-run-pgstac
-docker-run-pgstac: image
+docker-run-pgstac: image run-joplin-pgstac
 	$(run_pgstac)
 
 .PHONY: docker-shell-sqlalchemy
-docker-shell-sqlalchemy:
+docker-shell-sqlalchemy: run-joplin-sqlalchemy
 	$(run_sqlalchemy) /bin/bash
 
 .PHONY: docker-shell-pgstac
-docker-shell-pgstac:
+docker-shell-pgstac: run-joplin-pgstac
 	$(run_pgstac) /bin/bash
 
 .PHONY: test-sqlalchemy
@@ -43,7 +43,7 @@ test-sqlalchemy: run-joplin-sqlalchemy
 	$(run_sqlalchemy) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/sqlalchemy/tests/ && pytest -vvv'
 
 .PHONY: test-pgstac
-test-pgstac:
+test-pgstac: run-joplin-pgstac
 	$(run_pgstac) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/pgstac/tests/ && pytest -vvv'
 
 .PHONY: test-api
