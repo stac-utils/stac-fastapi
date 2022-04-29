@@ -31,6 +31,7 @@ from stac_fastapi.pgstac.types.search import PgstacSearch
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 settings = Settings(testing=True)
+pgstac_api_hydrate_settings = Settings(testing=True, use_api_hydrate=True)
 
 
 @pytest.fixture(scope="session")
@@ -96,9 +97,10 @@ async def pgstac(pg):
     print(f"PGStac Migrated to {version}")
 
 
-@pytest.fixture(scope="session")
-def api_client(pg):
-    print("creating client with settings")
+# Run all the tests that use the api_client in both db hydrate and api hydrate mode
+@pytest.fixture(params=[settings, pgstac_api_hydrate_settings], scope="session")
+def api_client(request, pg):
+    print("creating client with settings, hydrate:", request.param.use_api_hydrate)
 
     extensions = [
         TransactionExtension(client=TransactionsClient(), settings=settings),
@@ -109,9 +111,8 @@ def api_client(pg):
         TokenPaginationExtension(),
     ]
     post_request_model = create_post_request_model(extensions, base_model=PgstacSearch)
-
     api = StacApi(
-        settings=settings,
+        settings=request.param,
         extensions=extensions,
         client=CoreCrudClient(post_request_model=post_request_model),
         search_get_request_model=create_get_request_model(extensions),
