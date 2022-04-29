@@ -1,8 +1,9 @@
 """stac-fastapi utility methods."""
 from copy import deepcopy
-from typing import Any, Dict, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 from stac_fastapi.pgstac.types.base_item_cache import BaseItemCache
+from stac_fastapi.pgstac.types.errors import InvalidHydrationMergeValue
 from stac_fastapi.types.stac import Item
 
 
@@ -19,18 +20,29 @@ async def hydrate(
     # Merge will mutate i, but create deep copies of values in the base item
     # This will prevent the base item values from being mutated, e.g. by
     # filtering out fields in `filter_fields`.
-    def merge(b: Dict[str, Any], i: Dict[str, Any]):
+    def merge(
+        b: Dict[str, Any], i: Dict[str, Any], parent_key: Optional[List[str]] = []
+    ):
         for key in b:
             if key in i:
                 if isinstance(b[key], dict) and isinstance(i.get(key), dict):
                     # Recurse on dicts to merge values
-                    merge(b[key], i[key])
-                elif b[key] == i.get(key):
-                    # Matching key/value is a no-op
-                    pass
+                    merge(b[key], i[key], parent_key + [key])
                 elif isinstance(b[key], list) and isinstance(i.get(key), list):
-                    # Merge unequal lists
-                    i[key].extend(deepcopy(b[key]))
+                    # Merge unequal lists, assume uniform types
+                    if b[key] and isinstance(b[key][0], dict):
+                        if len(b[key]) != len(i[key]):
+                            error_path = ".".join(parent_key + [key])
+                            raise InvalidHydrationMergeValue(
+                                f"Unequal list of dicts lengths at key item.{error_path}"
+                            )
+
+                        for bb, ii in zip(b[key], i[key]):
+                            merge(bb, ii, parent_key + [key])
+                else:
+                    # Key exists on item but isn't a dict or list, keep item value
+                    pass
+
             else:
                 # Keys in base item that are not in item are simply copied over
                 i[key] = deepcopy(b[key])

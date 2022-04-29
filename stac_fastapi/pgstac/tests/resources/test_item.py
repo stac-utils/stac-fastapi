@@ -1323,3 +1323,19 @@ async def test_filter_cql2text(app_client, load_test_data, load_test_collection)
     resp_json = resp.json()
     print(resp_json)
     assert len(resp.json()["features"]) == 0
+
+
+async def test_item_merge_raster_bands(
+    app_client, load_test2_item, load_test2_collection
+):
+    resp = await app_client.get("/collections/test2-collection/items/test2-item")
+    resp_json = resp.json()
+    red_bands = resp_json["assets"]["red"]["raster:bands"]
+
+    # The merged item should have merged the band dicts from base and item
+    # into a single dict
+    assert len(red_bands) == 1
+    # The merged item should have the full 6 bands
+    assert len(red_bands[0].keys()) == 6
+    # The merged item should have kept the item value rather than the base value
+    assert red_bands[0]["offset"] == 2.03976
