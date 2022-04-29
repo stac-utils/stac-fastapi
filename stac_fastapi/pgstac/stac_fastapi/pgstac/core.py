@@ -214,7 +214,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
             async def _get_base_item(collection_id: str) -> Dict[str, Any]:
                 return await self._get_base_item(collection_id, request)
 
-            base_item_cache = settings.base_item_cache(fetch_base_item=_get_base_item)
+            base_item_cache = settings.base_item_cache(
+                fetch_base_item=_get_base_item, request=request
+            )
 
             for feature in collection.get("features") or []:
                 feature = await hydrate(feature, base_item_cache=base_item_cache)
