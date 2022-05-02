@@ -259,18 +259,21 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         extension_schemas = [
             schema.schema_href for schema in self.extensions if schema.schema_href
         ]
-        catalog_children = [
-            browseable_catalog_page(
-                child,
-                base_url,
-                child["catalog_id"],
-                self.stac_version,
-                self.conformance_classes(),
-                extension_schemas,
-            )
-            for child in self.hierarchy_definition["children"]
-            if "catalog_id" in child
-        ]
+        if self.hierarchy_definition:
+            catalog_children = [
+                browseable_catalog_page(
+                    child,
+                    base_url,
+                    child["catalog_id"],
+                    self.stac_version,
+                    self.conformance_classes(),
+                    extension_schemas,
+                )
+                for child in self.hierarchy_definition["children"]
+                if "catalog_id" in child
+            ]
+        else:
+            catalog_children = []
         collection_children = self.all_collections(**kwargs)
         links = [
             {

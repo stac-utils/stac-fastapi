@@ -198,8 +198,13 @@ def parse_hierarchy(d: dict) -> BrowseableNode:
         return BrowseableNode(children=d_children, items=d_items)
 
 
-def parse_hierarchy_file(hierarchy_file_path: str) -> BrowseableNode:
+def parse_hierarchy_file(
+    hierarchy_file_path: Optional[str],
+) -> Optional[BrowseableNode]:
     """Parse contents of a file as a BrowseableNode tree."""
-    with open(hierarchy_file_path, "r") as definition_file:
-        hierarchy_json = json.load(definition_file)
-        return parse_hierarchy(hierarchy_json)
+    if hierarchy_file_path is not None:
+        with open(hierarchy_file_path, "r") as definition_file:
+            hierarchy_json = json.load(definition_file)
+            return parse_hierarchy(hierarchy_json)
+    else:
+        return None
