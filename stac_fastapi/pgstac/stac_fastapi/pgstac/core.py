@@ -12,6 +12,7 @@ from fastapi import HTTPException
 from pydantic import ValidationError
 from pygeofilter.backends.cql2_json import to_cql2
 from pygeofilter.parsers.cql2_text import parse as parse_cql2_text
+from pypgstac.hydration import hydrate
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
@@ -19,7 +20,7 @@ from starlette.requests import Request
 from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
-from stac_fastapi.pgstac.utils import filter_fields, hydrate, remove_invalid_assets
+from stac_fastapi.pgstac.utils import filter_fields
 from stac_fastapi.types.core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import InvalidQueryParameter, NotFoundError
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
@@ -219,14 +220,14 @@ class CoreCrudClient(AsyncBaseCoreClient):
             )
 
             for feature in collection.get("features") or []:
-                feature = await hydrate(feature, base_item_cache=base_item_cache)
+                base_item = await base_item_cache.get(feature.get("collection"))
+                feature = hydrate(base_item, feature)
 
                 # Grab ids needed for links that may be removed by the fields extension.
                 collection_id = feature.get("collection")
                 item_id = feature.get("id")
 
                 feature = filter_fields(feature, include, exclude)
-                remove_invalid_assets(feature)
                 await _add_item_links(feature, collection_id, item_id)
 
                 cleaned_features.append(feature)

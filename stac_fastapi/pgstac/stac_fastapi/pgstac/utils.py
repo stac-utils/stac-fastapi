@@ -1,55 +1,7 @@
 """stac-fastapi utility methods."""
-from copy import deepcopy
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, Optional, Set, Union
 
-from stac_fastapi.pgstac.types.base_item_cache import BaseItemCache
-from stac_fastapi.pgstac.types.errors import InvalidHydrationMergeValue
 from stac_fastapi.types.stac import Item
-
-
-async def hydrate(
-    item: Union[Item, Dict[str, Any]], base_item_cache: BaseItemCache
-) -> Item:
-    """Hydrate item in-place with base_item properties.
-
-    This will not perform a deep copy; values of the original item will be referenced
-    in the return item.
-    """
-    item = dict(item)
-
-    # Merge will mutate i, but create deep copies of values in the base item
-    # This will prevent the base item values from being mutated, e.g. by
-    # filtering out fields in `filter_fields`.
-    def merge(
-        b: Dict[str, Any], i: Dict[str, Any], parent_key: Optional[List[str]] = []
-    ):
-        for key in b:
-            if key in i:
-                if isinstance(b[key], dict) and isinstance(i.get(key), dict):
-                    # Recurse on dicts to merge values
-                    merge(b[key], i[key], parent_key + [key])
-                elif isinstance(b[key], list) and isinstance(i.get(key), list):
-                    # Merge unequal lists, assume uniform types
-                    if b[key] and isinstance(b[key][0], dict):
-                        if len(b[key]) != len(i[key]):
-                            error_path = ".".join(parent_key + [key])
-                            raise InvalidHydrationMergeValue(
-                                f"Unequal list of dicts lengths at key item.{error_path}"
-                            )
-
-                        for bb, ii in zip(b[key], i[key]):
-                            merge(bb, ii, parent_key + [key])
-                else:
-                    # Key exists on item but isn't a dict or list, keep item value
-                    pass
-
-            else:
-                # Keys in base item that are not in item are simply copied over
-                i[key] = deepcopy(b[key])
-
-    base_item = await base_item_cache.get(item["collection"])
-    merge(base_item, item)
-    return Item(**item)
 
 
 def filter_fields(
@@ -118,15 +70,3 @@ def filter_fields(
     clean_item = include_fields(item, include)
     clean_item = exclude_fields(clean_item, exclude)
     return Item(**clean_item)
-
-
-def remove_invalid_assets(item: Item) -> None:
-    """
-    Remove invalid assets from the item. This method mutates the Item.
-
-    Pgstac may return assets without an href if assets aren't uniformly
-    distributed across all items. In this case, the asset without an href
-    is removed from the item.
-    """
-    if "assets" in item:
-        item["assets"] = {k: v for k, v in item["assets"].items() if "href" in v}
