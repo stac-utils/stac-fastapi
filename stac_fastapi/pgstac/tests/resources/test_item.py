@@ -1087,6 +1087,98 @@ async def test_field_extension_exclude_default_includes(
     assert "geometry" not in resp_json["features"][0]
 
 
+async def test_field_extension_include_multiple_subkeys(
+    app_client, load_test_item, load_test_collection
+):
+    """Test that multiple subkeys of an object field are included"""
+    body = {"fields": {"include": ["properties.width", "properties.height"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    resp_prop_keys = resp_json["features"][0]["properties"].keys()
+    assert set(resp_prop_keys) == set(["width", "height"])
+
+
+async def test_field_extension_include_multiple_deeply_nested_subkeys(
+    app_client, load_test_item, load_test_collection
+):
+    """Test that multiple deeply nested subkeys of an object field are included"""
+    body = {"fields": {"include": ["assets.ANG.type", "assets.ANG.href"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    resp_assets = resp_json["features"][0]["assets"]
+    assert set(resp_assets.keys()) == set(["ANG"])
+    assert set(resp_assets["ANG"].keys()) == set(["type", "href"])
+
+
+async def test_field_extension_exclude_multiple_deeply_nested_subkeys(
+    app_client, load_test_item, load_test_collection
+):
+    """Test that multiple deeply nested subkeys of an object field are excluded"""
+    body = {"fields": {"exclude": ["assets.ANG.type", "assets.ANG.href"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    resp_assets = resp_json["features"][0]["assets"]
+    assert len(resp_assets.keys()) > 0
+    assert "type" not in resp_assets["ANG"]
+    assert "href" not in resp_assets["ANG"]
+
+
+async def test_field_extension_exclude_deeply_nested_included_subkeys(
+    app_client, load_test_item, load_test_collection
+):
+    """Test that deeply nested keys of a nested object that was included are excluded"""
+    body = {
+        "fields": {
+            "include": ["assets.ANG.type", "assets.ANG.href"],
+            "exclude": ["assets.ANG.href"],
+        }
+    }
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    resp_assets = resp_json["features"][0]["assets"]
+    assert "type" in resp_assets["ANG"]
+    assert "href" not in resp_assets["ANG"]
+
+
+async def test_field_extension_exclude_links(
+    app_client, load_test_item, load_test_collection
+):
+    """Links have special injection behavior, ensure they can be excluded with the fields extension"""
+    body = {"fields": {"exclude": ["links"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    assert "links" not in resp_json["features"][0]
+
+
+async def test_field_extension_include_only_non_existant_field(
+    app_client, load_test_item, load_test_collection
+):
+    """Including only a non-existant field should return the full item"""
+    body = {"fields": {"include": ["non_existant_field"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    assert len(resp_json["features"][0].keys()) > 0
+    assert "properties" in resp_json["features"][0]
+
+
 async def test_search_intersects_and_bbox(app_client):
     """Test POST search intersects and bbox are mutually exclusive (core)"""
     bbox = [-118, 34, -117, 35]
