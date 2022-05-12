@@ -68,6 +68,7 @@ async def pg():
     db = PgstacDB(dsn=settings.testing_connection_string)
     migrator = Migrate(db)
     version = migrator.run_migration()
+    db.close()
     print(f"PGStac Migrated to {version}")
 
     yield settings.testing_connection_string
@@ -75,8 +76,15 @@ async def pg():
     print("Getting rid of test database")
     os.environ["postgres_dbname"] = os.environ["orig_postgres_dbname"]
     conn = await asyncpg.connect(dsn=settings.writer_connection_string)
-    await conn.execute("DROP DATABASE pgstactestdb;")
-    await conn.close()
+    try:
+        await conn.execute("DROP DATABASE pgstactestdb;")
+        await conn.close()
+    except:
+        try:
+            await conn.execute("DROP DATABASE pgstactestdb WITH (force);")
+            await conn.close()
+        except:
+            pass
 
 
 @pytest.fixture(autouse=True)
@@ -91,9 +99,9 @@ async def pgstac(pg):
         """
     )
     await conn.close()
-    db = PgstacDB(dsn=settings.testing_connection_string)
-    migrator = Migrate(db)
-    version = migrator.run_migration()
+    with PgstacDB(dsn=settings.testing_connection_string) as db:
+        migrator = Migrate(db)
+        version = migrator.run_migration()
     print(f"PGStac Migrated to {version}")
 
 
@@ -123,8 +131,9 @@ def api_client(request, pg):
     return api
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def app(api_client):
+    print('Creating app Fixture')
     time.time()
     app = api_client.app
     await connect_to_db(app)
@@ -133,9 +142,12 @@ async def app(api_client):
 
     await close_db_connection(app)
 
+    print('Closed Pools.')
 
-@pytest.fixture(scope="session")
+
+@pytest.fixture(scope="function")
 async def app_client(app):
+    print("creating app_client")
     async with AsyncClient(app=app, base_url="http://test") as c:
         yield c
 

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_STATUS_CODES = {
     NotFoundError: status.HTTP_404_NOT_FOUND,
     ConflictError: status.HTTP_409_CONFLICT,
-    ForeignKeyError: status.HTTP_422_UNPROCESSABLE_ENTITY,
+    ForeignKeyError: status.HTTP_424_FAILED_DEPENDENCY,
     DatabaseError: status.HTTP_424_FAILED_DEPENDENCY,
     Exception: status.HTTP_500_INTERNAL_SERVER_ERROR,
     InvalidQueryParameter: status.HTTP_400_BAD_REQUEST,
