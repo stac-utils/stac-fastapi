@@ -89,9 +89,9 @@ def filter_fields(
     clean_item = include_fields(item, include)
 
     # If, after including all the specified fields, there are no included properties,
-    # return the full item.
+    # return just id and collection.
     if not clean_item:
-        return Item(**item)
+        return Item({"id": item.get(id), "collection": item.get("collection")})
 
     exclude_fields(clean_item, exclude)
 

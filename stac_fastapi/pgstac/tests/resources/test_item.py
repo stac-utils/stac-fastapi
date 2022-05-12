@@ -256,7 +256,6 @@ async def test_pagination(app_client, load_test_data, load_test_collection):
         "test-item18",
     ]
 
-
     resp = await app_client.get(nextlink)
     assert resp.status_code == 200
     second_page = resp.json()
@@ -641,7 +640,7 @@ async def test_item_search_properties_field(
     assert resp.status_code == 200
 
     second_test_item = load_test_data("test_item2.json")
-    second_test_item["properties"]["eo:cloud_cover"]=5
+    second_test_item["properties"]["eo:cloud_cover"] = 5
     resp = await app_client.post(
         f"/collections/{test_item['collection']}/items", json=second_test_item
     )
@@ -859,7 +858,6 @@ async def test_pagination_item_collection(
         )
         assert resp.status_code == 200
         ids.append(uid)
-
 
     # Paginate through all 5 items with a limit of 1 (expecting 5 requests)
     page = await app_client.get(
@@ -1137,18 +1135,17 @@ async def test_field_extension_exclude_links(
     assert "links" not in resp_json["features"][0]
 
 
-# async def test_field_extension_include_only_non_existant_field(
-#     app_client, load_test_item, load_test_collection
-# ):
-#     """Including only a non-existant field should return the full item"""
-#     body = {"fields": {"include": ["non_existant_field"]}}
+async def test_field_extension_include_only_non_existant_field(
+    app_client, load_test_item, load_test_collection
+):
+    """Including only a non-existant field should return the full item"""
+    body = {"fields": {"include": ["non_existant_field"]}}
 
-#     resp = await app_client.post("/search", json=body)
-#     assert resp.status_code == 200
-#     resp_json = resp.json()
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
 
-#     assert len(resp_json["features"][0].keys()) > 0
-#     assert "properties" in resp_json["features"][0]
+    assert list(resp_json["features"][0].keys()) == ["id", "collection", "links"]
 
 
 async def test_search_intersects_and_bbox(app_client):
