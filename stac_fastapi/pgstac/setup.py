@@ -18,16 +18,12 @@ install_requires = [
     "buildpg",
     "brotli_asgi",
     "pygeofilter @ git+https://github.com/geopython/pygeofilter@v0.1.1#egg=pygeofilter",
-    # TODO: "pypgstac==0.5.2",
-    "pypgstac @ git+https://github.com/stac-utils/pgstac@dc11b66539aac5aa37b81fb09b23b79a185a29d7#egg=pypgstac&subdirectory=pypgstac",
+    "pypgstac==0.6.0",
 ]
 
 extra_reqs = {
     "dev": [
-        # TODO: replace with pypgstac[psycopg] after pypgstac is published
-        "psycopg[binary]==3.0.*",
-        "psycopg-pool==3.1.*",
-        # ====
+        "pypgstac[psycopg]==0.6.0",
         "pytest",
         "pytest-cov",
         "pytest-asyncio>=0.17",
