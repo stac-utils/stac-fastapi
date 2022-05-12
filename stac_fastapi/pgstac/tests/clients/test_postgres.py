@@ -1,6 +1,6 @@
 import uuid
 from typing import Callable
-
+import orjson
 from stac_pydantic import Collection, Item
 
 # from tests.conftest import MockStarletteRequest
@@ -58,14 +58,22 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
     )
     assert resp.status_code == 200
 
+    gresp = await app_client.get(f"/collections/{coll.id}/items")
+    print (gresp.json()['context'])
+
     post_item = Item.parse_obj(resp.json())
     assert in_item.dict(exclude={"links"}) == post_item.dict(exclude={"links"})
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{post_item.id}")
 
     assert resp.status_code == 200
+
     get_item = Item.parse_obj(resp.json())
-    assert in_item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
+    print(get_item.dict(exclude={"links"})['geometry'])
+    print(in_item.dict(exclude={"links"})['geometry'])
+    print(get_item.dict(exclude={"links"})['bbox'])
+    print(in_item.dict(exclude={"links"})['bbox'])
+    assert in_item.dict(exclude={"links","bbox"}) == get_item.dict(exclude={"links","bbox"})
 
 
 async def test_update_item(app_client, load_test_collection, load_test_item):
@@ -74,14 +82,16 @@ async def test_update_item(app_client, load_test_collection, load_test_item):
 
     item.properties.description = "Update Test"
 
+    print(item.json())
     resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
     assert resp.status_code == 200
-
+    print(resp.json())
     get_item = Item.parse_obj(resp.json())
-    assert item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
+    print(get_item)
+    assert item.dict(exclude={"links","bbox"}) == get_item.dict(exclude={"links","bbox"})
     assert get_item.properties.description == "Update Test"
 
 
