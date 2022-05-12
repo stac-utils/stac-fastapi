@@ -4,12 +4,12 @@ from typing import Dict, Optional
 import pytest
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def response(app_client):
     return await app_client.get("/")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def response_json(response) -> Dict:
     return response.json()
 
