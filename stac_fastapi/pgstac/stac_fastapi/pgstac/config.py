@@ -1,6 +1,7 @@
 """Postgres API configuration."""
 
 from typing import Type
+
 from stac_fastapi.pgstac.types.base_item_cache import (
     BaseItemCache,
     DefaultBaseItemCache,

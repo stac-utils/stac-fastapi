@@ -79,11 +79,11 @@ async def pg():
     try:
         await conn.execute("DROP DATABASE pgstactestdb;")
         await conn.close()
-    except:
+    except Exception:
         try:
             await conn.execute("DROP DATABASE pgstactestdb WITH (force);")
             await conn.close()
-        except:
+        except Exception:
             pass
 
 
@@ -133,7 +133,7 @@ def api_client(request, pg):
 
 @pytest.fixture(scope="function")
 async def app(api_client):
-    print('Creating app Fixture')
+    print("Creating app Fixture")
     time.time()
     app = api_client.app
     await connect_to_db(app)
@@ -142,7 +142,7 @@ async def app(api_client):
 
     await close_db_connection(app)
 
-    print('Closed Pools.')
+    print("Closed Pools.")
 
 
 @pytest.fixture(scope="function")

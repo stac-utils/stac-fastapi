@@ -1,5 +1,6 @@
 import uuid
 from typing import Callable
+
 from stac_pydantic import Collection, Item
 
 # from tests.conftest import MockStarletteRequest
@@ -56,8 +57,6 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
         json=in_json,
     )
     assert resp.status_code == 200
-
-    gresp = await app_client.get(f"/collections/{coll.id}/items")
 
     post_item = Item.parse_obj(resp.json())
     assert in_item.dict(exclude={"links"}) == post_item.dict(exclude={"links"})
