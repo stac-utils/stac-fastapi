@@ -13,7 +13,6 @@ install_requires = [
     "stac-fastapi.types",
     "stac-fastapi.api",
     "stac-fastapi.extensions",
-    "psycopg[binary]",
     "asyncpg",
     "buildpg",
     "brotli_asgi",
