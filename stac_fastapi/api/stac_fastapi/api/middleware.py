@@ -10,7 +10,7 @@ from starlette.requests import Request
 from starlette.routing import Match
 from starlette.types import ASGIApp
 
-from stac_fastapi.api.config import settings
+from stac_fastapi.api.config import fastapi_app_settings
 
 logger: Final = getLogger(__file__)
 
@@ -54,21 +54,27 @@ class CORSMiddleware(cors.CORSMiddleware):
     ) -> None:
         """Create CORSMiddleware Object."""
         allow_origins = (
-            settings.allow_origins if allow_origins is None else allow_origins
+            fastapi_app_settings.allow_origins
+            if allow_origins is None
+            else allow_origins
         )
         allow_methods = (
-            settings.allow_methods if allow_methods is None else allow_methods
+            fastapi_app_settings.allow_methods
+            if allow_methods is None
+            else allow_methods
         )
         allow_headers = (
-            settings.allow_headers if allow_headers is None else allow_headers
+            fastapi_app_settings.allow_headers
+            if allow_headers is None
+            else allow_headers
         )
         allow_credentials = (
-            settings.allow_credentials
+            fastapi_app_settings.allow_credentials
             if allow_credentials is None
             else allow_credentials
         )
         allow_origin_regex = (
-            settings.allow_origin_regex
+            fastapi_app_settings.allow_origin_regex
             if allow_origin_regex is None
             else allow_origin_regex
         )
@@ -76,9 +82,11 @@ class CORSMiddleware(cors.CORSMiddleware):
             logger.info("allow_origin_regex present and will override allow_origins")
             allow_origins = ""
         expose_headers = (
-            settings.expose_headers if expose_headers is None else expose_headers
+            fastapi_app_settings.expose_headers
+            if expose_headers is None
+            else expose_headers
         )
-        max_age = settings.max_age if max_age is None else max_age
+        max_age = fastapi_app_settings.max_age if max_age is None else max_age
         logger.debug(
             f"""
             CORS configuration

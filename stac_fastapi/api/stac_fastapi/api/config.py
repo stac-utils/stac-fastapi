@@ -30,7 +30,7 @@ class AddOns(enum.Enum):
     bulk_transaction = "bulk-transaction"
 
 
-class Settings(BaseSettings):
+class FastApiAppSettings(BaseSettings):
     """API settings."""
 
     allow_origins: Sequence[str] = Field(("*",), env="cors_allow_origins")
@@ -42,4 +42,4 @@ class Settings(BaseSettings):
     max_age: int = Field(600, env="cors_max_age")
 
 
-settings: Final = Settings()
+fastapi_app_settings: Final = FastApiAppSettings()
