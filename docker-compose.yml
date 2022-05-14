@@ -50,6 +50,7 @@ services:
       - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
       - DB_MIN_CONN_SIZE=1
       - DB_MAX_CONN_SIZE=1
+      - USE_API_HYDRATE=${USE_API_HYDRATE:-false}
     ports:
       - "8082:8082"
     volumes:
@@ -62,7 +63,7 @@ services:
 
   database:
     container_name: stac-db
-    image: ghcr.io/stac-utils/pgstac:v0.4.5
+    image: ghcr.io/stac-utils/pgstac:v0.6.2
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password

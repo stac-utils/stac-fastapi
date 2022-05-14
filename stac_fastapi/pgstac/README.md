@@ -46,7 +46,12 @@ pip install -e \
     stac_fastapi/pgstac[dev,server]
 ```
 
+### Settings
+
+To configure PGStac stac-fastapi to [hydrate search result items in the API](https://github.com/stac-utils/pgstac#runtime-configurations), set the `USE_API_HYDRATE` environment variable to `true` or explicitly set the option in the PGStac Settings object.
+
 ### Migrations
+
 PGStac is an external project and the may be used by multiple front ends.
 For Stac FastAPI development, a docker image (which is pulled as part of the docker-compose) is available at
 bitner/pgstac:[version] that has the full database already set up for PGStac.

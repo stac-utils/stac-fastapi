@@ -64,6 +64,7 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
     resp = await app_client.get(f"/collections/{coll.id}/items/{post_item.id}")
 
     assert resp.status_code == 200
+
     get_item = Item.parse_obj(resp.json())
     assert in_item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
 
@@ -79,7 +80,6 @@ async def test_update_item(app_client, load_test_collection, load_test_item):
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
     assert resp.status_code == 200
-
     get_item = Item.parse_obj(resp.json())
     assert item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
     assert get_item.properties.description == "Update Test"

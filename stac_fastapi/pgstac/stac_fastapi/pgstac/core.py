@@ -12,12 +12,15 @@ from fastapi import HTTPException
 from pydantic import ValidationError
 from pygeofilter.backends.cql2_json import to_cql2
 from pygeofilter.parsers.cql2_text import parse as parse_cql2_text
+from pypgstac.hydration import hydrate
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
+from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
 from stac_fastapi.pgstac.types.search import PgstacSearch
+from stac_fastapi.pgstac.utils import filter_fields
 from stac_fastapi.types.core import AsyncBaseCoreClient
 from stac_fastapi.types.errors import InvalidQueryParameter, NotFoundError
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
@@ -103,8 +106,38 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
         return Collection(**collection)
 
+    async def _get_base_item(
+        self, collection_id: str, request: Request
+    ) -> Dict[str, Any]:
+        """Get the base item of a collection for use in rehydrating full item collection properties.
+
+        Args:
+            collection: ID of the collection.
+
+        Returns:
+            Item.
+        """
+        item: Optional[Dict[str, Any]]
+
+        pool = request.app.state.readpool
+        async with pool.acquire() as conn:
+            q, p = render(
+                """
+                SELECT * FROM collection_base_item(:collection_id::text);
+                """,
+                collection_id=collection_id,
+            )
+            item = await conn.fetchval(q, *p)
+
+        if item is None:
+            raise NotFoundError(f"A base item for {collection_id} does not exist.")
+
+        return item
+
     async def _search_base(
-        self, search_request: PgstacSearch, **kwargs: Any
+        self,
+        search_request: PgstacSearch,
+        **kwargs: Any,
     ) -> ItemCollection:
         """Cross catalog search (POST).
 
@@ -119,9 +152,11 @@ class CoreCrudClient(AsyncBaseCoreClient):
         items: Dict[str, Any]
 
         request: Request = kwargs["request"]
+        settings: Settings = request.app.state.settings
         pool = request.app.state.readpool
 
-        # pool = kwargs["request"].app.state.readpool
+        search_request.conf = search_request.conf or {}
+        search_request.conf["nohydrate"] = settings.use_api_hydrate
         req = search_request.json(exclude_none=True, by_alias=True)
 
         try:
@@ -141,30 +176,65 @@ class CoreCrudClient(AsyncBaseCoreClient):
         next: Optional[str] = items.pop("next", None)
         prev: Optional[str] = items.pop("prev", None)
         collection = ItemCollection(**items)
-        cleaned_features: List[Item] = []
 
-        for feature in collection.get("features") or []:
-            feature = Item(**feature)
+        exclude = search_request.fields.exclude
+        if exclude and len(exclude) == 0:
+            exclude = None
+        include = search_request.fields.include
+        if include and len(include) == 0:
+            include = None
+
+        async def _add_item_links(
+            feature: Item,
+            collection_id: Optional[str] = None,
+            item_id: Optional[str] = None,
+        ) -> None:
+            """Add ItemLinks to the Item.
+
+            If the fields extension is excluding links, then don't add them.
+            Also skip links if the item doesn't provide collection and item ids.
+            """
+            collection_id = feature.get("collection") or collection_id
+            item_id = feature.get("id") or item_id
+
             if (
                 search_request.fields.exclude is None
                 or "links" not in search_request.fields.exclude
+                and all([collection_id, item_id])
             ):
-                # TODO: feature.collection is not always included
-                # This code fails if it's left outside of the fields expression
-                # I've fields extension updated test cases to always include feature.collection
                 feature["links"] = await ItemLinks(
-                    collection_id=feature["collection"],
-                    item_id=feature["id"],
+                    collection_id=collection_id,
+                    item_id=item_id,
                     request=request,
                 ).get_links(extra_links=feature.get("links"))
 
-                exclude = search_request.fields.exclude
-                if exclude and len(exclude) == 0:
-                    exclude = None
-                include = search_request.fields.include
-                if include and len(include) == 0:
-                    include = None
-            cleaned_features.append(feature)
+        cleaned_features: List[Item] = []
+
+        if settings.use_api_hydrate:
+
+            async def _get_base_item(collection_id: str) -> Dict[str, Any]:
+                return await self._get_base_item(collection_id, request)
+
+            base_item_cache = settings.base_item_cache(
+                fetch_base_item=_get_base_item, request=request
+            )
+
+            for feature in collection.get("features") or []:
+                base_item = await base_item_cache.get(feature.get("collection"))
+                feature = hydrate(base_item, feature)
+
+                # Grab ids needed for links that may be removed by the fields extension.
+                collection_id = feature.get("collection")
+                item_id = feature.get("id")
+
+                feature = filter_fields(feature, include, exclude)
+                await _add_item_links(feature, collection_id, item_id)
+
+                cleaned_features.append(feature)
+        else:
+            for feature in collection.get("features") or []:
+                await _add_item_links(feature)
+                cleaned_features.append(feature)
 
         collection["features"] = cleaned_features
         collection["links"] = await PagingLinks(

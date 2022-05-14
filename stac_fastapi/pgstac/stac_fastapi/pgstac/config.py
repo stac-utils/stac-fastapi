@@ -1,5 +1,11 @@
 """Postgres API configuration."""
 
+from typing import Type
+
+from stac_fastapi.pgstac.types.base_item_cache import (
+    BaseItemCache,
+    DefaultBaseItemCache,
+)
 from stac_fastapi.types.config import ApiSettings
 
 
@@ -13,6 +19,7 @@ class Settings(ApiSettings):
         postgres_host_writer: hostname for the writer connection.
         postgres_port: database port.
         postgres_dbname: database name.
+        use_api_hydrate: perform hydration of stac items within stac-fastapi.
     """
 
     postgres_user: str
@@ -26,6 +33,9 @@ class Settings(ApiSettings):
     db_max_conn_size: int = 10
     db_max_queries: int = 50000
     db_max_inactive_conn_lifetime: float = 300
+
+    use_api_hydrate: bool = False
+    base_item_cache: Type[BaseItemCache] = DefaultBaseItemCache
 
     testing: bool = False
 

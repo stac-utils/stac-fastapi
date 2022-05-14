@@ -194,7 +194,7 @@ def test_create_item_missing_collection(app_client, load_test_data):
     resp = app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
-    assert resp.status_code == 422
+    assert resp.status_code == 424
 
 
 def test_update_item_already_exists(app_client, load_test_data):
