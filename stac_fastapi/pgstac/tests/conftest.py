@@ -8,7 +8,8 @@ import asyncpg
 import pytest
 from fastapi.responses import ORJSONResponse
 from httpx import AsyncClient
-from pypgstac import pypgstac
+from pypgstac.db import PgstacDB
+from pypgstac.migrate import Migrate
 from stac_pydantic import Collection, Item
 
 from stac_fastapi.api.app import StacApi
@@ -30,6 +31,7 @@ from stac_fastapi.pgstac.types.search import PgstacSearch
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 settings = Settings(testing=True)
+pgstac_api_hydrate_settings = Settings(testing=True, use_api_hydrate=True)
 
 
 @pytest.fixture(scope="session")
@@ -63,7 +65,10 @@ async def pg():
     val = await conn.fetchval("SELECT true")
     print(val)
     await conn.close()
-    version = await pypgstac.run_migration(dsn=settings.testing_connection_string)
+    db = PgstacDB(dsn=settings.testing_connection_string)
+    migrator = Migrate(db)
+    version = migrator.run_migration()
+    db.close()
     print(f"PGStac Migrated to {version}")
 
     yield settings.testing_connection_string
@@ -71,8 +76,15 @@ async def pg():
     print("Getting rid of test database")
     os.environ["postgres_dbname"] = os.environ["orig_postgres_dbname"]
     conn = await asyncpg.connect(dsn=settings.writer_connection_string)
-    await conn.execute("DROP DATABASE pgstactestdb;")
-    await conn.close()
+    try:
+        await conn.execute("DROP DATABASE pgstactestdb;")
+        await conn.close()
+    except Exception:
+        try:
+            await conn.execute("DROP DATABASE pgstactestdb WITH (force);")
+            await conn.close()
+        except Exception:
+            pass
 
 
 @pytest.fixture(autouse=True)
@@ -83,18 +95,20 @@ async def pgstac(pg):
     conn = await asyncpg.connect(dsn=settings.testing_connection_string)
     await conn.execute(
         """
-        TRUNCATE pgstac.items CASCADE;
-        TRUNCATE pgstac.collections CASCADE;
-        TRUNCATE pgstac.searches CASCADE;
-        TRUNCATE pgstac.search_wheres CASCADE;
+        DROP SCHEMA IF EXISTS pgstac CASCADE;
         """
     )
     await conn.close()
+    with PgstacDB(dsn=settings.testing_connection_string) as db:
+        migrator = Migrate(db)
+        version = migrator.run_migration()
+    print(f"PGStac Migrated to {version}")
 
 
-@pytest.fixture(scope="session")
-def api_client(pg):
-    print("creating client with settings")
+# Run all the tests that use the api_client in both db hydrate and api hydrate mode
+@pytest.fixture(params=[settings, pgstac_api_hydrate_settings], scope="session")
+def api_client(request, pg):
+    print("creating client with settings, hydrate:", request.param.use_api_hydrate)
 
     extensions = [
         TransactionExtension(client=TransactionsClient(), settings=settings),
@@ -105,9 +119,8 @@ def api_client(pg):
         TokenPaginationExtension(),
     ]
     post_request_model = create_post_request_model(extensions, base_model=PgstacSearch)
-
     api = StacApi(
-        settings=settings,
+        settings=request.param,
         extensions=extensions,
         client=CoreCrudClient(post_request_model=post_request_model),
         search_get_request_model=create_get_request_model(extensions),
@@ -118,8 +131,9 @@ def api_client(pg):
     return api
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def app(api_client):
+    print("Creating app Fixture")
     time.time()
     app = api_client.app
     await connect_to_db(app)
@@ -128,9 +142,12 @@ async def app(api_client):
 
     await close_db_connection(app)
 
+    print("Closed Pools.")
 
-@pytest.fixture(scope="session")
+
+@pytest.fixture(scope="function")
 async def app_client(app):
+    print("creating app_client")
     async with AsyncClient(app=app, base_url="http://test") as c:
         yield c
 
@@ -158,6 +175,28 @@ async def load_test_collection(app_client, load_test_data):
 @pytest.fixture
 async def load_test_item(app_client, load_test_data, load_test_collection):
     data = load_test_data("test_item.json")
+    resp = await app_client.post(
+        "/collections/{coll.id}/items",
+        json=data,
+    )
+    assert resp.status_code == 200
+    return Item.parse_obj(resp.json())
+
+
+@pytest.fixture
+async def load_test2_collection(app_client, load_test_data):
+    data = load_test_data("test2_collection.json")
+    resp = await app_client.post(
+        "/collections",
+        json=data,
+    )
+    assert resp.status_code == 200
+    return Collection.parse_obj(resp.json())
+
+
+@pytest.fixture
+async def load_test2_item(app_client, load_test_data, load_test2_collection):
+    data = load_test_data("test2_item.json")
     resp = await app_client.post(
         "/collections/{coll.id}/items",
         json=data,

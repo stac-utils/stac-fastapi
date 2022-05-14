@@ -17,6 +17,7 @@
 * Bulk Transactions object Items iterator now returns the Item objects rather than the string IDs of the Item objects
   ([#355](https://github.com/stac-utils/stac-fastapi/issues/355))
 * docker-compose now runs uvicorn with hot-reloading enabled
+* Bump version of PGStac to 0.6.2 that includes support for hydrating results in the API backed ([#397](https://github.com/stac-utils/stac-fastapi/pull/397))
 
 ### Removed
 
@@ -27,7 +28,8 @@
 * Fixes issues (and adds tests) for issues caused by regression in pgstac ([#345](https://github.com/stac-utils/stac-fastapi/issues/345)
 * Update error response payloads to match the API spec. ([#361](https://github.com/stac-utils/stac-fastapi/pull/361))
 * Fixed stray `/` before the `#` in several extension conformance class strings ([383](https://github.com/stac-utils/stac-fastapi/pull/383))
-* SQLAlchemy backend bulk item insert now works ([#356]https://github.com/stac-utils/stac-fastapi/issues/356))
+* SQLAlchemy backend bulk item insert now works ([#356](https://github.com/stac-utils/stac-fastapi/issues/356))
+* PGStac Backend has stricter implementation of Fields Extension syntax ([#397](https://github.com/stac-utils/stac-fastapi/pull/397))
 
 ## [2.3.0]
 
