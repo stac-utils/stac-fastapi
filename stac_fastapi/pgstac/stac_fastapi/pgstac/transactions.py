@@ -6,6 +6,10 @@ from typing import Optional, Union
 import attr
 from starlette.responses import JSONResponse, Response
 
+from stac_fastapi.extensions.third_party.bulk_transactions import (
+    AsyncBaseBulkTransactionsClient,
+    Items,
+)
 from stac_fastapi.pgstac.db import dbfunc
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import AsyncBaseTransactionsClient
@@ -71,3 +75,18 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         pool = request.app.state.writepool
         await dbfunc(pool, "delete_collection", collection_id)
         return JSONResponse({"deleted collection": collection_id})
+
+
+@attr.s
+class BulkTransactionsClient(AsyncBaseBulkTransactionsClient):
+    """Postgres bulk transactions."""
+
+    async def bulk_item_insert(self, items: Items, **kwargs) -> str:
+        """Bulk item insertion using pgstac."""
+        request = kwargs["request"]
+        pool = request.app.state.writepool
+        items = list(items.items.values())
+        await dbfunc(pool, "create_items", items)
+
+        return_msg = f"Successfully added {len(items)} items."
+        return return_msg
