@@ -1,4 +1,5 @@
 import uuid
+from copy import deepcopy
 from typing import Callable
 
 from stac_pydantic import Collection, Item
@@ -115,6 +116,32 @@ async def test_get_collection_items(app_client, load_test_collection, load_test_
     fc = resp.json()
     assert "features" in fc
     assert len(fc["features"]) == 5
+
+
+async def test_create_bulk_items(
+    app_client, load_test_data: Callable, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+
+    items = {}
+    for _ in range(2):
+        _item = deepcopy(item)
+        _item["id"] = str(uuid.uuid4())
+        items[_item["id"]] = _item
+
+    payload = {"items": items}
+
+    resp = await app_client.post(
+        f"/collections/{coll.id}/bulk_items",
+        json=payload,
+    )
+    assert resp.status_code == 200
+    assert resp.text == '"Successfully added 2 items."'
+
+    for item_id in items.keys():
+        resp = await app_client.get(f"/collections/{coll.id}/items/{item_id}")
+        assert resp.status_code == 200
 
 
 # TODO since right now puts implement upsert
