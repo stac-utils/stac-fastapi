@@ -18,7 +18,7 @@ from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
 from stac_fastapi.pgstac.config import Settings
-from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
+from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks, get_base_url_from_request
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.pgstac.utils import filter_fields
 from stac_fastapi.types.core import AsyncBaseCoreClient
@@ -35,7 +35,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
     async def all_collections(self, **kwargs) -> Collections:
         """Read all collections from the database."""
         request: Request = kwargs["request"]
-        base_url = str(request.base_url)
+        base_url = get_base_url_from_request(request)
         pool = request.app.state.readpool
 
         async with pool.acquire() as conn:

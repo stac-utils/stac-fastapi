@@ -8,6 +8,7 @@
 * Ability to POST an ItemCollection to the collections/{collectionId}/items route. ([#367](https://github.com/stac-utils/stac-fastapi/pull/367))
 * Add STAC API - Collections conformance class. ([383](https://github.com/stac-utils/stac-fastapi/pull/383))
 * Bulk item inserts for pgstac implementation. ([411](https://github.com/stac-utils/stac-fastapi/pull/411))
+* Respect `Forwarded` or `X-Forwarded-*` request headers when building links to better accommodate load balancers and proxies.
 
 ### Changed
 
