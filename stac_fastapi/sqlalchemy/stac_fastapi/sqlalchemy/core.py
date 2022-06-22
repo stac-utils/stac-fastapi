@@ -22,6 +22,7 @@ from stac_pydantic.shared import MimeTypes
 
 from stac_fastapi.sqlalchemy import serializers
 from stac_fastapi.sqlalchemy.extensions.query import Operator
+from stac_fastapi.sqlalchemy.links import get_base_url_from_request
 from stac_fastapi.sqlalchemy.models import database
 from stac_fastapi.sqlalchemy.session import Session
 from stac_fastapi.sqlalchemy.tokens import PaginationTokenClient
@@ -62,7 +63,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
     def all_collections(self, **kwargs) -> Collections:
         """Read all collections from the database."""
-        base_url = str(kwargs["request"].base_url)
+        base_url = get_base_url_from_request(kwargs["request"])
         with self.session.reader.context_session() as session:
             collections = session.query(self.collection_table).all()
             serialized_collections = [
@@ -93,7 +94,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
     def get_collection(self, collection_id: str, **kwargs) -> Collection:
         """Get collection by id."""
-        base_url = str(kwargs["request"].base_url)
+        base_url = get_base_url_from_request(kwargs["request"])
         with self.session.reader.context_session() as session:
             collection = self._lookup_id(collection_id, self.collection_table, session)
             return self.collection_serializer.db_to_stac(collection, base_url)
@@ -102,7 +103,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         self, collection_id: str, limit: int = 10, token: str = None, **kwargs
     ) -> ItemCollection:
         """Read an item collection from the database."""
-        base_url = str(kwargs["request"].base_url)
+        base_url = get_base_url_from_request(kwargs["request"])
         with self.session.reader.context_session() as session:
             collection_children = (
                 session.query(self.item_table)
@@ -136,7 +137,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     {
                         "rel": Relations.next.value,
                         "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}collections/{collection_id}/items?token={page.next}&limit={limit}",
+                        "href": f"{base_url}collections/{collection_id}/items?token={page.next}&limit={limit}",
                         "method": "GET",
                     }
                 )
@@ -145,7 +146,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     {
                         "rel": Relations.previous.value,
                         "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}collections/{collection_id}/items?token={page.previous}&limit={limit}",
+                        "href": f"{base_url}collections/{collection_id}/items?token={page.previous}&limit={limit}",
                         "method": "GET",
                     }
                 )
@@ -173,7 +174,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
     def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
         """Get item by id."""
-        base_url = str(kwargs["request"].base_url)
+        base_url = get_base_url_from_request(kwargs["request"])
         with self.session.reader.context_session() as session:
             db_query = session.query(self.item_table)
             db_query = db_query.filter(self.item_table.collection_id == collection_id)
@@ -262,7 +263,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         self, search_request: BaseSearchPostRequest, **kwargs
     ) -> ItemCollection:
         """POST search catalog."""
-        base_url = str(kwargs["request"].base_url)
+        base_url = get_base_url_from_request(kwargs["request"])
         with self.session.reader.context_session() as session:
             token = (
                 self.get_token(search_request.token) if search_request.token else False
@@ -395,7 +396,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     {
                         "rel": Relations.next.value,
                         "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}search",
+                        "href": f"{base_url}search",
                         "method": "POST",
                         "body": {"token": page.next},
                         "merge": True,
@@ -406,7 +407,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     {
                         "rel": Relations.previous.value,
                         "type": "application/geo+json",
-                        "href": f"{kwargs['request'].base_url}search",
+                        "href": f"{base_url}search",
                         "method": "POST",
                         "body": {"token": page.previous},
                         "merge": True,

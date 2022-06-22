@@ -304,3 +304,58 @@ def test_app_fields_extension_return_all_properties(
             assert feature["properties"][expected_prop][0:19] == expected_value[0:19]
         else:
             assert feature["properties"][expected_prop] == expected_value
+
+
+def test_app_search_response_forwarded_header(
+    load_test_data, app_client, postgres_transactions
+):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    resp = app_client.get(
+        "/search",
+        params={"collections": ["test-collection"]},
+        headers={"Forwarded": "proto=https;host=testserver:1234"},
+    )
+    for feature in resp.json()["features"]:
+        for link in feature["links"]:
+            assert link["href"].startswith("https://testserver:1234/")
+
+
+def test_app_search_response_x_forwarded_headers(
+    load_test_data, app_client, postgres_transactions
+):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    resp = app_client.get(
+        "/search",
+        params={"collections": ["test-collection"]},
+        headers={
+            "X-Forwarded-Port": "1234",
+            "X-Forwarded-Proto": "https",
+        },
+    )
+    for feature in resp.json()["features"]:
+        for link in feature["links"]:
+            assert link["href"].startswith("https://testserver:1234/")
+
+
+def test_app_search_response_duplicate_forwarded_headers(
+    load_test_data, app_client, postgres_transactions
+):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    resp = app_client.get(
+        "/search",
+        params={"collections": ["test-collection"]},
+        headers={
+            "Forwarded": "proto=https;host=testserver:1234",
+            "X-Forwarded-Port": "4321",
+            "X-Forwarded-Proto": "http",
+        },
+    )
+    for feature in resp.json()["features"]:
+        for link in feature["links"]:
+            assert link["href"].startswith("https://testserver:1234/")
