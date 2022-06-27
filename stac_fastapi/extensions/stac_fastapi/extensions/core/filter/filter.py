@@ -21,9 +21,9 @@ class FilterConformanceClasses(str, Enum):
     See https://github.com/radiantearth/stac-api-spec/tree/v1.0.0-rc.1/fragments/filter
     """
 
-    FILTER = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:filter"
+    FILTER = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter"
     ITEM_SEARCH_FILTER = (
-        "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:item-search-filter"
+        "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter"
     )
     CQL_TEXT = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:cql-text"
     CQL_JSON = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:cql-json"
