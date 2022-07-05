@@ -286,6 +286,27 @@ async def test_search_line_string_intersects(
 
 
 @pytest.mark.asyncio
+async def test_landing_forwarded_header(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    await app_client.post(f"/collections/{coll.id}/items", json=item)
+    response = (
+        await app_client.get(
+            "/",
+            headers={
+                "Forwarded": "proto=https;host=test:1234",
+                "X-Forwarded-Proto": "http",
+                "X-Forwarded-Port": "4321",
+            },
+        )
+    ).json()
+    for link in response["links"]:
+        assert link["href"].startswith("https://test:1234/")
+
+
+@pytest.mark.asyncio
 async def test_search_forwarded_header(
     load_test_data, app_client, load_test_collection
 ):

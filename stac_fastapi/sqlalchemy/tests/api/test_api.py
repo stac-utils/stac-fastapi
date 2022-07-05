@@ -306,6 +306,22 @@ def test_app_fields_extension_return_all_properties(
             assert feature["properties"][expected_prop] == expected_value
 
 
+def test_landing_forwarded_header(load_test_data, app_client, postgres_transactions):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(item, request=MockStarletteRequest)
+
+    response = app_client.get(
+        "/",
+        headers={
+            "Forwarded": "proto=https;host=test:1234",
+            "X-Forwarded-Proto": "http",
+            "X-Forwarded-Port": "4321",
+        },
+    ).json()
+    for link in response["links"]:
+        assert link["href"].startswith("https://test:1234/")
+
+
 def test_app_search_response_forwarded_header(
     load_test_data, app_client, postgres_transactions
 ):
