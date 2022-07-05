@@ -1172,7 +1172,7 @@ async def test_relative_link_construction():
             "type": "http",
             "scheme": "http",
             "method": "PUT",
-            "root_path": "/stac", # root_path should not have proto, domain, or port
+            "root_path": "/stac",  # root_path should not have proto, domain, or port
             "path": "/",
             "raw_path": b"/tab/abc",
             "query_string": b"",

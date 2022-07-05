@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+
 import pytest
 
 STAC_CORE_ROUTES = [

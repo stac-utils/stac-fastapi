@@ -18,7 +18,12 @@ from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
 from stac_fastapi.pgstac.config import Settings
-from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks, get_base_url_from_request
+from stac_fastapi.pgstac.models.links import (
+    CollectionLinks,
+    ItemLinks,
+    PagingLinks,
+    get_base_url_from_request,
+)
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.pgstac.utils import filter_fields
 from stac_fastapi.types.core import AsyncBaseCoreClient

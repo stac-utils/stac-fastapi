@@ -41,6 +41,7 @@ def merge_params(url: str, newparams: Dict) -> str:
 def get_base_url_from_request(request: Request) -> str:
     """
     Account for forwarding headers when deriving base URL.
+
     Prioritise standard Forwarded header, look for non-standard X-Forwarded-* if missing.
     Default to what can be derived from the URL if no headers provided.
     """
