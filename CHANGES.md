@@ -19,6 +19,7 @@
   ([#355](https://github.com/stac-utils/stac-fastapi/issues/355))
 * docker-compose now runs uvicorn with hot-reloading enabled
 * Bump version of PGStac to 0.6.2 that includes support for hydrating results in the API backed ([#397](https://github.com/stac-utils/stac-fastapi/pull/397))
+* Make item geometry and bbox nullable in sqlalchemy backend. ([#398](https://github.com/stac-utils/stac-fastapi/pull/398))
 
 ### Removed
 
