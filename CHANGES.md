@@ -32,6 +32,7 @@
 * Fixed stray `/` before the `#` in several extension conformance class strings ([383](https://github.com/stac-utils/stac-fastapi/pull/383))
 * SQLAlchemy backend bulk item insert now works ([#356](https://github.com/stac-utils/stac-fastapi/issues/356))
 * PGStac Backend has stricter implementation of Fields Extension syntax ([#397](https://github.com/stac-utils/stac-fastapi/pull/397))
+* `/queryables` endpoint now has type `application/schema+json` instead of `application/json` ([#421](https://github.com/stac-utils/stac-fastapi/pull/421))
 
 ## [2.3.0]
 
