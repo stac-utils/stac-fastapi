@@ -160,6 +160,11 @@ if importlib.util.find_spec("orjson") is not None:
 
         media_type = "application/geo+json"
 
+    class JSONSchemaResponse(ORJSONResponse):
+        """JSON with custom, vendor content-type."""
+
+        media_type = "application/schema+json"
+
 else:
     from starlette.responses import JSONResponse
 
@@ -167,3 +172,8 @@ else:
         """JSON with custom, vendor content-type."""
 
         media_type = "application/geo+json"
+
+    class JSONSchemaResponse(JSONResponse):
+        """JSON with custom, vendor content-type."""
+
+        media_type = "application/schema+json"
