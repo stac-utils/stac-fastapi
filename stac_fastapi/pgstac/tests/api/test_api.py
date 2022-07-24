@@ -49,16 +49,24 @@ async def test_api_headers(app_client):
     assert resp.status_code == 200
 
 
-async def test_core_router(api_client):
-    core_routes = set(STAC_CORE_ROUTES)
+async def test_core_router(api_client, app):
+    core_routes = set()
+    for core_route in STAC_CORE_ROUTES:
+        method, path = core_route.split(" ")
+        core_routes.add("{} {}".format(method, app.state.router_prefix + path))
+
     api_routes = set(
         [f"{list(route.methods)[0]} {route.path}" for route in api_client.app.routes]
     )
     assert not core_routes - api_routes
 
 
-async def test_transactions_router(api_client):
-    transaction_routes = set(STAC_TRANSACTION_ROUTES)
+async def test_transactions_router(api_client, app):
+    transaction_routes = set()
+    for transaction_route in STAC_TRANSACTION_ROUTES:
+        method, path = transaction_route.split(" ")
+        transaction_routes.add("{} {}".format(method, app.state.router_prefix + path))
+
     api_routes = set(
         [f"{list(route.methods)[0]} {route.path}" for route in api_client.app.routes]
     )

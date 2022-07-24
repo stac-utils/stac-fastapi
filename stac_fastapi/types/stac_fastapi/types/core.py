@@ -14,6 +14,7 @@ from starlette.responses import Response
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import Conformance
 
@@ -349,7 +350,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
             API landing page, serving as an entry point to the API.
         """
         request: Request = kwargs["request"]
-        base_url = str(request.base_url)
+        base_url = get_base_url(request)
         extension_schemas = [
             schema.schema_href for schema in self.extensions if schema.schema_href
         ]
@@ -377,7 +378,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": "service-desc",
                 "type": "application/vnd.oai.openapi+json;version=3.0",
                 "title": "OpenAPI service description",
-                "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
+                "href": urljoin(
+                    str(request.base_url), request.app.openapi_url.lstrip("/")
+                ),
             }
         )
 
@@ -387,7 +390,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": "service-doc",
                 "type": "text/html",
                 "title": "OpenAPI service documentation",
-                "href": urljoin(base_url, request.app.docs_url.lstrip("/")),
+                "href": urljoin(
+                    str(request.base_url), request.app.docs_url.lstrip("/")
+                ),
             }
         )
 
@@ -538,7 +543,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             API landing page, serving as an entry point to the API.
         """
         request: Request = kwargs["request"]
-        base_url = str(request.base_url)
+        base_url = get_base_url(request)
         extension_schemas = [
             schema.schema_href for schema in self.extensions if schema.schema_href
         ]
@@ -564,7 +569,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": "service-desc",
                 "type": "application/vnd.oai.openapi+json;version=3.0",
                 "title": "OpenAPI service description",
-                "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
+                "href": urljoin(
+                    str(request.base_url), request.app.openapi_url.lstrip("/")
+                ),
             }
         )
 
@@ -574,7 +581,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": "service-doc",
                 "type": "text/html",
                 "title": "OpenAPI service documentation",
-                "href": urljoin(base_url, request.app.docs_url.lstrip("/")),
+                "href": urljoin(
+                    str(request.base_url), request.app.docs_url.lstrip("/")
+                ),
             }
         )
 
