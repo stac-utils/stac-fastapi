@@ -27,9 +27,7 @@ class FilterConformanceClasses(str, Enum):
     """
 
     FILTER = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter"
-    ITEM_SEARCH_FILTER = (
-        "https://api.stacspec.org/v1.0.0-rc.1/ogcapi-features#filter"
-    )
+    ITEM_SEARCH_FILTER = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter"
     CQL_TEXT = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:cql-text"
     CQL_JSON = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:cql-json"
     BASIC_CQL = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:basic-cql"
