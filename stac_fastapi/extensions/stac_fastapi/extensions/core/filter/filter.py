@@ -27,7 +27,9 @@ class FilterConformanceClasses(str, Enum):
     """
 
     FILTER = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter"
-    FEATURES_FILTER = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"
+    FEATURES_FILTER = (
+        "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"
+    )
     ITEM_SEARCH_FILTER = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter"
     CQL_TEXT = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:cql-text"
     CQL_JSON = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:cql-json"
