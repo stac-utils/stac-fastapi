@@ -34,6 +34,15 @@ async def test_get_search_content_type(app_client):
     assert resp.headers["content-type"] == "application/geo+json"
 
 
+async def test_get_queryables_content_type(app_client, load_test_collection):
+    resp = await app_client.get("queryables")
+    assert resp.headers["content-type"] == "application/schema+json"
+
+    coll = load_test_collection
+    resp = await app_client.get(f"collections/{coll.id}/queryables")
+    assert resp.headers["content-type"] == "application/schema+json"
+
+
 async def test_api_headers(app_client):
     resp = await app_client.get("/api")
     assert (
