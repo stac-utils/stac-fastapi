@@ -78,6 +78,10 @@ class ItemSerializer(Serializer):
         if isinstance(geometry, str):
             geometry = json.loads(geometry)
 
+        bbox = db_model.bbox
+        if bbox is not None:
+            bbox = [float(x) for x in db_model.bbox]
+
         return stac_types.Item(
             type="Feature",
             stac_version=db_model.stac_version,
@@ -85,7 +89,7 @@ class ItemSerializer(Serializer):
             id=db_model.id,
             collection=db_model.collection_id,
             geometry=geometry,
-            bbox=[float(x) for x in db_model.bbox],
+            bbox=bbox,
             properties=properties,
             links=item_links,
             assets=db_model.assets,
@@ -111,13 +115,17 @@ class ItemSerializer(Serializer):
                 stac_data["properties"]["created"] = now
             stac_data["properties"]["updated"] = now
 
+        geometry = stac_data["geometry"]
+        if geometry is not None:
+            geometry = json.dumps(geometry)
+
         return database.Item(
             id=stac_data["id"],
             collection_id=stac_data["collection"],
             stac_version=stac_data["stac_version"],
             stac_extensions=stac_data.get("stac_extensions"),
-            geometry=json.dumps(stac_data["geometry"]),
-            bbox=stac_data["bbox"],
+            geometry=geometry,
+            bbox=stac_data.get("bbox"),
             properties=stac_data["properties"],
             assets=stac_data["assets"],
             **indexed_fields,

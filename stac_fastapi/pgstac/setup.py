@@ -16,7 +16,7 @@ install_requires = [
     "asyncpg",
     "buildpg",
     "brotli_asgi",
-    "pygeofilter @ git+https://github.com/geopython/pygeofilter@v0.1.1#egg=pygeofilter",
+    "pygeofilter>=0.1,<0.2",
     "pypgstac==0.6.*",
 ]
 

@@ -353,8 +353,6 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         extension_schemas = [
             schema.schema_href for schema in self.extensions if schema.schema_href
         ]
-        request: Request = kwargs["request"]
-        base_url = str(request.base_url)
         landing_page = self._landing_page(
             base_url=base_url,
             conformance_classes=self.conformance_classes(),

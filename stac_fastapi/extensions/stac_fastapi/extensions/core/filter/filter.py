@@ -5,9 +5,14 @@ from typing import Callable, List, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
-from starlette.responses import JSONResponse, Response
+from starlette.responses import Response
 
-from stac_fastapi.api.models import APIRequest, CollectionUri, EmptyRequest
+from stac_fastapi.api.models import (
+    APIRequest,
+    CollectionUri,
+    EmptyRequest,
+    JSONSchemaResponse,
+)
 from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
 from stac_fastapi.types.core import AsyncBaseFiltersClient, BaseFiltersClient
 from stac_fastapi.types.extension import ApiExtension
@@ -71,7 +76,7 @@ class FilterExtension(ApiExtension):
         ]
     )
     router: APIRouter = attr.ib(factory=APIRouter)
-    response_class: Type[Response] = attr.ib(default=JSONResponse)
+    response_class: Type[Response] = attr.ib(default=JSONSchemaResponse)
 
     def _create_endpoint(
         self,
