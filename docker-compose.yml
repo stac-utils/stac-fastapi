@@ -63,7 +63,7 @@ services:
 
   database:
     container_name: stac-db
-    image: ghcr.io/stac-utils/pgstac:v0.6.2
+    image: ghcr.io/stac-utils/pgstac:v0.6.6
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
@@ -100,11 +100,6 @@ services:
     image: stac-utils/stac-fastapi
     environment:
       - ENVIRONMENT=development
-      - POSTGRES_USER=username
-      - POSTGRES_PASS=password
-      - POSTGRES_DBNAME=postgis
-      - POSTGRES_HOST=database
-      - POSTGRES_PORT=5432
     volumes:
       - ./stac_fastapi:/app/stac_fastapi
       - ./scripts:/app/scripts
