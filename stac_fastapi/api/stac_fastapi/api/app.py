@@ -336,7 +336,7 @@ class StacApi:
 
     def add_health_check(self):
         """Add a health check."""
-        mgmt_router = APIRouter()
+        mgmt_router = APIRouter(prefix=self.app.state.router_prefix)
 
         @mgmt_router.get("/_mgmt/ping")
         async def ping():
@@ -383,6 +383,10 @@ class StacApi:
         # Register core STAC endpoints
         self.register_core()
         self.app.include_router(self.router)
+
+        # keep link to the router prefix value
+        router_prefix = self.router.prefix
+        self.app.state.router_prefix = router_prefix if router_prefix else ""
 
         # register extensions
         for ext in self.extensions:

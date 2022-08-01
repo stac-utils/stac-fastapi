@@ -8,6 +8,8 @@ from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
+from stac_fastapi.types.requests import get_base_url
+
 # These can be inferred from the item/collection so they aren't included in the database
 # Instead they are dynamically generated when querying the database using the classes defined below
 INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root"]
@@ -45,7 +47,7 @@ class BaseLinks:
     @property
     def base_url(self):
         """Get the base url."""
-        return str(self.request.base_url)
+        return get_base_url(self.request)
 
     @property
     def url(self):

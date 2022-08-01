@@ -160,6 +160,7 @@ class TransactionExtension(ApiExtension):
         Returns:
             None
         """
+        self.router.prefix = app.state.router_prefix
         self.register_create_item()
         self.register_update_item()
         self.register_delete_item()

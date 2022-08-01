@@ -1166,7 +1166,7 @@ async def test_get_missing_item(app_client, load_test_data):
     assert resp.status_code == 404
 
 
-async def test_relative_link_construction():
+async def test_relative_link_construction(app):
     req = Request(
         scope={
             "type": "http",
@@ -1177,11 +1177,14 @@ async def test_relative_link_construction():
             "raw_path": b"/tab/abc",
             "query_string": b"",
             "headers": {},
+            "app": app,
             "server": ("test", HTTP_PORT),
         }
     )
     links = CollectionLinks(collection_id="naip", request=req)
-    assert links.link_items()["href"] == "http://test/stac/collections/naip/items"
+    assert links.link_items()["href"] == (
+        "http://test/stac{}/collections/naip/items".format(app.state.router_prefix)
+    )
 
 
 async def test_search_bbox_errors(app_client):

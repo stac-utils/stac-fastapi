@@ -3,9 +3,11 @@ import json
 import os
 import time
 from typing import Callable, Dict
+from urllib.parse import urljoin
 
 import asyncpg
 import pytest
+from fastapi import APIRouter
 from fastapi.responses import ORJSONResponse
 from httpx import AsyncClient
 from pypgstac.db import PgstacDB
@@ -107,9 +109,26 @@ async def pgstac(pg):
 
 
 # Run all the tests that use the api_client in both db hydrate and api hydrate mode
-@pytest.fixture(params=[settings, pgstac_api_hydrate_settings], scope="session")
+@pytest.fixture(
+    params=[
+        (settings, ""),
+        (settings, "/router_prefix"),
+        (pgstac_api_hydrate_settings, ""),
+        (pgstac_api_hydrate_settings, "/router_prefix"),
+    ],
+    scope="session",
+)
 def api_client(request, pg):
-    print("creating client with settings, hydrate:", request.param.use_api_hydrate)
+    api_settings, prefix = request.param
+
+    api_settings.openapi_url = prefix + api_settings.openapi_url
+    api_settings.docs_url = prefix + api_settings.docs_url
+
+    print(
+        "creating client with settings, hydrate: {}, router prefix: '{}'".format(
+            api_settings.use_api_hydrate, prefix
+        )
+    )
 
     extensions = [
         TransactionExtension(client=TransactionsClient(), settings=settings),
@@ -122,12 +141,13 @@ def api_client(request, pg):
     ]
     post_request_model = create_post_request_model(extensions, base_model=PgstacSearch)
     api = StacApi(
-        settings=request.param,
+        settings=api_settings,
         extensions=extensions,
         client=CoreCrudClient(post_request_model=post_request_model),
         search_get_request_model=create_get_request_model(extensions),
         search_post_request_model=post_request_model,
         response_class=ORJSONResponse,
+        router=APIRouter(prefix=prefix),
     )
 
     return api
@@ -150,7 +170,12 @@ async def app(api_client):
 @pytest.fixture(scope="function")
 async def app_client(app):
     print("creating app_client")
-    async with AsyncClient(app=app, base_url="http://test") as c:
+
+    base_url = "http://test"
+    if app.state.router_prefix != "":
+        base_url = urljoin(base_url, app.state.router_prefix)
+
+    async with AsyncClient(app=app, base_url=base_url) as c:
         yield c
 
 
