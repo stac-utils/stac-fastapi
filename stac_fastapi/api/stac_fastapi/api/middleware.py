@@ -67,7 +67,6 @@ class ProxyHeaderMiddleware:
         await self.app(scope, receive, send)
 
     def _get_forwarded_url_parts(self, scope: Scope) -> Tuple[str]:
-        print(scope)
         proto = scope.get("scheme", "http")
         header_host = self._get_header_value_by_name(scope, "host")
         if header_host is None:
