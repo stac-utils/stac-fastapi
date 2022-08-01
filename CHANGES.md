@@ -24,6 +24,7 @@
 * Make item geometry and bbox nullable in sqlalchemy backend. ([#398](https://github.com/stac-utils/stac-fastapi/pull/398))
 
 ### Removed
+* Remove the unused `router_middleware` function ([#439](https://github.com/stac-utils/stac-fastapi/pull/439))
 
 ### Fixed
 
