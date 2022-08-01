@@ -46,7 +46,7 @@ link_tests = [
 
 @pytest.mark.parametrize("rel_type,expected_media_type,expected_path", link_tests)
 async def test_landing_page_links(
-    response_json: Dict, app_client, rel_type, expected_media_type, expected_path
+    response_json: Dict, app_client, app, rel_type, expected_media_type, expected_path
 ):
     link = get_link(response_json, rel_type)
 
@@ -54,9 +54,9 @@ async def test_landing_page_links(
     assert link.get("type") == expected_media_type
 
     link_path = urllib.parse.urlsplit(link.get("href")).path
-    assert link_path == expected_path
+    assert link_path == app.state.router_prefix + expected_path
 
-    resp = await app_client.get(link_path)
+    resp = await app_client.get(link_path.rsplit("/", 1)[-1])
     assert resp.status_code == 200
 
 
@@ -64,7 +64,7 @@ async def test_landing_page_links(
 # code here seems meaningless since it would be the same as if the endpoint did not exist. Once
 # https://github.com/stac-utils/stac-fastapi/pull/227 has been merged we can add this to the
 # parameterized tests above.
-def test_search_link(response_json: Dict):
+def test_search_link(response_json: Dict, app):
     for search_link in [
         get_link(response_json, "search", "GET"),
         get_link(response_json, "search", "POST"),
@@ -73,4 +73,4 @@ def test_search_link(response_json: Dict):
         assert search_link.get("type") == "application/geo+json"
 
         search_path = urllib.parse.urlsplit(search_link.get("href")).path
-        assert search_path == "/search"
+        assert search_path == app.state.router_prefix + "/search"

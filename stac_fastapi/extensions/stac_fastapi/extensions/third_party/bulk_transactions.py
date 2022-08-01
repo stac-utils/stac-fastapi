@@ -116,7 +116,7 @@ class BulkTransactionExtension(ApiExtension):
         """
         items_request_model = create_request_model("Items", base_model=Items)
 
-        router = APIRouter()
+        router = APIRouter(prefix=app.state.router_prefix)
         router.add_api_route(
             name="Bulk Create Item",
             path="/collections/{collection_id}/bulk_items",

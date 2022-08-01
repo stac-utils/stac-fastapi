@@ -73,3 +73,46 @@ def test_returns_valid_collection(app_client, load_test_data):
         resp_json, root=mock_root, preserve_dict=False
     )
     collection.validate()
+
+
+def test_get_collection_forwarded_header(app_client, load_test_data):
+    test_collection = load_test_data("test_collection.json")
+    app_client.put("/collections", json=test_collection)
+
+    resp = app_client.get(
+        f"/collections/{test_collection['id']}",
+        headers={"Forwarded": "proto=https;host=testserver:1234"},
+    )
+    for link in resp.json()["links"]:
+        assert link["href"].startswith("https://testserver:1234/")
+
+
+def test_get_collection_x_forwarded_headers(app_client, load_test_data):
+    test_collection = load_test_data("test_collection.json")
+    app_client.put("/collections", json=test_collection)
+
+    resp = app_client.get(
+        f"/collections/{test_collection['id']}",
+        headers={
+            "X-Forwarded-Port": "1234",
+            "X-Forwarded-Proto": "https",
+        },
+    )
+    for link in resp.json()["links"]:
+        assert link["href"].startswith("https://testserver:1234/")
+
+
+def test_get_collection_duplicate_forwarded_headers(app_client, load_test_data):
+    test_collection = load_test_data("test_collection.json")
+    app_client.put("/collections", json=test_collection)
+
+    resp = app_client.get(
+        f"/collections/{test_collection['id']}",
+        headers={
+            "Forwarded": "proto=https;host=testserver:1234",
+            "X-Forwarded-Port": "4321",
+            "X-Forwarded-Proto": "http",
+        },
+    )
+    for link in resp.json()["links"]:
+        assert link["href"].startswith("https://testserver:1234/")

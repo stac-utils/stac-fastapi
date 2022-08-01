@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+import pytest
+
 STAC_CORE_ROUTES = [
     "GET /",
     "GET /collections",
@@ -49,16 +51,24 @@ async def test_api_headers(app_client):
     assert resp.status_code == 200
 
 
-async def test_core_router(api_client):
-    core_routes = set(STAC_CORE_ROUTES)
+async def test_core_router(api_client, app):
+    core_routes = set()
+    for core_route in STAC_CORE_ROUTES:
+        method, path = core_route.split(" ")
+        core_routes.add("{} {}".format(method, app.state.router_prefix + path))
+
     api_routes = set(
         [f"{list(route.methods)[0]} {route.path}" for route in api_client.app.routes]
     )
     assert not core_routes - api_routes
 
 
-async def test_transactions_router(api_client):
-    transaction_routes = set(STAC_TRANSACTION_ROUTES)
+async def test_transactions_router(api_client, app):
+    transaction_routes = set()
+    for transaction_route in STAC_TRANSACTION_ROUTES:
+        method, path = transaction_route.split(" ")
+        transaction_routes.add("{} {}".format(method, app.state.router_prefix + path))
+
     api_routes = set(
         [f"{list(route.methods)[0]} {route.path}" for route in api_client.app.routes]
     )
@@ -290,3 +300,94 @@ async def test_search_line_string_intersects(
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_landing_forwarded_header(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    await app_client.post(f"/collections/{coll.id}/items", json=item)
+    response = (
+        await app_client.get(
+            "/",
+            headers={
+                "Forwarded": "proto=https;host=test:1234",
+                "X-Forwarded-Proto": "http",
+                "X-Forwarded-Port": "4321",
+            },
+        )
+    ).json()
+    for link in response["links"]:
+        assert link["href"].startswith("https://test:1234/")
+
+
+@pytest.mark.asyncio
+async def test_search_forwarded_header(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    await app_client.post(f"/collections/{coll.id}/items", json=item)
+    resp = await app_client.post(
+        "/search",
+        json={
+            "collections": [item["collection"]],
+        },
+        headers={"Forwarded": "proto=https;host=test:1234"},
+    )
+    features = resp.json()["features"]
+    assert len(features) > 0
+    for feature in features:
+        for link in feature["links"]:
+            assert link["href"].startswith("https://test:1234/")
+
+
+@pytest.mark.asyncio
+async def test_search_x_forwarded_headers(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    await app_client.post(f"/collections/{coll.id}/items", json=item)
+    resp = await app_client.post(
+        "/search",
+        json={
+            "collections": [item["collection"]],
+        },
+        headers={
+            "X-Forwarded-Proto": "https",
+            "X-Forwarded-Port": "1234",
+        },
+    )
+    features = resp.json()["features"]
+    assert len(features) > 0
+    for feature in features:
+        for link in feature["links"]:
+            assert link["href"].startswith("https://test:1234/")
+
+
+@pytest.mark.asyncio
+async def test_search_duplicate_forward_headers(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    await app_client.post(f"/collections/{coll.id}/items", json=item)
+    resp = await app_client.post(
+        "/search",
+        json={
+            "collections": [item["collection"]],
+        },
+        headers={
+            "Forwarded": "proto=https;host=test:1234",
+            "X-Forwarded-Proto": "http",
+            "X-Forwarded-Port": "4321",
+        },
+    )
+    features = resp.json()["features"]
+    assert len(features) > 0
+    for feature in features:
+        for link in feature["links"]:
+            assert link["href"].startswith("https://test:1234/")

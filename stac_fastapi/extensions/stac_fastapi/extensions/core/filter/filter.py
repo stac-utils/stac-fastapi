@@ -107,6 +107,7 @@ class FilterExtension(ApiExtension):
         Returns:
             None
         """
+        self.router.prefix = app.state.router_prefix
         self.router.add_api_route(
             name="Queryables",
             path="/queryables",
