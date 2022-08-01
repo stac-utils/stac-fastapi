@@ -111,6 +111,7 @@ services:
       - "/app/scripts/ingest_joplin.py"
       - "http://app-pgstac:8082"
     depends_on:
+      - database
       - app-pgstac
 
 networks:
