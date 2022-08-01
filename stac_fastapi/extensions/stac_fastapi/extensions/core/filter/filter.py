@@ -5,9 +5,14 @@ from typing import Callable, List, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
-from starlette.responses import JSONResponse, Response
+from starlette.responses import Response
 
-from stac_fastapi.api.models import APIRequest, CollectionUri, EmptyRequest
+from stac_fastapi.api.models import (
+    APIRequest,
+    CollectionUri,
+    EmptyRequest,
+    JSONSchemaResponse,
+)
 from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
 from stac_fastapi.types.core import AsyncBaseFiltersClient, BaseFiltersClient
 from stac_fastapi.types.extension import ApiExtension
@@ -21,10 +26,11 @@ class FilterConformanceClasses(str, Enum):
     See https://github.com/radiantearth/stac-api-spec/tree/v1.0.0-rc.1/fragments/filter
     """
 
-    FILTER = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:filter"
-    ITEM_SEARCH_FILTER = (
-        "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:item-search-filter"
+    FILTER = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter"
+    FEATURES_FILTER = (
+        "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"
     )
+    ITEM_SEARCH_FILTER = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter"
     CQL_TEXT = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:cql-text"
     CQL_JSON = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:cql-json"
     BASIC_CQL = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:basic-cql"
@@ -65,13 +71,14 @@ class FilterExtension(ApiExtension):
     conformance_classes: List[str] = attr.ib(
         default=[
             FilterConformanceClasses.FILTER,
+            FilterConformanceClasses.FEATURES_FILTER,
             FilterConformanceClasses.ITEM_SEARCH_FILTER,
             FilterConformanceClasses.BASIC_CQL,
             FilterConformanceClasses.CQL_TEXT,
         ]
     )
     router: APIRouter = attr.ib(factory=APIRouter)
-    response_class: Type[Response] = attr.ib(default=JSONResponse)
+    response_class: Type[Response] = attr.ib(default=JSONSchemaResponse)
 
     def _create_endpoint(
         self,
