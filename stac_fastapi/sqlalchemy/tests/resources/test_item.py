@@ -942,3 +942,43 @@ def test_search_datetime_validation_errors(app_client):
 
         resp = app_client.get("/search?datetime={}".format(dt))
         assert resp.status_code == 400
+
+
+def test_get_item_forwarded_header(app_client, load_test_data):
+    test_item = load_test_data("test_item.json")
+    app_client.post(f"/collections/{test_item['collection']}/items", json=test_item)
+    get_item = app_client.get(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        headers={"Forwarded": "proto=https;host=testserver:1234"},
+    )
+    for link in get_item.json()["links"]:
+        assert link["href"].startswith("https://testserver:1234/")
+
+
+def test_get_item_x_forwarded_headers(app_client, load_test_data):
+    test_item = load_test_data("test_item.json")
+    app_client.post(f"/collections/{test_item['collection']}/items", json=test_item)
+    get_item = app_client.get(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        headers={
+            "X-Forwarded-Port": "1234",
+            "X-Forwarded-Proto": "https",
+        },
+    )
+    for link in get_item.json()["links"]:
+        assert link["href"].startswith("https://testserver:1234/")
+
+
+def test_get_item_duplicate_forwarded_headers(app_client, load_test_data):
+    test_item = load_test_data("test_item.json")
+    app_client.post(f"/collections/{test_item['collection']}/items", json=test_item)
+    get_item = app_client.get(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        headers={
+            "Forwarded": "proto=https;host=testserver:1234",
+            "X-Forwarded-Port": "4321",
+            "X-Forwarded-Proto": "http",
+        },
+    )
+    for link in get_item.json()["links"]:
+        assert link["href"].startswith("https://testserver:1234/")

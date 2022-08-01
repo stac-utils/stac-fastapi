@@ -14,6 +14,7 @@ from stac_pydantic.version import STAC_VERSION
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
+from stac_fastapi.api.middleware import ProxyHeaderMiddleware
 from stac_fastapi.api.models import (
     APIRequest,
     CollectionUri,
@@ -91,7 +92,9 @@ class StacApi:
     )
     pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
-    middlewares: List = attr.ib(default=attr.Factory(lambda: [BrotliMiddleware]))
+    middlewares: List = attr.ib(
+        default=attr.Factory(lambda: [BrotliMiddleware, ProxyHeaderMiddleware])
+    )
     route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:

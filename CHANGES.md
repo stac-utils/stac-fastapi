@@ -9,6 +9,7 @@
 * Add STAC API - Collections conformance class. ([383](https://github.com/stac-utils/stac-fastapi/pull/383))
 * Bulk item inserts for pgstac implementation. ([411](https://github.com/stac-utils/stac-fastapi/pull/411))
 * Add APIRouter prefix support for pgstac implementation. ([429](https://github.com/stac-utils/stac-fastapi/pull/429))
+* Respect `Forwarded` or `X-Forwarded-*` request headers when building links to better accommodate load balancers and proxies.
 
 ### Changed
 

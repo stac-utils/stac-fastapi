@@ -130,3 +130,6 @@ docs/api/*
 
 # Virtualenv
 venv
+
+# IDE
+.vscode
