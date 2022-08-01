@@ -1,10 +1,12 @@
 import json
 import uuid
 from datetime import timedelta
+from http.client import HTTP_PORT
 from typing import Callable
 from urllib.parse import parse_qs, urljoin, urlparse
 
 import pystac
+import pytest
 from httpx import AsyncClient
 from pystac.utils import datetime_to_str
 from shapely.geometry import Polygon
@@ -1170,11 +1172,12 @@ async def test_relative_link_construction():
             "type": "http",
             "scheme": "http",
             "method": "PUT",
-            "root_path": "http://test/stac",
+            "root_path": "/stac",  # root_path should not have proto, domain, or port
             "path": "/",
             "raw_path": b"/tab/abc",
             "query_string": b"",
             "headers": {},
+            "server": ("test", HTTP_PORT),
         }
     )
     links = CollectionLinks(collection_id="naip", request=req)
@@ -1394,3 +1397,49 @@ async def test_item_merge_raster_bands(
     assert len(red_bands[0].keys()) == 6
     # The merged item should have kept the item value rather than the base value
     assert red_bands[0]["offset"] == 2.03976
+
+
+@pytest.mark.asyncio
+async def test_get_collection_items_forwarded_header(
+    app_client, load_test_collection, load_test_item
+):
+    coll = load_test_collection
+    resp = await app_client.get(
+        f"/collections/{coll.id}/items",
+        headers={"Forwarded": "proto=https;host=test:1234"},
+    )
+    for link in resp.json()["features"][0]["links"]:
+        assert link["href"].startswith("https://test:1234/")
+
+
+@pytest.mark.asyncio
+async def test_get_collection_items_x_forwarded_headers(
+    app_client, load_test_collection, load_test_item
+):
+    coll = load_test_collection
+    resp = await app_client.get(
+        f"/collections/{coll.id}/items",
+        headers={
+            "X-Forwarded-Port": "1234",
+            "X-Forwarded-Proto": "https",
+        },
+    )
+    for link in resp.json()["features"][0]["links"]:
+        assert link["href"].startswith("https://test:1234/")
+
+
+@pytest.mark.asyncio
+async def test_get_collection_items_duplicate_forwarded_headers(
+    app_client, load_test_collection, load_test_item
+):
+    coll = load_test_collection
+    resp = await app_client.get(
+        f"/collections/{coll.id}/items",
+        headers={
+            "Forwarded": "proto=https;host=test:1234",
+            "X-Forwarded-Port": "4321",
+            "X-Forwarded-Proto": "http",
+        },
+    )
+    for link in resp.json()["features"][0]["links"]:
+        assert link["href"].startswith("https://test:1234/")
