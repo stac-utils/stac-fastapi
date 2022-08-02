@@ -82,7 +82,9 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
     get_item = Item.parse_obj(resp.json())
     assert in_item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
 
-    post_self_link = next((link for link in post_item.links if link.rel == "self"), None)
+    post_self_link = next(
+        (link for link in post_item.links if link.rel == "self"), None
+    )
     get_self_link = next((link for link in get_item.links if link.rel == "self"), None)
     assert post_self_link is not None and get_self_link is not None
     assert post_self_link.href == get_self_link.href

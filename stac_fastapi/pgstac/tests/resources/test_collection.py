@@ -20,7 +20,9 @@ async def test_create_collection(app_client, load_test_data: Callable):
     get_coll = Collection.parse_obj(resp.json())
     assert post_coll.dict(exclude={"links"}) == get_coll.dict(exclude={"links"})
 
-    post_self_link = next((link for link in post_coll.links if link.rel == "self"), None)
+    post_self_link = next(
+        (link for link in post_coll.links if link.rel == "self"), None
+    )
     get_self_link = next((link for link in get_coll.links if link.rel == "self"), None)
     assert post_self_link is not None and get_self_link is not None
     assert post_self_link.href == get_self_link.href

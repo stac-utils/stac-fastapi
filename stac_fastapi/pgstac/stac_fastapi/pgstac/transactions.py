@@ -12,9 +12,9 @@ from stac_fastapi.extensions.third_party.bulk_transactions import (
     Items,
 )
 from stac_fastapi.pgstac.db import dbfunc
+from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import AsyncBaseTransactionsClient
-from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks
 
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
@@ -23,7 +23,7 @@ logger.setLevel(logging.INFO)
 @attr.s
 class TransactionsClient(AsyncBaseTransactionsClient):
     """Transactions extension specific CRUD operations."""
-    
+
     async def create_item(
         self, collection_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
