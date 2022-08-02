@@ -108,6 +108,24 @@ async def test_create_item_mismatched_collection_id(
     assert resp.status_code == 400
 
 
+async def test_create_item_mismatched_collection_id(
+    app_client, load_test_data: Callable, load_test_collection
+):
+    # If the collection_id path parameter and the Item's "collection" property do not match, a 400 response should
+    # be returned.
+    coll = load_test_collection
+
+    in_json = load_test_data("test_item.json")
+    in_json["collection"] = random.choice(ascii_letters)
+    assert in_json["collection"] != coll.id
+
+    resp = await app_client.post(
+        f"/collections/{coll.id}/items",
+        json=in_json,
+    )
+    assert resp.status_code == 400
+
+
 async def test_fetches_valid_item(
     app_client, load_test_data: Callable, load_test_collection
 ):
@@ -161,6 +179,25 @@ async def test_update_item(
     get_self_link = next((link for link in get_item.links if link.rel == "self"), None)
     assert post_self_link is not None and get_self_link is not None
     assert post_self_link.href == get_self_link.href
+
+
+async def test_update_item_mismatched_collection_id(
+    app_client, load_test_data: Callable, load_test_collection, load_test_item
+) -> None:
+    coll = load_test_collection
+
+    in_json = load_test_data("test_item.json")
+
+    in_json["collection"] = random.choice(ascii_letters)
+    assert in_json["collection"] != coll.id
+
+    item_id = in_json["id"]
+
+    resp = await app_client.put(
+        f"/collections/{coll.id}/items/{item_id}",
+        json=in_json,
+    )
+    assert resp.status_code == 400
 
 
 async def test_update_item_mismatched_collection_id(
