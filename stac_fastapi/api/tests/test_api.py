@@ -55,7 +55,7 @@ class TestRouteDependencies:
             {"path": "/collections", "method": "PUT"},
             {"path": "/collections/{collectionId}", "method": "DELETE"},
             {"path": "/collections/{collectionId}/items", "method": "POST"},
-            {"path": "/collections/{collectionId}/items", "method": "PUT"},
+            {"path": "/collections/{collectionId}/items/{itemId}", "method": "PUT"},
             {"path": "/collections/{collectionId}/items/{itemId}", "method": "DELETE"},
         ]
         dependencies = [Depends(must_be_bob)]
@@ -68,7 +68,7 @@ class TestRouteDependencies:
             {"path": "/collections", "method": "PUT"},
             {"path": "/collections/{collectionId}", "method": "DELETE"},
             {"path": "/collections/{collectionId}/items", "method": "POST"},
-            {"path": "/collections/{collectionId}/items", "method": "PUT"},
+            {"path": "/collections/{collectionId}/items/{itemId}", "method": "PUT"},
             {"path": "/collections/{collectionId}/items/{itemId}", "method": "DELETE"},
         ]
         api = self._build_api()
