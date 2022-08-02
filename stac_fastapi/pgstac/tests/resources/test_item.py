@@ -109,7 +109,7 @@ async def test_fetches_valid_item(
     in_json = load_test_data("test_item.json")
     in_item = Item.parse_obj(in_json)
     resp = await app_client.post(
-        "/collections/{coll.id}/items",
+        f"/collections/{coll.id}/items",
         json=in_json,
     )
     assert resp.status_code == 200
@@ -202,18 +202,17 @@ async def test_get_collection_items(app_client, load_test_collection, load_test_
 async def test_create_item_conflict(
     app_client, load_test_data: Callable, load_test_collection
 ):
-    pass
-
+    coll = load_test_collection
     in_json = load_test_data("test_item.json")
     Item.parse_obj(in_json)
     resp = await app_client.post(
-        "/collections/{coll.id}/items",
+        f"/collections/{coll.id}/items",
         json=in_json,
     )
     assert resp.status_code == 200
 
     resp = await app_client.post(
-        "/collections/{coll.id}/items",
+        f"/collections/{coll.id}/items",
         json=in_json,
     )
     assert resp.status_code == 409
