@@ -76,7 +76,9 @@ async def test_update_item(app_client, load_test_collection, load_test_item):
 
     item.properties.description = "Update Test"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
+    resp = await app_client.put(
+        f"/collections/{coll.id}/items/{item.id}", content=item.json()
+    )
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")

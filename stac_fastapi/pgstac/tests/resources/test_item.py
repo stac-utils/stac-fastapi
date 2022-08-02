@@ -137,7 +137,9 @@ async def test_update_item(
 
     item.properties.description = "Update Test"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
+    resp = await app_client.put(
+        f"/collections/{coll.id}/items/{item.id}", content=item.json()
+    )
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
@@ -158,8 +160,10 @@ async def test_update_item_mismatched_collection_id(
     in_json["collection"] = random.choice(ascii_letters)
     assert in_json["collection"] != coll.id
 
+    item_id = in_json["id"]
+
     resp = await app_client.put(
-        f"/collections/{coll.id}/items",
+        f"/collections/{coll.id}/items/{item_id}",
         json=in_json,
     )
     assert resp.status_code == 409
@@ -252,7 +256,9 @@ async def test_update_new_item(
     item = load_test_item
     item.id = "test-updatenewitem"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
+    resp = await app_client.put(
+        f"/collections/{coll.id}/items/{item.id}", content=item.json()
+    )
     assert resp.status_code == 404
 
 
@@ -263,7 +269,9 @@ async def test_update_item_missing_collection(
     item = load_test_item
     item.collection = None
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
+    resp = await app_client.put(
+        f"/collections/{coll.id}/items/{item.id}", content=item.json()
+    )
     assert resp.status_code == 200
 
     put_item = resp.json()

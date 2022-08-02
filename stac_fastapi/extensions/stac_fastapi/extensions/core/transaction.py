@@ -16,8 +16,15 @@ from stac_fastapi.types.extension import ApiExtension
 
 
 @attr.s
-class PostOrPutItem(CollectionUri):
-    """Create or update Item."""
+class PostItem(CollectionUri):
+    """Create Item."""
+
+    item: stac_types.Item = attr.ib(default=Body())
+
+
+@attr.s
+class PutItem(ItemUri):
+    """Update Item."""
 
     item: stac_types.Item = attr.ib(default=Body())
 
@@ -84,20 +91,20 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=self._create_endpoint(self.client.create_item, PostOrPutItem),
+            endpoint=self._create_endpoint(self.client.create_item, PostItem),
         )
 
     def register_update_item(self):
         """Register update item endpoint (PUT /collections/{collection_id}/items)."""
         self.router.add_api_route(
             name="Update Item",
-            path="/collections/{collection_id}/items",
+            path="/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=self._create_endpoint(self.client.update_item, PostOrPutItem),
+            endpoint=self._create_endpoint(self.client.update_item, PutItem),
         )
 
     def register_delete_item(self):
