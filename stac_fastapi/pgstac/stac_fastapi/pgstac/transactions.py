@@ -14,6 +14,7 @@ from stac_fastapi.extensions.third_party.bulk_transactions import (
 from stac_fastapi.pgstac.db import dbfunc
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import AsyncBaseTransactionsClient
+from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks
 
 logger = logging.getLogger("uvicorn")
 logger.setLevel(logging.INFO)
@@ -22,7 +23,7 @@ logger.setLevel(logging.INFO)
 @attr.s
 class TransactionsClient(AsyncBaseTransactionsClient):
     """Transactions extension specific CRUD operations."""
-
+    
     async def create_item(
         self, collection_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
@@ -37,7 +38,12 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         request = kwargs["request"]
         pool = request.app.state.writepool
         await dbfunc(pool, "create_item", item)
-        return item
+        item["links"] = await ItemLinks(
+            collection_id=item["collection"],
+            item_id=item["id"],
+            request=request,
+        ).get_links(extra_links=item.get("links"))
+        return stac_types.Item(**item)
 
     async def update_item(
         self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
@@ -59,7 +65,12 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         request = kwargs["request"]
         pool = request.app.state.writepool
         await dbfunc(pool, "update_item", item)
-        return item
+        item["links"] = await ItemLinks(
+            collection_id=item["collection"],
+            item_id=item["id"],
+            request=request,
+        ).get_links(extra_links=item.get("links"))
+        return stac_types.Item(**item)
 
     async def create_collection(
         self, collection: stac_types.Collection, **kwargs
@@ -68,7 +79,11 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         request = kwargs["request"]
         pool = request.app.state.writepool
         await dbfunc(pool, "create_collection", collection)
-        return collection
+        collection["links"] = await CollectionLinks(
+            collection_id=collection["id"], request=request
+        ).get_links(extra_links=collection.get("links"))
+
+        return stac_types.Collection(**collection)
 
     async def update_collection(
         self, collection: stac_types.Collection, **kwargs
@@ -77,7 +92,10 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         request = kwargs["request"]
         pool = request.app.state.writepool
         await dbfunc(pool, "update_collection", collection)
-        return collection
+        collection["links"] = await CollectionLinks(
+            collection_id=collection["id"], request=request
+        ).get_links(extra_links=collection.get("links"))
+        return stac_types.Collection(**collection)
 
     async def delete_item(
         self, item_id: str, **kwargs
