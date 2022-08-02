@@ -359,7 +359,9 @@ def test_app_fields_extension_return_all_properties(
 
 def test_landing_forwarded_header(load_test_data, app_client, postgres_transactions):
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    postgres_transactions.create_item(
+        item["collection"], item, request=MockStarletteRequest
+    )
 
     response = app_client.get(
         "/",
@@ -377,7 +379,9 @@ def test_app_search_response_forwarded_header(
     load_test_data, app_client, postgres_transactions
 ):
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    postgres_transactions.create_item(
+        item["collection"], item, request=MockStarletteRequest
+    )
 
     resp = app_client.get(
         "/search",
@@ -393,7 +397,9 @@ def test_app_search_response_x_forwarded_headers(
     load_test_data, app_client, postgres_transactions
 ):
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    postgres_transactions.create_item(
+        item["collection"], item, request=MockStarletteRequest
+    )
 
     resp = app_client.get(
         "/search",
@@ -412,7 +418,9 @@ def test_app_search_response_duplicate_forwarded_headers(
     load_test_data, app_client, postgres_transactions
 ):
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    postgres_transactions.create_item(
+        item["collection"], item, request=MockStarletteRequest
+    )
 
     resp = app_client.get(
         "/search",
