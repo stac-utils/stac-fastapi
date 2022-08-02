@@ -39,7 +39,7 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         pool = request.app.state.writepool
         await dbfunc(pool, "create_item", item)
         item["links"] = await ItemLinks(
-            collection_id=item["collection"],
+            collection_id=collection_id,
             item_id=item["id"],
             request=request,
         ).get_links(extra_links=item.get("links"))
@@ -66,7 +66,7 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         pool = request.app.state.writepool
         await dbfunc(pool, "update_item", item)
         item["links"] = await ItemLinks(
-            collection_id=item["collection"],
+            collection_id=collection_id,
             item_id=item["id"],
             request=request,
         ).get_links(extra_links=item.get("links"))
