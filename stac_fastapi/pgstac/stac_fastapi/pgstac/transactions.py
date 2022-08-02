@@ -30,7 +30,7 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         body_collection_id = item.get("collection")
         if body_collection_id is not None and collection_id != body_collection_id:
             raise HTTPException(
-                status_code=409,
+                status_code=400,
                 detail=f"Collection ID from path parameter ({collection_id}) does not match Collection ID from Item ({body_collection_id})",
             )
         item["collection"] = collection_id
@@ -46,14 +46,14 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         body_collection_id = item.get("collection")
         if body_collection_id is not None and collection_id != body_collection_id:
             raise HTTPException(
-                status_code=409,
+                status_code=400,
                 detail=f"Collection ID from path parameter ({collection_id}) does not match Collection ID from Item ({body_collection_id})",
             )
         item["collection"] = collection_id
         body_item_id = item["id"]
         if body_item_id != item_id:
             raise HTTPException(
-                status_code=409,
+                status_code=400,
                 detail=f"Item ID from path parameter ({item_id}) does not match Item ID from Item ({body_item_id})",
             )
         request = kwargs["request"]

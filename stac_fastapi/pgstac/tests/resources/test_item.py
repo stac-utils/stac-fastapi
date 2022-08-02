@@ -86,7 +86,7 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
 async def test_create_item_mismatched_collection_id(
     app_client, load_test_data: Callable, load_test_collection
 ):
-    # If the collection_id path parameter and the Item's "collection" property do not match, a 409 response should
+    # If the collection_id path parameter and the Item's "collection" property do not match, a 400 response should
     # be returned.
     coll = load_test_collection
 
@@ -98,7 +98,7 @@ async def test_create_item_mismatched_collection_id(
         f"/collections/{coll.id}/items",
         json=in_json,
     )
-    assert resp.status_code == 409
+    assert resp.status_code == 400
 
 
 async def test_fetches_valid_item(
@@ -166,7 +166,7 @@ async def test_update_item_mismatched_collection_id(
         f"/collections/{coll.id}/items/{item_id}",
         json=in_json,
     )
-    assert resp.status_code == 409
+    assert resp.status_code == 400
 
 
 async def test_delete_item(
