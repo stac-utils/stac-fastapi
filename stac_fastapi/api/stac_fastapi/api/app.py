@@ -11,6 +11,7 @@ from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.version import STAC_VERSION
+from starlette.middleware import Middleware
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
@@ -92,8 +93,10 @@ class StacApi:
     )
     pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
-    middlewares: List = attr.ib(
-        default=attr.Factory(lambda: [BrotliMiddleware, ProxyHeaderMiddleware])
+    middlewares: List[Middleware] = attr.ib(
+        default=attr.Factory(
+            lambda: [Middleware(BrotliMiddleware), Middleware(ProxyHeaderMiddleware)]
+        )
     )
     route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
 
@@ -359,6 +362,11 @@ class StacApi:
         """
         return add_route_dependencies(self.app.router.routes, scopes, dependencies)
 
+    def add_middleware(self, middleware: Middleware):
+        """Add a middleware class to the application."""
+        self.app.user_middleware.insert(0, middleware)
+        self.app.middleware_stack = self.app.build_middleware_stack()
+
     def __attrs_post_init__(self):
         """Post-init hook.
 
@@ -403,7 +411,7 @@ class StacApi:
 
         # add middlewares
         for middleware in self.middlewares:
-            self.app.add_middleware(middleware)
+            self.add_middleware(middleware)
 
         # customize route dependencies
         for scopes, dependencies in self.route_dependencies:
