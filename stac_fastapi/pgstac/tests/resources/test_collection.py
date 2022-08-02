@@ -20,6 +20,11 @@ async def test_create_collection(app_client, load_test_data: Callable):
     get_coll = Collection.parse_obj(resp.json())
     assert post_coll.dict(exclude={"links"}) == get_coll.dict(exclude={"links"})
 
+    post_self_link = next((link for link in post_coll.links if link.rel == "self"), None)
+    get_self_link = next((link for link in get_coll.links if link.rel == "self"), None)
+    assert post_self_link is not None and get_self_link is not None
+    assert post_self_link.href == get_self_link.href
+
 
 async def test_update_collection(app_client, load_test_data, load_test_collection):
     in_coll = load_test_collection
@@ -27,6 +32,7 @@ async def test_update_collection(app_client, load_test_data, load_test_collectio
 
     resp = await app_client.put("/collections", json=in_coll.dict())
     assert resp.status_code == 200
+    put_coll = Collection.parse_obj(resp.json())
 
     resp = await app_client.get(f"/collections/{in_coll.id}")
     assert resp.status_code == 200
@@ -34,6 +40,11 @@ async def test_update_collection(app_client, load_test_data, load_test_collectio
     get_coll = Collection.parse_obj(resp.json())
     assert in_coll.dict(exclude={"links"}) == get_coll.dict(exclude={"links"})
     assert "newkeyword" in get_coll.keywords
+
+    put_self_link = next((link for link in put_coll.links if link.rel == "self"), None)
+    get_self_link = next((link for link in get_coll.links if link.rel == "self"), None)
+    assert put_self_link is not None and get_self_link is not None
+    assert put_self_link.href == get_self_link.href
 
 
 async def test_delete_collection(
