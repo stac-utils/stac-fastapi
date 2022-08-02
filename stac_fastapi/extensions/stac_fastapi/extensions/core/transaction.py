@@ -2,7 +2,7 @@
 from typing import Callable, List, Optional, Type, Union
 
 import attr
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, Body, FastAPI
 from pydantic import BaseModel
 from stac_pydantic import Collection, Item
 from starlette.responses import JSONResponse, Response
@@ -13,6 +13,20 @@ from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
+
+
+@attr.s
+class PostItem(CollectionUri):
+    """Create Item."""
+
+    item: stac_types.Item = attr.ib(default=Body())
+
+
+@attr.s
+class PutItem(ItemUri):
+    """Update Item."""
+
+    item: stac_types.Item = attr.ib(default=Body())
 
 
 @attr.s
@@ -77,20 +91,20 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=self._create_endpoint(self.client.create_item, stac_types.Item),
+            endpoint=self._create_endpoint(self.client.create_item, PostItem),
         )
 
     def register_update_item(self):
         """Register update item endpoint (PUT /collections/{collection_id}/items)."""
         self.router.add_api_route(
             name="Update Item",
-            path="/collections/{collection_id}/items",
+            path="/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=self._create_endpoint(self.client.update_item, stac_types.Item),
+            endpoint=self._create_endpoint(self.client.update_item, PutItem),
         )
 
     def register_delete_item(self):

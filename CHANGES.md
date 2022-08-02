@@ -22,6 +22,9 @@
 * docker-compose now runs uvicorn with hot-reloading enabled
 * Bump version of PGStac to 0.6.2 that includes support for hydrating results in the API backed ([#397](https://github.com/stac-utils/stac-fastapi/pull/397))
 * Make item geometry and bbox nullable in sqlalchemy backend. ([#398](https://github.com/stac-utils/stac-fastapi/pull/398))
+* Transactions Extension update Item endpoint Item is now `/collections/{collection_id}/items/{item_id}` instead of 
+  `/collections/{collection_id}/items` to align with [STAC API
+  spec](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features/extensions/transaction#methods) ([#425](https://github.com/stac-utils/stac-fastapi/pull/425))
 
 ### Removed
 * Remove the unused `router_middleware` function ([#439](https://github.com/stac-utils/stac-fastapi/pull/439))
@@ -36,6 +39,9 @@
 * SQLAlchemy backend bulk item insert now works ([#356](https://github.com/stac-utils/stac-fastapi/issues/356))
 * PGStac Backend has stricter implementation of Fields Extension syntax ([#397](https://github.com/stac-utils/stac-fastapi/pull/397))
 * `/queryables` endpoint now has type `application/schema+json` instead of `application/json` ([#421](https://github.com/stac-utils/stac-fastapi/pull/421))
+* Transactions Extension update Item endpoint validates that the `{collection_id}` path parameter matches the Item `"collection"` property 
+  from the request body, if present, and falls back to using the path parameter if no `"collection"` property is found in the body
+  ([#425](https://github.com/stac-utils/stac-fastapi/pull/425))
 
 ## [2.3.0]
 

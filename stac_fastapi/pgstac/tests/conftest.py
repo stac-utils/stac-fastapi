@@ -201,9 +201,10 @@ async def load_test_collection(app_client, load_test_data):
 
 @pytest.fixture
 async def load_test_item(app_client, load_test_data, load_test_collection):
+    coll = load_test_collection
     data = load_test_data("test_item.json")
     resp = await app_client.post(
-        "/collections/{coll.id}/items",
+        f"/collections/{coll.id}/items",
         json=data,
     )
     assert resp.status_code == 200
@@ -223,9 +224,10 @@ async def load_test2_collection(app_client, load_test_data):
 
 @pytest.fixture
 async def load_test2_item(app_client, load_test_data, load_test2_collection):
+    coll = load_test2_collection
     data = load_test_data("test2_item.json")
     resp = await app_client.post(
-        "/collections/{coll.id}/items",
+        f"/collections/{coll.id}/items",
         json=data,
     )
     assert resp.status_code == 200

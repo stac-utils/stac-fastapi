@@ -4,6 +4,7 @@ import logging
 from typing import Optional, Type, Union
 
 import attr
+from fastapi import HTTPException
 from starlette.responses import Response
 
 from stac_fastapi.extensions.third_party.bulk_transactions import (
@@ -35,19 +36,29 @@ class TransactionsClient(BaseTransactionsClient):
     )
 
     def create_item(
-        self, model: Union[stac_types.Item, stac_types.ItemCollection], **kwargs
+        self,
+        collection_id: str,
+        item: Union[stac_types.Item, stac_types.ItemCollection],
+        **kwargs,
     ) -> Optional[stac_types.Item]:
         """Create item."""
         base_url = str(kwargs["request"].base_url)
 
         # If a feature collection is posted
-        if model["type"] == "FeatureCollection":
+        if item["type"] == "FeatureCollection":
             bulk_client = BulkTransactionsClient(session=self.session)
-            bulk_client.bulk_item_insert(items=model["features"])
+            bulk_client.bulk_item_insert(items=item["features"])
             return None
 
         # Otherwise a single item has been posted
-        data = self.item_serializer.stac_to_db(model)
+        body_collection_id = item.get("collection")
+        if body_collection_id is not None and collection_id != body_collection_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Collection ID from path parameter ({collection_id}) does not match Collection ID from Item ({body_collection_id})",
+            )
+        item["collection"] = collection_id
+        data = self.item_serializer.stac_to_db(item)
         with self.session.writer.context_session() as session:
             session.add(data)
             return self.item_serializer.db_to_stac(data, base_url)
@@ -63,9 +74,22 @@ class TransactionsClient(BaseTransactionsClient):
             return self.collection_serializer.db_to_stac(data, base_url=base_url)
 
     def update_item(
-        self, item: stac_types.Item, **kwargs
+        self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Update item."""
+        body_collection_id = item.get("collection")
+        if body_collection_id is not None and collection_id != body_collection_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Collection ID from path parameter ({collection_id}) does not match Collection ID from Item ({body_collection_id})",
+            )
+        item["collection"] = collection_id
+        body_item_id = item["id"]
+        if body_item_id != item_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Item ID from path parameter ({item_id}) does not match Item ID from Item ({body_item_id})",
+            )
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             query = session.query(self.item_table).filter(

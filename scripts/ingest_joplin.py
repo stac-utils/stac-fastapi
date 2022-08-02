@@ -19,8 +19,9 @@ def post_or_put(url: str, data: dict):
     """Post or put data to url."""
     r = requests.post(url, json=data)
     if r.status_code == 409:
+        new_url = url if data["type"] == "Collection" else url + f"/{data['id']}"
         # Exists, so update
-        r = requests.put(url, json=data)
+        r = requests.put(new_url, json=data)
         # Unchanged may throw a 404
         if not r.status_code == 404:
             r.raise_for_status()
