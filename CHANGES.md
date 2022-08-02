@@ -42,6 +42,7 @@
 * Transactions Extension update Item endpoint validates that the `{collection_id}` path parameter matches the Item `"collection"` property 
   from the request body, if present, and falls back to using the path parameter if no `"collection"` property is found in the body
   ([#425](https://github.com/stac-utils/stac-fastapi/pull/425))
+* PGStac Backend Transactions endpoints return added Item/Collection instead of Item/Collection from request ([#424](https://github.com/stac-utils/stac-fastapi/pull/424))
 
 ## [2.3.0]
 
