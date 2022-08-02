@@ -1,7 +1,9 @@
 import json
+import random
 import uuid
 from datetime import timedelta
 from http.client import HTTP_PORT
+from string import ascii_letters
 from typing import Callable
 from urllib.parse import parse_qs, urljoin, urlparse
 
@@ -81,6 +83,24 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
     assert in_item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
 
 
+async def test_create_item_mismatched_collection_id(
+    app_client, load_test_data: Callable, load_test_collection
+):
+    # If the collection_id path parameter and the Item's "collection" property do not match, a 409 response should
+    # be returned.
+    coll = load_test_collection
+
+    in_json = load_test_data("test_item.json")
+    in_json["collection"] = random.choice(ascii_letters)
+    assert in_json["collection"] != coll.id
+
+    resp = await app_client.post(
+        f"/collections/{coll.id}/items",
+        json=in_json,
+    )
+    assert resp.status_code == 409
+
+
 async def test_fetches_valid_item(
     app_client, load_test_data: Callable, load_test_collection
 ):
@@ -126,6 +146,23 @@ async def test_update_item(
     get_item = Item.parse_obj(resp.json())
     assert item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
     assert get_item.properties.description == "Update Test"
+
+
+async def test_update_item_mismatched_collection_id(
+    app_client, load_test_data: Callable, load_test_collection, load_test_item
+) -> None:
+    coll = load_test_collection
+
+    in_json = load_test_data("test_item.json")
+
+    in_json["collection"] = random.choice(ascii_letters)
+    assert in_json["collection"] != coll.id
+
+    resp = await app_client.put(
+        f"/collections/{coll.id}/items",
+        json=in_json,
+    )
+    assert resp.status_code == 409
 
 
 async def test_delete_item(
@@ -203,7 +240,10 @@ async def test_create_item_missing_collection(
     item["collection"] = None
 
     resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
-    assert resp.status_code == 424
+    assert resp.status_code == 200
+
+    post_item = resp.json()
+    assert post_item["collection"] == coll.id
 
 
 async def test_update_new_item(
@@ -225,7 +265,10 @@ async def test_update_item_missing_collection(
     item.collection = None
 
     resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
-    assert resp.status_code == 424
+    assert resp.status_code == 200
+
+    put_item = resp.json()
+    assert put_item["collection"] == coll.id
 
 
 async def test_pagination(app_client, load_test_data, load_test_collection):

@@ -2,7 +2,7 @@
 from typing import Callable, List, Optional, Type, Union
 
 import attr
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, Body, FastAPI
 from pydantic import BaseModel
 from stac_pydantic import Collection, Item
 from starlette.responses import JSONResponse, Response
@@ -13,6 +13,13 @@ from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
+
+
+@attr.s
+class PostOrPutItem(CollectionUri):
+    """Create or update Item."""
+
+    item: stac_types.Item = attr.ib(default=Body())
 
 
 @attr.s
@@ -77,7 +84,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=self._create_endpoint(self.client.create_item, stac_types.Item),
+            endpoint=self._create_endpoint(self.client.create_item, PostOrPutItem),
         )
 
     def register_update_item(self):
@@ -90,7 +97,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=self._create_endpoint(self.client.update_item, stac_types.Item),
+            endpoint=self._create_endpoint(self.client.update_item, PostOrPutItem),
         )
 
     def register_delete_item(self):

@@ -4,6 +4,7 @@ import logging
 from typing import Optional, Union
 
 import attr
+from fastapi import HTTPException
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.extensions.third_party.bulk_transactions import (
@@ -23,18 +24,32 @@ class TransactionsClient(AsyncBaseTransactionsClient):
     """Transactions extension specific CRUD operations."""
 
     async def create_item(
-        self, item: stac_types.Item, **kwargs
+        self, collection_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Create item."""
+        item_collection_id = item.get("collection")
+        if item_collection_id is not None and collection_id != item_collection_id:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Collection ID from path parameter ({collection_id}) does not match Collection ID from Item ({item_collection_id})",
+            )
+        item["collection"] = collection_id
         request = kwargs["request"]
         pool = request.app.state.writepool
         await dbfunc(pool, "create_item", item)
         return item
 
     async def update_item(
-        self, item: stac_types.Item, **kwargs
+        self, collection_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Update item."""
+        item_collection_id = item.get("collection")
+        if item_collection_id is not None and collection_id != item_collection_id:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Collection ID from path parameter ({collection_id}) does not match Collection ID from Item ({item_collection_id})",
+            )
+        item["collection"] = collection_id
         request = kwargs["request"]
         pool = request.app.state.writepool
         await dbfunc(pool, "update_item", item)
