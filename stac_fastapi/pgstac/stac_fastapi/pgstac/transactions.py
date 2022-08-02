@@ -27,11 +27,11 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         self, collection_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Create item."""
-        item_collection_id = item.get("collection")
-        if item_collection_id is not None and collection_id != item_collection_id:
+        body_collection_id = item.get("collection")
+        if body_collection_id is not None and collection_id != body_collection_id:
             raise HTTPException(
                 status_code=409,
-                detail=f"Collection ID from path parameter ({collection_id}) does not match Collection ID from Item ({item_collection_id})",
+                detail=f"Collection ID from path parameter ({collection_id}) does not match Collection ID from Item ({body_collection_id})",
             )
         item["collection"] = collection_id
         request = kwargs["request"]

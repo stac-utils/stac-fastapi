@@ -28,7 +28,7 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def create_item(
-        self, item: stac_types.Item, **kwargs
+        self, collection_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Create a new item.
 
@@ -46,7 +46,7 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def update_item(
-        self, item: stac_types.Item, **kwargs
+        self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
@@ -138,7 +138,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def create_item(
-        self, item: stac_types.Item, **kwargs
+        self, collection_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Create a new item.
 
@@ -155,7 +155,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def update_item(
-        self, item: stac_types.Item, **kwargs
+        self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 

@@ -146,7 +146,8 @@ def test_update_item_duplicate(app_client, load_test_data):
     # update gsd in test_item, test-collection-2
     test_item["properties"]["gsd"] = 16
     resp = app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        json=test_item,
     )
     assert resp.status_code == 200
     updated_item = resp.json()
@@ -156,7 +157,8 @@ def test_update_item_duplicate(app_client, load_test_data):
     test_item["collection"] = "test-collection"
     test_item["properties"]["gsd"] = 17
     resp = app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        json=test_item,
     )
     assert resp.status_code == 200
     updated_item = resp.json()
@@ -208,7 +210,8 @@ def test_update_item_already_exists(app_client, load_test_data):
     assert test_item["properties"]["gsd"] != 16
     test_item["properties"]["gsd"] = 16
     resp = app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        json=test_item,
     )
     updated_item = resp.json()
     assert updated_item["properties"]["gsd"] == 16
@@ -218,7 +221,8 @@ def test_update_new_item(app_client, load_test_data):
     """Test updating an item which does not exist (transactions extension)"""
     test_item = load_test_data("test_item.json")
     resp = app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        json=test_item,
     )
     assert resp.status_code == 404
 
@@ -236,7 +240,8 @@ def test_update_item_missing_collection(app_client, load_test_data):
     # Try to update collection of the item
     test_item["collection"] = "stac is cool"
     resp = app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        json=test_item,
     )
     assert resp.status_code == 404
 
@@ -253,7 +258,8 @@ def test_update_item_geometry(app_client, load_test_data):
     # Update the geometry of the item
     test_item["geometry"]["coordinates"] = [[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]]
     resp = app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        json=test_item,
     )
     assert resp.status_code == 200
 
@@ -366,7 +372,9 @@ def test_item_timestamps(app_client, load_test_data):
     time.sleep(2)
     # Confirm `updated` timestamp
     item["properties"]["proj:epsg"] = 4326
-    resp = app_client.put(f"/collections/{test_item['collection']}/items", json=item)
+    resp = app_client.put(
+        f"/collections/{test_item['collection']}/items/{item['id']}", json=item
+    )
     assert resp.status_code == 200
     updated_item = resp.json()
 
