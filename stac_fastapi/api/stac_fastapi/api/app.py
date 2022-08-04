@@ -275,9 +275,9 @@ class StacApi:
         Returns:
             None
         """
-        is_paginated = self.get_extension(self.pagination_extension)
-        if is_paginated is not None:
-            mixins = [is_paginated.GET]
+        pagination_extension = self.get_extension(self.pagination_extension)
+        if pagination_extension is not None:
+            mixins = [pagination_extension.GET]
         else:
             mixins = None
         request_model = create_request_model(
