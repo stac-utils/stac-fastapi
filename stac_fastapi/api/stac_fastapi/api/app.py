@@ -275,11 +275,15 @@ class StacApi:
         Returns:
             None
         """
-        get_pagination_model = self.get_extension(self.pagination_extension).GET
+        is_paginated = self.get_extension(self.pagination_extension)
+        if is_paginated is not None:
+            mixins = [is_paginated.GET]
+        else:
+            mixins = None
         request_model = create_request_model(
             "ItemCollectionURI",
             base_model=ItemCollectionUri,
-            mixins=[get_pagination_model],
+            mixins=mixins,
         )
         self.router.add_api_route(
             name="Get ItemCollection",
