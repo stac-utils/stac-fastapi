@@ -43,6 +43,7 @@
   from the request body, if present, and falls back to using the path parameter if no `"collection"` property is found in the body
   ([#425](https://github.com/stac-utils/stac-fastapi/pull/425))
 * PGStac Backend Transactions endpoints return added Item/Collection instead of Item/Collection from request ([#424](https://github.com/stac-utils/stac-fastapi/pull/424))
+* Application no longer breaks on startup when pagination extension is not included ([#444](https://github.com/stac-utils/stac-fastapi/pull/444))
 
 ## [2.3.0]
 
