@@ -1,10 +1,46 @@
 """api middleware."""
-
 import re
+import typing
 from http.client import HTTP_PORT, HTTPS_PORT
 from typing import List, Tuple
 
+from starlette.middleware.cors import CORSMiddleware as _CORSMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
+
+
+class CORSMiddleware(_CORSMiddleware):
+    """
+    Subclass of Starlette's standard CORS middleware with default values set to those reccomended by the STAC API spec.
+
+    https://github.com/radiantearth/stac-api-spec/blob/914cf8108302e2ec734340080a45aaae4859bb63/implementation.md#cors
+    """
+
+    def __init__(
+        self,
+        app: ASGIApp,
+        allow_origins: typing.Sequence[str] = ("*",),
+        allow_methods: typing.Sequence[str] = (
+            "OPTIONS",
+            "POST",
+            "GET",
+        ),
+        allow_headers: typing.Sequence[str] = ("Content-Type",),
+        allow_credentials: bool = False,
+        allow_origin_regex: typing.Optional[str] = None,
+        expose_headers: typing.Sequence[str] = (),
+        max_age: int = 600,
+    ) -> None:
+        """Create CORS middleware."""
+        super().__init__(
+            app,
+            allow_origins,
+            allow_methods,
+            allow_headers,
+            allow_credentials,
+            allow_origin_regex,
+            expose_headers,
+            max_age,
+        )
 
 
 class ProxyHeaderMiddleware:
