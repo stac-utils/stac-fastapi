@@ -41,7 +41,6 @@ def ingest_joplin_data(app_host: str = app_host, data_dir: Path = joplindata):
         index = json.load(f)
 
     for feat in index["features"]:
-        del feat["stac_extensions"]
         post_or_put(urljoin(app_host, f"collections/{collection['id']}/items"), feat)
 
 
