@@ -9,6 +9,7 @@
 ### Removed
 
 ### Fixed
+* `ciso8601` fails to build in some environments, instead use `pyiso8601` to parse datetimes.
 
 ## [2.4.0]
 
