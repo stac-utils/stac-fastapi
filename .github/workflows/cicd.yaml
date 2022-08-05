@@ -85,7 +85,13 @@ jobs:
           cd stac_fastapi/api && pipenv run pytest -svvv
         env:
           ENVIRONMENT: testing
-      
+
+      - name: Run test suite
+        run: |
+          cd stac_fastapi/types && pipenv run pytest -svvv
+        env:
+          ENVIRONMENT: testing
+
       - name: Run test suite
         run: |
           cd stac_fastapi/sqlalchemy && pipenv run pytest -svvv

@@ -1,16 +1,18 @@
 """rfc3339."""
-
+import re
 from datetime import datetime, timezone
 from typing import Optional, Tuple
 
-import ciso8601
+import iso8601
 from pystac.utils import datetime_to_str
+
+RFC33339_PATTERN = r"^(\d\d\d\d)\-(\d\d)\-(\d\d)(T|t)(\d\d):(\d\d):(\d\d)([.]\d+)?(Z|([-+])(\d\d):(\d\d))$"
 
 
 def rfc3339_str_to_datetime(s: str) -> datetime:
     """Convert a string conforming to RFC 3339 to a :class:`datetime.datetime`.
 
-    Uses :meth:`ciso8601.parse_rfc3339` under the hood.
+    Uses :meth:`iso8601.parse_date` under the hood.
 
     Args:
         s (str) : The string to convert to :class:`datetime.datetime`.
@@ -21,7 +23,16 @@ def rfc3339_str_to_datetime(s: str) -> datetime:
     Raises:
         ValueError: If the string is not a valid RFC 3339 string.
     """
-    return ciso8601.parse_rfc3339(s)
+    # Uppercase the string
+    s = s.upper()
+
+    # Match against RFC3339 regex.
+    result = re.match(RFC33339_PATTERN, s)
+    if not result:
+        raise ValueError("Invalid RFC3339 datetime.")
+
+    # Parse with pyiso8601
+    return iso8601.parse_date(s)
 
 
 def str_to_interval(
