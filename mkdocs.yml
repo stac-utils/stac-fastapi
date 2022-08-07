@@ -25,7 +25,6 @@ nav:
       - models: api/stac_fastapi/api/models.md
       - openapi: api/stac_fastapi/api/openapi.md
       - routes: api/stac_fastapi/api/routes.md
-      - version: api/stac_fastapi/api/version.md
     - stac_fastapi.extensions:
       - core:
           - context: api/stac_fastapi/extensions/core/context.md
@@ -37,7 +36,6 @@ nav:
           - transaction: api/stac_fastapi/extensions/core/transaction.md
       - third_party:
           - bulk_transactions: api/stac_fastapi/extensions/third_party/bulk_transactions.md
-      - version: api/stac_fastapi/extensions/version.md
     - stac_fastapi.types:
       - config: api/stac_fastapi/types/config.md
       - conformance: api/stac_fastapi/types/conformance.md
@@ -49,7 +47,6 @@ nav:
       - rfc3339: api/stac_fastapi/types/rfc3339.md
       - search: api/stac_fastapi/types/search.md
       - stac: api/stac_fastapi/types/stac.md
-      - version: api/stac_fastapi/types/version.md
   - Development - Contributing: 'contributing.md'
   - Release Notes: 'release-notes.md'
 
