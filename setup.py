@@ -7,10 +7,12 @@ with open("README.md") as f:
 
 install_requires = [
     "attrs",
+    "fastapi>=0.73.0",
     "pydantic[dotenv]",
     "stac_pydantic==2.0.*",
     "brotli_asgi",
-    "stac-fastapi.types",
+    "pystac==1.*",
+    "iso8601~=1.0.2",
 ]
 
 extra_reqs = {
@@ -27,7 +29,7 @@ extra_reqs = {
 
 
 setup(
-    name="stac-fastapi.api",
+    name="stac-fastapi",
     description="An implementation of STAC API based on the FastAPI framework.",
     long_description=desc,
     long_description_content_type="text/markdown",
