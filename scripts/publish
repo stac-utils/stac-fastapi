@@ -6,19 +6,10 @@ if [[ -n "${CI}" ]]; then
     set -x
 fi
 
-# Import shared variables
-SUBPACKAGE_DIRS=(
-    "stac_fastapi/types"
-    "stac_fastapi/extensions"
-    "stac_fastapi/api"
-    "stac_fastapi/sqlalchemy"
-    "stac_fastapi/pgstac"
-)
-
 function usage() {
     echo -n \
         "Usage: $(basename "$0")
-Publish all stac-fastapi packages.
+Publish stac-fastapi package.
 
 Options:
 --test    Publish to test pypi. Requires a 'testpypi' repository
@@ -61,12 +52,9 @@ fi
 if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     for PACKAGE_DIR in "${SUBPACKAGE_DIRS[@]}"
     do
-        echo ${PACKAGE_DIR}
-        pushd ./${PACKAGE_DIR}
         rm -rf dist
         python setup.py sdist bdist_wheel
         twine upload ${TEST_PYPI} dist/*
-        popd
 
     done
 fi
