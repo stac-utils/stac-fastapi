@@ -22,88 +22,67 @@
 
 ---
 
-Python library for building a STAC compliant FastAPI application.  The project is split up into several namespace
-packages:
+Python library for building a STAC compliant FastAPI application. This package provides the generic API layer and tools for an API compliant with the STAC API spec, but developers will need to install a database backend package as well in order to deploy a working API. This package includes the following modules:
 
 - **stac_fastapi.api**: An API layer which enforces the [stac-api-spec](https://github.com/radiantearth/stac-api-spec).
 - **stac_fastapi.extensions**: Abstract base classes for [STAC API extensions](https://github.com/radiantearth/stac-api-spec/blob/master/extensions.md) and third-party extensions.
 - **stac_fastapi.types**: Shared types and abstract base classes used by the library.
 
-#### Backends
-- **stac_fastapi.sqlalchemy**: Postgres backend implementation with sqlalchemy.
-- **stac_fastapi.pgstac**: Postgres backend implementation with [PGStac](https://github.com/stac-utils/pgstac).
+Some `stac-fastapi` backends managed within the `stac-utils` organization include:
+
+- [**stac-fastapi.pgstac**](https://github.com/stac-utils/stac-fastapi-pgstac): A PostgreSQL/PostGIS backend implemented
+  using [PgSTAC](https://github.com/stac-utils/pgstac).
+- [**stac-fastapi.sqlalchemy**](https://github.com/stac-utils/stac-fastapi-sqlalchemy): A PostgreSQL/PostGIS backend implemented using [SQLAlchemy](https://www.sqlalchemy.org/).
+- [**stac-fastapi.elasticsearch](https://github.com/stac-utils/stac-fastapi-elasticsearch): An [Elasticsearch](https://www.elastic.co/) backend. *Note that this backend does not have any production deployments as of 2022-08-07.*
 
 `stac-fastapi` was initially developed by [arturo-ai](https://github.com/arturo-ai).
 
 ## Installation
 
+**Install from PyPi**
+
 ```bash
 # Install from pypi.org
-pip install stac-fastapi.api stac-fastapi.types stac-fastapi.extensions
+pip install stac-fastapi
+```
 
-# Install a backend of your choice
-pip install stac-fastapi.sqlalchemy
-# or
-pip install stac-fastapi.pgstac
+**Install from Source**
 
+```bash
 #/////////////////////
 # Install from sources
 
 git clone https://github.com/stac-utils/stac-fastapi.git && cd stac-fastapi
-pip install \
-  -e stac_fastapi/api \
-  -e stac_fastapi/types \
-  -e stac_fastapi/extensions
+pip install -e .
+```
 
-# Install a backend of your choice
-pip install -e stac_fastapi/sqlalchemy
-# or
-pip install -e stac_fastapi/pgstac
+**Pre-v2.5.0**
+
+Prior to v2.5.0 the `stac-fastapi.api`, `stac-fastapi.types`, and `stac-fastapi.extensions` modules were distributed
+as separate packages in subdirectories of this repo. To install a version earlier that v2.5.0 you will need to install
+each package separately:
+
+```bash
+# For v2.4.1...
+pip install stac-fastapi.api==2.4.1
+pip install stac-fastapi.types==2.4.1
+pip install stac-fastapi.extensions==2.4.1
 ```
 
 ## Local Development
 
-Use docker-compose via make to start the application, migrate the database, and ingest some example data:
+Developing the API locally requires that you install a backend package (e.g. `stac-fastapi.pgstac`) in addition to
+this package. You can, however, run tests and linters and generate the docs without installing an additional
+backend package.
+
+### Install Development Environment
+
 ```bash
-make image
-make docker-run-all
+git clone https://github.com/stac-utils/stac-fastapi.git && cd stac-fastapi
+pip install -e ".[dev]"
 ```
-
-- The SQLAlchemy backend app will be available on <http://localhost:8081>.
-- The PGStac backend app will be available on <http://localhost:8082>.
-
-You can also launch only one of the applications with either of these commands:
-
-```shell
-make docker-run-pgstac
-make docker-run-sqlalchemy
-```
-
-The application will be started on <http://localhost:8080>.
-
-By default, the apps are run with uvicorn hot-reloading enabled. This can be turned off by changing the value
-of the `RELOAD` env var in docker-compose.yml to `false`.
-
-#### Note to Docker for Windows users
-
-You'll need to enable experimental features on Docker for Windows in order to run the docker-compose,
-due to the "--platform" flag that is required to allow the project to run on some Apple architectures.
-To do this, open Docker Desktop, go to settings, select "Docker Engine", and modify the configuration
-JSON to have `"experimental": true`.
 
 ### Testing
-
-Before running the tests, ensure the database and apps run with docker-compose are down:
-
-```shell
-docker-compose down
-```
-
-The database container provided by the docker-compose stack must be running. This can be started with:
-
-```shell
-make run-database
-```
 
 To run tests for both the pgstac and sqlalchemy backends, execute:
 
@@ -111,22 +90,17 @@ To run tests for both the pgstac and sqlalchemy backends, execute:
 make test
 ```
 
-To only run pgstac backend tests:
+### Linting and Code Checking
 
-```shell
-make test-pgstac
-```
+This project uses the following libraries for code checking:
 
-To only run sqlalchemy backend tests:
+- [black](https://github.com/psf/black) for Python code formatting
+- [isort](https://github.com/PyCQA/isort) for consistent sorting of import statements
+- [flake8](https://github.com/pycqa/flake8) for Python style checks
+- [pydocstyle](https://github.com/PyCQA/pydocstyle) for checking compliance with Python docstring conventions
 
-```shell
-make test-sqlalchemy
-```
+Run the linters using `pre-commit`:
 
-Run individual tests by running pytest within a docker container:
-
-```shell
-make docker-shell-pgstac # or docker-shell-sqlalchemy
-$ pip install -e stac_fastapi/pgstac[dev]
-$ pytest -v stac_fastapi/pgstac/tests/api/test_api.py 
+```bash
+pre-commit run --all
 ```
