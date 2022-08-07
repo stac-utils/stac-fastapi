@@ -28,11 +28,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e \
-            stac_fastapi/api \
-            stac_fastapi/types \
-            stac_fastapi/extensions \
-            stac_fastapi/sqlalchemy
+          python -m pip install -e .
           python -m pip install mkdocs mkdocs-material pdocs
 
       - name: update API docs
@@ -42,14 +38,6 @@ jobs:
             --exclude_source \
             --overwrite \
             stac_fastapi
-        env:
-          POSTGRES_USER: username
-          POSTGRES_PASS: password
-          POSTGRES_DBNAME: postgis
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_HOST_READER: localhost
-          POSTGRES_HOST_WRITER: localhost
 
       - name: Deploy docs
         run: mkdocs gh-deploy --force
