@@ -14,6 +14,7 @@ from starlette.responses import Response
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.links import CollectionLinks
 from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import Conformance
@@ -341,6 +342,17 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
         return base_conformance
 
+    @abc.abstractmethod
+    def list_all_collections(self) -> List[stac_types.Collection]:
+        """Return a list of all available collections.
+
+        This method MUST be defined in the backend implementation.
+
+        Returns:
+            List of STAC Collection-like dictionaries
+        """
+        ...
+
     def handle_landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
 
@@ -361,8 +373,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add Collections links
-        collections = self.handle_all_collections(request=kwargs["request"])
-        for collection in collections["collections"]:
+        collections = self.list_all_collections()
+        for collection in collections:
             landing_page["links"].append(
                 {
                     "rel": Relations.child.value,
@@ -448,7 +460,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def handle_get_item(self, item_id: str, collection_id: str, **kwargs) -> stac_types.Item:
+    def handle_get_item(
+        self, item_id: str, collection_id: str, **kwargs
+    ) -> stac_types.Item:
         """Get item by id.
 
         Called with `GET /collections/{collection_id}/items/{item_id}`.
@@ -462,7 +476,6 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         """
         ...
 
-    @abc.abstractmethod
     def handle_all_collections(self, **kwargs) -> stac_types.Collections:
         """Get all available collections.
 
@@ -471,10 +484,45 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             A list of collections.
         """
-        ...
+        request: Request = kwargs["request"]
+        base_url = get_base_url(request)
+        collections = self.list_all_collections()
+        linked_collections: List[stac_types.Collection] = []
+        if collections is not None and len(collections) > 0:
+            for c in collections:
+                coll = stac_types.Collection(**c)
+                coll["links"] = CollectionLinks(
+                    collection_id=coll["id"], request=request
+                ).get_links(extra_links=coll.get("links"))
+
+                linked_collections.append(coll)
+
+        links = [
+            {
+                "rel": Relations.root.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.parent.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.self.value,
+                "type": MimeTypes.json,
+                "href": urljoin(base_url, "collections"),
+            },
+        ]
+        collection_list = stac_types.Collections(
+            collections=linked_collections or [], links=links
+        )
+        return collection_list
 
     @abc.abstractmethod
-    def handle_get_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
+    def handle_get_collection(
+        self, collection_id: str, **kwargs
+    ) -> stac_types.Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collection_id}`.
@@ -533,6 +581,17 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     def extension_is_enabled(self, extension: str) -> bool:
         """Check if an api extension is enabled."""
         return any([type(ext).__name__ == extension for ext in self.extensions])
+
+    @abc.abstractmethod
+    async def list_all_collections(self) -> List[stac_types.Collection]:
+        """Return a list of all available collections.
+
+        This method MUST be defined in the backend implementation.
+
+        Returns:
+            List of STAC Collection-like dictionaries
+        """
+        ...
 
     async def handle_landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
@@ -655,7 +714,6 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         """
         ...
 
-    @abc.abstractmethod
     async def handle_all_collections(self, **kwargs) -> stac_types.Collections:
         """Get all available collections.
 
@@ -664,7 +722,40 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             A list of collections.
         """
-        ...
+        request: Request = kwargs["request"]
+        base_url = get_base_url(request)
+        collections = await self.list_all_collections(request)
+        linked_collections: List[stac_types.Collection] = []
+        if collections is not None and len(collections) > 0:
+            for c in collections:
+                coll = stac_types.Collection(**c)
+                coll["links"] = CollectionLinks(
+                    collection_id=coll["id"], base_url=base_url
+                ).get_links(extra_links=coll.get("links"))
+
+                linked_collections.append(coll)
+
+        links = [
+            {
+                "rel": Relations.root.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.parent.value,
+                "type": MimeTypes.json,
+                "href": base_url,
+            },
+            {
+                "rel": Relations.self.value,
+                "type": MimeTypes.json,
+                "href": urljoin(base_url, "collections"),
+            },
+        ]
+        collection_list = stac_types.Collections(
+            collections=linked_collections or [], links=links
+        )
+        return collection_list
 
     @abc.abstractmethod
     async def handle_get_collection(

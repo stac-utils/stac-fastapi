@@ -1,6 +1,6 @@
 """link helpers."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
 import attr
@@ -36,6 +36,10 @@ class BaseLinks:
         """Return the catalog root."""
         return dict(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
 
+    def resolve(self, url):
+        """Resolve url to the current request url."""
+        return urljoin(str(self.base_url), str(url))
+
 
 @attr.s
 class CollectionLinks(BaseLinks):
@@ -64,6 +68,36 @@ class CollectionLinks(BaseLinks):
     def create_links(self) -> List[Dict[str, Any]]:
         """Return all inferred links."""
         return [self.self(), self.parent(), self.items(), self.root()]
+
+    def get_links(
+        self, extra_links: Optional[List[Dict[str, Any]]] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Generate all the links.
+
+        Get the links object for a stac resource by iterating through
+        available methods on this class that start with link_.
+        """
+        # join passed in links with generated links
+        # and update relative paths
+        links = self.create_links()
+
+        if extra_links:
+            # For extra links passed in,
+            # add links modified with a resolved href.
+            # Drop any links that are dynamically
+            # determined by the server (e.g. self, parent, etc.)
+            # Resolving the href allows for relative paths
+            # to be stored in pgstac and for the hrefs in the
+            # links of response STAC objects to be resolved
+            # to the request url.
+            links += [
+                {**link, "href": self.resolve(link["href"])}
+                for link in extra_links
+                if link["rel"] not in INFERRED_LINK_RELS
+            ]
+
+        return links
 
 
 @attr.s
