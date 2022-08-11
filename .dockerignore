@@ -1,3 +1,4 @@
+docker-compose.yml
 **/__pycache__
 *.pyc
 *.pyo

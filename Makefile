@@ -1,14 +1,12 @@
 #!make
-.PHONY: test-api
-test:
-	pytest -svvv
+.PHONY: image
+image:
+	docker-compose build
 
-.PHONY: docs-image
-docs-image:
-	docker-compose -f docker-compose.docs.yml \
-		build
+.PHONY: test
+test: image
+	docker-compose run test
 
 .PHONY: docs
-docs: docs-image
-	docker-compose -f docker-compose.docs.yml \
-		run docs
+docs: image
+	docker-compose run docs

@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  test:
+    container_name: stac-fastapi-test
+    image: stac-utils/stac-fastapi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    volumes:
+      - ./stac_fastapi:/app/stac_fastapi
+      - ./scripts:/app/scripts
+      - ./tests:/app/tests
+    command:
+      - bash
+      - -c
+      - "pytest -svvv"
+
+  docs:
+    container_name: stac-fastapi-docs
+    image: stac-utils/stac-fastapi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    volumes:
+      - .:/opt/src
+    command:
+      - pdocs
+      - as_markdown
+      - --output_dir
+      - docs/api/
+      - --exclude_source
+      - --overwrite
+      - stac_fastapi
