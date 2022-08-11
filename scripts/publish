@@ -50,11 +50,7 @@ if [ -z "${TEST_PYPI}" ] && [ -z "${CI}" ]; then
 fi
 
 if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
-    for PACKAGE_DIR in "${SUBPACKAGE_DIRS[@]}"
-    do
-        rm -rf dist
-        python setup.py sdist bdist_wheel
-        twine upload ${TEST_PYPI} dist/*
-
-    done
+    rm -rf dist
+    python setup.py sdist bdist_wheel
+    twine upload ${TEST_PYPI} dist/*
 fi
