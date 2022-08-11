@@ -91,7 +91,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=self._create_endpoint(self.client.create_item, PostItem),
+            endpoint=self._create_endpoint(self.client.handle_create_item, PostItem),
         )
 
     def register_update_item(self):
@@ -104,7 +104,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=self._create_endpoint(self.client.update_item, PutItem),
+            endpoint=self._create_endpoint(self.client.handle_update_item, PutItem),
         )
 
     def register_delete_item(self):
@@ -117,7 +117,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=self._create_endpoint(self.client.delete_item, ItemUri),
+            endpoint=self._create_endpoint(self.client.handle_delete_item, ItemUri),
         )
 
     def register_create_collection(self):
@@ -131,7 +131,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=self._create_endpoint(
-                self.client.create_collection, stac_types.Collection
+                self.client.handle_create_collection, stac_types.Collection
             ),
         )
 
@@ -146,7 +146,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["PUT"],
             endpoint=self._create_endpoint(
-                self.client.update_collection, stac_types.Collection
+                self.client.handle_update_collection, stac_types.Collection
             ),
         )
 
@@ -161,7 +161,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["DELETE"],
             endpoint=self._create_endpoint(
-                self.client.delete_collection, CollectionUri
+                self.client.handle_delete_collection, CollectionUri
             ),
         )
 

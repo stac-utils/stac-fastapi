@@ -36,7 +36,7 @@ class BaseBulkTransactionsClient(abc.ABC):
             yield lst[i : i + n]
 
     @abc.abstractmethod
-    def bulk_item_insert(
+    def handle_bulk_item_insert(
         self, items: Items, chunk_size: Optional[int] = None, **kwargs
     ) -> str:
         """Bulk creation of items.
@@ -125,7 +125,7 @@ class BulkTransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=self._create_endpoint(
-                self.client.bulk_item_insert, items_request_model
+                self.client.handle_bulk_item_insert, items_request_model
             ),
         )
         app.include_router(router, tags=["Bulk Transaction Extension"])

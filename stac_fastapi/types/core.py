@@ -27,7 +27,7 @@ class BaseTransactionsClient(abc.ABC):
     """Defines a pattern for implementing the STAC API Transaction Extension."""
 
     @abc.abstractmethod
-    def create_item(
+    def handle_create_item(
         self, collection_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Create a new item.
@@ -45,7 +45,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def update_item(
+    def handle_update_item(
         self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
@@ -64,7 +64,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def delete_item(
+    def handle_delete_item(
         self, item_id: str, collection_id: str, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Delete an item from a collection.
@@ -81,7 +81,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def create_collection(
+    def handle_create_collection(
         self, collection: stac_types.Collection, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Create a new collection.
@@ -97,7 +97,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def update_collection(
+    def handle_update_collection(
         self, collection: stac_types.Collection, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
@@ -116,7 +116,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def delete_collection(
+    def handle_delete_collection(
         self, collection_id: str, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Delete a collection.
@@ -137,7 +137,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     """Defines a pattern for implementing the STAC transaction extension."""
 
     @abc.abstractmethod
-    async def create_item(
+    async def handle_create_item(
         self, collection_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Create a new item.
@@ -154,7 +154,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def update_item(
+    async def handle_update_item(
         self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
@@ -172,7 +172,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def delete_item(
+    async def handle_delete_item(
         self, item_id: str, collection_id: str, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Delete an item from a collection.
@@ -189,7 +189,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def create_collection(
+    async def handle_create_collection(
         self, collection: stac_types.Collection, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Create a new collection.
@@ -205,7 +205,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def update_collection(
+    async def handle_update_collection(
         self, collection: stac_types.Collection, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
@@ -223,7 +223,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def delete_collection(
+    async def handle_delete_collection(
         self, collection_id: str, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Delete a collection.
@@ -341,7 +341,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
         return base_conformance
 
-    def landing_page(self, **kwargs) -> stac_types.LandingPage:
+    def handle_landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
 
         Called with `GET /`.
@@ -361,7 +361,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add Collections links
-        collections = self.all_collections(request=kwargs["request"])
+        collections = self.handle_all_collections(request=kwargs["request"])
         for collection in collections["collections"]:
             landing_page["links"].append(
                 {
@@ -398,7 +398,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
         return landing_page
 
-    def conformance(self, **kwargs) -> stac_types.Conformance:
+    def handle_conformance(self, **kwargs) -> stac_types.Conformance:
         """Conformance classes.
 
         Called with `GET /conformance`.
@@ -409,7 +409,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         return Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
-    def post_search(
+    def handle_post_search(
         self, search_request: BaseSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         """Cross catalog search (POST).
@@ -425,7 +425,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_search(
+    def handle_get_search(
         self,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
@@ -448,7 +448,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac_types.Item:
+    def handle_get_item(self, item_id: str, collection_id: str, **kwargs) -> stac_types.Item:
         """Get item by id.
 
         Called with `GET /collections/{collection_id}/items/{item_id}`.
@@ -463,7 +463,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def all_collections(self, **kwargs) -> stac_types.Collections:
+    def handle_all_collections(self, **kwargs) -> stac_types.Collections:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -474,7 +474,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
+    def handle_get_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collection_id}`.
@@ -488,7 +488,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def item_collection(
+    def handle_collection_items(
         self, collection_id: str, limit: int = 10, token: str = None, **kwargs
     ) -> stac_types.ItemCollection:
         """Get all items from a specific collection.
@@ -534,7 +534,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         """Check if an api extension is enabled."""
         return any([type(ext).__name__ == extension for ext in self.extensions])
 
-    async def landing_page(self, **kwargs) -> stac_types.LandingPage:
+    async def handle_landing_page(self, **kwargs) -> stac_types.LandingPage:
         """Landing page.
 
         Called with `GET /`.
@@ -552,7 +552,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             conformance_classes=self.conformance_classes(),
             extension_schemas=extension_schemas,
         )
-        collections = await self.all_collections(request=kwargs["request"])
+        collections = await self.handle_all_collections(request=kwargs["request"])
         for collection in collections["collections"]:
             landing_page["links"].append(
                 {
@@ -589,7 +589,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
 
         return landing_page
 
-    async def conformance(self, **kwargs) -> stac_types.Conformance:
+    async def handle_conformance(self, **kwargs) -> stac_types.Conformance:
         """Conformance classes.
 
         Called with `GET /conformance`.
@@ -600,7 +600,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         return Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
-    async def post_search(
+    async def handle_post_search(
         self, search_request: BaseSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         """Cross catalog search (POST).
@@ -616,7 +616,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_search(
+    async def handle_get_search(
         self,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
@@ -639,7 +639,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_item(
+    async def handle_get_item(
         self, item_id: str, collection_id: str, **kwargs
     ) -> stac_types.Item:
         """Get item by id.
@@ -656,7 +656,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def all_collections(self, **kwargs) -> stac_types.Collections:
+    async def handle_all_collections(self, **kwargs) -> stac_types.Collections:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -667,7 +667,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_collection(
+    async def handle_get_collection(
         self, collection_id: str, **kwargs
     ) -> stac_types.Collection:
         """Get collection by id.
@@ -683,7 +683,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def item_collection(
+    async def handle_collection_items(
         self, collection_id: str, limit: int = 10, token: str = None, **kwargs
     ) -> stac_types.ItemCollection:
         """Get all items from a specific collection.

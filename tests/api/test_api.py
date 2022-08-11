@@ -77,44 +77,44 @@ class TestRouteDependencies:
 
 
 class DummyCoreClient(core.BaseCoreClient):
-    def all_collections(self, *args, **kwargs):
+    def handle_all_collections(self, *args, **kwargs):
         ...
 
-    def get_collection(self, *args, **kwargs):
+    def handle_get_collection(self, *args, **kwargs):
         ...
 
-    def get_item(self, *args, **kwargs):
+    def handle_get_item(self, *args, **kwargs):
         ...
 
-    def get_search(self, *args, **kwargs):
+    def handle_get_search(self, *args, **kwargs):
         ...
 
-    def post_search(self, *args, **kwargs):
+    def handle_post_search(self, *args, **kwargs):
         ...
 
-    def item_collection(self, *args, **kwargs):
+    def handle_collection_items(self, *args, **kwargs):
         ...
 
 
 class DummyTransactionsClient(core.BaseTransactionsClient):
     """Defines a pattern for implementing the STAC transaction extension."""
 
-    def create_item(self, *args, **kwargs):
+    def handle_create_item(self, *args, **kwargs):
         return "dummy response"
 
-    def update_item(self, *args, **kwargs):
+    def handle_update_item(self, *args, **kwargs):
         return "dummy response"
 
-    def delete_item(self, *args, **kwargs):
+    def handle_delete_item(self, *args, **kwargs):
         return "dummy response"
 
-    def create_collection(self, *args, **kwargs):
+    def handle_create_collection(self, *args, **kwargs):
         return "dummy response"
 
-    def update_collection(self, *args, **kwargs):
+    def handle_update_collection(self, *args, **kwargs):
         return "dummy response"
 
-    def delete_collection(self, *args, **kwargs):
+    def handle_delete_collection(self, *args, **kwargs):
         return "dummy response"
 
 

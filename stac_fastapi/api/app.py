@@ -143,7 +143,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=self._create_endpoint(
-                self.client.landing_page, EmptyRequest, self.response_class
+                self.client.handle_landing_page, EmptyRequest, self.response_class
             ),
         )
 
@@ -164,7 +164,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=self._create_endpoint(
-                self.client.conformance, EmptyRequest, self.response_class
+                self.client.handle_conformance, EmptyRequest, self.response_class
             ),
         )
 
@@ -183,7 +183,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=self._create_endpoint(
-                self.client.get_item, ItemUri, self.response_class
+                self.client.handle_get_item, ItemUri, self.response_class
             ),
         )
 
@@ -205,7 +205,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=self._create_endpoint(
-                self.client.post_search, self.search_post_request_model, GeoJSONResponse
+                self.client.handle_post_search, self.search_post_request_model, GeoJSONResponse
             ),
         )
 
@@ -227,7 +227,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=self._create_endpoint(
-                self.client.get_search, self.search_get_request_model, GeoJSONResponse
+                self.client.handle_get_search, self.search_get_request_model, GeoJSONResponse
             ),
         )
 
@@ -248,7 +248,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=self._create_endpoint(
-                self.client.all_collections, EmptyRequest, self.response_class
+                self.client.handle_all_collections, EmptyRequest, self.response_class
             ),
         )
 
@@ -267,7 +267,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=self._create_endpoint(
-                self.client.get_collection, CollectionUri, self.response_class
+                self.client.handle_get_collection, CollectionUri, self.response_class
             ),
         )
 
@@ -298,7 +298,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=self._create_endpoint(
-                self.client.item_collection, request_model, self.response_class
+                self.client.handle_collection_items, request_model, self.response_class
             ),
         )
 
