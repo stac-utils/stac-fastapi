@@ -11,13 +11,14 @@ from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 from starlette.responses import Response
 
+from stac_fastapi.api.errors import NotFoundError
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.links import CollectionLinks
 from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.search import BaseSearchPostRequest
-from stac_fastapi.types.stac import Conformance
+from stac_fastapi.types.stac import Collection, Conformance
 
 NumType = Union[float, int]
 StacType = Dict[str, Any]
@@ -583,13 +584,28 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         return any([type(ext).__name__ == extension for ext in self.extensions])
 
     @abc.abstractmethod
-    async def list_all_collections(self) -> List[stac_types.Collection]:
+    async def fetch_all_collections(
+        self, request: Request
+    ) -> List[stac_types.Collection]:
         """Return a list of all available collections.
 
         This method MUST be defined in the backend implementation.
 
         Returns:
             List of STAC Collection-like dictionaries
+        """
+        ...
+
+    @abc.abstractclassmethod
+    async def fetch_collection(
+        self, collection_id: str, request: Request
+    ) -> Optional[stac_types.Collection]:
+        """Return the STAC Collection with the given ID, or `None` if the Collection does not exist.
+
+        This method MUST be defined in the backend implementation.
+
+        Returns:
+            Dictionary representing the STAC Collection, or `None` if no Collection with the given ID is found
         """
         ...
 
@@ -724,7 +740,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         """
         request: Request = kwargs["request"]
         base_url = get_base_url(request)
-        collections = await self.list_all_collections(request)
+        collections = await self.fetch_all_collections(request)
         linked_collections: List[stac_types.Collection] = []
         if collections is not None and len(collections) > 0:
             for c in collections:
@@ -757,7 +773,6 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         )
         return collection_list
 
-    @abc.abstractmethod
     async def handle_get_collection(
         self, collection_id: str, **kwargs
     ) -> stac_types.Collection:
@@ -771,7 +786,18 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             Collection.
         """
-        ...
+        request: Request = kwargs["request"]
+        base_url = get_base_url(request)
+
+        collection = await self.fetch_collection(collection_id, request)
+        if collection is None:
+            raise NotFoundError(f"Collection {collection_id} does not exist.")
+
+        collection["links"] = CollectionLinks(
+            collection_id=collection_id, base_url=base_url
+        ).get_links(extra_links=collection.get("links"))
+
+        return Collection(**collection)
 
     @abc.abstractmethod
     async def handle_collection_items(
