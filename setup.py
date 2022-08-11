@@ -46,7 +46,7 @@ setup(
     author_email="engineering@arturo.ai",
     url="https://github.com/stac-utils/stac-fastapi",
     license="MIT",
-    packages=find_namespace_packages(exclude=["alembic", "tests", "scripts"]),
+    packages=find_namespace_packages(exclude=["tests", "scripts"]),
     zip_safe=False,
     install_requires=install_requires,
     tests_require=extra_reqs["dev"],
