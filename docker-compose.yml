@@ -9,9 +9,9 @@ services:
       dockerfile: Dockerfile
     platform: linux/amd64
     volumes:
-      - ./stac_fastapi:/app/stac_fastapi
-      - ./scripts:/app/scripts
-      - ./tests:/app/tests
+      - ./stac_fastapi:/opt/src/stac_fastapi
+      - ./scripts:/opt/src/scripts
+      - ./tests:/opt/src/tests
     command:
       - bash
       - -c

@@ -1,3 +1,4 @@
+tests
 docker-compose.yml
 **/__pycache__
 *.pyc
