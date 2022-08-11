@@ -1,9 +1,11 @@
-from fastapi import Depends, HTTPException, security, status
+from typing import List
+
+from fastapi import Depends, HTTPException, security, status, Request
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import TokenPaginationExtension, TransactionExtension
-from stac_fastapi.types import config, core
+from stac_fastapi.types import config, core, stac as stac_types
 
 
 class TestRouteDependencies:
@@ -77,7 +79,7 @@ class TestRouteDependencies:
 
 
 class DummyCoreClient(core.BaseCoreClient):
-    def handle_all_collections(self, *args, **kwargs):
+    def list_all_collections(self, request: Request) -> List[stac_types.Collection]:
         ...
 
     def handle_get_collection(self, *args, **kwargs):
