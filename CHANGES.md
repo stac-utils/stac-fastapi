@@ -2,21 +2,15 @@
 
 ## Unreleased
 
-### Added
-
-### Changed
-
 ### Removed
 
-### Fixed
+- The SQLAlchemy and PgSTAC backend implementations have been moved to their own repos
+  ([stac-utils/stac-fastapi-sqlalchemy](https://github.com/stac-utils/stac-fastapi-sqlalchemy)
+  and [stac-utils/stac-fastapi-pgstac](https://github.com/stac-utils/stac-fastapi-pgstac), respectively).
+  These backends will be distributed and versioned separately going forward.
+  ([#450](https://github.com/stac-utils/stac-fastapi/pull/450))
 
 ## [2.4.1]
-
-### Added
-
-### Changed
-
-### Removed
 
 ### Fixed
 * `ciso8601` fails to build in some environments, instead use `pyiso8601` to parse datetimes.
