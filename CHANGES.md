@@ -10,6 +10,18 @@
 
 ### Fixed
 
+## [2.4.2]
+
+### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+
+* Quote password in pgsql strings to accomodate special characters. [455](https://github.com/stac-utils/stac-fastapi/issues/455)
+
 ## [2.4.1]
 
 ### Added
@@ -19,6 +31,7 @@
 ### Removed
 
 ### Fixed
+
 * `ciso8601` fails to build in some environments, instead use `pyiso8601` to parse datetimes.
 
 ## [2.4.0]
@@ -43,11 +56,12 @@
 * docker-compose now runs uvicorn with hot-reloading enabled
 * Bump version of PGStac to 0.6.2 that includes support for hydrating results in the API backed ([#397](https://github.com/stac-utils/stac-fastapi/pull/397))
 * Make item geometry and bbox nullable in sqlalchemy backend. ([#398](https://github.com/stac-utils/stac-fastapi/pull/398))
-* Transactions Extension update Item endpoint Item is now `/collections/{collection_id}/items/{item_id}` instead of 
+* Transactions Extension update Item endpoint Item is now `/collections/{collection_id}/items/{item_id}` instead of
   `/collections/{collection_id}/items` to align with [STAC API
   spec](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features/extensions/transaction#methods) ([#425](https://github.com/stac-utils/stac-fastapi/pull/425))
 
 ### Removed
+
 * Remove the unused `router_middleware` function ([#439](https://github.com/stac-utils/stac-fastapi/pull/439))
 
 ### Fixed
@@ -60,7 +74,7 @@
 * SQLAlchemy backend bulk item insert now works ([#356](https://github.com/stac-utils/stac-fastapi/issues/356))
 * PGStac Backend has stricter implementation of Fields Extension syntax ([#397](https://github.com/stac-utils/stac-fastapi/pull/397))
 * `/queryables` endpoint now has type `application/schema+json` instead of `application/json` ([#421](https://github.com/stac-utils/stac-fastapi/pull/421))
-* Transactions Extension update Item endpoint validates that the `{collection_id}` path parameter matches the Item `"collection"` property 
+* Transactions Extension update Item endpoint validates that the `{collection_id}` path parameter matches the Item `"collection"` property
   from the request body, if present, and falls back to using the path parameter if no `"collection"` property is found in the body
   ([#425](https://github.com/stac-utils/stac-fastapi/pull/425))
 * PGStac Backend Transactions endpoints return added Item/Collection instead of Item/Collection from request ([#424](https://github.com/stac-utils/stac-fastapi/pull/424))
@@ -98,7 +112,6 @@
 * Changed type options for datetime in BaseSearchGetRequest ([#318](https://github.com/stac-utils/stac-fastapi/pull/318))
 * Expanded on tests to ensure properly testing get and post searches ([#318](https://github.com/stac-utils/stac-fastapi/pull/318))
 * Ensure invalid datetimes result in 400s ([#323](https://github.com/stac-utils/stac-fastapi/pull/323))
-
 
 ## [2.2.0]
 
@@ -161,6 +174,7 @@
 * Update pgstac to return 400 on invalid date parameter ([#240](https://github.com/stac-utils/stac-fastapi/pull/240))
 
 ## [2.0.0]
+
 _2021-07_
 
 * Refactor stac-fastapi into submodules ([#106](https://github.com/)stac-utils/stac-fastapi/pull/106)
@@ -168,6 +182,7 @@ _2021-07_
 * Upgrade to stac-pydantic 2.0.0 and stac-spec 1.0.0 ([#181](https://github.com/stac-utils/stac-fastapi/pull/181))
 
 ## [1.1.0]
+
 _2021-01-28_
 
 * Improve how the library declares API extensions ([#54](https://github.com/stac-utils/arturo-stac-api/pull/54))
@@ -178,11 +193,11 @@ _2021-01-28_
 * Fix `pre-commit` config ([#75](https://github.com/stac-utils/arturo-stac-api/pull/75))
 
 ## [1.0.0]
+
 _2020-09-25_
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.2.0..main>
 [2.2.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.1..2.2.0>
 [2.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..2.1.1>
 [2.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..main>
