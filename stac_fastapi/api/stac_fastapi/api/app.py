@@ -334,7 +334,11 @@ class StacApi:
             return self.app.openapi_schema
 
         openapi_schema = get_openapi(
-            title=self.title, version=self.api_version, routes=self.app.routes
+            title=self.title,
+            version=self.api_version,
+            description=self.description,
+            routes=self.app.routes,
+            servers=self.app.servers,
         )
 
         self.app.openapi_schema = openapi_schema
