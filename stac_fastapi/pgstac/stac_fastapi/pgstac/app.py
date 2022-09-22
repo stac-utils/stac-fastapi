@@ -6,6 +6,7 @@ from stac_fastapi.api.models import create_get_request_model, create_post_reques
 from stac_fastapi.extensions.core import (
     ContextExtension,
     FieldsExtension,
+    FilterExtension,
     SortExtension,
     TokenPaginationExtension,
     TransactionExtension,
@@ -14,6 +15,7 @@ from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.core import CoreCrudClient
 from stac_fastapi.pgstac.db import close_db_connection, connect_to_db
 from stac_fastapi.pgstac.extensions import QueryExtension
+from stac_fastapi.pgstac.extensions.filter import FiltersClient
 from stac_fastapi.pgstac.transactions import TransactionsClient
 from stac_fastapi.pgstac.types.search import PgstacSearch
 
@@ -29,6 +31,7 @@ extensions = [
     FieldsExtension(),
     TokenPaginationExtension(),
     ContextExtension(),
+    FilterExtension(client=FiltersClient()),
 ]
 
 post_request_model = create_post_request_model(extensions, base_model=PgstacSearch)

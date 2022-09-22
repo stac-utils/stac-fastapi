@@ -1,6 +1,6 @@
 """api request/response models."""
 
-import importlib
+import importlib.util
 from typing import Optional, Type, Union
 
 import attr
