@@ -25,12 +25,7 @@ from stac_fastapi.api.models import (
     create_request_model,
 )
 from stac_fastapi.api.openapi import update_openapi
-from stac_fastapi.api.routes import (
-    Scope,
-    add_route_dependencies,
-    create_async_endpoint,
-    create_sync_endpoint,
-)
+from stac_fastapi.api.routes import Scope, add_route_dependencies, create_async_endpoint
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
 from stac_fastapi.extensions.core import FieldsExtension, TokenPaginationExtension
@@ -120,11 +115,7 @@ class StacApi:
         resp_class: Type[Response],
     ) -> Callable:
         """Create a FastAPI endpoint."""
-        if isinstance(self.client, AsyncBaseCoreClient):
-            return create_async_endpoint(func, request_type, response_class=resp_class)
-        elif isinstance(self.client, BaseCoreClient):
-            return create_sync_endpoint(func, request_type, response_class=resp_class)
-        raise NotImplementedError
+        return create_async_endpoint(func, request_type, response_class=resp_class)
 
     def register_landing_page(self):
         """Register landing page (GET /).

@@ -7,7 +7,7 @@ from fastapi import APIRouter, FastAPI
 from pydantic import BaseModel
 
 from stac_fastapi.api.models import create_request_model
-from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
+from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import APIRequest
 
@@ -99,11 +99,7 @@ class BulkTransactionExtension(ApiExtension):
         request_type: Union[Type[APIRequest], Type[BaseModel], Dict],
     ) -> Callable:
         """Create a FastAPI endpoint."""
-        if isinstance(self.client, AsyncBaseBulkTransactionsClient):
-            return create_async_endpoint(func, request_type)
-        elif isinstance(self.client, BaseBulkTransactionsClient):
-            return create_sync_endpoint(func, request_type)
-        raise NotImplementedError
+        return create_async_endpoint(func, request_type)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

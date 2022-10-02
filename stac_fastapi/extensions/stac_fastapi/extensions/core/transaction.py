@@ -8,7 +8,7 @@ from stac_pydantic import Collection, Item
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.models import APIRequest, CollectionUri, ItemUri
-from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
+from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
@@ -71,15 +71,9 @@ class TransactionExtension(ApiExtension):
         ],
     ) -> Callable:
         """Create a FastAPI endpoint."""
-        if isinstance(self.client, AsyncBaseTransactionsClient):
-            return create_async_endpoint(
-                func, request_type, response_class=self.response_class
-            )
-        elif isinstance(self.client, BaseTransactionsClient):
-            return create_sync_endpoint(
-                func, request_type, response_class=self.response_class
-            )
-        raise NotImplementedError
+        return create_async_endpoint(
+            func, request_type, response_class=self.response_class
+        )
 
     def register_create_item(self):
         """Register create item endpoint (POST /collections/{collection_id}/items)."""

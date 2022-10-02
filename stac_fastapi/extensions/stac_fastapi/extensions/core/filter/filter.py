@@ -13,7 +13,7 @@ from stac_fastapi.api.models import (
     EmptyRequest,
     JSONSchemaResponse,
 )
-from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
+from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.core import AsyncBaseFiltersClient, BaseFiltersClient
 from stac_fastapi.types.extension import ApiExtension
 
@@ -88,15 +88,9 @@ class FilterExtension(ApiExtension):
         ],
     ) -> Callable:
         """Create a FastAPI endpoint."""
-        if isinstance(self.client, AsyncBaseFiltersClient):
-            return create_async_endpoint(
-                func, request_type, response_class=self.response_class
-            )
-        if isinstance(self.client, BaseFiltersClient):
-            return create_sync_endpoint(
-                func, request_type, response_class=self.response_class
-            )
-        raise NotImplementedError
+        return create_async_endpoint(
+            func, request_type, response_class=self.response_class
+        )
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
