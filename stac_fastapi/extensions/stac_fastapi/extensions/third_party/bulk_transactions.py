@@ -1,6 +1,6 @@
 """bulk transactions extension."""
 import abc
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -9,7 +9,6 @@ from pydantic import BaseModel
 from stac_fastapi.api.models import create_request_model
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.search import APIRequest
 
 
 class Items(BaseModel):
@@ -93,14 +92,6 @@ class BulkTransactionExtension(ApiExtension):
     conformance_classes: List[str] = attr.ib(default=list())
     schema_href: Optional[str] = attr.ib(default=None)
 
-    def _create_endpoint(
-        self,
-        func: Callable,
-        request_type: Union[Type[APIRequest], Type[BaseModel], Dict],
-    ) -> Callable:
-        """Create a FastAPI endpoint."""
-        return create_async_endpoint(func, request_type)
-
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
 
@@ -120,7 +111,7 @@ class BulkTransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=self._create_endpoint(
+            endpoint=create_async_endpoint(
                 self.client.bulk_item_insert, items_request_model
             ),
         )
