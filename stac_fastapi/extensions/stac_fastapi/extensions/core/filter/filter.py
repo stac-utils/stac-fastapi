@@ -89,12 +89,16 @@ class FilterExtension(ApiExtension):
             name="Queryables",
             path="/queryables",
             methods=["GET"],
-            endpoint=create_async_endpoint(self.client.get_queryables, EmptyRequest),
+            endpoint=create_async_endpoint(
+                self.client.get_queryables, EmptyRequest, self.response_class
+            ),
         )
         self.router.add_api_route(
             name="Collection Queryables",
             path="/collections/{collection_id}/queryables",
             methods=["GET"],
-            endpoint=create_async_endpoint(self.client.get_queryables, CollectionUri),
+            endpoint=create_async_endpoint(
+                self.client.get_queryables, CollectionUri, self.response_class
+            ),
         )
         app.include_router(self.router, tags=["Filter Extension"])
