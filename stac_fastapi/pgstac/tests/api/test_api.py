@@ -396,8 +396,9 @@ async def test_search_duplicate_forward_headers(
 @pytest.mark.asyncio
 async def test_base_queryables(load_test_data, app_client, load_test_collection):
     resp = await app_client.get("/queryables")
+    assert resp.headers["Content-Type"] == "application/schema+json"
     q = resp.json()
-    assert q["$id"] == "http://test/queryables"
+    assert q["$id"].endswith("/queryables")
     assert q["type"] == "object"
     assert "properties" in q
     assert "id" in q["properties"]
@@ -407,8 +408,9 @@ async def test_base_queryables(load_test_data, app_client, load_test_collection)
 @pytest.mark.asyncio
 async def test_collection_queryables(load_test_data, app_client, load_test_collection):
     resp = await app_client.get("/collections/test-collection/queryables")
+    assert resp.headers["Content-Type"] == "application/schema+json"
     q = resp.json()
-    assert q["$id"] == "http://test/collections/test-collection/queryables"
+    assert q["$id"].endswith("/collections/test-collection/queryables")
     assert q["type"] == "object"
     assert "properties" in q
     assert "id" in q["properties"]
