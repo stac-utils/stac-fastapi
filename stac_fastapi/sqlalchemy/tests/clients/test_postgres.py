@@ -7,6 +7,7 @@ from stac_pydantic import Collection, Item
 from tests.conftest import MockStarletteRequest
 
 from stac_fastapi.api.app import StacApi
+from stac_fastapi.extensions.third_party.bulk_transactions import Items
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
 from stac_fastapi.sqlalchemy.transactions import (
     BulkTransactionsClient,
@@ -95,7 +96,9 @@ def test_get_item(
         collection_data, request=MockStarletteRequest
     )
     data = load_test_data("test_item.json")
-    postgres_transactions.create_item(data, request=MockStarletteRequest)
+    postgres_transactions.create_item(
+        collection_data["id"], data, request=MockStarletteRequest
+    )
     coll = postgres_core.get_item(
         item_id=data["id"],
         collection_id=data["collection"],
@@ -117,7 +120,9 @@ def test_get_collection_items(
 
     for _ in range(5):
         item["id"] = str(uuid.uuid4())
-        postgres_transactions.create_item(item, request=MockStarletteRequest)
+        postgres_transactions.create_item(
+            coll["id"], item, request=MockStarletteRequest
+        )
 
     fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) == 5
@@ -134,7 +139,7 @@ def test_create_item(
     coll = load_test_data("test_collection.json")
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    postgres_transactions.create_item(coll["id"], item, request=MockStarletteRequest)
     resp = postgres_core.get_item(
         item["id"], item["collection"], request=MockStarletteRequest
     )
@@ -151,10 +156,12 @@ def test_create_item_already_exists(
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    postgres_transactions.create_item(coll["id"], item, request=MockStarletteRequest)
 
     with pytest.raises(ConflictError):
-        postgres_transactions.create_item(item, request=MockStarletteRequest)
+        postgres_transactions.create_item(
+            coll["id"], item, request=MockStarletteRequest
+        )
 
 
 def test_create_duplicate_item_different_collections(
@@ -172,7 +179,9 @@ def test_create_duplicate_item_different_collections(
 
     # add item to test-collection
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    postgres_transactions.create_item(
+        "test-collection", item, request=MockStarletteRequest
+    )
 
     # get item from test-collection
     resp = postgres_core.get_item(
@@ -184,7 +193,9 @@ def test_create_duplicate_item_different_collections(
 
     # add item to test-collection-2
     item["collection"] = "test-collection-2"
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    postgres_transactions.create_item(
+        "test-collection-2", item, request=MockStarletteRequest
+    )
 
     # get item with same id from test-collection-2
     resp = postgres_core.get_item(
@@ -204,10 +215,12 @@ def test_update_item(
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    postgres_transactions.create_item(coll["id"], item, request=MockStarletteRequest)
 
     item["properties"]["foo"] = "bar"
-    postgres_transactions.update_item(item, request=MockStarletteRequest)
+    postgres_transactions.update_item(
+        coll["id"], item["id"], item, request=MockStarletteRequest
+    )
 
     updated_item = postgres_core.get_item(
         item["id"], item["collection"], request=MockStarletteRequest
@@ -224,10 +237,12 @@ def test_update_geometry(
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    postgres_transactions.create_item(coll["id"], item, request=MockStarletteRequest)
 
     item["geometry"]["coordinates"] = [[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]]
-    postgres_transactions.update_item(item, request=MockStarletteRequest)
+    postgres_transactions.update_item(
+        coll["id"], item["id"], item, request=MockStarletteRequest
+    )
 
     updated_item = postgres_core.get_item(
         item["id"], item["collection"], request=MockStarletteRequest
@@ -244,7 +259,7 @@ def test_delete_item(
     postgres_transactions.create_collection(coll, request=MockStarletteRequest)
 
     item = load_test_data("test_item.json")
-    postgres_transactions.create_item(item, request=MockStarletteRequest)
+    postgres_transactions.create_item(coll["id"], item, request=MockStarletteRequest)
 
     postgres_transactions.delete_item(
         item["id"], item["collection"], request=MockStarletteRequest
@@ -267,21 +282,21 @@ def test_bulk_item_insert(
 
     item = load_test_data("test_item.json")
 
-    items = []
+    items = {}
     for _ in range(10):
         _item = deepcopy(item)
         _item["id"] = str(uuid.uuid4())
-        items.append(_item)
+        items[_item["id"]] = _item
 
     fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) == 0
 
-    postgres_bulk_transactions.bulk_item_insert(items=items)
+    postgres_bulk_transactions.bulk_item_insert(Items(items=items))
 
     fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
     assert len(fc["features"]) == 10
 
-    for item in items:
+    for item in items.values():
         postgres_transactions.delete_item(
             item["id"], item["collection"], request=MockStarletteRequest
         )
@@ -306,6 +321,37 @@ def test_bulk_item_insert_chunked(
     postgres_bulk_transactions.bulk_item_insert(items=items, chunk_size=2)
 
     for item in items:
+        postgres_transactions.delete_item(
+            item["id"], item["collection"], request=MockStarletteRequest
+        )
+
+
+def test_feature_collection_insert(
+    postgres_core: CoreCrudClient,
+    postgres_transactions: TransactionsClient,
+    load_test_data: Callable,
+):
+    coll = load_test_data("test_collection.json")
+    postgres_transactions.create_collection(coll, request=MockStarletteRequest)
+
+    item = load_test_data("test_item.json")
+
+    features = []
+    for _ in range(10):
+        _item = deepcopy(item)
+        _item["id"] = str(uuid.uuid4())
+        features.append(_item)
+
+    feature_collection = {"type": "FeatureCollection", "features": features}
+
+    postgres_transactions.create_item(
+        coll["id"], feature_collection, request=MockStarletteRequest
+    )
+
+    fc = postgres_core.item_collection(coll["id"], request=MockStarletteRequest)
+    assert len(fc["features"]) >= 10
+
+    for item in features:
         postgres_transactions.delete_item(
             item["id"], item["collection"], request=MockStarletteRequest
         )

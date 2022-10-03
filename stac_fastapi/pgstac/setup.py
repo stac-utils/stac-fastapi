@@ -16,21 +16,23 @@ install_requires = [
     "asyncpg",
     "buildpg",
     "brotli_asgi",
+    "pygeofilter>=0.1,<0.2",
+    "pypgstac==0.6.*",
+    "pygeoif==0.7",
 ]
 
 extra_reqs = {
     "dev": [
+        "pypgstac[psycopg]==0.6.*",
         "pytest",
         "pytest-cov",
-        "pytest-asyncio",
+        "pytest-asyncio>=0.17",
         "pre-commit",
         "requests",
-        "pypgstac==0.3.4",
         "httpx",
-        "shapely",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
-    "server": ["uvicorn[standard]>=0.12.0,<0.14.0"],
+    "server": ["uvicorn[standard]==0.17.0"],
     "awslambda": ["mangum"],
 }
 
@@ -49,7 +51,7 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],
     keywords="STAC FastAPI COG",
-    author=u"David Bitner",
+    author="David Bitner",
     author_email="david@developmentseed.org",
     url="https://github.com/stac-utils/stac-fastapi",
     license="MIT",

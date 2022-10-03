@@ -99,18 +99,6 @@ class ItemLinks(BaseLinks):
             href=urljoin(self.base_url, f"collections/{self.collection_id}"),
         )
 
-    def tiles(self) -> Dict[str, Any]:
-        """Create the `tiles` link."""
-        return dict(
-            rel=Relations.alternate,
-            type=MimeTypes.json,
-            title="tiles",
-            href=urljoin(
-                self.base_url,
-                f"collections/{self.collection_id}/items/{self.item_id}/tiles",
-            ),
-        )
-
     def create_links(self) -> List[Dict[str, Any]]:
         """Return all inferred links."""
         links = [
@@ -119,7 +107,4 @@ class ItemLinks(BaseLinks):
             self.collection(),
             self.root(),
         ]
-        # if config.settings.add_on_is_enabled(config.AddOns.tiles):
-        # TODO: Don't always append tiles link
-        links.append(self.tiles())
         return links

@@ -1,9 +1,11 @@
 """transactions extension client."""
 
 import logging
-from typing import Optional, Type
+from typing import Optional, Type, Union
 
 import attr
+from fastapi import HTTPException
+from starlette.responses import Response
 
 from stac_fastapi.extensions.third_party.bulk_transactions import (
     BaseBulkTransactionsClient,
@@ -33,64 +35,99 @@ class TransactionsClient(BaseTransactionsClient):
         default=serializers.CollectionSerializer
     )
 
-    def create_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
+    def create_item(
+        self,
+        collection_id: str,
+        item: Union[stac_types.Item, stac_types.ItemCollection],
+        **kwargs,
+    ) -> Optional[stac_types.Item]:
         """Create item."""
         base_url = str(kwargs["request"].base_url)
-        data = self.item_serializer.stac_to_db(model)
+
+        # If a feature collection is posted
+        if item["type"] == "FeatureCollection":
+            bulk_client = BulkTransactionsClient(session=self.session)
+            bulk_client.bulk_item_insert(items=item["features"])
+            return None
+
+        # Otherwise a single item has been posted
+        body_collection_id = item.get("collection")
+        if body_collection_id is not None and collection_id != body_collection_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Collection ID from path parameter ({collection_id}) does not match Collection ID from Item ({body_collection_id})",
+            )
+        item["collection"] = collection_id
+        data = self.item_serializer.stac_to_db(item)
         with self.session.writer.context_session() as session:
             session.add(data)
             return self.item_serializer.db_to_stac(data, base_url)
 
     def create_collection(
-        self, model: stac_types.Collection, **kwargs
-    ) -> stac_types.Collection:
+        self, collection: stac_types.Collection, **kwargs
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Create collection."""
         base_url = str(kwargs["request"].base_url)
-        data = self.collection_serializer.stac_to_db(model)
+        data = self.collection_serializer.stac_to_db(collection)
         with self.session.writer.context_session() as session:
             session.add(data)
             return self.collection_serializer.db_to_stac(data, base_url=base_url)
 
-    def update_item(self, model: stac_types.Item, **kwargs) -> stac_types.Item:
+    def update_item(
+        self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Update item."""
+        body_collection_id = item.get("collection")
+        if body_collection_id is not None and collection_id != body_collection_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Collection ID from path parameter ({collection_id}) does not match Collection ID from Item ({body_collection_id})",
+            )
+        item["collection"] = collection_id
+        body_item_id = item["id"]
+        if body_item_id != item_id:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Item ID from path parameter ({item_id}) does not match Item ID from Item ({body_item_id})",
+            )
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             query = session.query(self.item_table).filter(
-                self.item_table.id == model["id"]
+                self.item_table.id == item["id"]
             )
-            query = query.filter(self.item_table.collection_id == model["collection"])
+            query = query.filter(self.item_table.collection_id == item["collection"])
             if not query.scalar():
                 raise NotFoundError(
-                    f"Item {model['id']} in collection {model['collection']}"
+                    f"Item {item['id']} in collection {item['collection']}"
                 )
             # SQLAlchemy orm updates don't seem to like geoalchemy types
-            db_model = self.item_serializer.stac_to_db(model)
+            db_model = self.item_serializer.stac_to_db(item)
             query.update(self.item_serializer.row_to_dict(db_model))
             stac_item = self.item_serializer.db_to_stac(db_model, base_url)
 
             return stac_item
 
     def update_collection(
-        self, model: stac_types.Collection, **kwargs
-    ) -> stac_types.Collection:
+        self, collection: stac_types.Collection, **kwargs
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Update collection."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
             query = session.query(self.collection_table).filter(
-                self.collection_table.id == model["id"]
+                self.collection_table.id == collection["id"]
             )
             if not query.scalar():
-                raise NotFoundError(f"Item {model['id']} not found")
+                raise NotFoundError(f"Item {collection['id']} not found")
 
             # SQLAlchemy orm updates don't seem to like geoalchemy types
-            db_model = self.collection_serializer.stac_to_db(model)
+            db_model = self.collection_serializer.stac_to_db(collection)
             query.update(self.collection_serializer.row_to_dict(db_model))
 
             return self.collection_serializer.db_to_stac(db_model, base_url)
 
     def delete_item(
         self, item_id: str, collection_id: str, **kwargs
-    ) -> stac_types.Item:
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Delete item."""
         base_url = str(kwargs["request"].base_url)
         with self.session.writer.context_session() as session:
@@ -106,7 +143,9 @@ class TransactionsClient(BaseTransactionsClient):
             query.delete()
             return self.item_serializer.db_to_stac(data, base_url=base_url)
 
-    def delete_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
+    def delete_collection(
+        self, collection_id: str, **kwargs
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Delete collection."""
         base_url = str(kwargs["request"].base_url)
         with self.session.writer.context_session() as session:

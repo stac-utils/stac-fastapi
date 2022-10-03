@@ -22,7 +22,6 @@ extra_reqs = {
         "requests",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
-    "tiles": ["titiler==0.2.*"],
 }
 
 
@@ -40,7 +39,7 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],
     keywords="STAC FastAPI COG",
-    author=u"Arturo Engineering",
+    author="Arturo Engineering",
     author_email="engineering@arturo.ai",
     url="https://github.com/stac-utils/stac-fastapi",
     license="MIT",

@@ -9,11 +9,12 @@ from urllib.parse import parse_qs, urlparse, urlsplit
 
 import pystac
 from pydantic.datetime_parse import parse_datetime
+from pystac.utils import datetime_to_str
 from shapely.geometry import Polygon
-from stac_pydantic.shared import DATETIME_RFC339
 
 from stac_fastapi.sqlalchemy.core import CoreCrudClient
 from stac_fastapi.types.core import LandingPageMixin
+from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime
 
 
 def test_create_and_delete_item(app_client, load_test_data):
@@ -145,7 +146,8 @@ def test_update_item_duplicate(app_client, load_test_data):
     # update gsd in test_item, test-collection-2
     test_item["properties"]["gsd"] = 16
     resp = app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        json=test_item,
     )
     assert resp.status_code == 200
     updated_item = resp.json()
@@ -155,7 +157,8 @@ def test_update_item_duplicate(app_client, load_test_data):
     test_item["collection"] = "test-collection"
     test_item["properties"]["gsd"] = 17
     resp = app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        json=test_item,
     )
     assert resp.status_code == 200
     updated_item = resp.json()
@@ -193,7 +196,7 @@ def test_create_item_missing_collection(app_client, load_test_data):
     resp = app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
     )
-    assert resp.status_code == 422
+    assert resp.status_code == 424
 
 
 def test_update_item_already_exists(app_client, load_test_data):
@@ -207,7 +210,8 @@ def test_update_item_already_exists(app_client, load_test_data):
     assert test_item["properties"]["gsd"] != 16
     test_item["properties"]["gsd"] = 16
     resp = app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        json=test_item,
     )
     updated_item = resp.json()
     assert updated_item["properties"]["gsd"] == 16
@@ -217,7 +221,8 @@ def test_update_new_item(app_client, load_test_data):
     """Test updating an item which does not exist (transactions extension)"""
     test_item = load_test_data("test_item.json")
     resp = app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        json=test_item,
     )
     assert resp.status_code == 404
 
@@ -235,7 +240,8 @@ def test_update_item_missing_collection(app_client, load_test_data):
     # Try to update collection of the item
     test_item["collection"] = "stac is cool"
     resp = app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        json=test_item,
     )
     assert resp.status_code == 404
 
@@ -252,7 +258,8 @@ def test_update_item_geometry(app_client, load_test_data):
     # Update the geometry of the item
     test_item["geometry"]["coordinates"] = [[[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]]
     resp = app_client.put(
-        f"/collections/{test_item['collection']}/items", json=test_item
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        json=test_item,
     )
     assert resp.status_code == 200
 
@@ -365,7 +372,9 @@ def test_item_timestamps(app_client, load_test_data):
     time.sleep(2)
     # Confirm `updated` timestamp
     item["properties"]["proj:epsg"] = 4326
-    resp = app_client.put(f"/collections/{test_item['collection']}/items", json=item)
+    resp = app_client.put(
+        f"/collections/{test_item['collection']}/items/{item['id']}", json=item
+    )
     assert resp.status_code == 200
     updated_item = resp.json()
 
@@ -419,13 +428,13 @@ def test_item_search_temporal_query_post(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    item_date = datetime.strptime(test_item["properties"]["datetime"], DATETIME_RFC339)
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     item_date = item_date + timedelta(seconds=1)
 
     params = {
         "collections": [test_item["collection"]],
         "intersects": test_item["geometry"],
-        "datetime": f"../{item_date.strftime(DATETIME_RFC339)}",
+        "datetime": f"../{datetime_to_str(item_date)}",
     }
     resp = app_client.post("/search", json=params)
     resp_json = resp.json()
@@ -440,14 +449,14 @@ def test_item_search_temporal_window_post(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    item_date = datetime.strptime(test_item["properties"]["datetime"], DATETIME_RFC339)
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     item_date_before = item_date - timedelta(seconds=1)
     item_date_after = item_date + timedelta(seconds=1)
 
     params = {
         "collections": [test_item["collection"]],
         "intersects": test_item["geometry"],
-        "datetime": f"{item_date_before.strftime(DATETIME_RFC339)}/{item_date_after.strftime(DATETIME_RFC339)}",
+        "datetime": f"{datetime_to_str(item_date_before)}/{datetime_to_str(item_date_after)}",
     }
     resp = app_client.post("/search", json=params)
     resp_json = resp.json()
@@ -462,20 +471,15 @@ def test_item_search_temporal_open_window(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    params = {
-        "collections": [test_item["collection"]],
-        "intersects": test_item["geometry"],
-        "datetime": "../..",
-    }
-    resp = app_client.post("/search", json=params)
-    resp_json = resp.json()
-    assert resp_json["features"][0]["id"] == test_item["id"]
+    for dt in ["/", "../", "/..", "../.."]:
+        resp = app_client.post("/search", json={"datetime": dt})
+        assert resp.status_code == 400
 
 
 def test_item_search_sort_post(app_client, load_test_data):
     """Test POST search with sorting (sort extension)"""
     first_item = load_test_data("test_item.json")
-    item_date = datetime.strptime(first_item["properties"]["datetime"], DATETIME_RFC339)
+    item_date = rfc3339_str_to_datetime(first_item["properties"]["datetime"])
     resp = app_client.post(
         f"/collections/{first_item['collection']}/items", json=first_item
     )
@@ -484,7 +488,7 @@ def test_item_search_sort_post(app_client, load_test_data):
     second_item = load_test_data("test_item.json")
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = another_item_date.strftime(DATETIME_RFC339)
+    second_item["properties"]["datetime"] = datetime_to_str(another_item_date)
     resp = app_client.post(
         f"/collections/{second_item['collection']}/items", json=second_item
     )
@@ -563,14 +567,14 @@ def test_item_search_temporal_window_get(app_client, load_test_data):
     )
     assert resp.status_code == 200
 
-    item_date = datetime.strptime(test_item["properties"]["datetime"], DATETIME_RFC339)
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     item_date_before = item_date - timedelta(seconds=1)
     item_date_after = item_date + timedelta(seconds=1)
 
     params = {
         "collections": test_item["collection"],
         "bbox": ",".join([str(coord) for coord in test_item["bbox"]]),
-        "datetime": f"{item_date_before.strftime(DATETIME_RFC339)}/{item_date_after.strftime(DATETIME_RFC339)}",
+        "datetime": f"{datetime_to_str(item_date_before)}/{datetime_to_str(item_date_after)}",
     }
     resp = app_client.get("/search", params=params)
     resp_json = resp.json()
@@ -580,7 +584,7 @@ def test_item_search_temporal_window_get(app_client, load_test_data):
 def test_item_search_sort_get(app_client, load_test_data):
     """Test GET search with sorting (sort extension)"""
     first_item = load_test_data("test_item.json")
-    item_date = datetime.strptime(first_item["properties"]["datetime"], DATETIME_RFC339)
+    item_date = rfc3339_str_to_datetime(first_item["properties"]["datetime"])
     resp = app_client.post(
         f"/collections/{first_item['collection']}/items", json=first_item
     )
@@ -589,7 +593,7 @@ def test_item_search_sort_get(app_client, load_test_data):
     second_item = load_test_data("test_item.json")
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = another_item_date.strftime(DATETIME_RFC339)
+    second_item["properties"]["datetime"] = datetime_to_str(another_item_date)
     resp = app_client.post(
         f"/collections/{second_item['collection']}/items", json=second_item
     )
@@ -926,3 +930,63 @@ def test_conformance_classes_configurable():
     os.environ["WRITER_CONN_STRING"] = "testing"
     client = CoreCrudClient(base_conformance_classes=["this is a test"])
     assert client.conformance_classes()[0] == "this is a test"
+
+
+def test_search_datetime_validation_errors(app_client):
+    bad_datetimes = [
+        "37-01-01T12:00:27.87Z",
+        "1985-13-12T23:20:50.52Z",
+        "1985-12-32T23:20:50.52Z",
+        "1985-12-01T25:20:50.52Z",
+        "1985-12-01T00:60:50.52Z",
+        "1985-12-01T00:06:61.52Z",
+        "1990-12-31T23:59:61Z",
+        "1986-04-12T23:20:50.52Z/1985-04-12T23:20:50.52Z",
+    ]
+    for dt in bad_datetimes:
+        body = {"query": {"datetime": dt}}
+        resp = app_client.post("/search", json=body)
+        assert resp.status_code == 400
+
+        resp = app_client.get("/search?datetime={}".format(dt))
+        assert resp.status_code == 400
+
+
+def test_get_item_forwarded_header(app_client, load_test_data):
+    test_item = load_test_data("test_item.json")
+    app_client.post(f"/collections/{test_item['collection']}/items", json=test_item)
+    get_item = app_client.get(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        headers={"Forwarded": "proto=https;host=testserver:1234"},
+    )
+    for link in get_item.json()["links"]:
+        assert link["href"].startswith("https://testserver:1234/")
+
+
+def test_get_item_x_forwarded_headers(app_client, load_test_data):
+    test_item = load_test_data("test_item.json")
+    app_client.post(f"/collections/{test_item['collection']}/items", json=test_item)
+    get_item = app_client.get(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        headers={
+            "X-Forwarded-Port": "1234",
+            "X-Forwarded-Proto": "https",
+        },
+    )
+    for link in get_item.json()["links"]:
+        assert link["href"].startswith("https://testserver:1234/")
+
+
+def test_get_item_duplicate_forwarded_headers(app_client, load_test_data):
+    test_item = load_test_data("test_item.json")
+    app_client.post(f"/collections/{test_item['collection']}/items", json=test_item)
+    get_item = app_client.get(
+        f"/collections/{test_item['collection']}/items/{test_item['id']}",
+        headers={
+            "Forwarded": "proto=https;host=testserver:1234",
+            "X-Forwarded-Port": "4321",
+            "X-Forwarded-Proto": "http",
+        },
+    )
+    for link in get_item.json()["links"]:
+        assert link["href"].startswith("https://testserver:1234/")

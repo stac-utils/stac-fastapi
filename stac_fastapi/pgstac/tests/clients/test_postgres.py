@@ -1,13 +1,12 @@
 import uuid
+from copy import deepcopy
 from typing import Callable
 
-import pytest
 from stac_pydantic import Collection, Item
 
 # from tests.conftest import MockStarletteRequest
 
 
-@pytest.mark.asyncio
 async def test_create_collection(app_client, load_test_data: Callable):
     in_json = load_test_data("test_collection.json")
     in_coll = Collection.parse_obj(in_json)
@@ -24,7 +23,6 @@ async def test_create_collection(app_client, load_test_data: Callable):
     assert post_coll.dict(exclude={"links"}) == get_coll.dict(exclude={"links"})
 
 
-@pytest.mark.asyncio
 async def test_update_collection(app_client, load_test_collection):
     in_coll = load_test_collection
     in_coll.keywords.append("newkeyword")
@@ -40,7 +38,6 @@ async def test_update_collection(app_client, load_test_collection):
     assert "newkeyword" in get_coll.keywords
 
 
-@pytest.mark.asyncio
 async def test_delete_collection(app_client, load_test_collection):
     in_coll = load_test_collection
 
@@ -51,7 +48,6 @@ async def test_delete_collection(app_client, load_test_collection):
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_create_item(app_client, load_test_data: Callable, load_test_collection):
     coll = load_test_collection
 
@@ -69,42 +65,40 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
     resp = await app_client.get(f"/collections/{coll.id}/items/{post_item.id}")
 
     assert resp.status_code == 200
+
     get_item = Item.parse_obj(resp.json())
     assert in_item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
 
 
-@pytest.mark.asyncio
 async def test_update_item(app_client, load_test_collection, load_test_item):
     coll = load_test_collection
     item = load_test_item
 
     item.properties.description = "Update Test"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
+    resp = await app_client.put(
+        f"/collections/{coll.id}/items/{item.id}", content=item.json()
+    )
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
     assert resp.status_code == 200
-
     get_item = Item.parse_obj(resp.json())
     assert item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
     assert get_item.properties.description == "Update Test"
 
 
-@pytest.mark.asyncio
 async def test_delete_item(app_client, load_test_collection, load_test_item):
     coll = load_test_collection
     item = load_test_item
 
     resp = await app_client.delete(f"/collections/{coll.id}/items/{item.id}")
-    print(resp.content)
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_get_collection_items(app_client, load_test_collection, load_test_item):
     coll = load_test_collection
     item = load_test_item
@@ -124,6 +118,32 @@ async def test_get_collection_items(app_client, load_test_collection, load_test_
     fc = resp.json()
     assert "features" in fc
     assert len(fc["features"]) == 5
+
+
+async def test_create_bulk_items(
+    app_client, load_test_data: Callable, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+
+    items = {}
+    for _ in range(2):
+        _item = deepcopy(item)
+        _item["id"] = str(uuid.uuid4())
+        items[_item["id"]] = _item
+
+    payload = {"items": items}
+
+    resp = await app_client.post(
+        f"/collections/{coll.id}/bulk_items",
+        json=payload,
+    )
+    assert resp.status_code == 200
+    assert resp.text == '"Successfully added 2 items."'
+
+    for item_id in items.keys():
+        resp = await app_client.get(f"/collections/{coll.id}/items/{item_id}")
+        assert resp.status_code == 200
 
 
 # TODO since right now puts implement upsert

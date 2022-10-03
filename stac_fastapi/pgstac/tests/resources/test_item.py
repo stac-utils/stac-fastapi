@@ -1,21 +1,24 @@
 import json
+import random
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
+from http.client import HTTP_PORT
+from string import ascii_letters
 from typing import Callable
 from urllib.parse import parse_qs, urljoin, urlparse
 
 import pystac
 import pytest
 from httpx import AsyncClient
+from pystac.utils import datetime_to_str
 from shapely.geometry import Polygon
 from stac_pydantic import Collection, Item
-from stac_pydantic.shared import DATETIME_RFC339
 from starlette.requests import Request
 
 from stac_fastapi.pgstac.models.links import CollectionLinks
+from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime
 
 
-@pytest.mark.asyncio
 async def test_create_collection(app_client, load_test_data: Callable):
     in_json = load_test_data("test_collection.json")
     in_coll = Collection.parse_obj(in_json)
@@ -32,7 +35,6 @@ async def test_create_collection(app_client, load_test_data: Callable):
     assert post_coll.dict(exclude={"links"}) == get_coll.dict(exclude={"links"})
 
 
-@pytest.mark.asyncio
 async def test_update_collection(app_client, load_test_data, load_test_collection):
     in_coll = load_test_collection
     in_coll.keywords.append("newkeyword")
@@ -48,7 +50,6 @@ async def test_update_collection(app_client, load_test_data, load_test_collectio
     assert "newkeyword" in get_coll.keywords
 
 
-@pytest.mark.asyncio
 async def test_delete_collection(
     app_client, load_test_data: Callable, load_test_collection
 ):
@@ -61,7 +62,6 @@ async def test_delete_collection(
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_create_item(app_client, load_test_data: Callable, load_test_collection):
     coll = load_test_collection
 
@@ -82,8 +82,32 @@ async def test_create_item(app_client, load_test_data: Callable, load_test_colle
     get_item = Item.parse_obj(resp.json())
     assert in_item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
 
+    post_self_link = next(
+        (link for link in post_item.links if link.rel == "self"), None
+    )
+    get_self_link = next((link for link in get_item.links if link.rel == "self"), None)
+    assert post_self_link is not None and get_self_link is not None
+    assert post_self_link.href == get_self_link.href
 
-@pytest.mark.asyncio
+
+async def test_create_item_mismatched_collection_id(
+    app_client, load_test_data: Callable, load_test_collection
+):
+    # If the collection_id path parameter and the Item's "collection" property do not match, a 400 response should
+    # be returned.
+    coll = load_test_collection
+
+    in_json = load_test_data("test_item.json")
+    in_json["collection"] = random.choice(ascii_letters)
+    assert in_json["collection"] != coll.id
+
+    resp = await app_client.post(
+        f"/collections/{coll.id}/items",
+        json=in_json,
+    )
+    assert resp.status_code == 400
+
+
 async def test_fetches_valid_item(
     app_client, load_test_data: Callable, load_test_collection
 ):
@@ -92,7 +116,7 @@ async def test_fetches_valid_item(
     in_json = load_test_data("test_item.json")
     in_item = Item.parse_obj(in_json)
     resp = await app_client.post(
-        "/collections/{coll.id}/items",
+        f"/collections/{coll.id}/items",
         json=in_json,
     )
     assert resp.status_code == 200
@@ -112,7 +136,6 @@ async def test_fetches_valid_item(
     item.validate()
 
 
-@pytest.mark.asyncio
 async def test_update_item(
     app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
@@ -121,8 +144,11 @@ async def test_update_item(
 
     item.properties.description = "Update Test"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
+    resp = await app_client.put(
+        f"/collections/{coll.id}/items/{item.id}", content=item.json()
+    )
     assert resp.status_code == 200
+    put_item = Item.parse_obj(resp.json())
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
     assert resp.status_code == 200
@@ -131,8 +157,31 @@ async def test_update_item(
     assert item.dict(exclude={"links"}) == get_item.dict(exclude={"links"})
     assert get_item.properties.description == "Update Test"
 
+    post_self_link = next((link for link in put_item.links if link.rel == "self"), None)
+    get_self_link = next((link for link in get_item.links if link.rel == "self"), None)
+    assert post_self_link is not None and get_self_link is not None
+    assert post_self_link.href == get_self_link.href
 
-@pytest.mark.asyncio
+
+async def test_update_item_mismatched_collection_id(
+    app_client, load_test_data: Callable, load_test_collection, load_test_item
+) -> None:
+    coll = load_test_collection
+
+    in_json = load_test_data("test_item.json")
+
+    in_json["collection"] = random.choice(ascii_letters)
+    assert in_json["collection"] != coll.id
+
+    item_id = in_json["id"]
+
+    resp = await app_client.put(
+        f"/collections/{coll.id}/items/{item_id}",
+        json=in_json,
+    )
+    assert resp.status_code == 400
+
+
 async def test_delete_item(
     app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
@@ -140,14 +189,12 @@ async def test_delete_item(
     item = load_test_item
 
     resp = await app_client.delete(f"/collections/{coll.id}/items/{item.id}")
-    print(resp.content)
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{coll.id}/items/{item.id}")
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_get_collection_items(app_client, load_test_collection, load_test_item):
     coll = load_test_collection
     item = load_test_item
@@ -169,28 +216,25 @@ async def test_get_collection_items(app_client, load_test_collection, load_test_
     assert len(fc["features"]) == 5
 
 
-@pytest.mark.asyncio
 async def test_create_item_conflict(
     app_client, load_test_data: Callable, load_test_collection
 ):
-    pass
-
+    coll = load_test_collection
     in_json = load_test_data("test_item.json")
     Item.parse_obj(in_json)
     resp = await app_client.post(
-        "/collections/{coll.id}/items",
+        f"/collections/{coll.id}/items",
         json=in_json,
     )
     assert resp.status_code == 200
 
     resp = await app_client.post(
-        "/collections/{coll.id}/items",
+        f"/collections/{coll.id}/items",
         json=in_json,
     )
     assert resp.status_code == 409
 
 
-@pytest.mark.asyncio
 async def test_delete_missing_item(
     app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
@@ -198,15 +242,12 @@ async def test_delete_missing_item(
     item = load_test_item
 
     resp = await app_client.delete(f"/collections/{coll.id}/items/{item.id}")
-    print(resp.content)
     assert resp.status_code == 200
 
     resp = await app_client.delete(f"/collections/{coll.id}/items/{item.id}")
-    print(resp.content)
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_create_item_missing_collection(
     app_client, load_test_data: Callable, load_test_collection
 ):
@@ -215,10 +256,12 @@ async def test_create_item_missing_collection(
     item["collection"] = None
 
     resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
-    assert resp.status_code == 424
+    assert resp.status_code == 200
+
+    post_item = resp.json()
+    assert post_item["collection"] == coll.id
 
 
-@pytest.mark.asyncio
 async def test_update_new_item(
     app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
@@ -226,11 +269,12 @@ async def test_update_new_item(
     item = load_test_item
     item.id = "test-updatenewitem"
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
+    resp = await app_client.put(
+        f"/collections/{coll.id}/items/{item.id}", content=item.json()
+    )
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_update_item_missing_collection(
     app_client, load_test_data: Callable, load_test_collection, load_test_item
 ):
@@ -238,11 +282,15 @@ async def test_update_item_missing_collection(
     item = load_test_item
     item.collection = None
 
-    resp = await app_client.put(f"/collections/{coll.id}/items", content=item.json())
-    assert resp.status_code == 424
+    resp = await app_client.put(
+        f"/collections/{coll.id}/items/{item.id}", content=item.json()
+    )
+    assert resp.status_code == 200
+
+    put_item = resp.json()
+    assert put_item["collection"] == coll.id
 
 
-@pytest.mark.asyncio
 async def test_pagination(app_client, load_test_data, load_test_collection):
     """Test item collection pagination (paging extension)"""
     coll = load_test_collection
@@ -259,9 +307,6 @@ async def test_pagination(app_client, load_test_data, load_test_collection):
     resp = await app_client.get(f"/collections/{coll.id}/items", params={"limit": 3})
     assert resp.status_code == 200
     first_page = resp.json()
-    for feature in first_page["features"]:
-        print(feature["id"], feature["properties"]["datetime"])
-    print(f"first page links {first_page['links']}")
     assert len(first_page["features"]) == 3
 
     nextlink = [
@@ -276,14 +321,9 @@ async def test_pagination(app_client, load_test_data, load_test_collection):
         "test-item18",
     ]
 
-    print(f"Next {nextlink}")
-
     resp = await app_client.get(nextlink)
     assert resp.status_code == 200
     second_page = resp.json()
-    for feature in second_page["features"]:
-        print(feature["id"], feature["properties"]["datetime"])
-    print(f"second page links {second_page['links']}")
     assert len(first_page["features"]) == 3
 
     nextlink = [
@@ -297,7 +337,6 @@ async def test_pagination(app_client, load_test_data, load_test_collection):
     ].pop()
 
     assert prevlink is not None
-    print(nextlink, prevlink)
 
     assert [f["id"] for f in second_page["features"]] == [
         "test-item17",
@@ -308,9 +347,6 @@ async def test_pagination(app_client, load_test_data, load_test_collection):
     resp = await app_client.get(prevlink)
     assert resp.status_code == 200
     back_page = resp.json()
-    for feature in back_page["features"]:
-        print(feature["id"], feature["properties"]["datetime"])
-    print(back_page["links"])
     assert len(back_page["features"]) == 3
     assert [f["id"] for f in back_page["features"]] == [
         "test-item20",
@@ -319,7 +355,6 @@ async def test_pagination(app_client, load_test_data, load_test_collection):
     ]
 
 
-@pytest.mark.asyncio
 async def test_item_search_by_id_post(app_client, load_test_data, load_test_collection):
     """Test POST search by item id (core)"""
     ids = ["test1", "test2", "test3"]
@@ -339,7 +374,6 @@ async def test_item_search_by_id_post(app_client, load_test_data, load_test_coll
     assert set([feat["id"] for feat in resp_json["features"]]) == set(ids)
 
 
-@pytest.mark.asyncio
 async def test_item_search_by_id_no_results_post(
     app_client, load_test_data, load_test_collection
 ):
@@ -355,7 +389,6 @@ async def test_item_search_by_id_no_results_post(
     assert len(resp_json["features"]) == 0
 
 
-@pytest.mark.asyncio
 async def test_item_search_spatial_query_post(
     app_client, load_test_data, load_test_collection
 ):
@@ -366,6 +399,13 @@ async def test_item_search_spatial_query_post(
     )
     assert resp.status_code == 200
 
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
     params = {
         "collections": [test_item["collection"]],
         "intersects": test_item["geometry"],
@@ -373,10 +413,10 @@ async def test_item_search_spatial_query_post(
     resp = await app_client.post("/search", json=params)
     assert resp.status_code == 200
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_temporal_query_post(
     app_client, load_test_data, load_test_collection
 ):
@@ -387,23 +427,27 @@ async def test_item_search_temporal_query_post(
     )
     assert resp.status_code == 200
 
-    item_date = datetime.strptime(test_item["properties"]["datetime"], DATETIME_RFC339)
-    print(item_date)
-    item_date = item_date + timedelta(seconds=1)
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
 
     params = {
         "collections": [test_item["collection"]],
         "intersects": test_item["geometry"],
-        "datetime": item_date.strftime(DATETIME_RFC339),
+        "datetime": datetime_to_str(item_date),
     }
 
     resp = await app_client.post("/search", json=params)
-    print(resp.content)
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_temporal_window_post(
     app_client, load_test_data, load_test_collection
 ):
@@ -414,46 +458,40 @@ async def test_item_search_temporal_window_post(
     )
     assert resp.status_code == 200
 
-    item_date = datetime.strptime(test_item["properties"]["datetime"], DATETIME_RFC339)
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     item_date_before = item_date - timedelta(seconds=1)
     item_date_after = item_date + timedelta(seconds=1)
 
     params = {
         "collections": [test_item["collection"]],
-        "intersects": test_item["geometry"],
-        "datetime": f"{item_date_before.strftime(DATETIME_RFC339)}/{item_date_after.strftime(DATETIME_RFC339)}",
+        "datetime": f"{datetime_to_str(item_date_before)}/{datetime_to_str(item_date_after)}",
     }
+
     resp = await app_client.post("/search", json=params)
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_temporal_open_window(
     app_client, load_test_data, load_test_collection
 ):
-    """Test POST search with open spatio-temporal query (core)"""
-    test_item = load_test_data("test_item.json")
-    resp = await app_client.post(
-        f"/collections/{test_item['collection']}/items", json=test_item
-    )
-    assert resp.status_code == 200
-
-    params = {
-        "collections": [test_item["collection"]],
-        "intersects": test_item["geometry"],
-        "datetime": "../..",
-    }
-    resp = await app_client.post("/search", json=params)
-    resp_json = resp.json()
-    assert resp_json["features"][0]["id"] == test_item["id"]
+    for dt in ["/", "../..", "../", "/.."]:
+        resp = await app_client.post("/search", json={"datetime": dt})
+        assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_item_search_sort_post(app_client, load_test_data, load_test_collection):
     """Test POST search with sorting (sort extension)"""
     first_item = load_test_data("test_item.json")
-    item_date = datetime.strptime(first_item["properties"]["datetime"], DATETIME_RFC339)
+    item_date = rfc3339_str_to_datetime(first_item["properties"]["datetime"])
     resp = await app_client.post(
         f"/collections/{first_item['collection']}/items", json=first_item
     )
@@ -462,7 +500,7 @@ async def test_item_search_sort_post(app_client, load_test_data, load_test_colle
     second_item = load_test_data("test_item.json")
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = another_item_date.strftime(DATETIME_RFC339)
+    second_item["properties"]["datetime"] = datetime_to_str(another_item_date)
     resp = await app_client.post(
         f"/collections/{second_item['collection']}/items", json=second_item
     )
@@ -479,7 +517,6 @@ async def test_item_search_sort_post(app_client, load_test_data, load_test_colle
     assert resp_json["features"][1]["id"] == second_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_by_id_get(app_client, load_test_data, load_test_collection):
     """Test GET search by item id (core)"""
     ids = ["test1", "test2", "test3"]
@@ -499,12 +536,18 @@ async def test_item_search_by_id_get(app_client, load_test_data, load_test_colle
     assert set([feat["id"] for feat in resp_json["features"]]) == set(ids)
 
 
-@pytest.mark.asyncio
 async def test_item_search_bbox_get(app_client, load_test_data, load_test_collection):
     """Test GET search with spatial query (core)"""
     test_item = load_test_data("test_item.json")
     resp = await app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
     )
     assert resp.status_code == 200
 
@@ -515,10 +558,10 @@ async def test_item_search_bbox_get(app_client, load_test_data, load_test_collec
     resp = await app_client.get("/search", params=params)
     assert resp.status_code == 200
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_get_without_collections(
     app_client, load_test_data, load_test_collection
 ):
@@ -529,16 +572,23 @@ async def test_item_search_get_without_collections(
     )
     assert resp.status_code == 200
 
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
     params = {
         "bbox": ",".join([str(coord) for coord in test_item["bbox"]]),
     }
     resp = await app_client.get("/search", params=params)
     assert resp.status_code == 200
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_temporal_window_get(
     app_client, load_test_data, load_test_collection
 ):
@@ -549,25 +599,31 @@ async def test_item_search_temporal_window_get(
     )
     assert resp.status_code == 200
 
-    item_date = datetime.strptime(test_item["properties"]["datetime"], DATETIME_RFC339)
+    # Add second item with a different datetime.
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
     item_date_before = item_date - timedelta(seconds=1)
     item_date_after = item_date + timedelta(seconds=1)
 
     params = {
         "collections": test_item["collection"],
-        "bbox": ",".join([str(coord) for coord in test_item["bbox"]]),
-        "datetime": f"{item_date_before.strftime(DATETIME_RFC339)}/{item_date_after.strftime(DATETIME_RFC339)}",
+        "datetime": f"{datetime_to_str(item_date_before)}/{datetime_to_str(item_date_after)}",
     }
     resp = await app_client.get("/search", params=params)
     resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_sort_get(app_client, load_test_data, load_test_collection):
     """Test GET search with sorting (sort extension)"""
     first_item = load_test_data("test_item.json")
-    item_date = datetime.strptime(first_item["properties"]["datetime"], DATETIME_RFC339)
+    item_date = rfc3339_str_to_datetime(first_item["properties"]["datetime"])
     resp = await app_client.post(
         f"/collections/{first_item['collection']}/items", json=first_item
     )
@@ -576,7 +632,7 @@ async def test_item_search_sort_get(app_client, load_test_data, load_test_collec
     second_item = load_test_data("test_item.json")
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = another_item_date.strftime(DATETIME_RFC339)
+    second_item["properties"]["datetime"] = datetime_to_str(another_item_date)
     resp = await app_client.post(
         f"/collections/{second_item['collection']}/items", json=second_item
     )
@@ -589,7 +645,6 @@ async def test_item_search_sort_get(app_client, load_test_data, load_test_collec
     assert resp_json["features"][1]["id"] == second_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_post_without_collection(
     app_client, load_test_data, load_test_collection
 ):
@@ -597,6 +652,12 @@ async def test_item_search_post_without_collection(
     test_item = load_test_data("test_item.json")
     resp = await app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
     )
     assert resp.status_code == 200
 
@@ -609,7 +670,6 @@ async def test_item_search_post_without_collection(
     assert resp_json["features"][0]["id"] == test_item["id"]
 
 
-@pytest.mark.asyncio
 async def test_item_search_properties_jsonb(
     app_client, load_test_data, load_test_collection
 ):
@@ -620,16 +680,20 @@ async def test_item_search_properties_jsonb(
     )
     assert resp.status_code == 200
 
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
     # EPSG is a JSONB key
     params = {"query": {"proj:epsg": {"gt": test_item["properties"]["proj:epsg"] - 1}}}
-    print(params)
     resp = await app_client.post("/search", json=params)
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
 
 
-@pytest.mark.asyncio
 async def test_item_search_properties_field(
     app_client, load_test_data, load_test_collection
 ):
@@ -640,15 +704,20 @@ async def test_item_search_properties_field(
     )
     assert resp.status_code == 200
 
-    params = {"query": {"platform": {"eq": "landsat-8"}}}
-    print(params)
+    second_test_item = load_test_data("test_item2.json")
+    second_test_item["properties"]["eo:cloud_cover"] = 5
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
+    params = {"query": {"eo:cloud_cover": {"eq": 0}}}
     resp = await app_client.post("/search", json=params)
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
 
 
-@pytest.mark.asyncio
 async def test_item_search_get_query_extension(
     app_client, load_test_data, load_test_collection
 ):
@@ -656,6 +725,12 @@ async def test_item_search_get_query_extension(
     test_item = load_test_data("test_item.json")
     resp = await app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
     )
     assert resp.status_code == 200
 
@@ -683,7 +758,6 @@ async def test_item_search_get_query_extension(
     )
 
 
-@pytest.mark.asyncio
 async def test_item_search_get_filter_extension_cql(
     app_client, load_test_data, load_test_collection
 ):
@@ -691,6 +765,12 @@ async def test_item_search_get_filter_extension_cql(
     test_item = load_test_data("test_item.json")
     resp = await app_client.post(
         f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
     )
     assert resp.status_code == 200
 
@@ -728,21 +808,105 @@ async def test_item_search_get_filter_extension_cql(
     )
 
 
-@pytest.mark.asyncio
+async def test_item_search_get_filter_extension_cql2(
+    app_client, load_test_data, load_test_collection
+):
+    """Test GET search with JSONB query (cql2 json filter extension)"""
+    test_item = load_test_data("test_item.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
+    # EPSG is a JSONB key
+    params = {
+        "collections": [test_item["collection"]],
+        "filter-lang": "cql2-json",
+        "filter": {
+            "op": "gt",
+            "args": [
+                {"property": "proj:epsg"},
+                test_item["properties"]["proj:epsg"] + 1,
+            ],
+        },
+    }
+    resp = await app_client.post("/search", json=params)
+    resp_json = resp.json()
+
+    assert resp.status_code == 200
+    assert len(resp_json.get("features")) == 0
+
+    params = {
+        "collections": [test_item["collection"]],
+        "filter-lang": "cql2-json",
+        "filter": {
+            "op": "eq",
+            "args": [
+                {"property": "proj:epsg"},
+                test_item["properties"]["proj:epsg"],
+            ],
+        },
+    }
+    resp = await app_client.post("/search", json=params)
+    resp_json = resp.json()
+    assert len(resp.json()["features"]) == 1
+    assert (
+        resp_json["features"][0]["properties"]["proj:epsg"]
+        == test_item["properties"]["proj:epsg"]
+    )
+
+
+async def test_item_search_get_filter_extension_cql2_with_query_fails(
+    app_client, load_test_data, load_test_collection
+):
+    """Test GET search with JSONB query (cql2 json filter extension)"""
+    test_item = load_test_data("test_item.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    second_test_item = load_test_data("test_item2.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=second_test_item
+    )
+    assert resp.status_code == 200
+
+    # EPSG is a JSONB key
+    params = {
+        "collections": [test_item["collection"]],
+        "filter-lang": "cql2-json",
+        "filter": {
+            "op": "gt",
+            "args": [
+                {"property": "proj:epsg"},
+                test_item["properties"]["proj:epsg"] + 1,
+            ],
+        },
+        "query": {"eo:cloud_cover": {"eq": 0}},
+    }
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 400
+
+
 async def test_get_missing_item_collection(app_client):
     """Test reading a collection which does not exist"""
     resp = await app_client.get("/collections/invalid-collection/items")
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_get_item_from_missing_item_collection(app_client):
     """Test reading an item from a collection which does not exist"""
     resp = await app_client.get("/collections/invalid-collection/items/some-item")
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_pagination_item_collection(
     app_client, load_test_data, load_test_collection
 ):
@@ -760,8 +924,6 @@ async def test_pagination_item_collection(
         assert resp.status_code == 200
         ids.append(uid)
 
-    print(ids)
-
     # Paginate through all 5 items with a limit of 1 (expecting 5 requests)
     page = await app_client.get(
         f"/collections/{test_item['collection']}/items", params={"limit": 1}
@@ -772,7 +934,6 @@ async def test_pagination_item_collection(
         idx += 1
         page_data = page.json()
         item_ids.append(page_data["features"][0]["id"])
-        print(idx, item_ids)
         nextlink = [
             link["href"] for link in page_data["links"] if link["rel"] == "next"
         ]
@@ -789,7 +950,6 @@ async def test_pagination_item_collection(
     assert not set(item_ids) - set(ids)
 
 
-@pytest.mark.asyncio
 async def test_pagination_post(app_client, load_test_data, load_test_collection):
     """Test POST pagination (paging extension)"""
     test_item = load_test_data("test_item.json")
@@ -806,7 +966,11 @@ async def test_pagination_post(app_client, load_test_data, load_test_collection)
         ids.append(uid)
 
     # Paginate through all 5 items with a limit of 1 (expecting 5 requests)
-    request_body = {"ids": ids, "limit": 1}
+    request_body = {
+        "filter-lang": "cql2-json",
+        "filter": {"op": "in", "args": [{"property": "id"}, ids]},
+        "limit": 1,
+    }
     page = await app_client.post("/search", json=request_body)
     idx = 0
     item_ids = []
@@ -831,7 +995,6 @@ async def test_pagination_post(app_client, load_test_data, load_test_collection)
     assert not set(item_ids) - set(ids)
 
 
-@pytest.mark.asyncio
 async def test_pagination_token_idempotent(
     app_client, load_test_data, load_test_collection
 ):
@@ -849,7 +1012,14 @@ async def test_pagination_token_idempotent(
         assert resp.status_code == 200
         ids.append(uid)
 
-    page = await app_client.get("/search", params={"ids": ",".join(ids), "limit": 3})
+    page = await app_client.post(
+        "/search",
+        json={
+            "filter-lang": "cql2-json",
+            "filter": {"op": "in", "args": [{"property": "id"}, ids]},
+            "limit": 3,
+        },
+    )
     page_data = page.json()
     next_link = list(filter(lambda l: l["rel"] == "next", page_data["links"]))
 
@@ -869,7 +1039,6 @@ async def test_pagination_token_idempotent(
     ]
 
 
-@pytest.mark.asyncio
 async def test_field_extension_get(app_client, load_test_data, load_test_collection):
     """Test GET search with included fields (fields extension)"""
     test_item = load_test_data("test_item.json")
@@ -884,7 +1053,6 @@ async def test_field_extension_get(app_client, load_test_data, load_test_collect
     assert not set(feat_properties) - {"proj:epsg", "gsd", "datetime"}
 
 
-@pytest.mark.asyncio
 async def test_field_extension_post(app_client, load_test_data, load_test_collection):
     """Test POST search with included and excluded fields (fields extension)"""
     test_item = load_test_data("test_item.json")
@@ -907,7 +1075,6 @@ async def test_field_extension_post(app_client, load_test_data, load_test_collec
 
     resp = await app_client.post("/search", json=body)
     resp_json = resp.json()
-    print(resp_json)
     assert "B1" not in resp_json["features"][0]["assets"].keys()
     assert not set(resp_json["features"][0]["properties"]) - {
         "orientation",
@@ -916,7 +1083,6 @@ async def test_field_extension_post(app_client, load_test_data, load_test_collec
     }
 
 
-@pytest.mark.asyncio
 async def test_field_extension_exclude_and_include(
     app_client, load_test_data, load_test_collection
 ):
@@ -939,7 +1105,6 @@ async def test_field_extension_exclude_and_include(
     assert "properties" not in resp_json["features"][0]
 
 
-@pytest.mark.asyncio
 async def test_field_extension_exclude_default_includes(
     app_client, load_test_data, load_test_collection
 ):
@@ -957,7 +1122,97 @@ async def test_field_extension_exclude_default_includes(
     assert "geometry" not in resp_json["features"][0]
 
 
-@pytest.mark.asyncio
+async def test_field_extension_include_multiple_subkeys(
+    app_client, load_test_item, load_test_collection
+):
+    """Test that multiple subkeys of an object field are included"""
+    body = {"fields": {"include": ["properties.width", "properties.height"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    resp_prop_keys = resp_json["features"][0]["properties"].keys()
+    assert set(resp_prop_keys) == set(["width", "height"])
+
+
+async def test_field_extension_include_multiple_deeply_nested_subkeys(
+    app_client, load_test_item, load_test_collection
+):
+    """Test that multiple deeply nested subkeys of an object field are included"""
+    body = {"fields": {"include": ["assets.ANG.type", "assets.ANG.href"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    resp_assets = resp_json["features"][0]["assets"]
+    assert set(resp_assets.keys()) == set(["ANG"])
+    assert set(resp_assets["ANG"].keys()) == set(["type", "href"])
+
+
+async def test_field_extension_exclude_multiple_deeply_nested_subkeys(
+    app_client, load_test_item, load_test_collection
+):
+    """Test that multiple deeply nested subkeys of an object field are excluded"""
+    body = {"fields": {"exclude": ["assets.ANG.type", "assets.ANG.href"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    resp_assets = resp_json["features"][0]["assets"]
+    assert len(resp_assets.keys()) > 0
+    assert "type" not in resp_assets["ANG"]
+    assert "href" not in resp_assets["ANG"]
+
+
+async def test_field_extension_exclude_deeply_nested_included_subkeys(
+    app_client, load_test_item, load_test_collection
+):
+    """Test that deeply nested keys of a nested object that was included are excluded"""
+    body = {
+        "fields": {
+            "include": ["assets.ANG.type", "assets.ANG.href"],
+            "exclude": ["assets.ANG.href"],
+        }
+    }
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    resp_assets = resp_json["features"][0]["assets"]
+    assert "type" in resp_assets["ANG"]
+    assert "href" not in resp_assets["ANG"]
+
+
+async def test_field_extension_exclude_links(
+    app_client, load_test_item, load_test_collection
+):
+    """Links have special injection behavior, ensure they can be excluded with the fields extension"""
+    body = {"fields": {"exclude": ["links"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    assert "links" not in resp_json["features"][0]
+
+
+async def test_field_extension_include_only_non_existant_field(
+    app_client, load_test_item, load_test_collection
+):
+    """Including only a non-existant field should return the full item"""
+    body = {"fields": {"include": ["non_existant_field"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+
+    assert list(resp_json["features"][0].keys()) == ["id", "collection", "links"]
+
+
 async def test_search_intersects_and_bbox(app_client):
     """Test POST search intersects and bbox are mutually exclusive (core)"""
     bbox = [-118, 34, -117, 35]
@@ -967,7 +1222,6 @@ async def test_search_intersects_and_bbox(app_client):
     assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_get_missing_item(app_client, load_test_data):
     """Test read item which does not exist (transactions extension)"""
     test_coll = load_test_data("test_collection.json")
@@ -975,25 +1229,27 @@ async def test_get_missing_item(app_client, load_test_data):
     assert resp.status_code == 404
 
 
-@pytest.mark.asyncio
-async def test_relative_link_construction():
+async def test_relative_link_construction(app):
     req = Request(
         scope={
             "type": "http",
             "scheme": "http",
             "method": "PUT",
-            "root_path": "http://test/stac",
+            "root_path": "/stac",  # root_path should not have proto, domain, or port
             "path": "/",
             "raw_path": b"/tab/abc",
             "query_string": b"",
             "headers": {},
+            "app": app,
+            "server": ("test", HTTP_PORT),
         }
     )
     links = CollectionLinks(collection_id="naip", request=req)
-    assert links.link_items()["href"] == "http://test/stac/collections/naip/items"
+    assert links.link_items()["href"] == (
+        "http://test/stac{}/collections/naip/items".format(app.state.router_prefix)
+    )
 
 
-@pytest.mark.asyncio
 async def test_search_bbox_errors(app_client):
     body = {"query": {"bbox": [0]}}
     resp = await app_client.post("/search", json=body)
@@ -1008,7 +1264,6 @@ async def test_search_bbox_errors(app_client):
     assert resp.status_code == 400
 
 
-@pytest.mark.asyncio
 async def test_preserves_extra_link(
     app_client: AsyncClient, load_test_data, load_test_collection
 ):
@@ -1025,7 +1280,232 @@ async def test_preserves_extra_link(
     )
     assert response_item.status_code == 200
     item = response_item.json()
-
     extra_link = [link for link in item["links"] if link["rel"] == "preview"]
     assert extra_link
     assert extra_link[0]["href"] == expected_href
+
+
+async def test_item_search_get_filter_extension_cql_explicitlang(
+    app_client, load_test_data, load_test_collection
+):
+    """Test GET search with JSONB query (cql json filter extension)"""
+    test_item = load_test_data("test_item.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    # EPSG is a JSONB key
+    params = {
+        "collections": [test_item["collection"]],
+        "filter-lang": "cql-json",
+        "filter": {
+            "gt": [
+                {"property": "proj:epsg"},
+                test_item["properties"]["proj:epsg"] + 1,
+            ]
+        },
+    }
+    resp = await app_client.post("/search", json=params)
+    resp_json = resp.json()
+
+    assert resp.status_code == 200
+    assert len(resp_json.get("features")) == 0
+
+    params = {
+        "collections": [test_item["collection"]],
+        "filter-lang": "cql-json",
+        "filter": {
+            "eq": [
+                {"property": "proj:epsg"},
+                test_item["properties"]["proj:epsg"],
+            ]
+        },
+    }
+    resp = await app_client.post("/search", json=params)
+    resp_json = resp.json()
+    assert len(resp.json()["features"]) == 1
+    assert (
+        resp_json["features"][0]["properties"]["proj:epsg"]
+        == test_item["properties"]["proj:epsg"]
+    )
+
+
+async def test_item_search_get_filter_extension_cql2_2(
+    app_client, load_test_data, load_test_collection
+):
+    """Test GET search with JSONB query (cql json filter extension)"""
+    test_item = load_test_data("test_item.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    # EPSG is a JSONB key
+    params = {
+        "filter-lang": "cql2-json",
+        "filter": {
+            "op": "and",
+            "args": [
+                {
+                    "op": "eq",
+                    "args": [
+                        {"property": "proj:epsg"},
+                        test_item["properties"]["proj:epsg"] + 1,
+                    ],
+                },
+                {
+                    "op": "in",
+                    "args": [
+                        {"property": "collection"},
+                        [test_item["collection"]],
+                    ],
+                },
+            ],
+        },
+    }
+    resp = await app_client.post("/search", json=params)
+    resp_json = resp.json()
+
+    assert resp.status_code == 200
+    assert len(resp_json.get("features")) == 0
+
+    params = {
+        "filter-lang": "cql2-json",
+        "filter": {
+            "op": "and",
+            "args": [
+                {
+                    "op": "eq",
+                    "args": [
+                        {"property": "proj:epsg"},
+                        test_item["properties"]["proj:epsg"],
+                    ],
+                },
+                {
+                    "op": "in",
+                    "args": [
+                        {"property": "collection"},
+                        [test_item["collection"]],
+                    ],
+                },
+            ],
+        },
+    }
+    resp = await app_client.post("/search", json=params)
+    resp_json = resp.json()
+    assert len(resp.json()["features"]) == 1
+    assert (
+        resp_json["features"][0]["properties"]["proj:epsg"]
+        == test_item["properties"]["proj:epsg"]
+    )
+
+
+async def test_search_datetime_validation_errors(app_client):
+    bad_datetimes = [
+        "37-01-01T12:00:27.87Z",
+        "1985-13-12T23:20:50.52Z",
+        "1985-12-32T23:20:50.52Z",
+        "1985-12-01T25:20:50.52Z",
+        "1985-12-01T00:60:50.52Z",
+        "1985-12-01T00:06:61.52Z",
+        "1990-12-31T23:59:61Z",
+        "1986-04-12T23:20:50.52Z/1985-04-12T23:20:50.52Z",
+    ]
+    for dt in bad_datetimes:
+        body = {"query": {"datetime": dt}}
+        resp = await app_client.post("/search", json=body)
+        assert resp.status_code == 400
+
+        resp = await app_client.get("/search?datetime={}".format(dt))
+        assert resp.status_code == 400
+
+
+async def test_filter_cql2text(app_client, load_test_data, load_test_collection):
+    """Test GET search with cql2-text"""
+    test_item = load_test_data("test_item.json")
+    resp = await app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    epsg = test_item["properties"]["proj:epsg"]
+    collection = test_item["collection"]
+
+    filter = f"proj:epsg={epsg} AND collection = '{collection}'"
+    params = {"filter": filter, "filter-lang": "cql2-text"}
+    resp = await app_client.get("/search", params=params)
+    resp_json = resp.json()
+    assert len(resp.json()["features"]) == 1
+    assert (
+        resp_json["features"][0]["properties"]["proj:epsg"]
+        == test_item["properties"]["proj:epsg"]
+    )
+
+    filter = f"proj:epsg={epsg + 1} AND collection = '{collection}'"
+    params = {"filter": filter, "filter-lang": "cql2-text"}
+    resp = await app_client.get("/search", params=params)
+    resp_json = resp.json()
+    assert len(resp.json()["features"]) == 0
+
+
+async def test_item_merge_raster_bands(
+    app_client, load_test2_item, load_test2_collection
+):
+    resp = await app_client.get("/collections/test2-collection/items/test2-item")
+    resp_json = resp.json()
+    red_bands = resp_json["assets"]["red"]["raster:bands"]
+
+    # The merged item should have merged the band dicts from base and item
+    # into a single dict
+    assert len(red_bands) == 1
+    # The merged item should have the full 6 bands
+    assert len(red_bands[0].keys()) == 6
+    # The merged item should have kept the item value rather than the base value
+    assert red_bands[0]["offset"] == 2.03976
+
+
+@pytest.mark.asyncio
+async def test_get_collection_items_forwarded_header(
+    app_client, load_test_collection, load_test_item
+):
+    coll = load_test_collection
+    resp = await app_client.get(
+        f"/collections/{coll.id}/items",
+        headers={"Forwarded": "proto=https;host=test:1234"},
+    )
+    for link in resp.json()["features"][0]["links"]:
+        assert link["href"].startswith("https://test:1234/")
+
+
+@pytest.mark.asyncio
+async def test_get_collection_items_x_forwarded_headers(
+    app_client, load_test_collection, load_test_item
+):
+    coll = load_test_collection
+    resp = await app_client.get(
+        f"/collections/{coll.id}/items",
+        headers={
+            "X-Forwarded-Port": "1234",
+            "X-Forwarded-Proto": "https",
+        },
+    )
+    for link in resp.json()["features"][0]["links"]:
+        assert link["href"].startswith("https://test:1234/")
+
+
+@pytest.mark.asyncio
+async def test_get_collection_items_duplicate_forwarded_headers(
+    app_client, load_test_collection, load_test_item
+):
+    coll = load_test_collection
+    resp = await app_client.get(
+        f"/collections/{coll.id}/items",
+        headers={
+            "Forwarded": "proto=https;host=test:1234",
+            "X-Forwarded-Port": "4321",
+            "X-Forwarded-Proto": "http",
+        },
+    )
+    for link in resp.json()["features"][0]["links"]:
+        assert link["href"].startswith("https://test:1234/")

@@ -32,50 +32,35 @@ PGStac stores all collection and item records as jsonb fields exactly as they co
 
 While the Stac Sort Extension is fully supported, [PGStac](https://github.com/stac-utils/pgstac) is particularly enhanced to be able to sort by datetime (either ascending or descending). Sorting by anything other than datetime (the default if no sort is specified) on very large Stac repositories without very specific query limits (ie selecting a single day date range) will not have the same performance. For more than millions of records it is recommended to either set a low connection timeout on PostgreSQL or to disable use of the Sort Extension.
 
-
 `stac-fastapi pgstac` was initially added to `stac-fastapi` by [developmentseed](https://github.com/developmentseed).
 
 ## Installation
 
-```
+```shell
 git clone https://github.com/stac-utils/stac-fastapi.git
 cd stac-fastapi
 pip install -e \
     stac_fastapi/api[dev] \
     stac_fastapi/types[dev] \
-    stac_fastapi/extensions[dev,tiles] \
+    stac_fastapi/extensions[dev] \
     stac_fastapi/pgstac[dev,server]
 ```
 
-## Local Development
-Use docker-compose to deploy the application with a PGStac database. The docker-compose environment will run stac-fastapi/sqlalchemy on port 8081 and stac-fastapi/pgstac on port 8082.
-```bash
-docker-compose build
-docker-compose up
-```
+### Settings
 
-
-### Testing
-The test suite will create a new database on the currently set up database that will have all data truncated between tests. The database must be running with docker-compose or you must have your environment pointing to a running database with PGStac installed to run the tests. All tests are run in the database named "pgstactestdb".
-
-Run all tests:
-```bash
-make test-pgstac
-```
-
-Run individual tests by running pytest within the docker container:
-```bash
-make docker-shell
-$ pytest -v
-```
+To configure PGStac stac-fastapi to [hydrate search result items in the API](https://github.com/stac-utils/pgstac#runtime-configurations), set the `USE_API_HYDRATE` environment variable to `true` or explicitly set the option in the PGStac Settings object.
 
 ### Migrations
-PGStac is an external project and the may be used by multiple front ends.
-For Stac FastAPI development, a docker image (which is pulled as part of the docker-compose) is available at bitner/pgstac:[version] that has the full database already set up for PGStac.
 
-There is also a python utility as part of PGStac (pypgstac) that includes a migration utility. The pgstac version required by stac-fastapi/pgstac is pinned by using the pinned version of pypgstac in the [setup](setup.py) file.
+PGStac is an external project and the may be used by multiple front ends.
+For Stac FastAPI development, a docker image (which is pulled as part of the docker-compose) is available at
+bitner/pgstac:[version] that has the full database already set up for PGStac.
+
+There is also a python utility as part of PGStac (pypgstac) that includes a migration utility. The pgstac
+version required by stac-fastapi/pgstac is pinned by using the pinned version of pypgstac in the [setup](setup.py) file.
 
 In order to migrate database versions you can use the migration utility:
-```bash
+
+```shell
 pypgstac migrate
 ```

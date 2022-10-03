@@ -1,5 +1,4 @@
 version: '3'
-
 services:
   app-sqlalchemy:
     container_name: stac-fastapi-sqlalchemy
@@ -11,7 +10,7 @@ services:
     environment:
       - APP_HOST=0.0.0.0
       - APP_PORT=8081
-      - RELOAD=false
+      - RELOAD=true
       - ENVIRONMENT=local
       - POSTGRES_USER=username
       - POSTGRES_PASS=password
@@ -20,11 +19,6 @@ services:
       - POSTGRES_HOST_WRITER=database
       - POSTGRES_PORT=5432
       - WEB_CONCURRENCY=10
-      - VSI_CACHE=TRUE
-      - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
-      - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
-      - DB_MIN_CONN_SIZE=1
-      - DB_MAX_CONN_SIZE=1
     ports:
       - "8081:8081"
     volumes:
@@ -38,14 +32,11 @@ services:
   app-pgstac:
     container_name: stac-fastapi-pgstac
     image: stac-utils/stac-fastapi
-    build:
-      context: .
-      dockerfile: Dockerfile
     platform: linux/amd64
     environment:
       - APP_HOST=0.0.0.0
       - APP_PORT=8082
-      - RELOAD=false
+      - RELOAD=true
       - ENVIRONMENT=local
       - POSTGRES_USER=username
       - POSTGRES_PASS=password
@@ -59,6 +50,7 @@ services:
       - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
       - DB_MIN_CONN_SIZE=1
       - DB_MAX_CONN_SIZE=1
+      - USE_API_HYDRATE=${USE_API_HYDRATE:-false}
     ports:
       - "8082:8082"
     volumes:
@@ -71,11 +63,15 @@ services:
 
   database:
     container_name: stac-db
-    image: ghcr.io/stac-utils/pgstac:v0.3.4
+    image: ghcr.io/stac-utils/pgstac:v0.6.6
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=postgis
+      - PGUSER=username
+      - PGPASSWORD=password
+      - PGHOST=localhost
+      - PGDATABASE=postgis
     ports:
       - "5439:5432"
     command: postgres -N 500
@@ -104,11 +100,6 @@ services:
     image: stac-utils/stac-fastapi
     environment:
       - ENVIRONMENT=development
-      - POSTGRES_USER=username
-      - POSTGRES_PASS=password
-      - POSTGRES_DBNAME=postgis
-      - POSTGRES_HOST=database
-      - POSTGRES_PORT=5432
     volumes:
       - ./stac_fastapi:/app/stac_fastapi
       - ./scripts:/app/scripts

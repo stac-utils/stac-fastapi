@@ -1,18 +1,31 @@
 """transaction extension."""
-from typing import Callable, List, Optional, Type, Union
+from typing import List, Optional, Type, Union
 
 import attr
-from fastapi import APIRouter, FastAPI
-from pydantic import BaseModel
+from fastapi import APIRouter, Body, FastAPI
 from stac_pydantic import Collection, Item
 from starlette.responses import JSONResponse, Response
 
-from stac_fastapi.api.models import APIRequest, CollectionUri, ItemUri
-from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
+from stac_fastapi.api.models import CollectionUri, ItemUri
+from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
+
+
+@attr.s
+class PostItem(CollectionUri):
+    """Create Item."""
+
+    item: stac_types.Item = attr.ib(default=Body())
+
+
+@attr.s
+class PutItem(ItemUri):
+    """Update Item."""
+
+    item: stac_types.Item = attr.ib(default=Body())
 
 
 @attr.s
@@ -38,34 +51,13 @@ class TransactionExtension(ApiExtension):
     settings: ApiSettings = attr.ib()
     conformance_classes: List[str] = attr.ib(
         factory=lambda: [
-            "https://api.stacspec.org/v1.0.0-beta.3/ogcapi-features/extensions/transaction/",
+            "https://api.stacspec.org/v1.0.0-rc.1/ogcapi-features/extensions/transaction",
             "http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/simpletx",
         ]
     )
     schema_href: Optional[str] = attr.ib(default=None)
     router: APIRouter = attr.ib(factory=APIRouter)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
-
-    def _create_endpoint(
-        self,
-        func: Callable,
-        request_type: Union[
-            Type[APIRequest],
-            Type[BaseModel],
-            Type[stac_types.Item],
-            Type[stac_types.Collection],
-        ],
-    ) -> Callable:
-        """Create a FastAPI endpoint."""
-        if isinstance(self.client, AsyncBaseTransactionsClient):
-            return create_async_endpoint(
-                func, request_type, response_class=self.response_class
-            )
-        elif isinstance(self.client, BaseTransactionsClient):
-            return create_sync_endpoint(
-                func, request_type, response_class=self.response_class
-            )
-        raise NotImplementedError
 
     def register_create_item(self):
         """Register create item endpoint (POST /collections/{collection_id}/items)."""
@@ -77,20 +69,20 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=self._create_endpoint(self.client.create_item, stac_types.Item),
+            endpoint=create_async_endpoint(self.client.create_item, PostItem),
         )
 
     def register_update_item(self):
         """Register update item endpoint (PUT /collections/{collection_id}/items)."""
         self.router.add_api_route(
             name="Update Item",
-            path="/collections/{collection_id}/items",
+            path="/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=self._create_endpoint(self.client.update_item, stac_types.Item),
+            endpoint=create_async_endpoint(self.client.update_item, PutItem),
         )
 
     def register_delete_item(self):
@@ -103,7 +95,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=self._create_endpoint(self.client.delete_item, ItemUri),
+            endpoint=create_async_endpoint(self.client.delete_item, ItemUri),
         )
 
     def register_create_collection(self):
@@ -116,7 +108,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=self._create_endpoint(
+            endpoint=create_async_endpoint(
                 self.client.create_collection, stac_types.Collection
             ),
         )
@@ -131,7 +123,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=self._create_endpoint(
+            endpoint=create_async_endpoint(
                 self.client.update_collection, stac_types.Collection
             ),
         )
@@ -146,7 +138,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=self._create_endpoint(
+            endpoint=create_async_endpoint(
                 self.client.delete_collection, CollectionUri
             ),
         )
@@ -160,6 +152,7 @@ class TransactionExtension(ApiExtension):
         Returns:
             None
         """
+        self.router.prefix = app.state.router_prefix
         self.register_create_item()
         self.register_update_item()
         self.register_delete_item()

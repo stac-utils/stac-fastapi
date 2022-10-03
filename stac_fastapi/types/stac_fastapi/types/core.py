@@ -6,14 +6,15 @@ from urllib.parse import urljoin
 
 import attr
 from fastapi import Request
-from stac_pydantic.api import Search
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
+from starlette.responses import Response
 
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import Conformance
 
@@ -23,16 +24,19 @@ StacType = Dict[str, Any]
 
 @attr.s  # type:ignore
 class BaseTransactionsClient(abc.ABC):
-    """Defines a pattern for implementing the STAC transaction extension."""
+    """Defines a pattern for implementing the STAC API Transaction Extension."""
 
     @abc.abstractmethod
-    def create_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
+    def create_item(
+        self, collection_id: str, item: stac_types.Item, **kwargs
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
 
         Args:
             item: the item
+            collection_id: the id of the collection from the resource path
 
         Returns:
             The item that was created.
@@ -41,7 +45,9 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def update_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
+    def update_item(
+        self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
         Called with `PUT /collections/{collection_id}/items`. It is expected that this item already exists.  The update
@@ -50,6 +56,7 @@ class BaseTransactionsClient(abc.ABC):
 
         Args:
             item: the item (must be complete)
+            collection_id: the id of the collection from the resource path
 
         Returns:
             The updated item.
@@ -59,7 +66,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def delete_item(
         self, item_id: str, collection_id: str, **kwargs
-    ) -> stac_types.Item:
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collection_id}/items/{item_id}`
@@ -76,7 +83,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def create_collection(
         self, collection: stac_types.Collection, **kwargs
-    ) -> stac_types.Collection:
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Create a new collection.
 
         Called with `POST /collections`.
@@ -92,7 +99,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def update_collection(
         self, collection: stac_types.Collection, **kwargs
-    ) -> stac_types.Collection:
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
         Called with `PUT /collections`. It is expected that this item already exists.  The update should do a diff
@@ -101,6 +108,7 @@ class BaseTransactionsClient(abc.ABC):
 
         Args:
             collection: the collection (must be complete)
+            collection_id: the id of the collection from the resource path
 
         Returns:
             The updated collection.
@@ -108,7 +116,9 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def delete_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
+    def delete_collection(
+        self, collection_id: str, **kwargs
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Delete a collection.
 
         Called with `DELETE /collections/{collection_id}`
@@ -127,7 +137,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
     """Defines a pattern for implementing the STAC transaction extension."""
 
     @abc.abstractmethod
-    async def create_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
+    async def create_item(
+        self, collection_id: str, item: stac_types.Item, **kwargs
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
@@ -142,7 +154,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def update_item(self, item: stac_types.Item, **kwargs) -> stac_types.Item:
+    async def update_item(
+        self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
         Called with `PUT /collections/{collection_id}/items`. It is expected that this item already exists.  The update
@@ -160,7 +174,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def delete_item(
         self, item_id: str, collection_id: str, **kwargs
-    ) -> stac_types.Item:
+    ) -> Optional[Union[stac_types.Item, Response]]:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collection_id}/items/{item_id}`
@@ -177,7 +191,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def create_collection(
         self, collection: stac_types.Collection, **kwargs
-    ) -> stac_types.Collection:
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Create a new collection.
 
         Called with `POST /collections`.
@@ -193,7 +207,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def update_collection(
         self, collection: stac_types.Collection, **kwargs
-    ) -> stac_types.Collection:
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
         Called with `PUT /collections`. It is expected that this item already exists.  The update should do a diff
@@ -211,7 +225,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def delete_collection(
         self, collection_id: str, **kwargs
-    ) -> stac_types.Collection:
+    ) -> Optional[Union[stac_types.Collection, Response]]:
         """Delete a collection.
 
         Called with `DELETE /collections/{collection_id}`
@@ -264,12 +278,6 @@ class LandingPageMixin(abc.ABC):
                     "href": urljoin(base_url, "collections"),
                 },
                 {
-                    "rel": Relations.docs.value,
-                    "type": MimeTypes.json,
-                    "title": "OpenAPI docs",
-                    "href": urljoin(base_url, "docs"),
-                },
-                {
                     "rel": Relations.conformance.value,
                     "type": MimeTypes.json,
                     "title": "STAC/WFS3 conformance classes implemented by this server",
@@ -284,7 +292,7 @@ class LandingPageMixin(abc.ABC):
                 },
                 {
                     "rel": Relations.search.value,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.geojson,
                     "title": "STAC search",
                     "href": urljoin(base_url, "search"),
                     "method": "POST",
@@ -342,12 +350,10 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
             API landing page, serving as an entry point to the API.
         """
         request: Request = kwargs["request"]
-        base_url = str(request.base_url)
+        base_url = get_base_url(request)
         extension_schemas = [
             schema.schema_href for schema in self.extensions if schema.schema_href
         ]
-        request: Request = kwargs["request"]
-        base_url = str(request.base_url)
         landing_page = self._landing_page(
             base_url=base_url,
             conformance_classes=self.conformance_classes(),
@@ -372,9 +378,24 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": "service-desc",
                 "type": "application/vnd.oai.openapi+json;version=3.0",
                 "title": "OpenAPI service description",
-                "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
+                "href": urljoin(
+                    str(request.base_url), request.app.openapi_url.lstrip("/")
+                ),
             }
         )
+
+        # Add human readable service-doc
+        landing_page["links"].append(
+            {
+                "rel": "service-doc",
+                "type": "text/html",
+                "title": "OpenAPI service documentation",
+                "href": urljoin(
+                    str(request.base_url), request.app.docs_url.lstrip("/")
+                ),
+            }
+        )
+
         return landing_page
 
     def conformance(self, **kwargs) -> stac_types.Conformance:
@@ -389,7 +410,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     def post_search(
-        self, search_request: Search, **kwargs
+        self, search_request: BaseSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         """Cross catalog search (POST).
 
@@ -522,7 +543,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             API landing page, serving as an entry point to the API.
         """
         request: Request = kwargs["request"]
-        base_url = str(request.base_url)
+        base_url = get_base_url(request)
         extension_schemas = [
             schema.schema_href for schema in self.extensions if schema.schema_href
         ]
@@ -548,7 +569,21 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": "service-desc",
                 "type": "application/vnd.oai.openapi+json;version=3.0",
                 "title": "OpenAPI service description",
-                "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
+                "href": urljoin(
+                    str(request.base_url), request.app.openapi_url.lstrip("/")
+                ),
+            }
+        )
+
+        # Add human readable service-doc
+        landing_page["links"].append(
+            {
+                "rel": "service-doc",
+                "type": "text/html",
+                "title": "OpenAPI service documentation",
+                "href": urljoin(
+                    str(request.base_url), request.app.docs_url.lstrip("/")
+                ),
             }
         )
 
@@ -566,7 +601,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     async def post_search(
-        self, search_request: Search, **kwargs
+        self, search_request: BaseSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         """Cross catalog search (POST).
 

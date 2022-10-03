@@ -1,0 +1,59 @@
+{
+    "id": "f2cca2a3-288b-4518-8a3e-a4492bb60b08",
+    "type": "Feature",
+    "collection": "joplin",
+    "links": [],
+    "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [
+                    -94.6884155,
+                    37.0595608
+                ],
+                [
+                    -94.6884155,
+                    37.0332547
+                ],
+                [
+                    -94.6554565,
+                    37.0332547
+                ],
+                [
+                    -94.6554565,
+                    37.0595608
+                ],
+                [
+                    -94.6884155,
+                    37.0595608
+                ]
+            ]
+        ]
+    },
+    "properties": {
+        "proj:epsg": 3857,
+        "orientation": "nadir",
+        "height": 2500,
+        "width": 2500,
+        "datetime": "2000-02-02T00:00:00Z",
+        "gsd": 0.5971642834779395
+    },
+    "assets": {
+        "COG": {
+            "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+            "href": "https://arturo-stac-api-test-data.s3.amazonaws.com/joplin/images/may24C350000e4102500n.tif",
+            "title": "NOAA STORM COG"
+        }
+    },
+    "bbox": [
+        -94.6884155,
+        37.0332547,
+        -94.6554565,
+        37.0595608
+    ],
+    "stac_extensions": [
+        "https://stac-extensions.github.io/eo/v1.0.0/schema.json",
+        "https://stac-extensions.github.io/projection/v1.0.0/schema.json"
+    ],
+    "stac_version": "1.0.0"
+}

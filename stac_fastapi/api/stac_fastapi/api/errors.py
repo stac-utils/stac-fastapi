@@ -1,7 +1,7 @@
 """Error handling."""
 
 import logging
-from typing import Callable, Dict, Type
+from typing import Callable, Dict, Type, TypedDict
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
@@ -23,11 +23,25 @@ logger = logging.getLogger(__name__)
 DEFAULT_STATUS_CODES = {
     NotFoundError: status.HTTP_404_NOT_FOUND,
     ConflictError: status.HTTP_409_CONFLICT,
-    ForeignKeyError: status.HTTP_422_UNPROCESSABLE_ENTITY,
+    ForeignKeyError: status.HTTP_424_FAILED_DEPENDENCY,
     DatabaseError: status.HTTP_424_FAILED_DEPENDENCY,
     Exception: status.HTTP_500_INTERNAL_SERVER_ERROR,
     InvalidQueryParameter: status.HTTP_400_BAD_REQUEST,
 }
+
+
+class ErrorResponse(TypedDict):
+    """A JSON error response returned by the API.
+
+    The STAC API spec expects that `code` and `description` are both present in the payload.
+
+    Attributes:
+        code: A code representing the error, semantics are up to implementor.
+        description: A description of the error.
+    """
+
+    code: str
+    description: str
 
 
 def exception_handler_factory(status_code: int) -> Callable:
@@ -43,7 +57,10 @@ def exception_handler_factory(status_code: int) -> Callable:
     def handler(request: Request, exc: Exception):
         """I handle exceptions!!."""
         logger.error(exc, exc_info=True)
-        return JSONResponse(content={"detail": str(exc)}, status_code=status_code)
+        return JSONResponse(
+            content=ErrorResponse(code=exc.__class__.__name__, description=str(exc)),
+            status_code=status_code,
+        )
 
     return handler
 
@@ -69,8 +86,8 @@ def add_exception_handlers(
         request: Request, exc: RequestValidationError
     ) -> JSONResponse:
         return JSONResponse(
+            content=ErrorResponse(code=exc.__class__.__name__, description=str(exc)),
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"detail": exc.errors()},
         )
 
     app.add_exception_handler(

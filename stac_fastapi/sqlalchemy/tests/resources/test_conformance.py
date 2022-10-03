@@ -33,7 +33,7 @@ def test_landing_page_health(response):
 link_tests = [
     ("root", "application/json", "/"),
     ("conformance", "application/json", "/conformance"),
-    ("docs", "application/json", "/docs"),
+    ("service-doc", "text/html", "/api.html"),
     ("service-desc", "application/vnd.oai.openapi+json;version=3.0", "/api"),
 ]
 

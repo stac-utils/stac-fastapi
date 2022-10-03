@@ -8,7 +8,7 @@ with open("README.md") as f:
 install_requires = [
     "attrs",
     "pydantic[dotenv]",
-    "stac_pydantic==2.0.*",
+    "stac_pydantic>=2.0.3",
     "stac-fastapi.types",
     "stac-fastapi.api",
     "stac-fastapi.extensions",
@@ -25,12 +25,11 @@ extra_reqs = {
     "dev": [
         "pytest",
         "pytest-cov",
-        "pytest-asyncio",
         "pre-commit",
         "requests",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
-    "server": ["uvicorn[standard]>=0.12.0,<0.14.0"],
+    "server": ["uvicorn[standard]==0.17.0"],
 }
 
 
@@ -48,7 +47,7 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],
     keywords="STAC FastAPI COG",
-    author=u"Arturo Engineering",
+    author="Arturo Engineering",
     author_email="engineering@arturo.ai",
     url="https://github.com/stac-utils/stac-fastapi",
     license="MIT",

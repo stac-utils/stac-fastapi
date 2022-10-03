@@ -1,11 +1,11 @@
 """fastapi app creation."""
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import attr
 from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
-from pydantic import BaseModel
+from fastapi.params import Depends
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.collections import Collections
@@ -13,8 +13,8 @@ from stac_pydantic.version import STAC_VERSION
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
+from stac_fastapi.api.middleware import CORSMiddleware, ProxyHeaderMiddleware
 from stac_fastapi.api.models import (
-    APIRequest,
     CollectionUri,
     EmptyRequest,
     GeoJSONResponse,
@@ -23,7 +23,7 @@ from stac_fastapi.api.models import (
     create_request_model,
 )
 from stac_fastapi.api.openapi import update_openapi
-from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
+from stac_fastapi.api.routes import Scope, add_route_dependencies, create_async_endpoint
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
 from stac_fastapi.extensions.core import FieldsExtension, TokenPaginationExtension
@@ -42,19 +42,17 @@ class StacApi:
 
     Attributes:
         settings:
-            API settings and configuration, potentially using environment variables.
-            See https://pydantic-docs.helpmanual.io/usage/settings/.
+            API settings and configuration, potentially using environment variables. See https://pydantic-docs.helpmanual.io/usage/settings/.
         client:
-            A subclass of `stac_api.clients.BaseCoreClient`.  Defines the application logic which is injected
-            into the API.
+            A subclass of `stac_api.clients.BaseCoreClient`.  Defines the application logic which is injected into the API.
         extensions:
-            API extensions to include with the application.  This may include official STAC extensions as well as
-            third-party add ons.
+            API extensions to include with the application.  This may include official STAC extensions as well as third-party add ons.
         exceptions:
-            Defines a global mapping between exceptions and status codes, allowing configuration of response behavior on
-            certain exceptions (https://fastapi.tiangolo.com/tutorial/handling-errors/#install-custom-exception-handlers).
+            Defines a global mapping between exceptions and status codes, allowing configuration of response behavior on certain exceptions (https://fastapi.tiangolo.com/tutorial/handling-errors/#install-custom-exception-handlers).
         app:
             The FastAPI application, defaults to a fresh application.
+        route_dependencies (list of tuples of route scope dicts (eg `{'path': '/collections', 'method': 'POST'}`) and list of dependencies (e.g. `[Depends(oauth2_scheme)]`)):
+            Applies specified dependencies to specified routes. This is useful for applying custom auth requirements to routes defined elsewhere in the application.
     """
 
     settings: ApiSettings = attr.ib()
@@ -65,7 +63,11 @@ class StacApi:
     )
     app: FastAPI = attr.ib(
         default=attr.Factory(
-            lambda self: FastAPI(openapi_url=self.settings.openapi_url),
+            lambda self: FastAPI(
+                openapi_url=self.settings.openapi_url,
+                docs_url=self.settings.docs_url,
+                redoc_url=None,
+            ),
             takes_self=True,
         ),
         converter=update_openapi,
@@ -83,7 +85,12 @@ class StacApi:
     )
     pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
-    middlewares: List = attr.ib(default=attr.Factory(lambda: [BrotliMiddleware]))
+    middlewares: List = attr.ib(
+        default=attr.Factory(
+            lambda: [BrotliMiddleware, CORSMiddleware, ProxyHeaderMiddleware]
+        )
+    )
+    route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -98,19 +105,6 @@ class StacApi:
             if isinstance(ext, extension):
                 return ext
         return None
-
-    def _create_endpoint(
-        self,
-        func: Callable,
-        request_type: Union[Type[APIRequest], Type[BaseModel]],
-        resp_class: Type[Response],
-    ) -> Callable:
-        """Create a FastAPI endpoint."""
-        if isinstance(self.client, AsyncBaseCoreClient):
-            return create_async_endpoint(func, request_type, response_class=resp_class)
-        elif isinstance(self.client, BaseCoreClient):
-            return create_sync_endpoint(func, request_type, response_class=resp_class)
-        raise NotImplementedError
 
     def register_landing_page(self):
         """Register landing page (GET /).
@@ -128,7 +122,7 @@ class StacApi:
             response_model_exclude_unset=False,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(
+            endpoint=create_async_endpoint(
                 self.client.landing_page, EmptyRequest, self.response_class
             ),
         )
@@ -149,7 +143,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(
+            endpoint=create_async_endpoint(
                 self.client.conformance, EmptyRequest, self.response_class
             ),
         )
@@ -168,7 +162,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(
+            endpoint=create_async_endpoint(
                 self.client.get_item, ItemUri, self.response_class
             ),
         )
@@ -190,7 +184,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=self._create_endpoint(
+            endpoint=create_async_endpoint(
                 self.client.post_search, self.search_post_request_model, GeoJSONResponse
             ),
         )
@@ -212,7 +206,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(
+            endpoint=create_async_endpoint(
                 self.client.get_search, self.search_get_request_model, GeoJSONResponse
             ),
         )
@@ -233,7 +227,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(
+            endpoint=create_async_endpoint(
                 self.client.all_collections, EmptyRequest, self.response_class
             ),
         )
@@ -252,7 +246,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(
+            endpoint=create_async_endpoint(
                 self.client.get_collection, CollectionUri, self.response_class
             ),
         )
@@ -263,11 +257,15 @@ class StacApi:
         Returns:
             None
         """
-        get_pagination_model = self.get_extension(self.pagination_extension).GET
+        pagination_extension = self.get_extension(self.pagination_extension)
+        if pagination_extension is not None:
+            mixins = [pagination_extension.GET]
+        else:
+            mixins = None
         request_model = create_request_model(
             "ItemCollectionURI",
             base_model=ItemCollectionUri,
-            mixins=[get_pagination_model],
+            mixins=mixins,
         )
         self.router.add_api_route(
             name="Get ItemCollection",
@@ -279,7 +277,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=self._create_endpoint(
+            endpoint=create_async_endpoint(
                 self.client.item_collection, request_model, self.response_class
             ),
         )
@@ -316,7 +314,11 @@ class StacApi:
             return self.app.openapi_schema
 
         openapi_schema = get_openapi(
-            title=self.title, version=self.api_version, routes=self.app.routes
+            title=self.title,
+            version=self.api_version,
+            description=self.description,
+            routes=self.app.routes,
+            servers=self.app.servers,
         )
 
         self.app.openapi_schema = openapi_schema
@@ -324,7 +326,7 @@ class StacApi:
 
     def add_health_check(self):
         """Add a health check."""
-        mgmt_router = APIRouter()
+        mgmt_router = APIRouter(prefix=self.app.state.router_prefix)
 
         @mgmt_router.get("/_mgmt/ping")
         async def ping():
@@ -332,6 +334,20 @@ class StacApi:
             return {"message": "PONG"}
 
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
+
+    def add_route_dependencies(
+        self, scopes: List[Scope], dependencies=List[Depends]
+    ) -> None:
+        """Add custom dependencies to routes.
+
+        Args:
+            scopes: list of scopes. Each scope should be a dict with a `path` and `method` property.
+            dependencies: list of [FastAPI dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/) to apply to each scope.
+
+        Returns:
+            None
+        """
+        return add_route_dependencies(self.app.router.routes, scopes, dependencies)
 
     def __attrs_post_init__(self):
         """Post-init hook.
@@ -358,6 +374,10 @@ class StacApi:
         self.register_core()
         self.app.include_router(self.router)
 
+        # keep link to the router prefix value
+        router_prefix = self.router.prefix
+        self.app.state.router_prefix = router_prefix if router_prefix else ""
+
         # register extensions
         for ext in self.extensions:
             ext.register(self.app)
@@ -374,3 +394,7 @@ class StacApi:
         # add middlewares
         for middleware in self.middlewares:
             self.app.add_middleware(middleware)
+
+        # customize route dependencies
+        for scopes, dependencies in self.route_dependencies:
+            self.add_route_dependencies(scopes=scopes, dependencies=dependencies)

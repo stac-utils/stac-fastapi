@@ -8,6 +8,8 @@ from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
+from stac_fastapi.types.requests import get_base_url
+
 # These can be inferred from the item/collection so they aren't included in the database
 # Instead they are dynamically generated when querying the database using the classes defined below
 INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root"]
@@ -45,7 +47,7 @@ class BaseLinks:
     @property
     def base_url(self):
         """Get the base url."""
-        return str(self.request.base_url)
+        return get_base_url(self.request)
 
     @property
     def url(self):
@@ -125,7 +127,7 @@ class PagingLinks(BaseLinks):
                 href = merge_params(self.url, {"token": f"next:{self.next}"})
                 link = dict(
                     rel=Relations.next.value,
-                    type=MimeTypes.json.value,
+                    type=MimeTypes.geojson.value,
                     method=method,
                     href=href,
                 )
@@ -133,7 +135,7 @@ class PagingLinks(BaseLinks):
             if method == "POST":
                 return {
                     "rel": Relations.next,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.geojson,
                     "method": method,
                     "href": f"{self.request.url}",
                     "body": {**self.request.postbody, "token": f"next:{self.next}"},
@@ -149,14 +151,14 @@ class PagingLinks(BaseLinks):
                 href = merge_params(self.url, {"token": f"prev:{self.prev}"})
                 return dict(
                     rel=Relations.previous.value,
-                    type=MimeTypes.json.value,
+                    type=MimeTypes.geojson.value,
                     method=method,
                     href=href,
                 )
             if method == "POST":
                 return {
                     "rel": Relations.previous,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.geojson,
                     "method": method,
                     "href": f"{self.request.url}",
                     "body": {**self.request.postbody, "token": f"prev:{self.prev}"},
@@ -225,73 +227,3 @@ class ItemLinks(CollectionLinksBase):
     def link_collection(self) -> Dict:
         """Create the `collection` link."""
         return self.collection_link()
-
-    def link_tiles(self) -> Dict:
-        """Create the `tiles` link."""
-        return dict(
-            rel=Relations.alternate.value,
-            type=MimeTypes.json.value,
-            title="tiles",
-            href=self.resolve(
-                f"collections/{self.collection_id}/items/{self.item_id}/tiles",
-            ),
-        )
-
-
-@attr.s
-class TileLinks:
-    """Create inferred links specific to OGC Tiles API."""
-
-    base_url: str = attr.ib()
-    collection_id: str = attr.ib()
-    item_id: str = attr.ib()
-
-    def __post_init__(self):
-        """Post init handler."""
-        self.item_uri = urljoin(
-            self.base_url,
-            f"collections/{self.collection_id}/items/{self.item_id}",
-        )
-
-    def link_tiles(self) -> Dict:
-        """Create tiles link."""
-        return dict(
-            href=urljoin(
-                self.base_url,
-                f"titiler/tiles/{{z}}/{{x}}/{{y}}.png?url={self.item_uri}",
-            ),
-            rel=Relations.item.value,
-            title="tiles",
-            type=MimeTypes.png.value,
-            templated=True,
-        )
-
-    def link_viewer(self) -> Dict:
-        """Create viewer link."""
-        return dict(
-            href=urljoin(self.base_url, f"titiler/viewer?url={self.item_uri}"),
-            rel=Relations.alternate.value,
-            type=MimeTypes.html.value,
-            title="viewer",
-        )
-
-    def link_tilejson(self) -> Dict:
-        """Create tilejson link."""
-        return dict(
-            href=urljoin(self.base_url, f"titiler/tilejson.json?url={self.item_uri}"),
-            rel=Relations.alternate.value,
-            type=MimeTypes.json.value,
-            title="tilejson",
-        )
-
-    def link_wmts(self) -> Dict:
-        """Create wmts capabilities link."""
-        return dict(
-            href=urljoin(
-                self.base_url,
-                f"titiler/WMTSCapabilities.xml?url={self.item_uri}",
-            ),
-            rel=Relations.alternate.value,
-            type=MimeTypes.xml.value,
-            title="WMTS Capabilities",
-        )
