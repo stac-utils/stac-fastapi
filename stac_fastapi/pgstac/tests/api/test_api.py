@@ -397,7 +397,7 @@ async def test_search_duplicate_forward_headers(
 async def test_base_queryables(load_test_data, app_client, load_test_collection):
     resp = await app_client.get("/queryables")
     q = resp.json()
-    assert q["$id"] == "https://example.org/queryables"
+    assert q["$id"] == "http://test/queryables"
     assert q["type"] == "object"
     assert "properties" in q
     assert "id" in q["properties"]
@@ -408,7 +408,7 @@ async def test_base_queryables(load_test_data, app_client, load_test_collection)
 async def test_collection_queryables(load_test_data, app_client, load_test_collection):
     resp = await app_client.get("/collections/test-collection/queryables")
     q = resp.json()
-    assert q["$id"] == "https://example.org/queryables"
+    assert q["$id"] == "http://test/collections/test-collection/queryables"
     assert q["type"] == "object"
     assert "properties" in q
     assert "id" in q["properties"]

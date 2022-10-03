@@ -30,4 +30,6 @@ class FiltersClient(AsyncBaseFiltersClient):
                 """,
                 collection=collection_id,
             )
-            return await conn.fetchval(q, *p)
+            queryables = await conn.fetchval(q, *p)
+            queryables["$id"] = str(request.url)
+            return queryables
