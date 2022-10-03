@@ -13,6 +13,7 @@ from starlette.routing import BaseRoute, Match
 from starlette.status import HTTP_204_NO_CONTENT
 
 from stac_fastapi.api.models import APIRequest
+from stac_fastapi.types.links import hydrate_inferred_links
 
 
 def _wrap_response(resp: Any, response_class: Type[Response]) -> Response:
@@ -53,9 +54,9 @@ def create_async_endpoint(
             request_data: request_model = Depends(),  # type:ignore
         ):
             """Endpoint."""
-            return _wrap_response(
-                await func(request=request, **request_data.kwargs()), response_class
-            )
+            response = await func(**request_data.kwargs())
+            response = hydrate_inferred_links(request, response)
+            return _wrap_response(response, response_class)
 
     elif issubclass(request_model, BaseModel):
 
@@ -64,9 +65,9 @@ def create_async_endpoint(
             request_data: request_model,  # type:ignore
         ):
             """Endpoint."""
-            return _wrap_response(
-                await func(request_data, request=request), response_class
-            )
+            response = await func(request_data)
+            response = hydrate_inferred_links(request, response)
+            return _wrap_response(response, response_class)
 
     else:
 
@@ -75,9 +76,9 @@ def create_async_endpoint(
             request_data: Dict[str, Any],  # type:ignore
         ):
             """Endpoint."""
-            return _wrap_response(
-                await func(request_data, request=request), response_class
-            )
+            response = await func(request_data)
+            response = hydrate_inferred_links(request, response)
+            return _wrap_response(response, response_class)
 
     return _endpoint
 
