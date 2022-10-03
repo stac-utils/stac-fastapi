@@ -1,6 +1,6 @@
 """link helpers."""
-from typing import Dict
-from urllib.parse import urljoin
+from typing import Dict, List
+from urllib.parse import urljoin, urlparse
 
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
@@ -18,63 +18,85 @@ def get_base_url(request: Request) -> str:
         )
 
 
+def resolve_relative_links(links: List[Dict], base_url: str) -> List[Dict]:
+    """Resolve relative links while skipping absolute links."""
+    resolved_links = []
+    for link in links:
+        # Skip absolute links
+        if urlparse(link["href"]).scheme:
+            resolved_links.append(link)
+        else:
+            resolved_links.append({**link, "href": urljoin(base_url, link["href"])})
+    return resolved_links
+
+
 def create_root_link(request: Request):
     """Create link to API root."""
-    return dict(rel=Relations.root, type=MimeTypes.json, href=get_base_url(request))
+    return dict(rel=Relations.root, type=MimeTypes.json, href="/")
 
 
 def hydrate_collection_links(request: Request, stac_object: Dict) -> Dict:
     """Hydrate collection with inferred links."""
-    base_url = get_base_url(request)
+    # Create inferred links
     links = [
         create_root_link(request),
-        dict(rel=Relations.parent, type=MimeTypes.json, href=base_url),
+        dict(rel=Relations.parent, type=MimeTypes.json, href="/"),
         dict(
             rel=Relations.self,
             type=MimeTypes.json,
-            href=urljoin(base_url, f"collections/{stac_object['id']}"),
+            href=f"collections/{stac_object['id']}",
         ),
         dict(
             rel="items",
             type=MimeTypes.geojson,
-            href=urljoin(base_url, f"collections/{stac_object['id']}/items"),
+            href=f"collections/{stac_object['id']}/items",
         ),
     ]
-    stac_object["links"].extend(links)
+    inferred_link_rels = set([link["rel"] for link in links])
+
+    # Combine with links from the stac object
+    for link in stac_object["links"]:
+        if link["rel"] not in inferred_link_rels:
+            links.append(link)
+
+    base_url = get_base_url(request)
+    stac_object["links"] = resolve_relative_links(links, base_url)
     return stac_object
 
 
 def hydrate_catalog_links(request: Request, stac_object: Dict) -> Dict:
     """Hydrate catalog with inferred links."""
-    base_url = get_base_url(request)
-    resolved_links = [
+    links = [
         create_root_link(request),
         {
             "rel": "service-desc",
             "type": "application/vnd.oai.openapi+json;version=3.0",
             "title": "OpenAPI service description",
-            "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
+            "href": request.app.openapi_url.lstrip("/"),
         },
         {
             "rel": "service-doc",
             "type": "text/html",
             "title": "OpenAPI service documentation",
-            "href": urljoin(base_url, request.app.docs_url.lstrip("/")),
+            "href": request.app.docs_url.lstrip("/"),
         },
     ]
-    # The landing page returns partially resolved links because it requires fetching collections
-    # through the backend client.  These need to be resolved by prepending the base url.
-    for link in stac_object["links"]:
-        link["href"] = urljoin(base_url, link["href"])
-        resolved_links.append(link)
 
-    stac_object["links"] = resolved_links
+    inferred_link_rels = set([link["rel"] for link in links])
+
+    # Combine with links from the stac object
+    for link in stac_object["links"]:
+        if link["rel"] not in inferred_link_rels:
+            links.append(link)
+
+    base_url = get_base_url(request)
+    stac_object["links"] = resolve_relative_links(links, base_url)
+
     return stac_object
 
 
 def hydrate_collections_links(request: Request, stac_object: Dict) -> Dict:
     """Hydrate collections with inferred links."""
-    base_url = get_base_url(request)
     stac_object["collections"] = [
         hydrate_collection_links(request, collection)
         for collection in stac_object["collections"]
@@ -85,51 +107,63 @@ def hydrate_collections_links(request: Request, stac_object: Dict) -> Dict:
         {
             "rel": Relations.parent.value,
             "type": MimeTypes.json,
-            "href": base_url,
+            "href": "/",
         },
         {
             "rel": Relations.self.value,
             "type": MimeTypes.json,
-            "href": urljoin(base_url, "collections"),
+            "href": "/collections",
         },
     ]
-    stac_object["links"].extend(links)
+    inferred_link_rels = set([link["rel"] for link in links])
+
+    # Combine with links from the stac object
+    for link in stac_object["links"]:
+        if link["rel"] not in inferred_link_rels:
+            links.append(link)
+
+    base_url = get_base_url(request)
+    stac_object["links"] = resolve_relative_links(links, base_url)
+
     return stac_object
 
 
 def hydrate_item_links(request: Request, stac_object: Dict) -> Dict:
     """Hydrate item with inferred links."""
-    base_url = get_base_url(request)
-
     links = [
         create_root_link(request),
         {
             "rel": Relations.self,
             "type": MimeTypes.geojson,
-            "href": urljoin(
-                base_url,
-                f"collections/{stac_object['collection']}/items/{stac_object['id']}",
-            ),
+            "href": f"/collections/{stac_object['collection']}/items/{stac_object['id']}",
         },
         {
             "rel": Relations.parent,
             "type": MimeTypes.json,
-            "href": urljoin(base_url, f"collections/{stac_object['collection']}"),
+            "href": f"/collections/{stac_object['collection']}",
         },
         {
             "rel": Relations.collection,
             "type": MimeTypes.json,
-            "href": urljoin(base_url, f"collections/{stac_object['collection']}"),
+            "href": f"/collections/{stac_object['collection']}",
         },
     ]
 
-    stac_object["links"].extend(links)
+    inferred_link_rels = set([link["rel"] for link in links])
+
+    # Combine with links from the stac object
+    for link in stac_object["links"]:
+        if link["rel"] not in inferred_link_rels:
+            links.append(link)
+
+    base_url = get_base_url(request)
+    stac_object["links"] = resolve_relative_links(links, base_url)
+
     return stac_object
 
 
 def hydrate_item_collection_links(request: Request, stac_object: Dict) -> Dict:
     """Hydrate item collection with inferred links."""
-    base_url = get_base_url(request)
     stac_object["features"] = [
         hydrate_item_links(request, item) for item in stac_object["features"]
     ]
@@ -142,15 +176,12 @@ def hydrate_item_collection_links(request: Request, stac_object: Dict) -> Dict:
             {
                 "rel": Relations.self,
                 "type": MimeTypes.geojson,
-                "href": urljoin(
-                    base_url,
-                    f"collections/{collection_name}/items",
-                ),
+                "href": f"/collections/{collection_name}/items",
             },
             {
                 "rel": Relations.parent,
                 "type": MimeTypes.json,
-                "href": urljoin(base_url, f"collections/{collection_name}"),
+                "href": f"/collections/{collection_name}",
             },
         ]
     elif request.url.path.endswith("/search"):
@@ -159,10 +190,20 @@ def hydrate_item_collection_links(request: Request, stac_object: Dict) -> Dict:
             {
                 "rel": Relations.self,
                 "type": MimeTypes.geojson,
-                "href": urljoin(base_url, "search"),
+                "href": "/search",
             },
         ]
-    stac_object["links"].extend(links)
+
+    inferred_link_rels = set([link["rel"] for link in links])
+
+    # Combine with links from the stac object
+    for link in stac_object["links"]:
+        if link["rel"] not in inferred_link_rels:
+            links.append(link)
+
+    base_url = get_base_url(request)
+    stac_object["links"] = resolve_relative_links(links, base_url)
+
     return stac_object
 
 
