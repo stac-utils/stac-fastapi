@@ -18,14 +18,14 @@ from stac_fastapi.types.extension import ApiExtension
 class PostItem(CollectionUri):
     """Create Item."""
 
-    item: stac_types.Item = attr.ib(default=Body())
+    item: stac_types.Item = attr.ib(default=Body(None))
 
 
 @attr.s
 class PutItem(ItemUri):
     """Update Item."""
 
-    item: stac_types.Item = attr.ib(default=Body())
+    item: stac_types.Item = attr.ib(default=Body(None))
 
 
 @attr.s

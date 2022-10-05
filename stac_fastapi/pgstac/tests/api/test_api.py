@@ -391,3 +391,27 @@ async def test_search_duplicate_forward_headers(
     for feature in features:
         for link in feature["links"]:
             assert link["href"].startswith("https://test:1234/")
+
+
+@pytest.mark.asyncio
+async def test_base_queryables(load_test_data, app_client, load_test_collection):
+    resp = await app_client.get("/queryables")
+    assert resp.headers["Content-Type"] == "application/schema+json"
+    q = resp.json()
+    assert q["$id"].endswith("/queryables")
+    assert q["type"] == "object"
+    assert "properties" in q
+    assert "id" in q["properties"]
+    assert "eo:cloud_cover" in q["properties"]
+
+
+@pytest.mark.asyncio
+async def test_collection_queryables(load_test_data, app_client, load_test_collection):
+    resp = await app_client.get("/collections/test-collection/queryables")
+    assert resp.headers["Content-Type"] == "application/schema+json"
+    q = resp.json()
+    assert q["$id"].endswith("/collections/test-collection/queryables")
+    assert q["type"] == "object"
+    assert "properties" in q
+    assert "id" in q["properties"]
+    assert "eo:cloud_cover" in q["properties"]

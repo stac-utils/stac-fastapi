@@ -4,6 +4,9 @@
 
 ### Added
 
+* Add support in pgstac backend for /queryables and /collections/{collection_id}/queryables endpoints with functions exposed in pgstac 0.6.8
+* Update pgstac requirement to 0.6.8
+
 ### Changed
 
 ### Removed
