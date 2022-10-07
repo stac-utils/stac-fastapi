@@ -6,6 +6,7 @@
 
 * Add support in pgstac backend for /queryables and /collections/{collection_id}/queryables endpoints with functions exposed in pgstac 0.6.8
 * Update pgstac requirement to 0.6.8
+* Add `bbox` and `datetime` query parameters to `/collections/{collection_id}/items`. [476](https://github.com/stac-utils/stac-fastapi/issues/476) [380](https://github.com/stac-utils/stac-fastapi/issues/380)
 
 ### Changed
 
