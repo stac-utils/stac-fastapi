@@ -119,6 +119,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             # Spatial query
             geom = None
             if bbox:
+                bbox = [float(x) for x in bbox]
                 if len(bbox) == 4:
                     geom = ShapelyPolygon.from_bounds(*bbox)
                 elif len(bbox) == 6:
