@@ -5,13 +5,16 @@
 ### Added
 
 * Add support in pgstac backend for /queryables and /collections/{collection_id}/queryables endpoints with functions exposed in pgstac 0.6.8
-* Update pgstac requirement to 0.6.8
+* Update pgstac requirement to 0.6.10
 
 ### Changed
 
 ### Removed
 
 ### Fixed
+
+* Fix pgstac backend for /queryables endpoint to return 404 for non-existent collections [#482](https://github.com/stac-utils/stac-fastapi/pull/482)
+
 
 ## [2.4.2]
 

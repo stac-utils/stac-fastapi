@@ -6,6 +6,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 
 from stac_fastapi.types.core import AsyncBaseFiltersClient
+from stac_fastapi.types.errors import NotFoundError
 
 
 class FiltersClient(AsyncBaseFiltersClient):
@@ -32,6 +33,9 @@ class FiltersClient(AsyncBaseFiltersClient):
                 collection=collection_id,
             )
             queryables = await conn.fetchval(q, *p)
+            if not queryables:
+                raise NotFoundError(f"Collection {collection_id} not found")
+
             queryables["$id"] = str(request.url)
             headers = {"Content-Type": "application/schema+json"}
             return JSONResponse(queryables, headers=headers)
