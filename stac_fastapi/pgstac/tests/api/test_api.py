@@ -415,3 +415,11 @@ async def test_collection_queryables(load_test_data, app_client, load_test_colle
     assert "properties" in q
     assert "id" in q["properties"]
     assert "eo:cloud_cover" in q["properties"]
+
+
+@pytest.mark.asyncio
+async def test_bad_collection_queryables(
+    load_test_data, app_client, load_test_collection
+):
+    resp = await app_client.get("/collections/bad-collection/queryables")
+    assert resp.status_code == 404
