@@ -463,3 +463,11 @@ async def test_item_collection_filter_datetime(
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_bad_collection_queryables(
+    load_test_data, app_client, load_test_collection
+):
+    resp = await app_client.get("/collections/bad-collection/queryables")
+    assert resp.status_code == 404

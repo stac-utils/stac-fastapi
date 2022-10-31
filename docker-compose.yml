@@ -63,7 +63,7 @@ services:
 
   database:
     container_name: stac-db
-    image: ghcr.io/stac-utils/pgstac:v0.6.8
+    image: ghcr.io/stac-utils/pgstac:v0.6.10
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
