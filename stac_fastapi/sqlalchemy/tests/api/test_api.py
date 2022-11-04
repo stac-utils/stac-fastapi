@@ -434,3 +434,9 @@ def test_app_search_response_duplicate_forwarded_headers(
     for feature in resp.json()["features"]:
         for link in feature["links"]:
             assert link["href"].startswith("https://testserver:1234/")
+
+
+async def test_get_features_content_type(app_client, load_test_data):
+    item = load_test_data("test_item.json")
+    resp = await app_client.get(f"collections/{item['collection']}/items")
+    assert resp.headers["content-type"] == "application/geo+json"
