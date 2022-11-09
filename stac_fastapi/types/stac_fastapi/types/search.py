@@ -24,7 +24,7 @@ from pydantic import BaseModel, conint, validator
 from stac_pydantic.shared import BBox
 from stac_pydantic.utils import AutoValueEnum
 
-from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime, str_to_interval
+from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
@@ -58,6 +58,14 @@ def str2list(x: str) -> Optional[List]:
         return x.split(",")
 
 
+def str2bbox(x: str) -> Optional[BBox]:
+    """Convert string to BBox based on , delimiter."""
+    if x:
+        t = tuple(float(v) for v in str2list(x))
+        assert len(t) == 4
+        return t
+
+
 @attr.s  # type:ignore
 class APIRequest(abc.ABC):
     """Generic API Request base class."""
@@ -73,9 +81,9 @@ class BaseSearchGetRequest(APIRequest):
 
     collections: Optional[str] = attr.ib(default=None, converter=str2list)
     ids: Optional[str] = attr.ib(default=None, converter=str2list)
-    bbox: Optional[str] = attr.ib(default=None, converter=str2list)
+    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
     intersects: Optional[str] = attr.ib(default=None, converter=str2list)
-    datetime: Optional[str] = attr.ib(default=None)
+    datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
     limit: Optional[int] = attr.ib(default=10)
 
 
@@ -96,20 +104,18 @@ class BaseSearchPostRequest(BaseModel):
     intersects: Optional[
         Union[Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon]
     ]
-    datetime: Optional[str]
+    datetime: Optional[DateTimeType]
     limit: Optional[conint(gt=0, le=10000)] = 10
 
     @property
     def start_date(self) -> Optional[datetime]:
         """Extract the start date from the datetime string."""
-        interval = str_to_interval(self.datetime)
-        return interval[0] if interval else None
+        return self.datetime[0] if self.datetime else None
 
     @property
     def end_date(self) -> Optional[datetime]:
         """Extract the end date from the datetime string."""
-        interval = str_to_interval(self.datetime)
-        return interval[1] if interval else None
+        return self.datetime[1] if self.datetime else None
 
     @validator("intersects")
     def validate_spatial(cls, v, values):
@@ -118,10 +124,12 @@ class BaseSearchPostRequest(BaseModel):
             raise ValueError("intersects and bbox parameters are mutually exclusive")
         return v
 
-    @validator("bbox")
-    def validate_bbox(cls, v: BBox):
+    @validator("bbox", pre=True)
+    def validate_bbox(cls, v: Union[str, BBox]) -> BBox:
         """Check order of supplied bbox coordinates."""
         if v:
+            if type(v) == str:
+                v = str2bbox(v)
             # Validate order
             if len(v) == 4:
                 xmin, ymin, xmax, ymax = v
@@ -148,34 +156,11 @@ class BaseSearchPostRequest(BaseModel):
 
         return v
 
-    @validator("datetime")
-    def validate_datetime(cls, v):
-        """Validate datetime."""
-        if "/" in v:
-            values = v.split("/")
-        else:
-            # Single date is interpreted as end date
-            values = ["..", v]
-
-        dates = []
-        for value in values:
-            if value == ".." or value == "":
-                dates.append("..")
-                continue
-
-            # throws ValueError if invalid RFC 3339 string
-            dates.append(rfc3339_str_to_datetime(value))
-
-        if dates[0] == ".." and dates[1] == "..":
-            raise ValueError(
-                "Invalid datetime range, both ends of range may not be open"
-            )
-
-        if ".." not in dates and dates[0] > dates[1]:
-            raise ValueError(
-                "Invalid datetime range, must match format (begin_date, end_date)"
-            )
-
+    @validator("datetime", pre=True)
+    def validate_datetime(cls, v: Union[str, DateTimeType]) -> DateTimeType:
+        """Parse datetime."""
+        if type(v) == str:
+            v = str_to_interval(v)
         return v
 
     @property

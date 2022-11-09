@@ -2,6 +2,8 @@
 import sys
 from typing import Any, Dict, List, Optional, Union
 
+from stac_pydantic.shared import BBox
+
 # Avoids a Pydantic error:
 # TypeError: You should use `typing_extensions.TypedDict` instead of `typing.TypedDict` with Python < 3.9.2.
 # Without it, there is no way to differentiate required and optional fields when subclassed.
@@ -63,7 +65,7 @@ class Item(TypedDict, total=False):
     stac_extensions: Optional[List[str]]
     id: str
     geometry: Dict[str, Any]
-    bbox: List[NumType]
+    bbox: BBox
     properties: Dict[str, Any]
     links: List[Dict[str, Any]]
     assets: Dict[str, Any]
