@@ -99,25 +99,64 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             return self.collection_serializer.db_to_stac(collection, base_url)
 
     def item_collection(
-        self, collection_id: str, limit: int = 10, token: str = None, **kwargs
+        self,
+        collection_id: str,
+        bbox: Optional[List[NumType]] = None,
+        datetime: Optional[str] = None,
+        limit: int = 10,
+        token: str = None,
+        **kwargs,
     ) -> ItemCollection:
         """Read an item collection from the database."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
-            collection_children = (
+            query = (
                 session.query(self.item_table)
                 .join(self.collection_table)
                 .filter(self.collection_table.id == collection_id)
                 .order_by(self.item_table.datetime.desc(), self.item_table.id)
             )
+            # Spatial query
+            geom = None
+            if bbox:
+                bbox = [float(x) for x in bbox]
+                if len(bbox) == 4:
+                    geom = ShapelyPolygon.from_bounds(*bbox)
+                elif len(bbox) == 6:
+                    """Shapely doesn't support 3d bounding boxes so use the 2d portion"""
+                    bbox_2d = [bbox[0], bbox[1], bbox[3], bbox[4]]
+                    geom = ShapelyPolygon.from_bounds(*bbox_2d)
+            if geom:
+                filter_geom = ga.shape.from_shape(geom, srid=4326)
+                query = query.filter(
+                    ga.func.ST_Intersects(self.item_table.geometry, filter_geom)
+                )
+
+            # Temporal query
+            if datetime:
+                # Two tailed query (between)
+                dts = datetime.split("/")
+                # Non-interval date ex. "2000-02-02T00:00:00.00Z"
+                if len(dts) == 1:
+                    query = query.filter(self.item_table.datetime == dts[0])
+                # is there a benefit to between instead of >= and <= ?
+                elif dts[0] not in ["", ".."] and dts[1] not in ["", ".."]:
+                    query = query.filter(self.item_table.datetime.between(*dts))
+                # All items after the start date
+                elif dts[0] not in ["", ".."]:
+                    query = query.filter(self.item_table.datetime >= dts[0])
+                # All items before the end date
+                elif dts[1] not in ["", ".."]:
+                    query = query.filter(self.item_table.datetime <= dts[1])
+
             count = None
             if self.extension_is_enabled("ContextExtension"):
-                count_query = collection_children.statement.with_only_columns(
+                count_query = query.statement.with_only_columns(
                     [func.count()]
                 ).order_by(None)
-                count = collection_children.session.execute(count_query).scalar()
+                count = query.session.execute(count_query).scalar()
             token = self.get_token(token) if token else token
-            page = get_page(collection_children, per_page=limit, page=(token or False))
+            page = get_page(query, per_page=limit, page=(token or False))
             # Create dynamic attributes for each page
             page.next = (
                 self.insert_token(keyset=page.paging.bookmark_next)
