@@ -7,22 +7,24 @@ with open("README.md") as f:
 
 install_requires = [
     "attrs",
-    "fastapi>=0.73.0",
-    "pydantic[dotenv]",
-    "stac_pydantic==2.0.*",
     "brotli_asgi",
-    "pystac==1.*",
+    "fastapi>=0.73.0",
     "iso8601~=1.0.2",
+    "pydantic[dotenv]",
+    "pystac==1.*",
+    "stac_pydantic==2.0.*",
+    "starlette",
 ]
 
 extra_reqs = {
     "dev": [
-        "pytest",
-        "pytest-cov",
-        "pytest-asyncio",
+        "httpx",
         "pre-commit",
-        "requests",
         "pystac[validation]==1.*",
+        "pytest",
+        "pytest-asyncio",
+        "pytest-cov",
+        "requests",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
 }
