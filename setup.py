@@ -8,7 +8,7 @@ with open("README.md") as f:
 install_requires = [
     "attrs",
     "brotli_asgi",
-    "fastapi>=0.73.0",
+    "fastapi>=0.73.0,<0.87",
     "iso8601~=1.0.2",
     "pydantic[dotenv]",
     "pystac==1.*",
