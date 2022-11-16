@@ -1,4 +1,10 @@
-"""FastAPI application using PGStac."""
+"""FastAPI application using PGStac.
+
+Disables the Transaction extension if the environment variable
+DISABLE_TRANSACTION_EXTENSION is set to '1' or 'true'."""
+
+import os
+
 from fastapi.responses import ORJSONResponse
 
 from stac_fastapi.api.app import StacApi
@@ -22,19 +28,25 @@ from stac_fastapi.pgstac.types.search import PgstacSearch
 
 settings = Settings()
 extensions = [
-    TransactionExtension(
-        client=TransactionsClient(),
-        settings=settings,
-        response_class=ORJSONResponse,
-    ),
     QueryExtension(),
     SortExtension(),
     FieldsExtension(),
     TokenPaginationExtension(),
     ContextExtension(),
     FilterExtension(client=FiltersClient()),
-    BulkTransactionExtension(client=BulkTransactionsClient()),
 ]
+
+if os.getenv('DISABLE_TRANSACTION_EXTENSION', '').lower() not in ('1', 'true'):
+    extensions.append(
+        TransactionExtension(
+            client=TransactionsClient(),
+            settings=settings,
+            response_class=ORJSONResponse,
+        )
+    )
+    extensions.append(
+        BulkTransactionExtension(client=BulkTransactionsClient())
+    )
 
 post_request_model = create_post_request_model(extensions, base_model=PgstacSearch)
 
