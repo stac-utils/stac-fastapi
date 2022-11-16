@@ -30,24 +30,24 @@ from stac_fastapi.pgstac.types.search import PgstacSearch
 
 settings = Settings()
 extensions_map = {
-    'transaction': TransactionExtension(
+    "transaction": TransactionExtension(
         client=TransactionsClient(),
         settings=settings,
         response_class=ORJSONResponse,
     ),
-    'query': QueryExtension(),
-    'sort': SortExtension(),
-    'fields': FieldsExtension(),
-    'pagination': TokenPaginationExtension(),
-    'context': ContextExtension(),
-    'filter': FilterExtension(client=FiltersClient()),
-    'bulk_transactions': BulkTransactionExtension(client=BulkTransactionsClient()),
+    "query": QueryExtension(),
+    "sort": SortExtension(),
+    "fields": FieldsExtension(),
+    "pagination": TokenPaginationExtension(),
+    "context": ContextExtension(),
+    "filter": FilterExtension(client=FiltersClient()),
+    "bulk_transactions": BulkTransactionExtension(client=BulkTransactionsClient()),
 }
 
-if enabled_extensions := os.getenv('ENABLED_EXTENSIONS'):
+if enabled_extensions := os.getenv("ENABLED_EXTENSIONS"):
     extensions = [
         extensions_map[extension_name]
-        for extension_name in enabled_extensions.split(',')
+        for extension_name in enabled_extensions.split(",")
     ]
 else:
     extensions = list(extensions_map.values())
