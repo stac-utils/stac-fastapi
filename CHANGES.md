@@ -15,7 +15,7 @@
 ### Fixed
 
 * Fix pgstac backend for /queryables endpoint to return 404 for non-existent collections [#482](https://github.com/stac-utils/stac-fastapi/pull/482)
-
+* /collection/{collection_id}/items endpoints now return geojson media type [#488](https://github.com/stac-utils/stac-fastapi/pull/488)
 
 ## [2.4.2]
 
