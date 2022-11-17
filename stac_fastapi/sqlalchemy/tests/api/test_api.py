@@ -436,6 +436,12 @@ def test_app_search_response_duplicate_forwarded_headers(
             assert link["href"].startswith("https://testserver:1234/")
 
 
+async def test_get_features_content_type(app_client, load_test_data):
+    item = load_test_data("test_item.json")
+    resp = await app_client.get(f"collections/{item['collection']}/items")
+    assert resp.headers["content-type"] == "application/geo+json"
+
+
 def test_item_collection_filter_bbox(load_test_data, app_client, postgres_transactions):
     item = load_test_data("test_item.json")
     collection = item["collection"]
