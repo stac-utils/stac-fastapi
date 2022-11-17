@@ -440,3 +440,49 @@ async def test_get_features_content_type(app_client, load_test_data):
     item = load_test_data("test_item.json")
     resp = await app_client.get(f"collections/{item['collection']}/items")
     assert resp.headers["content-type"] == "application/geo+json"
+
+
+def test_item_collection_filter_bbox(load_test_data, app_client, postgres_transactions):
+    item = load_test_data("test_item.json")
+    collection = item["collection"]
+    postgres_transactions.create_item(
+        item["collection"], item, request=MockStarletteRequest
+    )
+
+    bbox = "100,-50,170,-20"
+    resp = app_client.get(f"/collections/{collection}/items", params={"bbox": bbox})
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+    bbox = "1,2,3,4"
+    resp = app_client.get(f"/collections/{collection}/items", params={"bbox": bbox})
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 0
+
+
+def test_item_collection_filter_datetime(
+    load_test_data, app_client, postgres_transactions
+):
+    item = load_test_data("test_item.json")
+    collection = item["collection"]
+    postgres_transactions.create_item(
+        item["collection"], item, request=MockStarletteRequest
+    )
+
+    datetime_range = "2020-01-01T00:00:00.00Z/.."
+    resp = app_client.get(
+        f"/collections/{collection}/items", params={"datetime": datetime_range}
+    )
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+    datetime_range = "2018-01-01T00:00:00.00Z/2019-01-01T00:00:00.00Z"
+    resp = app_client.get(
+        f"/collections/{collection}/items", params={"datetime": datetime_range}
+    )
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 0

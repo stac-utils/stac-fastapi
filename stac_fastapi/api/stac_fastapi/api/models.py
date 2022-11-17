@@ -13,6 +13,7 @@ from stac_fastapi.types.search import (
     APIRequest,
     BaseSearchGetRequest,
     BaseSearchPostRequest,
+    str2list,
 )
 
 
@@ -123,6 +124,8 @@ class ItemCollectionUri(CollectionUri):
     """Get item collection."""
 
     limit: int = attr.ib(default=10)
+    bbox: Optional[str] = attr.ib(default=None, converter=str2list)
+    datetime: Optional[str] = attr.ib(default=None)
 
 
 class POSTTokenPagination(BaseModel):

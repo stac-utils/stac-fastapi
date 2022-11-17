@@ -424,6 +424,54 @@ async def test_collection_queryables(load_test_data, app_client, load_test_colle
 
 
 @pytest.mark.asyncio
+async def test_item_collection_filter_bbox(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    first_item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=first_item)
+    assert resp.status_code == 200
+
+    bbox = "100,-50,170,-20"
+    resp = await app_client.get(f"/collections/{coll.id}/items", params={"bbox": bbox})
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+    bbox = "1,2,3,4"
+    resp = await app_client.get(f"/collections/{coll.id}/items", params={"bbox": bbox})
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_item_collection_filter_datetime(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    first_item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=first_item)
+    assert resp.status_code == 200
+
+    datetime_range = "2020-01-01T00:00:00.00Z/.."
+    resp = await app_client.get(
+        f"/collections/{coll.id}/items", params={"datetime": datetime_range}
+    )
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+    datetime_range = "2018-01-01T00:00:00.00Z/2019-01-01T00:00:00.00Z"
+    resp = await app_client.get(
+        f"/collections/{coll.id}/items", params={"datetime": datetime_range}
+    )
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 0
+
+
+@pytest.mark.asyncio
 async def test_bad_collection_queryables(
     load_test_data, app_client, load_test_collection
 ):
