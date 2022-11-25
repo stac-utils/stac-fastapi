@@ -129,3 +129,28 @@ def must_be_bob(
         detail="You're not Bob",
         headers={"WWW-Authenticate": "Basic"},
     )
+
+
+def test_openapi(monkeypatch: MonkeyPatch):
+    settings = config.ApiSettings()
+    api = StacApi(
+        **{
+            "settings": settings,
+            "client": DummyCoreClient(),
+            "extensions": [
+                TransactionExtension(
+                    client=DummyTransactionsClient(), settings=settings
+                ),
+                TokenPaginationExtension(),
+            ],
+        }
+    )
+
+    with TestClient(api.app) as client:
+        response = client.get(api.app.openapi_url)
+
+    assert response.status_code == 200
+    assert (
+        response.headers["Content-Type"]
+        == "application/vnd.oai.openapi+json;version=3.0"
+    )
