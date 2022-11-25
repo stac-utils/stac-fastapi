@@ -55,11 +55,11 @@ jobs:
 
       - name: Install types
         run: |
-          pip install ./stac_fastapi/types[dev]
+          pip install ./stac_fastapi/types[dev,server]
 
       - name: Install core api
         run: |
-          pip install ./stac_fastapi/api[dev]
+          pip install ./stac_fastapi/api[dev,server]
 
       - name: Install Extensions
         run: |
