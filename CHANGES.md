@@ -6,9 +6,17 @@
 
 ### Added
 
-* Add support in pgstac backend for /queryables and /collections/{collection_id}/queryables endpoints with functions exposed in pgstac 0.6.8
-* Add `bbox` and `datetime` query parameters to `/collections/{collection_id}/items`. [476](https://github.com/stac-utils/stac-fastapi/issues/476) [380](https://github.com/stac-utils/stac-fastapi/issues/380)
-* Update pgstac requirement to 0.6.10
+### Changed
+
+### Removed
+
+### Fixed
+
+## [2.4.3]
+
+### Added
+
+* Add the `ENABLED_EXTENSIONS` environment variable determining which extensions are enabled in the pgstac application, all extensions are enabled by default ([#495](https://github.com/stac-utils/stac-fastapi/pull/495))
 
 ### Changed
 
@@ -16,20 +24,27 @@
 
 ### Fixed
 
-* Fix pgstac backend for /queryables endpoint to return 404 for non-existent collections [#482](https://github.com/stac-utils/stac-fastapi/pull/482)
-* /collection/{collection_id}/items endpoints now return geojson media type [#488](https://github.com/stac-utils/stac-fastapi/pull/488)
 
 ## [2.4.2]
 
 ### Added
 
+* Add support in pgstac backend for /queryables and /collections/{collection_id}/queryables endpoints with functions exposed in pgstac 0.6.8 ([#474](https://github.com/stac-utils/stac-fastapi/pull/474))
+* Add `bbox` and `datetime` query parameters to `/collections/{collection_id}/items`. ([#476](https://github.com/stac-utils/stac-fastapi/issues/476), [#380](https://github.com/stac-utils/stac-fastapi/issues/380))
+* Update pgstac requirement to 0.6.10
+* Add `servers` and `description` to OpenAPI ([#459](https://github.com/stac-utils/stac-fastapi/pull/459))
+
 ### Changed
 
 ### Removed
 
+* Removed `stac_fastapi.api.routes.create_sync_endpoint` function to reduce code duplication ([#471](https://github.com/stac-utils/stac-fastapi/pull/471))
+
 ### Fixed
 
-* Quote password in pgsql strings to accomodate special characters. [455](https://github.com/stac-utils/stac-fastapi/issues/455)
+* Quote password in pgsql strings to accomodate special characters. ([#455](https://github.com/stac-utils/stac-fastapi/issues/455))
+* Fix pgstac backend for /queryables endpoint to return 404 for non-existent collections ([#482](https://github.com/stac-utils/stac-fastapi/pull/482))
+* `/collection/{collection_id}/items` endpoints now return geojson media type ([#488](https://github.com/stac-utils/stac-fastapi/pull/488))
 
 ## [2.4.1]
 
