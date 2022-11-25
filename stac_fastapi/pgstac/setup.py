@@ -22,7 +22,7 @@ install_requires = [
 
 extra_reqs = {
     "dev": [
-        "pypgstac[psycopg]==0.6.*",
+        "pypgstac[psycopg]==0.6.10",
         "pytest",
         "pytest-cov",
         "pytest-asyncio>=0.17",
