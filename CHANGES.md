@@ -23,7 +23,7 @@
 
 ### Removed
 
-* Removed `stac_fastapi.api.routes.create_sync_endpoint` function to reduce code duplication.
+* Removed `stac_fastapi.api.routes.create_sync_endpoint` function to reduce code duplication ([#471](https://github.com/stac-utils/stac-fastapi/pull/471))
 
 ### Fixed
 
