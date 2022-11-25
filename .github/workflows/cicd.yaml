@@ -44,6 +44,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Lint code
+        if: ${{ matrix.python-version == 3.8 }}
         uses: pre-commit/action@v2.0.0
 
       - name: Install pipenv
