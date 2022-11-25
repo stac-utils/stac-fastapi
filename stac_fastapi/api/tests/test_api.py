@@ -1,3 +1,5 @@
+from json import dumps
+
 from fastapi import Depends, HTTPException, security, status
 from pytest import MonkeyPatch
 from starlette.testclient import TestClient
@@ -136,11 +138,16 @@ def test_openapi(monkeypatch: MonkeyPatch):
     api_description = "API Description for Testing"
     api_title = "API Title For Testing"
     api_version = "0.1-testing"
+    api_servers = [
+        {"url": "http://api1", "description": "API 1"},
+        {"url": "http://api2"},
+    ]
 
     with monkeypatch.context() as m:
         m.setenv("API_DESCRIPTION", api_description)
         m.setenv("API_TITLE", api_title)
         m.setenv("API_VERSION", api_version)
+        m.setenv("API_SERVERS", dumps(api_servers))
         settings = config.ApiSettings()
 
     api = StacApi(
@@ -165,7 +172,9 @@ def test_openapi(monkeypatch: MonkeyPatch):
         == "application/vnd.oai.openapi+json;version=3.0"
     )
 
-    info = response.json()["info"]
+    data = response.json()
+    info = data["info"]
     assert info["description"] == api_description
     assert info["title"] == api_title
     assert info["version"] == api_version
+    assert data["servers"] == api_servers

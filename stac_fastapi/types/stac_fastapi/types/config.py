@@ -1,7 +1,17 @@
 """stac_fastapi.types.config module."""
-from typing import Optional, Set
+from typing import List, Optional, Set
 
-from pydantic import BaseSettings
+from pydantic import AnyHttpUrl, BaseModel, BaseSettings
+
+
+class ApiServer(BaseModel):
+    """ApiServer.
+
+    Defines a server entry in the OpenAPI document.
+    """
+
+    url: AnyHttpUrl
+    description: Optional[str] = None
 
 
 class ApiSettings(BaseSettings):
@@ -32,6 +42,7 @@ class ApiSettings(BaseSettings):
     api_title: str = "stac-fastapi"
     api_description: str = "stac-fastapi"
     api_version: str = "0.1"
+    api_servers: List[ApiServer] = []
 
     class Config:
         """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""

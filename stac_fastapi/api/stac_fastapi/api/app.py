@@ -80,6 +80,7 @@ class StacApi:
                 description=self.description,
                 title=self.title,
                 version=self.api_version,
+                servers=[server.dict() for server in self.settings.api_servers],
             ),
             takes_self=True,
         ),
