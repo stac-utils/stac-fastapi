@@ -10,6 +10,19 @@
 
 ### Fixed
 
+## [2.4.3]
+
+### Added
+
+* Add the `ENABLED_EXTENSIONS` environment variable determining which extensions are enabled in the pgstac application, all extensions are enabled by default ([#495](https://github.com/stac-utils/stac-fastapi/pull/495))
+
+### Changed
+
+### Removed
+
+### Fixed
+
+
 ## [2.4.2]
 
 ### Added
