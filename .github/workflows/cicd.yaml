@@ -65,11 +65,11 @@ jobs:
 
       - name: Install sqlalchemy stac-fastapi
         run: |
-          pip install ./stac_fastapi/sqlalchemy[dev,server]
+          pip install ./stac_fastapi/sqlalchemy[dev]
 
       - name: Install pgstac stac-fastapi
         run: |
-          pip install ./stac_fastapi/pgstac[dev,server]
+          pip install ./stac_fastapi/pgstac[dev]
 
       - name: Run migration
         run: |
