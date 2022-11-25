@@ -17,12 +17,12 @@ install_requires = [
     "buildpg",
     "brotli_asgi",
     "pygeofilter>=0.2",
-    "pypgstac[psycopg]==0.6.10",
+    "pypgstac==0.6.*",
 ]
 
 extra_reqs = {
     "dev": [
-        # "pypgstac[psycopg]==0.6.*",
+        "pypgstac[psycopg]==0.6.*",
         "pytest",
         "pytest-cov",
         "pytest-asyncio>=0.17",
