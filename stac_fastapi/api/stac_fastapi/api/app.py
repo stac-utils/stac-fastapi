@@ -1,10 +1,9 @@
 """fastapi app creation."""
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 import attr
 from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
-from fastapi.openapi.utils import get_openapi
 from fastapi.params import Depends
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
@@ -61,22 +60,33 @@ class StacApi:
     exceptions: Dict[Type[Exception], int] = attr.ib(
         default=attr.Factory(lambda: DEFAULT_STATUS_CODES)
     )
+    title: str = attr.ib(
+        default=attr.Factory(lambda self: self.settings.api_title, takes_self=True)
+    )
+    api_version: str = attr.ib(
+        default=attr.Factory(lambda self: self.settings.api_version, takes_self=True)
+    )
+    description: str = attr.ib(
+        default=attr.Factory(
+            lambda self: self.settings.api_description, takes_self=True
+        )
+    )
     app: FastAPI = attr.ib(
         default=attr.Factory(
             lambda self: FastAPI(
                 openapi_url=self.settings.openapi_url,
                 docs_url=self.settings.docs_url,
                 redoc_url=None,
+                description=self.description,
+                title=self.title,
+                version=self.api_version,
             ),
             takes_self=True,
         ),
         converter=update_openapi,
     )
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
-    title: str = attr.ib(default="stac-fastapi")
-    api_version: str = attr.ib(default="0.1")
     stac_version: str = attr.ib(default=STAC_VERSION)
-    description: str = attr.ib(default="stac-fastapi")
     search_get_request_model: Type[BaseSearchGetRequest] = attr.ib(
         default=BaseSearchGetRequest
     )
@@ -308,22 +318,6 @@ class StacApi:
         self.register_get_collection()
         self.register_get_item_collection()
 
-    def customize_openapi(self) -> Optional[Dict[str, Any]]:
-        """Customize openapi schema."""
-        if self.app.openapi_schema:
-            return self.app.openapi_schema
-
-        openapi_schema = get_openapi(
-            title=self.title,
-            version=self.api_version,
-            description=self.description,
-            routes=self.app.routes,
-            servers=self.app.servers,
-        )
-
-        self.app.openapi_schema = openapi_schema
-        return self.app.openapi_schema
-
     def add_health_check(self):
         """Add a health check."""
         mgmt_router = APIRouter(prefix=self.app.state.router_prefix)
@@ -387,9 +381,6 @@ class StacApi:
 
         # register exception handlers
         add_exception_handlers(self.app, status_codes=self.exceptions)
-
-        # customize openapi
-        self.app.openapi = self.customize_openapi
 
         # add middlewares
         for middleware in self.middlewares:

@@ -1,4 +1,5 @@
 from fastapi import Depends, HTTPException, security, status
+from pytest import MonkeyPatch
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
@@ -132,7 +133,16 @@ def must_be_bob(
 
 
 def test_openapi(monkeypatch: MonkeyPatch):
-    settings = config.ApiSettings()
+    api_description = "API Description for Testing"
+    api_title = "API Title For Testing"
+    api_version = "0.1-testing"
+
+    with monkeypatch.context() as m:
+        m.setenv("API_DESCRIPTION", api_description)
+        m.setenv("API_TITLE", api_title)
+        m.setenv("API_VERSION", api_version)
+        settings = config.ApiSettings()
+
     api = StacApi(
         **{
             "settings": settings,
@@ -154,3 +164,8 @@ def test_openapi(monkeypatch: MonkeyPatch):
         response.headers["Content-Type"]
         == "application/vnd.oai.openapi+json;version=3.0"
     )
+
+    info = response.json()["info"]
+    assert info["description"] == api_description
+    assert info["title"] == api_title
+    assert info["version"] == api_version

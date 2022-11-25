@@ -29,6 +29,10 @@ class ApiSettings(BaseSettings):
     openapi_url: str = "/api"
     docs_url: str = "/api.html"
 
+    api_title: str = "stac-fastapi"
+    api_description: str = "stac-fastapi"
+    api_version: str = "0.1"
+
     class Config:
         """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
 
