@@ -3,7 +3,7 @@ services:
   nginx:
     image: nginx
     ports:
-      - 80:80
+      - ${STAC_FASTAPI_NGINX_PORT:-80}:80
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
