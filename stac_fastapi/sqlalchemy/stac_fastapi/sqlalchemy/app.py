@@ -1,4 +1,6 @@
 """FastAPI application."""
+import os
+
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import create_get_request_model, create_post_request_model
 from stac_fastapi.extensions.core import (
@@ -55,6 +57,7 @@ def run():
             port=settings.app_port,
             log_level="info",
             reload=settings.reload,
+            root_path=os.getenv("UVICORN_ROOT_PATH", ""),
         )
     except ImportError:
         raise RuntimeError("Uvicorn must be installed in order to use command")
