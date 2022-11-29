@@ -1,4 +1,7 @@
 from datetime import datetime, timedelta
+from urllib.parse import quote_plus
+
+import orjson
 
 from ..conftest import MockStarletteRequest
 
@@ -146,6 +149,12 @@ def test_app_query_extension_gt(load_test_data, app_client, postgres_transaction
 
     params = {"query": {"proj:epsg": {"gt": test_item["properties"]["proj:epsg"]}}}
     resp = app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 0
+
+    params["query"] = quote_plus(orjson.dumps(params["query"]))
+    resp = app_client.get("/search", params=params)
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 0
