@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
+from urllib.parse import quote_plus
 
+import orjson
 import pytest
 
 STAC_CORE_ROUTES = [
@@ -98,6 +100,12 @@ async def test_app_query_extension(load_test_data, app_client, load_test_collect
 
     params = {"query": {"proj:epsg": {"eq": item["properties"]["proj:epsg"]}}}
     resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+    params["query"] = quote_plus(orjson.dumps(params["query"]))
+    resp = await app_client.get("/search", params=params)
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
