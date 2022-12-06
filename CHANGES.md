@@ -12,6 +12,8 @@
 
 ### Fixed
 
+* Allow url encoded values for `query` in GET requests ([#504](https://github.com/stac-utils/stac-fastapi/pull/504))
+
 ## [2.4.3]
 
 ### Added
@@ -23,7 +25,6 @@
 ### Removed
 
 ### Fixed
-
 
 ## [2.4.2]
 

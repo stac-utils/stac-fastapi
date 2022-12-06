@@ -2,7 +2,7 @@
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
-from urllib.parse import urljoin
+from urllib.parse import unquote_plus, urljoin
 
 import attr
 import orjson
@@ -372,7 +372,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
             "bbox": bbox,
             "limit": limit,
             "token": token,
-            "query": orjson.loads(query) if query else query,
+            "query": orjson.loads(unquote_plus(query)) if query else query,
         }
 
         if filter:
