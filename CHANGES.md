@@ -11,6 +11,7 @@
 ### Fixed
 
 * Allow url encoded values for `query` in GET requests ([#504](https://github.com/stac-utils/stac-fastapi/pull/504))
+* Fix path in `register_update_item` docstring ([507](https://github.com/stac-utils/stac-fastapi/pull/507))
 
 ## [2.4.3]
 

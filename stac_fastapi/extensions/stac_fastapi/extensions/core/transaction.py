@@ -73,7 +73,7 @@ class TransactionExtension(ApiExtension):
         )
 
     def register_update_item(self):
-        """Register update item endpoint (PUT /collections/{collection_id}/items)."""
+        """Register update item endpoint (PUT /collections/{collection_id}/items/{item_id})."""
         self.router.add_api_route(
             name="Update Item",
             path="/collections/{collection_id}/items/{item_id}",
