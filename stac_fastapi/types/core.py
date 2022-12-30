@@ -459,7 +459,13 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     def item_collection(
-        self, collection_id: str, limit: int = 10, token: str = None
+        self,
+        collection_id: str,
+        bbox: Optional[List[NumType]] = None,
+        datetime: Optional[Union[str, datetime]] = None,
+        limit: int = 10,
+        token: str = None,
+        **kwargs,
     ) -> stac_types.ItemCollection:
         """Get all items from a specific collection.
 
@@ -621,7 +627,13 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     async def item_collection(
-        self, collection_id: str, limit: int = 10, token: str = None
+        self,
+        collection_id: str,
+        bbox: Optional[List[NumType]] = None,
+        datetime: Optional[Union[str, datetime]] = None,
+        limit: int = 10,
+        token: str = None,
+        **kwargs,
     ) -> stac_types.ItemCollection:
         """Get all items from a specific collection.
 
