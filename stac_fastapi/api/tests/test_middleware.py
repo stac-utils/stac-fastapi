@@ -1,13 +1,26 @@
+from unittest import mock
+
 import pytest
 from starlette.applications import Starlette
+from starlette.testclient import TestClient
 
+from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.middleware import ProxyHeaderMiddleware
+from stac_fastapi.types.config import ApiSettings
+from stac_fastapi.types.core import BaseCoreClient
 
 
 @pytest.fixture
 def proxy_header_middleware() -> ProxyHeaderMiddleware:
     app = Starlette()
     return ProxyHeaderMiddleware(app)
+
+
+@pytest.fixture
+def test_client() -> TestClient:
+    app = StacApi(settings=ApiSettings(), client=mock.create_autospec(BaseCoreClient))
+    with TestClient(app.app) as client:
+        yield client
 
 
 @pytest.mark.parametrize(
@@ -138,3 +151,9 @@ def test_get_forwarded_url_parts(
 ):
     actual = proxy_header_middleware._get_forwarded_url_parts(scope)
     assert actual == expected
+
+
+def test_cors_middleware(test_client):
+    resp = test_client.get("/_mgmt/ping", headers={"Origin": "http://netloc"})
+    assert resp.status_code == 200
+    assert resp.headers["access-control-allow-origin"] == "*"

@@ -2,7 +2,7 @@
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
-from urllib.parse import urljoin
+from urllib.parse import unquote_plus, urljoin
 
 import attr
 import orjson
@@ -248,6 +248,8 @@ class CoreCrudClient(AsyncBaseCoreClient):
     async def item_collection(
         self,
         collection_id: str,
+        bbox: Optional[List[NumType]] = None,
+        datetime: Optional[Union[str, datetime]] = None,
         limit: Optional[int] = None,
         token: str = None,
         **kwargs,
@@ -267,8 +269,21 @@ class CoreCrudClient(AsyncBaseCoreClient):
         # If collection does not exist, NotFoundError wil be raised
         await self.get_collection(collection_id, **kwargs)
 
+        base_args = {
+            "collections": [collection_id],
+            "bbox": bbox,
+            "datetime": datetime,
+            "limit": limit,
+            "token": token,
+        }
+
+        clean = {}
+        for k, v in base_args.items():
+            if v is not None and v != []:
+                clean[k] = v
+
         req = self.post_request_model(
-            collections=[collection_id], limit=limit, token=token
+            **clean,
         )
         item_collection = await self._search_base(req, **kwargs)
         links = await CollectionLinks(
@@ -357,7 +372,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
             "bbox": bbox,
             "limit": limit,
             "token": token,
-            "query": orjson.loads(query) if query else query,
+            "query": orjson.loads(unquote_plus(query)) if query else query,
         }
 
         if filter:

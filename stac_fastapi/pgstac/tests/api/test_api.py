@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
+from urllib.parse import quote_plus
 
+import orjson
 import pytest
 
 STAC_CORE_ROUTES = [
@@ -41,6 +43,12 @@ async def test_get_queryables_content_type(app_client, load_test_collection):
     coll = load_test_collection
     resp = await app_client.get(f"collections/{coll.id}/queryables")
     assert resp.headers["content-type"] == "application/schema+json"
+
+
+async def test_get_features_content_type(app_client, load_test_collection):
+    coll = load_test_collection
+    resp = await app_client.get(f"collections/{coll.id}/items")
+    assert resp.headers["content-type"] == "application/geo+json"
 
 
 async def test_api_headers(app_client):
@@ -92,6 +100,12 @@ async def test_app_query_extension(load_test_data, app_client, load_test_collect
 
     params = {"query": {"proj:epsg": {"eq": item["properties"]["proj:epsg"]}}}
     resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+    params["query"] = quote_plus(orjson.dumps(params["query"]))
+    resp = await app_client.get("/search", params=params)
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
@@ -391,3 +405,83 @@ async def test_search_duplicate_forward_headers(
     for feature in features:
         for link in feature["links"]:
             assert link["href"].startswith("https://test:1234/")
+
+
+@pytest.mark.asyncio
+async def test_base_queryables(load_test_data, app_client, load_test_collection):
+    resp = await app_client.get("/queryables")
+    assert resp.headers["Content-Type"] == "application/schema+json"
+    q = resp.json()
+    assert q["$id"].endswith("/queryables")
+    assert q["type"] == "object"
+    assert "properties" in q
+    assert "id" in q["properties"]
+    assert "eo:cloud_cover" in q["properties"]
+
+
+@pytest.mark.asyncio
+async def test_collection_queryables(load_test_data, app_client, load_test_collection):
+    resp = await app_client.get("/collections/test-collection/queryables")
+    assert resp.headers["Content-Type"] == "application/schema+json"
+    q = resp.json()
+    assert q["$id"].endswith("/collections/test-collection/queryables")
+    assert q["type"] == "object"
+    assert "properties" in q
+    assert "id" in q["properties"]
+    assert "eo:cloud_cover" in q["properties"]
+
+
+@pytest.mark.asyncio
+async def test_item_collection_filter_bbox(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    first_item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=first_item)
+    assert resp.status_code == 200
+
+    bbox = "100,-50,170,-20"
+    resp = await app_client.get(f"/collections/{coll.id}/items", params={"bbox": bbox})
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+    bbox = "1,2,3,4"
+    resp = await app_client.get(f"/collections/{coll.id}/items", params={"bbox": bbox})
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_item_collection_filter_datetime(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    first_item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=first_item)
+    assert resp.status_code == 200
+
+    datetime_range = "2020-01-01T00:00:00.00Z/.."
+    resp = await app_client.get(
+        f"/collections/{coll.id}/items", params={"datetime": datetime_range}
+    )
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+    datetime_range = "2018-01-01T00:00:00.00Z/2019-01-01T00:00:00.00Z"
+    resp = await app_client.get(
+        f"/collections/{coll.id}/items", params={"datetime": datetime_range}
+    )
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 0
+
+
+@pytest.mark.asyncio
+async def test_bad_collection_queryables(
+    load_test_data, app_client, load_test_collection
+):
+    resp = await app_client.get("/collections/bad-collection/queryables")
+    assert resp.status_code == 404

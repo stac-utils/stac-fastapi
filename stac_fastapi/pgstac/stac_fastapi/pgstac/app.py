@@ -1,4 +1,12 @@
-"""FastAPI application using PGStac."""
+"""FastAPI application using PGStac.
+
+Enables the extensions specified as a comma-delimited list in
+the ENABLED_EXTENSIONS environment variable (e.g. `transactions,sort,query`).
+If the variable is not set, enables all extensions.
+"""
+
+import os
+
 from fastapi.responses import ORJSONResponse
 
 from stac_fastapi.api.app import StacApi
@@ -6,6 +14,7 @@ from stac_fastapi.api.models import create_get_request_model, create_post_reques
 from stac_fastapi.extensions.core import (
     ContextExtension,
     FieldsExtension,
+    FilterExtension,
     SortExtension,
     TokenPaginationExtension,
     TransactionExtension,
@@ -15,23 +24,33 @@ from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.core import CoreCrudClient
 from stac_fastapi.pgstac.db import close_db_connection, connect_to_db
 from stac_fastapi.pgstac.extensions import QueryExtension
+from stac_fastapi.pgstac.extensions.filter import FiltersClient
 from stac_fastapi.pgstac.transactions import BulkTransactionsClient, TransactionsClient
 from stac_fastapi.pgstac.types.search import PgstacSearch
 
 settings = Settings()
-extensions = [
-    TransactionExtension(
+extensions_map = {
+    "transaction": TransactionExtension(
         client=TransactionsClient(),
         settings=settings,
         response_class=ORJSONResponse,
     ),
-    QueryExtension(),
-    SortExtension(),
-    FieldsExtension(),
-    TokenPaginationExtension(),
-    ContextExtension(),
-    BulkTransactionExtension(client=BulkTransactionsClient()),
-]
+    "query": QueryExtension(),
+    "sort": SortExtension(),
+    "fields": FieldsExtension(),
+    "pagination": TokenPaginationExtension(),
+    "context": ContextExtension(),
+    "filter": FilterExtension(client=FiltersClient()),
+    "bulk_transactions": BulkTransactionExtension(client=BulkTransactionsClient()),
+}
+
+if enabled_extensions := os.getenv("ENABLED_EXTENSIONS"):
+    extensions = [
+        extensions_map[extension_name]
+        for extension_name in enabled_extensions.split(",")
+    ]
+else:
+    extensions = list(extensions_map.values())
 
 post_request_model = create_post_request_model(extensions, base_model=PgstacSearch)
 

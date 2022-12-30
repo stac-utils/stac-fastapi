@@ -1,19 +1,14 @@
 # encoding: utf-8
 """Filter Extension."""
 from enum import Enum
-from typing import Callable, List, Type, Union
+from typing import List, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
 from starlette.responses import Response
 
-from stac_fastapi.api.models import (
-    APIRequest,
-    CollectionUri,
-    EmptyRequest,
-    JSONSchemaResponse,
-)
-from stac_fastapi.api.routes import create_async_endpoint, create_sync_endpoint
+from stac_fastapi.api.models import CollectionUri, EmptyRequest, JSONSchemaResponse
+from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.core import AsyncBaseFiltersClient, BaseFiltersClient
 from stac_fastapi.types.extension import ApiExtension
 
@@ -80,24 +75,6 @@ class FilterExtension(ApiExtension):
     router: APIRouter = attr.ib(factory=APIRouter)
     response_class: Type[Response] = attr.ib(default=JSONSchemaResponse)
 
-    def _create_endpoint(
-        self,
-        func: Callable,
-        request_type: Union[
-            Type[APIRequest],
-        ],
-    ) -> Callable:
-        """Create a FastAPI endpoint."""
-        if isinstance(self.client, AsyncBaseFiltersClient):
-            return create_async_endpoint(
-                func, request_type, response_class=self.response_class
-            )
-        if isinstance(self.client, BaseFiltersClient):
-            return create_sync_endpoint(
-                func, request_type, response_class=self.response_class
-            )
-        raise NotImplementedError
-
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
 
@@ -112,12 +89,16 @@ class FilterExtension(ApiExtension):
             name="Queryables",
             path="/queryables",
             methods=["GET"],
-            endpoint=self._create_endpoint(self.client.get_queryables, EmptyRequest),
+            endpoint=create_async_endpoint(
+                self.client.get_queryables, EmptyRequest, self.response_class
+            ),
         )
         self.router.add_api_route(
             name="Collection Queryables",
             path="/collections/{collection_id}/queryables",
             methods=["GET"],
-            endpoint=self._create_endpoint(self.client.get_queryables, CollectionUri),
+            endpoint=create_async_endpoint(
+                self.client.get_queryables, CollectionUri, self.response_class
+            ),
         )
         app.include_router(self.router, tags=["Filter Extension"])
