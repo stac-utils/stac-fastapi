@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [Unreleased]
 
 ### Added
 
@@ -13,7 +13,7 @@
 * Allow url encoded values for `query` in GET requests ([#504](https://github.com/stac-utils/stac-fastapi/pull/504))
 * Fix path in `register_update_item` docstring ([507](https://github.com/stac-utils/stac-fastapi/pull/507))
 
-## [2.4.3]
+## [2.4.3] - 2022-11-25
 
 ### Added
 
@@ -25,7 +25,7 @@
 
 ### Fixed
 
-## [2.4.2]
+## [2.4.2] - 2022-11-25
 
 ### Added
 
@@ -46,7 +46,7 @@
 * Fix pgstac backend for /queryables endpoint to return 404 for non-existent collections ([#482](https://github.com/stac-utils/stac-fastapi/pull/482))
 * `/collection/{collection_id}/items` endpoints now return geojson media type ([#488](https://github.com/stac-utils/stac-fastapi/pull/488))
 
-## [2.4.1]
+## [2.4.1] - 2022-08-05
 
 ### Added
 
@@ -58,7 +58,7 @@
 
 * `ciso8601` fails to build in some environments, instead use `pyiso8601` to parse datetimes.
 
-## [2.4.0]
+## [2.4.0] - 2022-08-04
 
 ### Added
 
@@ -104,7 +104,7 @@
 * PGStac Backend Transactions endpoints return added Item/Collection instead of Item/Collection from request ([#424](https://github.com/stac-utils/stac-fastapi/pull/424))
 * Application no longer breaks on startup when pagination extension is not included ([#444](https://github.com/stac-utils/stac-fastapi/pull/444))
 
-## [2.3.0]
+## [2.3.0] - 2022-01-18
 
 ### Added
 
@@ -137,7 +137,7 @@
 * Expanded on tests to ensure properly testing get and post searches ([#318](https://github.com/stac-utils/stac-fastapi/pull/318))
 * Ensure invalid datetimes result in 400s ([#323](https://github.com/stac-utils/stac-fastapi/pull/323))
 
-## [2.2.0]
+## [2.2.0] - 2021-10-19
 
 ### Added
 
@@ -150,7 +150,7 @@
 * Update pgstac to 0.4.0 ([#308](https://github.com/stac-utils/stac-fastapi/pull/308))
 * Update get_item in sqlalchemy backend to allow for querying for items with same ids but in different collections. ([#275](https://github.com/stac-utils/stac-fastapi/pull/275))
 
-## [2.1.1]
+## [2.1.1] - 2021-09-23
 
 ### Added
 
@@ -167,7 +167,7 @@
 * Add `stac_version` to default search attributes ([#268](https://github.com/stac-utils/stac-fastapi/pull/268))
 * pgstac backend specifies collection_id when fetching a single item ([#279](https://github.com/stac-utils/stac-fastapi/pull/270))
 
-## [2.1.0]
+## [2.1.0] - 2021-08-26
 
 ### Added
 
@@ -197,17 +197,13 @@
 * Correct response codes for bad/unusable bboxes ([#235](https://github.com/stac-utils/stac-fastapi/pull/235))
 * Update pgstac to return 400 on invalid date parameter ([#240](https://github.com/stac-utils/stac-fastapi/pull/240))
 
-## [2.0.0]
-
-_2021-07_
+## [2.0.0] - 2021-07-26
 
 * Refactor stac-fastapi into submodules ([#106](https://github.com/)stac-utils/stac-fastapi/pull/106)
 * Add pgstac backend ([#126](https://github.com/stac-utils/stac-fastapi/pull/126))
 * Upgrade to stac-pydantic 2.0.0 and stac-spec 1.0.0 ([#181](https://github.com/stac-utils/stac-fastapi/pull/181))
 
-## [1.1.0]
-
-_2021-01-28_
+## [1.1.0] - 2021-01-28
 
 * Improve how the library declares API extensions ([#54](https://github.com/stac-utils/arturo-stac-api/pull/54))
 * Add postgres bulk transactions client ([#59](https://github.com/stac-utils/arturo-stac-api/pull/59))
@@ -216,12 +212,16 @@ _2021-01-28_
 * Remove postgres database connection from API layer ([#74](https://github.com/stac-utils/arturo-stac-api/pull/74))
 * Fix `pre-commit` config ([#75](https://github.com/stac-utils/arturo-stac-api/pull/75))
 
-## [1.0.0]
-
-_2020-09-25_
+## [1.0.0] - 2020-09-28
 
 * First PyPi release!
 
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.3..master>
+[2.4.3]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.2..2.4.3>
+[2.4.2]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.1..2.4.2>
+[2.4.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.0..2.4.1>
+[2.4.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.3.0..2.4.0>
+[2.3.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.2.0..2.3.0>
 [2.2.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.1..2.2.0>
 [2.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..2.1.1>
 [2.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.1.0..main>
