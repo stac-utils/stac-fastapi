@@ -158,12 +158,12 @@ class StacApi:
             name="Get Item",
             path="/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
-            response_class=self.response_class,
+            response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=create_async_endpoint(
-                self.client.get_item, ItemUri, self.response_class
+                self.client.get_item, ItemUri, GeoJSONResponse
             ),
         )
 

@@ -51,6 +51,15 @@ async def test_get_features_content_type(app_client, load_test_collection):
     assert resp.headers["content-type"] == "application/geo+json"
 
 
+async def test_get_feature_content_type(
+    app_client, load_test_collection, load_test_item
+):
+    resp = await app_client.get(
+        f"collections/{load_test_collection.id}/items/{load_test_item.id}"
+    )
+    assert resp.headers["content-type"] == "application/geo+json"
+
+
 async def test_api_headers(app_client):
     resp = await app_client.get("/api")
     assert (
