@@ -92,6 +92,13 @@ async def test_core_router(api_client, app):
     assert not core_routes - api_routes
 
 
+async def test_landing_page_stac_extensions(app_client):
+    resp = await app_client.get("/")
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert not resp_json["stac_extensions"]
+
+
 async def test_transactions_router(api_client, app):
     transaction_routes = set()
     for transaction_route in STAC_TRANSACTION_ROUTES:

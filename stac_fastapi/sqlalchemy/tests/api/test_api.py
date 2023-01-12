@@ -53,6 +53,13 @@ def test_core_router(api_client):
     assert not core_routes - api_routes
 
 
+def test_landing_page_stac_extensions(app_client):
+    resp = app_client.get("/")
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert not resp_json["stac_extensions"]
+
+
 def test_transactions_router(api_client):
     transaction_routes = set(STAC_TRANSACTION_ROUTES)
     api_routes = set(
