@@ -1,27 +1,30 @@
 name: stac-fastapi
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.8', '3.9', '3.10']
+        python-version: ["3.8", "3.9", "3.10"]
     timeout-minutes: 10
 
     services:
       db_service:
-        image: bitner/pgstac:0.2.7
+        image: ghcr.io/stac-utils/pgstac:v0.6.12
         env:
           POSTGRES_USER: username
           POSTGRES_PASSWORD: password
           POSTGRES_DB: postgis
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
+          PGUSER: username
+          PGPASSWORD: password
+          PGDATABASE: postgis
           ALLOW_IP_RANGE: 0.0.0.0/0
         # Set health checks to wait until postgres has started
         options: >-
