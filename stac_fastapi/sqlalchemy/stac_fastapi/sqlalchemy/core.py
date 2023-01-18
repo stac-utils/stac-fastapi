@@ -4,7 +4,7 @@ import logging
 import operator
 from datetime import datetime
 from typing import List, Optional, Set, Type, Union
-from urllib.parse import urlencode, urljoin
+from urllib.parse import unquote_plus, urlencode, urljoin
 
 import attr
 import geoalchemy2 as ga
@@ -169,7 +169,23 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 else None
             )
 
-            links = []
+            links = [
+                {
+                    "rel": Relations.self.value,
+                    "type": "application/geo+json",
+                    "href": str(kwargs["request"].url),
+                },
+                {
+                    "rel": Relations.root.value,
+                    "type": "application/json",
+                    "href": str(kwargs["request"].base_url),
+                },
+                {
+                    "rel": Relations.parent.value,
+                    "type": "application/json",
+                    "href": str(kwargs["request"].base_url),
+                },
+            ]
             if page.next:
                 links.append(
                     {
@@ -243,7 +259,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
             "bbox": bbox,
             "limit": limit,
             "token": token,
-            "query": json.loads(query) if query else query,
+            "query": json.loads(unquote_plus(query)) if query else query,
         }
 
         if datetime:

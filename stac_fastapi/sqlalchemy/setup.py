@@ -29,7 +29,7 @@ extra_reqs = {
         "requests",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
-    "server": ["uvicorn[standard]==0.17.0"],
+    "server": ["uvicorn[standard]==0.19.0"],
 }
 
 

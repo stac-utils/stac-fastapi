@@ -2,7 +2,7 @@
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
-from urllib.parse import urljoin
+from urllib.parse import unquote_plus, urljoin
 
 import attr
 import orjson
@@ -18,7 +18,12 @@ from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
 from stac_fastapi.pgstac.config import Settings
-from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks, PagingLinks
+from stac_fastapi.pgstac.models.links import (
+    CollectionLinks,
+    ItemCollectionLinks,
+    ItemLinks,
+    PagingLinks,
+)
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.pgstac.utils import filter_fields
 from stac_fastapi.types.core import AsyncBaseCoreClient
@@ -286,7 +291,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
             **clean,
         )
         item_collection = await self._search_base(req, **kwargs)
-        links = await CollectionLinks(
+        links = await ItemCollectionLinks(
             collection_id=collection_id, request=kwargs["request"]
         ).get_links(extra_links=item_collection["links"])
         item_collection["links"] = links
@@ -372,7 +377,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
             "bbox": bbox,
             "limit": limit,
             "token": token,
-            "query": orjson.loads(query) if query else query,
+            "query": orjson.loads(unquote_plus(query)) if query else query,
         }
 
         if filter:
