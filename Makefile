@@ -30,6 +30,10 @@ docker-run-sqlalchemy: image
 docker-run-pgstac: image
 	$(run_pgstac)
 
+.PHONY: docker-run-nginx-proxy
+docker-run-nginx-proxy:
+	docker-compose -f docker-compose.yml -f docker-compose.nginx.yml up
+
 .PHONY: docker-shell-sqlalchemy
 docker-shell-sqlalchemy:
 	$(run_sqlalchemy) /bin/bash
