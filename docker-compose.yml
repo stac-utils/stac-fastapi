@@ -26,8 +26,7 @@ services:
       - ./scripts:/app/scripts
     depends_on:
       - database
-    command:
-      bash -c "./scripts/wait-for-it.sh database:5432 && python -m stac_fastapi.sqlalchemy.app"
+    command: bash -c "./scripts/wait-for-it.sh database:5432 && python -m stac_fastapi.sqlalchemy.app"
 
   app-pgstac:
     container_name: stac-fastapi-pgstac
@@ -58,12 +57,11 @@ services:
       - ./scripts:/app/scripts
     depends_on:
       - database
-    command:
-      bash -c "./scripts/wait-for-it.sh database:5432 && python -m stac_fastapi.pgstac.app"
+    command: bash -c "./scripts/wait-for-it.sh database:5432 && python -m stac_fastapi.pgstac.app"
 
   database:
     container_name: stac-db
-    image: ghcr.io/stac-utils/pgstac:v0.6.10
+    image: ghcr.io/stac-utils/pgstac:v0.6.12
     environment:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password

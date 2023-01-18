@@ -169,7 +169,23 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 else None
             )
 
-            links = []
+            links = [
+                {
+                    "rel": Relations.self.value,
+                    "type": "application/geo+json",
+                    "href": str(kwargs["request"].url),
+                },
+                {
+                    "rel": Relations.root.value,
+                    "type": "application/json",
+                    "href": str(kwargs["request"].base_url),
+                },
+                {
+                    "rel": Relations.parent.value,
+                    "type": "application/json",
+                    "href": str(kwargs["request"].base_url),
+                },
+            ]
             if page.next:
                 links.append(
                     {

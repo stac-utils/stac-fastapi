@@ -53,6 +53,13 @@ def test_core_router(api_client):
     assert not core_routes - api_routes
 
 
+def test_landing_page_stac_extensions(app_client):
+    resp = app_client.get("/")
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert not resp_json["stac_extensions"]
+
+
 def test_transactions_router(api_client):
     transaction_routes = set(STAC_TRANSACTION_ROUTES)
     api_routes = set(
@@ -445,9 +452,18 @@ def test_app_search_response_duplicate_forwarded_headers(
             assert link["href"].startswith("https://testserver:1234/")
 
 
-async def test_get_features_content_type(app_client, load_test_data):
+def test_get_features_content_type(app_client, load_test_data):
     item = load_test_data("test_item.json")
-    resp = await app_client.get(f"collections/{item['collection']}/items")
+    resp = app_client.get(f"collections/{item['collection']}/items")
+    assert resp.headers["content-type"] == "application/geo+json"
+
+
+def test_get_feature_content_type(app_client, load_test_data, postgres_transactions):
+    item = load_test_data("test_item.json")
+    postgres_transactions.create_item(
+        item["collection"], item, request=MockStarletteRequest
+    )
+    resp = app_client.get(f"collections/{item['collection']}/items/{item['id']}")
     assert resp.headers["content-type"] == "application/geo+json"
 
 
