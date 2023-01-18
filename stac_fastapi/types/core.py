@@ -345,14 +345,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             API landing page, serving as an entry point to the API.
         """
-        # request: Request = kwargs["request"]
-        # base_url = get_base_url(request)
-        extension_schemas = [
-            schema.schema_href for schema in self.extensions if schema.schema_href
-        ]
         landing_page = self._landing_page(
             conformance_classes=self.conformance_classes(),
-            extension_schemas=extension_schemas,
+            extension_schemas=[],
         )
 
         # Add Collections links
@@ -518,12 +513,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             API landing page, serving as an entry point to the API.
         """
-        extension_schemas = [
-            schema.schema_href for schema in self.extensions if schema.schema_href
-        ]
         landing_page = self._landing_page(
             conformance_classes=self.conformance_classes(),
-            extension_schemas=extension_schemas,
+            extension_schemas=[],
         )
         collections = await self.all_collections()
         for collection in collections["collections"]:
