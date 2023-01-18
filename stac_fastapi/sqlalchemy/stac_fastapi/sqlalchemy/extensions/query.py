@@ -66,6 +66,15 @@ class Queryables(str, AutoValueEnum):
     dtype = "cog:dtype"
     foo = "foo"
 
+    def __str__(self) -> str:
+        """Return the Queryable's value as its __str__.
+
+        Python 3.11 changed the default __str__ behavior for Enums, and since we
+        can't use StrEnum (it was introduced in 3.11), we need to define our
+        expected behavior explicitly.
+        """
+        return self.value
+
 
 @dataclass
 class QueryableTypes:
