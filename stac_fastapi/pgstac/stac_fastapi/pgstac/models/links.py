@@ -207,6 +207,27 @@ class CollectionLinks(CollectionLinksBase):
 
 
 @attr.s
+class ItemCollectionLinks(CollectionLinksBase):
+    """Create inferred links specific to collections."""
+
+    def link_self(self) -> Dict:
+        """Return the self link."""
+        return dict(
+            rel=Relations.self.value,
+            type=MimeTypes.geojson.value,
+            href=self.resolve(f"collections/{self.collection_id}/items"),
+        )
+
+    def link_parent(self) -> Dict:
+        """Create the `parent` link."""
+        return self.collection_link(rel=Relations.parent.value)
+
+    def link_collection(self) -> Dict:
+        """Create the `collection` link."""
+        return self.collection_link()
+
+
+@attr.s
 class ItemLinks(CollectionLinksBase):
     """Create inferred links specific to items."""
 

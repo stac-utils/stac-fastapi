@@ -51,6 +51,27 @@ async def test_get_features_content_type(app_client, load_test_collection):
     assert resp.headers["content-type"] == "application/geo+json"
 
 
+async def test_get_features_self_link(app_client, load_test_collection):
+    # https://github.com/stac-utils/stac-fastapi/issues/483
+    resp = await app_client.get(f"collections/{load_test_collection.id}/items")
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    self_link = next(
+        (link for link in resp_json["links"] if link["rel"] == "self"), None
+    )
+    assert self_link is not None
+    assert self_link["href"].endswith("/items")
+
+
+async def test_get_feature_content_type(
+    app_client, load_test_collection, load_test_item
+):
+    resp = await app_client.get(
+        f"collections/{load_test_collection.id}/items/{load_test_item.id}"
+    )
+    assert resp.headers["content-type"] == "application/geo+json"
+
+
 async def test_api_headers(app_client):
     resp = await app_client.get("/api")
     assert (
@@ -69,6 +90,13 @@ async def test_core_router(api_client, app):
         [f"{list(route.methods)[0]} {route.path}" for route in api_client.app.routes]
     )
     assert not core_routes - api_routes
+
+
+async def test_landing_page_stac_extensions(app_client):
+    resp = await app_client.get("/")
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert not resp_json["stac_extensions"]
 
 
 async def test_transactions_router(api_client, app):

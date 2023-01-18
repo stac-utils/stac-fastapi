@@ -31,7 +31,7 @@ extra_reqs = {
         "httpx",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
-    "server": ["uvicorn[standard]==0.17.0"],
+    "server": ["uvicorn[standard]==0.19.0"],
     "awslambda": ["mangum"],
 }
 
