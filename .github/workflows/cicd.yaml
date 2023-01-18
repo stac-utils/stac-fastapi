@@ -121,6 +121,66 @@ jobs:
           POSTGRES_HOST_READER: localhost
           POSTGRES_HOST_WRITER: localhost
           POSTGRES_PORT: 5432
+
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: ["sqlalchemy", "pgstac"]
+    services:
+      pgstac:
+        image: ghcr.io/stac-utils/pgstac:v0.6.11
+        env:
+          POSTGRES_USER: username
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: postgis
+          PGUSER: username
+          PGPASSWORD: password
+          PGDATABASE: postgis
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: stac_fastapi/pgstac/setup.cfg
+      - name: Install stac-fastapi and stac-api-validator
+        run: pip install ./stac_fastapi/api ./stac_fastapi/types ./stac_fastapi/${{ matrix.backend }}[server] stac-api-validator==0.4.1
+      - name: Run migration
+        if: ${{ matrix.backend == 'sqlalchemy' }}
+        run: cd stac_fastapi/sqlalchemy && alembic upgrade head
+        env:
+          POSTGRES_USER: username
+          POSTGRES_PASS: password
+          POSTGRES_DBNAME: postgis
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+      - name: Load data and validate
+        run: python -m stac_fastapi.${{ matrix.backend }}.app & ./scripts/wait-for-it.sh localhost:8080 && python ./scripts/ingest_joplin.py http://localhost:8080 && ./scripts/validate http://localhost:8080
+        env:
+          POSTGRES_USER: username
+          POSTGRES_PASS: password
+          POSTGRES_DBNAME: postgis
+          POSTGRES_HOST_READER: localhost
+          POSTGRES_HOST_WRITER: localhost
+          POSTGRES_PORT: 5432
+          PGUSER: username
+          PGPASSWORD: password
+          PGHOST: localhost
+          PGDATABASE: postgis
+          APP_HOST: 0.0.0.0
+          APP_PORT: 8080
+
   test-docs:
     runs-on: ubuntu-latest
     steps:
