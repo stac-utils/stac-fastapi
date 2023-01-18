@@ -70,6 +70,7 @@ def load_test_data() -> Callable[[str], Dict]:
 
 class MockStarletteRequest:
     base_url = "http://test-server"
+    url = "http://test-server/some/endpoint"
 
 
 @pytest.fixture
