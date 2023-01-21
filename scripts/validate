@@ -23,6 +23,6 @@ stac-api-validator --root-url "$root_url" \
     --conformance collections \
     --conformance features \
     --conformance filter \
+    --conformance item-search \
     --collection joplin \
     --geometry "$geometry"
-    # --conformance item-search # currently breaks stac-api-validator

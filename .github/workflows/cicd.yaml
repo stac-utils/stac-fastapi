@@ -155,7 +155,7 @@ jobs:
           cache: pip
           cache-dependency-path: stac_fastapi/pgstac/setup.cfg
       - name: Install stac-fastapi and stac-api-validator
-        run: pip install ./stac_fastapi/api ./stac_fastapi/types ./stac_fastapi/${{ matrix.backend }}[server] stac-api-validator==0.4.1
+        run: pip install ./stac_fastapi/api ./stac_fastapi/types ./stac_fastapi/${{ matrix.backend }}[server] stac-api-validator==0.5.0
       - name: Run migration
         if: ${{ matrix.backend == 'sqlalchemy' }}
         run: cd stac_fastapi/sqlalchemy && alembic upgrade head
