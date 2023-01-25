@@ -6,8 +6,6 @@ from urllib.parse import unquote_plus, urljoin
 
 import attr
 import orjson
-from asyncpg.exceptions import InvalidDatetimeFormatError
-from buildpg import render
 from fastapi import HTTPException
 from pydantic import ValidationError
 from pygeofilter.backends.cql2_json import to_cql2
@@ -17,6 +15,7 @@ from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
+from stac_fastapi.pgstac.backend import PgstacBackend
 from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.models.links import (
     CollectionLinks,
@@ -27,7 +26,7 @@ from stac_fastapi.pgstac.models.links import (
 from stac_fastapi.pgstac.types.search import PgstacSearch
 from stac_fastapi.pgstac.utils import filter_fields
 from stac_fastapi.types.core import AsyncBaseCoreClient
-from stac_fastapi.types.errors import InvalidQueryParameter, NotFoundError
+from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.stac import Collection, Collections, Item, ItemCollection
 
@@ -42,23 +41,15 @@ class CoreCrudClient(AsyncBaseCoreClient):
         """Read all collections from the database."""
         request: Request = kwargs["request"]
         base_url = get_base_url(request)
-        pool = request.app.state.readpool
-
-        async with pool.acquire() as conn:
-            collections = await conn.fetchval(
-                """
-                SELECT * FROM all_collections();
-                """
-            )
+        collections = await PgstacBackend.all_collections(request.app.state)
         linked_collections: List[Collection] = []
         if collections is not None and len(collections) > 0:
             for c in collections:
-                coll = Collection(**c)
-                coll["links"] = await CollectionLinks(
-                    collection_id=coll["id"], request=request
-                ).get_links(extra_links=coll.get("links"))
+                c["links"] = await CollectionLinks(
+                    collection_id=c["id"], request=request
+                ).get_links(extra_links=c["links"])
 
-                linked_collections.append(coll)
+                linked_collections.append(c)
 
         links = [
             {
@@ -91,26 +82,18 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             Collection.
         """
-        collection: Optional[Dict[str, Any]]
-
         request: Request = kwargs["request"]
-        pool = request.app.state.readpool
-        async with pool.acquire() as conn:
-            q, p = render(
-                """
-                SELECT * FROM get_collection(:id::text);
-                """,
-                id=collection_id,
-            )
-            collection = await conn.fetchval(q, *p)
+        collection = await PgstacBackend.get_collection(
+            request.app.state, collection_id
+        )
         if collection is None:
             raise NotFoundError(f"Collection {collection_id} does not exist.")
 
         collection["links"] = await CollectionLinks(
             collection_id=collection_id, request=request
-        ).get_links(extra_links=collection.get("links"))
+        ).get_links(extra_links=collection["links"])
 
-        return Collection(**collection)
+        return collection
 
     async def _get_base_item(
         self, collection_id: str, request: Request
@@ -123,18 +106,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             Item.
         """
-        item: Optional[Dict[str, Any]]
-
-        pool = request.app.state.readpool
-        async with pool.acquire() as conn:
-            q, p = render(
-                """
-                SELECT * FROM collection_base_item(:collection_id::text);
-                """,
-                collection_id=collection_id,
-            )
-            item = await conn.fetchval(q, *p)
-
+        item = await PgstacBackend.get_base_item(request.app.state, collection_id)
         if item is None:
             raise NotFoundError(f"A base item for {collection_id} does not exist.")
 
@@ -155,33 +127,14 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             ItemCollection containing items which match the search criteria.
         """
-        items: Dict[str, Any]
-
         request: Request = kwargs["request"]
         settings: Settings = request.app.state.settings
-        pool = request.app.state.readpool
 
         search_request.conf = search_request.conf or {}
         search_request.conf["nohydrate"] = settings.use_api_hydrate
-        req = search_request.json(exclude_none=True, by_alias=True)
-
-        try:
-            async with pool.acquire() as conn:
-                q, p = render(
-                    """
-                    SELECT * FROM search(:req::text::jsonb);
-                    """,
-                    req=req,
-                )
-                items = await conn.fetchval(q, *p)
-        except InvalidDatetimeFormatError:
-            raise InvalidQueryParameter(
-                f"Datetime parameter {search_request.datetime} is invalid."
-            )
-
-        next: Optional[str] = items.pop("next", None)
-        prev: Optional[str] = items.pop("prev", None)
-        collection = ItemCollection(**items)
+        collection, pagination_links = await PgstacBackend.search_post(
+            request.app.state, search_request
+        )
 
         exclude = search_request.fields.exclude
         if exclude and len(exclude) == 0:
@@ -244,9 +197,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
         collection["features"] = cleaned_features
         collection["links"] = await PagingLinks(
-            request=request,
-            next=next,
-            prev=prev,
+            request=request, pagination_links=pagination_links
         ).get_links()
         return collection
 

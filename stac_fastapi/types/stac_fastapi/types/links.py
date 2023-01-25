@@ -1,6 +1,6 @@
 """link helpers."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
 import attr
@@ -108,3 +108,39 @@ class ItemLinks(BaseLinks):
             self.root(),
         ]
         return links
+
+
+@attr.s
+class UnresolvedLink:
+    """An resolved link."""
+
+    query: Dict[str, str] = attr.ib()
+    extra_fields: Dict[str, Any] = attr.ib()
+
+    @classmethod
+    def from_opt_dict(
+        cls, maybe_query: Optional[Dict[str, str]]
+    ) -> Optional["UnresolvedLink"]:
+        """Create an unresolved link from an optional query dictionary."""
+        if maybe_query is None:
+            return None
+        else:
+            return UnresolvedLink(query=maybe_query, extra_fields={})
+
+
+@attr.s
+class PaginationLinks:
+    """Unresolved links for pagination."""
+
+    next: Optional[UnresolvedLink] = attr.ib()
+    prev: Optional[UnresolvedLink] = attr.ib()
+
+    @classmethod
+    def from_dicts(
+        cls, next: Optional[Dict[str, str]], prev: Optional[Dict[str, str]]
+    ) -> "PaginationLinks":
+        """Create a new PaginationLinks from two optional dictionaries of queries."""
+        return cls(
+            next=UnresolvedLink.from_opt_dict(next),
+            prev=UnresolvedLink.from_opt_dict(prev),
+        )

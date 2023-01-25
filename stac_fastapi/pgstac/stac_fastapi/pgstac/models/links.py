@@ -1,5 +1,6 @@
 """link helpers."""
 
+import copy
 from typing import Any, Dict, List, Optional
 from urllib.parse import ParseResult, parse_qs, unquote, urlencode, urljoin, urlparse
 
@@ -8,6 +9,7 @@ from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from starlette.requests import Request
 
+from stac_fastapi.types.links import PaginationLinks, UnresolvedLink
 from stac_fastapi.types.requests import get_base_url
 
 # These can be inferred from the item/collection so they aren't included in the database
@@ -116,54 +118,48 @@ class BaseLinks:
 class PagingLinks(BaseLinks):
     """Create links for paging."""
 
-    next: Optional[str] = attr.ib(kw_only=True, default=None)
-    prev: Optional[str] = attr.ib(kw_only=True, default=None)
+    pagination_links: PaginationLinks = attr.ib()
 
     def link_next(self) -> Optional[Dict[str, Any]]:
         """Create link for next page."""
-        if self.next is not None:
-            method = self.request.method
-            if method == "GET":
-                href = merge_params(self.url, {"token": f"next:{self.next}"})
-                link = dict(
-                    rel=Relations.next.value,
-                    type=MimeTypes.geojson.value,
-                    method=method,
-                    href=href,
-                )
-                return link
-            if method == "POST":
-                return {
-                    "rel": Relations.next,
-                    "type": MimeTypes.geojson,
-                    "method": method,
-                    "href": f"{self.request.url}",
-                    "body": {**self.request.postbody, "token": f"next:{self.next}"},
-                }
-
-        return None
+        if self.pagination_links.next is not None:
+            return self._link(Relations.next, self.pagination_links.next)
+        else:
+            return None
 
     def link_prev(self) -> Optional[Dict[str, Any]]:
         """Create link for previous page."""
-        if self.prev is not None:
-            method = self.request.method
-            if method == "GET":
-                href = merge_params(self.url, {"token": f"prev:{self.prev}"})
-                return dict(
-                    rel=Relations.previous.value,
-                    type=MimeTypes.geojson.value,
-                    method=method,
-                    href=href,
-                )
-            if method == "POST":
-                return {
-                    "rel": Relations.previous,
-                    "type": MimeTypes.geojson,
-                    "method": method,
-                    "href": f"{self.request.url}",
-                    "body": {**self.request.postbody, "token": f"prev:{self.prev}"},
-                }
-        return None
+        if self.pagination_links.prev is not None:
+            return self._link(Relations.previous, self.pagination_links.prev)
+        else:
+            return None
+
+    def _link(self, rel: Relations, unresolved_link: UnresolvedLink) -> Dict[str, Any]:
+        method = self.request.method
+        if method == "GET":
+            href = merge_params(self.url, unresolved_link.query)
+            link = dict(
+                rel=rel.value,
+                type=MimeTypes.geojson.value,
+                method=method,
+                href=href,
+            )
+            link.update(unresolved_link.extra_fields)
+            return link
+        elif method == "POST":
+            body = copy.deepcopy(self.request.postbody)
+            body.update(unresolved_link.query)
+            link = {
+                "rel": rel.value,
+                "type": MimeTypes.geojson,
+                "method": method,
+                "href": f"{self.request.url}",
+                "body": body,
+            }
+            link.update(unresolved_link.extra_fields)
+            return link
+        else:
+            raise ValueError(f"unsupported paging link method: {method}")
 
 
 @attr.s
