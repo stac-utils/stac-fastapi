@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
+from typing import Any, Dict, List
 from urllib.parse import quote_plus
 
 import orjson
 import pytest
+from pystac import Item
 
 STAC_CORE_ROUTES = [
     "GET /",
@@ -513,3 +515,48 @@ async def test_bad_collection_queryables(
 ):
     resp = await app_client.get("/collections/bad-collection/queryables")
     assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("direction", ("asc", "desc"))
+async def test_sorting_and_paging(app_client, load_test_collection, direction: str):
+    collection_id = load_test_collection.id
+    for i in range(10):
+        item = Item(
+            id=f"item-{i}",
+            geometry={"type": "Point", "coordinates": [-105.1019, 40.1672]},
+            bbox=[-105.1019, 40.1672, -105.1019, 40.1672],
+            datetime=datetime.now(),
+            properties={
+                "eo:cloud_cover": 42 + i if i % 3 != 0 else None,
+            },
+        )
+        item.collection_id = collection_id
+        response = await app_client.post(
+            f"/collections/{collection_id}/items",
+            json=item.to_dict(include_self_link=False, transform_hrefs=False),
+        )
+        assert response.status_code == 200
+
+    async def search(query: Dict[str, Any]) -> List[Item]:
+        items: List[Item] = list()
+        while True:
+            response = await app_client.post("/search", json=query)
+            json = response.json()
+            assert response.status_code == 200, json
+            items.extend((Item.from_dict(d) for d in json["features"]))
+            next_link = next(
+                (link for link in json["links"] if link["rel"] == "next"), None
+            )
+            if next_link is None:
+                return items
+            else:
+                query = next_link["body"]
+
+    query = {
+        "collections": [collection_id],
+        "sortby": [{"field": "properties.eo:cloud_cover", "direction": direction}],
+        "limit": 5,
+    }
+    items = await search(query)
+    assert len(items) == 10, items
