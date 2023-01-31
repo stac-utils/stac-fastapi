@@ -1,8 +1,13 @@
 from datetime import datetime, timedelta
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urljoin
 
+import attrs
 import orjson
 import pytest
+from httpx import AsyncClient
+
+from stac_fastapi.pgstac.db import close_db_connection, connect_to_db, dbfunc
+from stac_fastapi.types.stac import Collection
 
 STAC_CORE_ROUTES = [
     "GET /",
@@ -90,6 +95,39 @@ async def test_core_router(api_client, app):
         [f"{list(route.methods)[0]} {route.path}" for route in api_client.app.routes]
     )
     assert not core_routes - api_routes
+
+
+async def test_response_models(api_client):
+    settings = api_client.settings
+    settings.enable_response_models = True
+    api = attrs.evolve(api_client, settings=settings)
+    await connect_to_db(api.app)
+
+    base_url = "http://test"
+    if api.app.state.router_prefix != "":
+        base_url = urljoin(base_url, api.app.state.router_prefix)
+
+    collection = Collection(
+        type="MyCollection",
+        stac_version="1.0.0",
+        id="my-collection",
+        description="A test collection with an invalid type field",
+        links=[],
+        keywords=[],
+        license="proprietary",
+        providers=[],
+        extent={},
+        summaries={},
+        assets={},
+    )
+    pool = api.app.state.writepool
+    await dbfunc(pool, "create_collection", collection)
+
+    async with AsyncClient(app=api.app, base_url=base_url) as client:
+        response = await client.get("/collections/my-collection")
+        assert response.status_code == 500, response.json()["type"]
+
+    await close_db_connection(api.app)
 
 
 async def test_landing_page_stac_extensions(app_client):
