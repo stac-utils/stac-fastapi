@@ -4,16 +4,24 @@
 
 ### Added
 
+* Validation checks in CI using [stac-api-validator](github.com/stac-utils/stac-api-validator) ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
+* Required links to the sqlalchemy ItemCollection endpoint ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
+
 ### Changed
 
 * Updated CI to test against [pgstac v0.6.12](https://github.com/stac-utils/pgstac/releases/tag/v0.6.12) ([#511](https://github.com/stac-utils/stac-fastapi/pull/511))
 
 ### Removed
 
+* Incorrect context STAC extension url from the landing page ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
+
 ### Fixed
 
 * Allow url encoded values for `query` in GET requests ([#504](https://github.com/stac-utils/stac-fastapi/pull/504))
-* Fix path in `register_update_item` docstring ([507](https://github.com/stac-utils/stac-fastapi/pull/507))
+* Fix path in `register_update_item` docstring ([#507](https://github.com/stac-utils/stac-fastapi/pull/507))
+* `self` link rel for `/collections/{c_id}/items` ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
+* Media type of the item collection endpoint ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
+* Manually exclude non-truthy optional values from sqlalchemy serialization of Collections ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
 
 ## [2.4.3] - 2022-11-25
 
