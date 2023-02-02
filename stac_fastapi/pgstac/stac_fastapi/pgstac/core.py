@@ -352,6 +352,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         sortby: Optional[str] = None,
         filter: Optional[str] = None,
         filter_lang: Optional[str] = None,
+        intersects: Optional[str] = None,
         **kwargs,
     ) -> ItemCollection:
         """Cross catalog search (GET).
@@ -388,6 +389,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
 
         if datetime:
             base_args["datetime"] = datetime
+
+        if intersects:
+            base_args["intersects"] = orjson.loads(unquote_plus(intersects))
 
         if sortby:
             # https://github.com/radiantearth/stac-spec/tree/master/api-spec/extensions/sort#http-get-or-post-form

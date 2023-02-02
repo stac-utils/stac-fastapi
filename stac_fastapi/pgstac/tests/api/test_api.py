@@ -310,6 +310,15 @@ async def test_search_point_intersects(
     resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
     assert resp.status_code == 200
 
+    new_coordinates = list()
+    for coordinate in item["geometry"]["coordinates"][0]:
+        new_coordinates.append([coordinate[0] * -1, coordinate[1] * -1])
+    item["id"] = "test-item-other-hemispheres"
+    item["geometry"]["coordinates"] = [new_coordinates]
+    item["bbox"] = list(value * -1 for value in item["bbox"])
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
+    assert resp.status_code == 200
+
     point = [150.04, -33.14]
     intersects = {"type": "Point", "coordinates": point}
 
@@ -318,6 +327,12 @@ async def test_search_point_intersects(
         "collections": [item["collection"]],
     }
     resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+    params["intersects"] = orjson.dumps(params["intersects"]).decode("utf-8")
+    resp = await app_client.get("/search", params=params)
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1

@@ -276,6 +276,16 @@ def test_search_point_intersects(load_test_data, app_client, postgres_transactio
         item["collection"], item, request=MockStarletteRequest
     )
 
+    new_coordinates = list()
+    for coordinate in item["geometry"]["coordinates"][0]:
+        new_coordinates.append([coordinate[0] * -1, coordinate[1] * -1])
+    item["id"] = "test-item-other-hemispheres"
+    item["geometry"]["coordinates"] = [new_coordinates]
+    item["bbox"] = list(value * -1 for value in item["bbox"])
+    postgres_transactions.create_item(
+        item["collection"], item, request=MockStarletteRequest
+    )
+
     point = [150.04, -33.14]
     intersects = {"type": "Point", "coordinates": point}
 
@@ -284,6 +294,12 @@ def test_search_point_intersects(load_test_data, app_client, postgres_transactio
         "collections": [item["collection"]],
     }
     resp = app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+    params["intersects"] = orjson.dumps(params["intersects"]).decode("utf-8")
+    resp = app_client.get("/search", params=params)
     assert resp.status_code == 200
     resp_json = resp.json()
     assert len(resp_json["features"]) == 1
