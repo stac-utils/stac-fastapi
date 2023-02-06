@@ -10,6 +10,7 @@
 ### Changed
 
 * Updated CI to test against [pgstac v0.6.12](https://github.com/stac-utils/pgstac/releases/tag/v0.6.12) ([#511](https://github.com/stac-utils/stac-fastapi/pull/511))
+* Reworked `update_openapi` and added a test for it. ([#523](https://github.com/stac-utils/stac-fastapi/pull/523))
 
 ### Removed
 
