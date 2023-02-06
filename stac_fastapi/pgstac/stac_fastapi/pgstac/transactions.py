@@ -4,6 +4,7 @@ import logging
 from typing import Optional, Union
 
 import attr
+from buildpg import render
 from fastapi import HTTPException
 from starlette.responses import JSONResponse, Response
 
@@ -11,7 +12,7 @@ from stac_fastapi.extensions.third_party.bulk_transactions import (
     AsyncBaseBulkTransactionsClient,
     Items,
 )
-from stac_fastapi.pgstac.db import dbfunc
+from stac_fastapi.pgstac.db import dbfunc, translate_pgstac_errors
 from stac_fastapi.pgstac.models.links import CollectionLinks, ItemLinks
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.core import AsyncBaseTransactionsClient
@@ -98,12 +99,19 @@ class TransactionsClient(AsyncBaseTransactionsClient):
         return stac_types.Collection(**collection)
 
     async def delete_item(
-        self, item_id: str, **kwargs
+        self, item_id: str, collection_id: str, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Delete item."""
         request = kwargs["request"]
         pool = request.app.state.writepool
-        await dbfunc(pool, "delete_item", item_id)
+        async with pool.acquire() as conn:
+            q, p = render(
+                "SELECT * FROM delete_item(:item::text, :collection::text);",
+                item=item_id,
+                collection=collection_id,
+            )
+            with translate_pgstac_errors():
+                await conn.fetchval(q, *p)
         return JSONResponse({"deleted item": item_id})
 
     async def delete_collection(
