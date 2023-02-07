@@ -433,6 +433,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         token: Optional[str] = None,
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
+        intersects: Optional[str] = None,
         **kwargs,
     ) -> stac_types.ItemCollection:
         """Cross catalog search (GET).
@@ -627,6 +628,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         token: Optional[str] = None,
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
+        intersects: Optional[str] = None,
         **kwargs,
     ) -> stac_types.ItemCollection:
         """Cross catalog search (GET).

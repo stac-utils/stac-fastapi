@@ -249,6 +249,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         token: Optional[str] = None,
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
+        intersects: Optional[str] = None,
         **kwargs,
     ) -> ItemCollection:
         """GET search catalog."""
@@ -264,6 +265,9 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
 
         if datetime:
             base_args["datetime"] = datetime
+
+        if intersects:
+            base_args["intersects"] = json.loads(unquote_plus(intersects))
 
         if sortby:
             # https://github.com/radiantearth/stac-spec/tree/master/api-spec/extensions/sort#http-get-or-post-form

@@ -23,6 +23,7 @@
 * `self` link rel for `/collections/{c_id}/items` ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
 * Media type of the item collection endpoint ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
 * Manually exclude non-truthy optional values from sqlalchemy serialization of Collections ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
+* Support `intersects` in GET requests ([#521](https://github.com/stac-utils/stac-fastapi/pull/521))
 * Deleting items that had repeated ids in other collections ([#520](https://github.com/stac-utils/stac-fastapi/pull/520))
 
 ### Deprecated

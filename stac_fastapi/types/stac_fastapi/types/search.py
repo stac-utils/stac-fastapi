@@ -74,7 +74,7 @@ class BaseSearchGetRequest(APIRequest):
     collections: Optional[str] = attr.ib(default=None, converter=str2list)
     ids: Optional[str] = attr.ib(default=None, converter=str2list)
     bbox: Optional[str] = attr.ib(default=None, converter=str2list)
-    intersects: Optional[str] = attr.ib(default=None, converter=str2list)
+    intersects: Optional[str] = attr.ib(default=None)
     datetime: Optional[str] = attr.ib(default=None)
     limit: Optional[int] = attr.ib(default=10)
 
