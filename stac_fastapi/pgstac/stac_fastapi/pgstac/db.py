@@ -1,7 +1,8 @@
 """Database connection handling."""
 
 import json
-from typing import Dict, Union
+from contextlib import contextmanager
+from typing import Dict, Generator, Union
 
 import attr
 import orjson
@@ -61,7 +62,7 @@ async def dbfunc(pool: pool, func: str, arg: Union[str, Dict]):
     arg -- the argument to the PostgreSQL function as either a string
     or a dict that will be converted into jsonb
     """
-    try:
+    with translate_pgstac_errors():
         if isinstance(arg, str):
             async with pool.acquire() as conn:
                 q, p = render(
@@ -80,6 +81,13 @@ async def dbfunc(pool: pool, func: str, arg: Union[str, Dict]):
                     item=json.dumps(arg),
                 )
                 return await conn.fetchval(q, *p)
+
+
+@contextmanager
+def translate_pgstac_errors() -> Generator[None, None, None]:
+    """Context manager that translates pgstac errors into FastAPI errors."""
+    try:
+        yield
     except exceptions.UniqueViolationError as e:
         raise ConflictError from e
     except exceptions.NoDataFoundError as e:

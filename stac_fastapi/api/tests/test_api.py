@@ -49,6 +49,15 @@ class TestRouteDependencies:
                 ), "Authenticated requests should be accepted"
                 assert response.json() == "dummy response"
 
+    def test_openapi_content_type(self):
+        api = self._build_api()
+        with TestClient(api.app) as client:
+            response = client.get(api.settings.openapi_url)
+            assert (
+                response.headers["content-type"]
+                == "application/vnd.oai.openapi+json;version=3.0"
+            )
+
     def test_build_api_with_route_dependencies(self):
         routes = [
             {"path": "/collections", "method": "POST"},

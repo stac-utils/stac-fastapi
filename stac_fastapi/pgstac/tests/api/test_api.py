@@ -3,6 +3,7 @@ from urllib.parse import quote_plus
 
 import orjson
 import pytest
+from pystac import Collection, Extent, Item, SpatialExtent, TemporalExtent
 
 STAC_CORE_ROUTES = [
     "GET /",
@@ -23,6 +24,24 @@ STAC_TRANSACTION_ROUTES = [
     "PUT /collections",
     "PUT /collections/{collection_id}/items/{item_id}",
 ]
+
+GLOBAL_BBOX = [-180.0, -90.0, 180.0, 90.0]
+GLOBAL_GEOMETRY = {
+    "type": "Polygon",
+    "coordinates": (
+        (
+            (180.0, -90.0),
+            (180.0, 90.0),
+            (-180.0, 90.0),
+            (-180.0, -90.0),
+            (180.0, -90.0),
+        ),
+    ),
+}
+DEFAULT_EXTENT = Extent(
+    SpatialExtent(GLOBAL_BBOX),
+    TemporalExtent([[datetime.now(), None]]),
+)
 
 
 async def test_post_search_content_type(app_client):
@@ -528,3 +547,33 @@ async def test_bad_collection_queryables(
 ):
     resp = await app_client.get("/collections/bad-collection/queryables")
     assert resp.status_code == 404
+
+
+async def test_deleting_items_with_identical_ids(app_client):
+    collection_a = Collection("collection-a", "The first collection", DEFAULT_EXTENT)
+    collection_b = Collection("collection-b", "The second collection", DEFAULT_EXTENT)
+    item = Item("the-item", GLOBAL_GEOMETRY, GLOBAL_BBOX, datetime.now(), {})
+
+    for collection in (collection_a, collection_b):
+        response = await app_client.post(
+            "/collections", json=collection.to_dict(include_self_link=False)
+        )
+        assert response.status_code == 200
+        item_as_dict = item.to_dict(include_self_link=False)
+        item_as_dict["collection"] = collection.id
+        response = await app_client.post(
+            f"/collections/{collection.id}/items", json=item_as_dict
+        )
+        assert response.status_code == 200
+        response = await app_client.get(f"/collections/{collection.id}/items")
+        assert response.status_code == 200, response.json()
+        assert len(response.json()["features"]) == 1
+
+    for collection in (collection_a, collection_b):
+        response = await app_client.delete(
+            f"/collections/{collection.id}/items/{item.id}"
+        )
+        assert response.status_code == 200, response.json()
+        response = await app_client.get(f"/collections/{collection.id}/items")
+        assert response.status_code == 200, response.json()
+        assert not response.json()["features"]
