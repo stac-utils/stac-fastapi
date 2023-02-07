@@ -30,6 +30,7 @@ packages:
 - **stac_fastapi.types**: Shared types and abstract base classes used by the library.
 
 #### Backends
+
 - **stac_fastapi.sqlalchemy**: Postgres backend implementation with sqlalchemy.
 - **stac_fastapi.pgstac**: Postgres backend implementation with [PGStac](https://github.com/stac-utils/pgstac).
 
@@ -61,9 +62,25 @@ pip install -e stac_fastapi/sqlalchemy
 pip install -e stac_fastapi/pgstac
 ```
 
+### Pre-built Docker images
+
+Pre-built images are available from the [Github Container Registry](https://github.com/stac-utils/stac-fastapi/pkgs/container/stac-fastapi).
+The latest images are tagged with `latest-pgstac` and `latest-sqlalchemy`.
+To pull the image to your local system:
+
+```shell
+docker pull ghcr.io/stac-utils/stac-fastapi:latest-pgstac  # or latest-sqlalchemy
+```
+
+This repository provides two example [Docker compose](https://docs.docker.com/compose/) files that demonstrate how you might link the pre-built images with a postgres/pgstac database:
+
+- [docker-compose.pgstac.yml](./docker/docker-compose.pgstac.yml)
+- [docker-compose.sqlalchemy.yml](./docker/docker-compose.sqlalchemy.yml)
+
 ## Local Development
 
 Use docker-compose via make to start the application, migrate the database, and ingest some example data:
+
 ```bash
 make image
 make docker-run-all

@@ -5,7 +5,7 @@ services:
     image: stac-utils/stac-fastapi
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     platform: linux/amd64
     environment:
       - APP_HOST=0.0.0.0
