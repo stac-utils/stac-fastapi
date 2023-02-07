@@ -11,6 +11,20 @@ from stac_fastapi.api.config import ApiExtensions
 from stac_fastapi.types.config import ApiSettings
 
 
+class VndOaiResponse(JSONResponse):
+    """JSON with custom, vendor content-type."""
+
+    media_type = "application/vnd.oai.openapi+json;version=3.0"
+
+    def __init__(self, *args, **kwargs):
+        """Init function with deprecation warning."""
+        warnings.warn(
+            "VndOaiResponse is deprecated and will be removed in v3.0",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)
+
+
 def update_openapi(app: FastAPI) -> FastAPI:
     """Update OpenAPI response content-type.
 
@@ -42,20 +56,6 @@ def update_openapi(app: FastAPI) -> FastAPI:
 
     # return the patched app
     return app
-
-
-class VndOaiResponse(JSONResponse):
-    """JSON with custom, vendor content-type."""
-
-    media_type = "application/vnd.oai.openapi+json;version=3.0"
-
-    def __init__(self, *args, **kwargs):
-        """Init function with deprecation warning."""
-        warnings.warn(
-            "VndOaiResponse is deprecated and will be removed in v3.0",
-            DeprecationWarning,
-        )
-        super().__init__(*args, **kwargs)
 
 
 def config_openapi(app: FastAPI, settings: ApiSettings):
