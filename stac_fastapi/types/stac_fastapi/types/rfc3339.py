@@ -1,12 +1,19 @@
 """rfc3339."""
 import re
 from datetime import datetime, timezone
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import iso8601
 from pystac.utils import datetime_to_str
 
 RFC33339_PATTERN = r"^(\d\d\d\d)\-(\d\d)\-(\d\d)(T|t)(\d\d):(\d\d):(\d\d)([.]\d+)?(Z|([-+])(\d\d):(\d\d))$"
+
+DateTimeType = Union[
+    datetime,
+    Tuple[datetime, datetime],
+    Tuple[datetime, None],
+    Tuple[None, datetime],
+]
 
 
 def rfc3339_str_to_datetime(s: str) -> datetime:
@@ -37,7 +44,7 @@ def rfc3339_str_to_datetime(s: str) -> datetime:
 
 def str_to_interval(
     interval: str,
-) -> Optional[Tuple[Optional[datetime], Optional[datetime]]]:
+) -> Optional[DateTimeType]:
     """Extract a tuple of datetimes from an interval string.
 
     Interval strings are defined by
@@ -56,7 +63,10 @@ def str_to_interval(
         raise ValueError("Empty interval string is invalid.")
 
     values = interval.split("/")
-    if len(values) != 2:
+    if len(values) == 1:
+        # Single date for == date case
+        return rfc3339_str_to_datetime(values[0])
+    elif len(values) > 2:
         raise ValueError(
             f"Interval string '{interval}' contains more than one forward slash."
         )
