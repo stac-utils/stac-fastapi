@@ -10,6 +10,7 @@
 ### Changed
 
 * Updated CI to test against [pgstac v0.6.12](https://github.com/stac-utils/pgstac/releases/tag/v0.6.12) ([#511](https://github.com/stac-utils/stac-fastapi/pull/511))
+* Reworked `update_openapi` and added a test for it ([#523](https://github.com/stac-utils/stac-fastapi/pull/523))
 
 ### Removed
 
@@ -23,6 +24,10 @@
 * Media type of the item collection endpoint ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
 * Manually exclude non-truthy optional values from sqlalchemy serialization of Collections ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
 * Deleting items that had repeated ids in other collections ([#520](https://github.com/stac-utils/stac-fastapi/pull/520))
+
+### Deprecated
+
+* Deprecated `VndOaiResponse` and `config_openapi`, will be removed in v3.0 ([#523](https://github.com/stac-utils/stac-fastapi/pull/523))
 
 ## [2.4.3] - 2022-11-25
 

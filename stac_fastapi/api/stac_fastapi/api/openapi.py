@@ -1,8 +1,11 @@
 """openapi."""
+import warnings
+
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
+from starlette.routing import Route, request_response
 
 from stac_fastapi.api.config import ApiExtensions
 from stac_fastapi.types.config import ApiSettings
@@ -13,37 +16,54 @@ class VndOaiResponse(JSONResponse):
 
     media_type = "application/vnd.oai.openapi+json;version=3.0"
 
+    def __init__(self, *args, **kwargs):
+        """Init function with deprecation warning."""
+        warnings.warn(
+            "VndOaiResponse is deprecated and will be removed in v3.0",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)
+
 
 def update_openapi(app: FastAPI) -> FastAPI:
     """Update OpenAPI response content-type.
 
     This function modifies the openapi route to comply with the STAC API spec's
-    required content-type response header
+    required content-type response header.
     """
-    urls = (server_data.get("url") for server_data in app.servers)
-    server_urls = {url for url in urls if url}
-
-    async def openapi(req: Request) -> JSONResponse:
-        root_path = req.scope.get("root_path", "").rstrip("/")
-        if root_path not in server_urls:
-            if root_path and app.root_path_in_servers:
-                app.servers.insert(0, {"url": root_path})
-                server_urls.add(root_path)
-        return VndOaiResponse(app.openapi())
-
-    # Remove the default openapi route
-    app.router.routes = list(
-        filter(lambda r: r.path != app.openapi_url, app.router.routes)
+    # Find the route for the openapi_url in the app
+    openapi_route: Route = next(
+        route for route in app.router.routes if route.path == app.openapi_url
     )
-    # Add the updated openapi route
-    app.add_route(app.openapi_url, openapi, include_in_schema=False)
+    # Store the old endpoint function so we can call it from the patched function
+    old_endpoint = openapi_route.endpoint
+
+    # Create a patched endpoint function that modifies the content type of the response
+    async def patched_openapi_endpoint(req: Request) -> Response:
+        # Get the response from the old endpoint function
+        response: JSONResponse = await old_endpoint(req)
+        # Update the content type header in place
+        response.headers[
+            "content-type"
+        ] = "application/vnd.oai.openapi+json;version=3.0"
+        # Return the updated response
+        return response
+
+    # When a Route is accessed the `handle` function calls `self.app`. Which is
+    # the endpoint function wrapped with `request_response`. So we need to wrap
+    # our patched function and replace the existing app with it.
+    openapi_route.app = request_response(patched_openapi_endpoint)
+
+    # return the patched app
     return app
 
 
-# TODO: Remove or fix, this is currently unused
-# and calls a missing method on ApiSettings
 def config_openapi(app: FastAPI, settings: ApiSettings):
     """Config openapi."""
+    warnings.warn(
+        "config_openapi is deprecated and will be removed in v3.0",
+        DeprecationWarning,
+    )
 
     def custom_openapi():
         """Config openapi."""
