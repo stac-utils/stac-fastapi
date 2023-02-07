@@ -1200,11 +1200,22 @@ async def test_field_extension_exclude_links(
     assert "links" not in resp_json["features"][0]
 
 
+async def test_field_extension_include_but_not_links(
+    app_client, load_test_item, load_test_collection
+):
+    # https://github.com/stac-utils/stac-fastapi/issues/395
+    body = {"fields": {"include": ["properties.eo:cloud_cover"]}}
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert "links" not in resp_json["features"][0]
+
+
 async def test_field_extension_include_only_non_existant_field(
     app_client, load_test_item, load_test_collection
 ):
-    """Including only a non-existant field should return the full item"""
-    body = {"fields": {"include": ["non_existant_field"]}}
+    """Including only a non-existent field should return the full item"""
+    body = {"fields": {"include": ["non_existent_field"]}}
 
     resp = await app_client.post("/search", json=body)
     assert resp.status_code == 200

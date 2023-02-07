@@ -879,6 +879,20 @@ def test_field_extension_exclude_default_includes(app_client, load_test_data):
     assert "geometry" not in resp_json["features"][0]
 
 
+def test_field_extension_include_but_not_links(app_client, load_test_data):
+    # https://github.com/stac-utils/stac-fastapi/issues/395
+    test_item = load_test_data("test_item.json")
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+    body = {"fields": {"include": ["properties.eo:cloud_cover"]}}
+    resp = app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert "links" not in resp_json["features"][0]
+
+
 def test_search_intersects_and_bbox(app_client):
     """Test POST search intersects and bbox are mutually exclusive (core)"""
     bbox = [-118, 34, -117, 35]

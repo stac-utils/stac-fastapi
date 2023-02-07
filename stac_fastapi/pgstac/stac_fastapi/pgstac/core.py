@@ -190,29 +190,48 @@ class CoreCrudClient(AsyncBaseCoreClient):
         if include and len(include) == 0:
             include = None
 
-        async def _add_item_links(
+        features = collection.get("features", [])
+        if (
+            include
+            and features
+            and not (
+                set(include)
+                & set(f"properties.{p}" for p in features[0].get("properties", []))
+            )
+        ):
+            # If the `include` list is only non-existent fields, keep links
+            exclude_links = False
+        else:
+            exclude_links = (
+                search_request.fields.exclude
+                and "links" in search_request.fields.exclude
+            ) or (
+                search_request.fields.include
+                and "links" not in search_request.fields.include
+            )
+
+        async def _update_item_links(
             feature: Item,
             collection_id: Optional[str] = None,
             item_id: Optional[str] = None,
         ) -> None:
-            """Add ItemLinks to the Item.
+            """Update this item's links.
 
-            If the fields extension is excluding links, then don't add them.
-            Also skip links if the item doesn't provide collection and item ids.
+            If the fields extension is excluding links, or including other
+            fields but _not_ links, then remove all links.
+            Also skip adding links if the item doesn't provide collection and item ids.
             """
             collection_id = feature.get("collection") or collection_id
             item_id = feature.get("id") or item_id
 
-            if (
-                search_request.fields.exclude is None
-                or "links" not in search_request.fields.exclude
-                and all([collection_id, item_id])
-            ):
+            if not exclude_links and all([collection_id, item_id]):
                 feature["links"] = await ItemLinks(
                     collection_id=collection_id,
                     item_id=item_id,
                     request=request,
                 ).get_links(extra_links=feature.get("links"))
+            elif exclude_links and "links" in feature:
+                del feature["links"]
 
         cleaned_features: List[Item] = []
 
@@ -234,12 +253,12 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 item_id = feature.get("id")
 
                 feature = filter_fields(feature, include, exclude)
-                await _add_item_links(feature, collection_id, item_id)
+                await _update_item_links(feature, collection_id, item_id)
 
                 cleaned_features.append(feature)
         else:
             for feature in collection.get("features") or []:
-                await _add_item_links(feature)
+                await _update_item_links(feature)
                 cleaned_features.append(feature)
 
         collection["features"] = cleaned_features

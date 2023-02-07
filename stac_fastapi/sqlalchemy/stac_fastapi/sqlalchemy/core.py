@@ -481,7 +481,9 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 )
 
             # Use pydantic includes/excludes syntax to implement fields extension
-            if self.extension_is_enabled("FieldsExtension"):
+            if self.extension_is_enabled("FieldsExtension") and (
+                search_request.fields.include or search_request.fields.exclude
+            ):
                 if search_request.query is not None:
                     query_include: Set[str] = set(
                         [

@@ -142,7 +142,13 @@ def test_app_fields_extension(load_test_data, app_client, postgres_transactions)
         item["collection"], item, request=MockStarletteRequest
     )
 
-    resp = app_client.get("/search", params={"collections": ["test-collection"]})
+    resp = app_client.post(
+        "/search",
+        json={
+            "collections": ["test-collection"],
+            "fields": {"include": ["datetime"]},
+        },
+    )
     assert resp.status_code == 200
     resp_json = resp.json()
     assert list(resp_json["features"][0]["properties"]) == ["datetime"]

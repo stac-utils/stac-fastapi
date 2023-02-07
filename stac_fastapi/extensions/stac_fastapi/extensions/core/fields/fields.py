@@ -39,7 +39,6 @@ class FieldsExtension(ApiExtension):
             "stac_version",
             "geometry",
             "bbox",
-            "links",
             "assets",
             "properties.datetime",
             "collection",
