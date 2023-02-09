@@ -69,4 +69,4 @@ class FieldsExtensionGetRequest(APIRequest):
 class FieldsExtensionPostRequest(BaseModel):
     """Additional fields and schema for the POST request."""
 
-    fields: Optional[PostFieldsExtension] = Field(PostFieldsExtension())
+    fields: Optional[PostFieldsExtension] = Field(None)

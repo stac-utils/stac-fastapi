@@ -183,12 +183,16 @@ class CoreCrudClient(AsyncBaseCoreClient):
         prev: Optional[str] = items.pop("prev", None)
         collection = ItemCollection(**items)
 
-        exclude = search_request.fields.exclude
-        if exclude and len(exclude) == 0:
+        if search_request.fields is None:
             exclude = None
-        include = search_request.fields.include
-        if include and len(include) == 0:
             include = None
+        else:
+            exclude = search_request.fields.exclude
+            if exclude and len(exclude) == 0:
+                exclude = None
+            include = search_request.fields.include
+            if include and len(include) == 0:
+                include = None
 
         async def _add_item_links(
             feature: Item,
@@ -204,8 +208,8 @@ class CoreCrudClient(AsyncBaseCoreClient):
             item_id = feature.get("id") or item_id
 
             if (
-                search_request.fields.exclude is None
-                or "links" not in search_request.fields.exclude
+                exclude is None
+                or "links" not in exclude
                 and all([collection_id, item_id])
             ):
                 feature["links"] = await ItemLinks(
