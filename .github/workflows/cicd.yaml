@@ -15,7 +15,7 @@ jobs:
 
     services:
       db_service:
-        image: ghcr.io/stac-utils/pgstac:v0.6.12
+        image: ghcr.io/stac-utils/pgstac:v0.6.13
         env:
           POSTGRES_USER: username
           POSTGRES_PASSWORD: password
@@ -130,7 +130,7 @@ jobs:
         backend: ["sqlalchemy", "pgstac"]
     services:
       pgstac:
-        image: ghcr.io/stac-utils/pgstac:v0.6.11
+        image: ghcr.io/stac-utils/pgstac:v0.6.13
         env:
           POSTGRES_USER: username
           POSTGRES_PASSWORD: password
