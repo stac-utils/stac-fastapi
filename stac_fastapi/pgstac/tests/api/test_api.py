@@ -202,7 +202,7 @@ async def test_app_query_extension_limit_gt10000(
 
     params = {"limit": 10001}
     resp = await app_client.post("/search", json=params)
-    assert resp.status_code == 400
+    assert resp.status_code == 200
 
 
 async def test_app_query_extension_gt(load_test_data, app_client, load_test_collection):
