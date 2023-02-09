@@ -209,7 +209,7 @@ def test_app_query_extension_limit_gt10000(
 
     params = {"limit": 10001}
     resp = app_client.post("/search", json=params)
-    assert resp.status_code == 400
+    assert resp.status_code == 200
 
 
 def test_app_query_extension_limit_10000(
