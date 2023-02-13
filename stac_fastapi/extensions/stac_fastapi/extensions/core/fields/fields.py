@@ -43,6 +43,7 @@ class FieldsExtension(ApiExtension):
             "assets",
             "properties.datetime",
             "collection",
+            "stac_extensions",
         }
     )
     schema_href: Optional[str] = attr.ib(default=None)

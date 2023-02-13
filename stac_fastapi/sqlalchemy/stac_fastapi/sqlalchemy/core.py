@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session as SqlSession
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 
+from stac_fastapi.extensions.core.fields.request import PostFieldsExtension
 from stac_fastapi.sqlalchemy import serializers
 from stac_fastapi.sqlalchemy.extensions.query import Operator
 from stac_fastapi.sqlalchemy.models import database
@@ -281,7 +282,7 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                 )
             base_args["sortby"] = sort_param
 
-        if fields:
+        if fields is not None:
             includes = set()
             excludes = set()
             for field in fields:
@@ -291,7 +292,13 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
                     includes.add(field[1:])
                 else:
                     includes.add(field)
-            base_args["fields"] = {"include": includes, "exclude": excludes}
+            post_fields = PostFieldsExtension(
+                include=includes, exclude=excludes
+            ).into_recommended()
+            base_args["fields"] = {
+                "include": post_fields.include,
+                "exclude": post_fields.exclude,
+            }
 
         # Do the request
         try:

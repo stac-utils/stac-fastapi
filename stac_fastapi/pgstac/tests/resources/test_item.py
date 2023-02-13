@@ -1083,28 +1083,6 @@ async def test_field_extension_post(app_client, load_test_data, load_test_collec
     }
 
 
-async def test_field_extension_exclude_and_include(
-    app_client, load_test_data, load_test_collection
-):
-    """Test POST search including/excluding same field (fields extension)"""
-    test_item = load_test_data("test_item.json")
-    resp = await app_client.post(
-        f"/collections/{test_item['collection']}/items", json=test_item
-    )
-    assert resp.status_code == 200
-
-    body = {
-        "fields": {
-            "exclude": ["properties.eo:cloud_cover"],
-            "include": ["properties.eo:cloud_cover", "collection"],
-        }
-    }
-
-    resp = await app_client.post("/search", json=body)
-    resp_json = resp.json()
-    assert "properties" not in resp_json["features"][0]
-
-
 async def test_field_extension_exclude_default_includes(
     app_client, load_test_data, load_test_collection
 ):
@@ -1133,14 +1111,18 @@ async def test_field_extension_include_multiple_subkeys(
     resp_json = resp.json()
 
     resp_prop_keys = resp_json["features"][0]["properties"].keys()
-    assert set(resp_prop_keys) == set(["width", "height"])
+    assert set(["width", "height"]) <= set(resp_prop_keys)
 
 
 async def test_field_extension_include_multiple_deeply_nested_subkeys(
     app_client, load_test_item, load_test_collection
 ):
     """Test that multiple deeply nested subkeys of an object field are included"""
-    body = {"fields": {"include": ["assets.ANG.type", "assets.ANG.href"]}}
+    body = {
+        "fields": {
+            "include": ["assets.ANG.type", "assets.ANG.href"],
+        }
+    }
 
     resp = await app_client.post("/search", json=body)
     assert resp.status_code == 200
@@ -1184,7 +1166,7 @@ async def test_field_extension_exclude_deeply_nested_included_subkeys(
 
     resp_assets = resp_json["features"][0]["assets"]
     assert "type" in resp_assets["ANG"]
-    assert "href" not in resp_assets["ANG"]
+    assert "href" in resp_assets["ANG"]
 
 
 async def test_field_extension_exclude_links(
@@ -1209,8 +1191,127 @@ async def test_field_extension_include_only_non_existant_field(
     resp = await app_client.post("/search", json=body)
     assert resp.status_code == 200
     resp_json = resp.json()
+    feature = resp_json["features"][0]
 
-    assert list(resp_json["features"][0].keys()) == ["id", "collection", "links"]
+    assert set(feature.keys()) == {
+        "id",
+        "stac_version",
+        "type",
+        "geometry",
+        "bbox",
+        "assets",
+        "properties",
+        "collection",
+        "stac_extensions",
+        "links",
+    }
+    assert set(feature["properties"].keys()) == {"datetime"}
+
+
+@pytest.mark.parametrize(
+    "fields", ({}, {"include": None, "exclude": None}, {"include": [], "exclude": []})
+)
+async def test_field_extension_default_includes(
+    app_client, load_test_item, load_test_collection, fields
+):
+    """Per https://github.com/stac-api-extensions/fields#includeexclude-semantics"""
+    body = {"fields": fields}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    feature = resp_json["features"][0]
+
+    assert set(feature.keys()) == {
+        "id",
+        "stac_version",
+        "type",
+        "geometry",
+        "bbox",
+        "assets",
+        "properties",
+        "collection",
+        "stac_extensions",
+        "links",
+    }
+    assert set(feature["properties"].keys()) == {"datetime"}
+
+
+async def test_field_extension_single_include(
+    app_client, load_test_item, load_test_collection
+):
+    """Per https://github.com/stac-api-extensions/fields#includeexclude-semantics"""
+    body = {"fields": {"include": ["properties.gsd"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    feature = resp_json["features"][0]
+
+    assert set(feature.keys()) == {
+        "id",
+        "stac_version",
+        "type",
+        "geometry",
+        "bbox",
+        "assets",
+        "properties",
+        "collection",
+        "stac_extensions",
+        "links",
+    }
+    assert set(feature["properties"].keys()) == {"datetime", "gsd"}
+
+
+async def test_field_extension_single_exclude(
+    app_client, load_test_item, load_test_collection
+):
+    """Per https://github.com/stac-api-extensions/fields#includeexclude-semantics"""
+    body = {"fields": {"exclude": ["assets"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    feature = resp_json["features"][0]
+
+    assert set(feature.keys()) == {
+        "id",
+        "stac_version",
+        "type",
+        "geometry",
+        "bbox",
+        "properties",
+        "collection",
+        "stac_extensions",
+        "links",
+    }
+    assert set(feature["properties"].keys()) == {"datetime"}
+
+
+async def test_field_extension_include_and_exclude(
+    app_client, load_test_item, load_test_collection
+):
+    """Per https://github.com/stac-api-extensions/fields#includeexclude-semantics"""
+    body = {"fields": {"include": ["assets"], "exclude": ["assets"]}}
+
+    resp = await app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    feature = resp_json["features"][0]
+
+    assert set(feature.keys()) == {
+        "id",
+        "stac_version",
+        "type",
+        "geometry",
+        "assets",
+        "bbox",
+        "properties",
+        "collection",
+        "stac_extensions",
+        "links",
+    }
+    assert set(feature["properties"].keys()) == {"datetime"}
 
 
 async def test_search_intersects_and_bbox(app_client):

@@ -157,6 +157,14 @@ class CoreCrudClient(AsyncBaseCoreClient):
         """
         items: Dict[str, Any]
 
+        if search_request.fields is None:
+            exclude = None
+            include = None
+        else:
+            search_request.fields = search_request.fields.into_recommended()
+            exclude = search_request.fields.exclude
+            include = search_request.fields.include
+
         request: Request = kwargs["request"]
         settings: Settings = request.app.state.settings
         pool = request.app.state.readpool
@@ -182,17 +190,6 @@ class CoreCrudClient(AsyncBaseCoreClient):
         next: Optional[str] = items.pop("next", None)
         prev: Optional[str] = items.pop("prev", None)
         collection = ItemCollection(**items)
-
-        if search_request.fields is None:
-            exclude = None
-            include = None
-        else:
-            exclude = search_request.fields.exclude
-            if exclude and len(exclude) == 0:
-                exclude = None
-            include = search_request.fields.include
-            if include and len(include) == 0:
-                include = None
 
         async def _add_item_links(
             feature: Item,
@@ -237,12 +234,15 @@ class CoreCrudClient(AsyncBaseCoreClient):
                 collection_id = feature.get("collection")
                 item_id = feature.get("id")
 
-                feature = filter_fields(feature, include, exclude)
+                if include or exclude:
+                    feature = filter_fields(feature, include, exclude)
                 await _add_item_links(feature, collection_id, item_id)
 
                 cleaned_features.append(feature)
         else:
             for feature in collection.get("features") or []:
+                if include or exclude:
+                    feature = filter_fields(feature, include, exclude)
                 await _add_item_links(feature)
                 cleaned_features.append(feature)
 

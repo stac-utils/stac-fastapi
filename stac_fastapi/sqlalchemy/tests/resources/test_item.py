@@ -8,6 +8,7 @@ from random import randint
 from urllib.parse import parse_qs, urlparse, urlsplit
 
 import pystac
+import pytest
 from pydantic.datetime_parse import parse_datetime
 from pystac.utils import datetime_to_str
 from shapely.geometry import Polygon
@@ -844,26 +845,6 @@ def test_field_extension_post(app_client, load_test_data):
     }
 
 
-def test_field_extension_exclude_and_include(app_client, load_test_data):
-    """Test POST search including/excluding same field (fields extension)"""
-    test_item = load_test_data("test_item.json")
-    resp = app_client.post(
-        f"/collections/{test_item['collection']}/items", json=test_item
-    )
-    assert resp.status_code == 200
-
-    body = {
-        "fields": {
-            "exclude": ["properties.eo:cloud_cover"],
-            "include": ["properties.eo:cloud_cover"],
-        }
-    }
-
-    resp = app_client.post("/search", json=body)
-    resp_json = resp.json()
-    assert "eo:cloud_cover" not in resp_json["features"][0]["properties"]
-
-
 def test_field_extension_exclude_default_includes(app_client, load_test_data):
     """Test POST search excluding a forbidden field (fields extension)"""
     test_item = load_test_data("test_item.json")
@@ -877,6 +858,158 @@ def test_field_extension_exclude_default_includes(app_client, load_test_data):
     resp = app_client.post("/search", json=body)
     resp_json = resp.json()
     assert "geometry" not in resp_json["features"][0]
+
+
+@pytest.mark.parametrize(
+    "fields", ({}, {"include": None, "exclude": None}, {"include": [], "exclude": []})
+)
+def test_field_extension_default_includes(app_client, load_test_data, fields):
+    """Per https://github.com/stac-api-extensions/fields#includeexclude-semantics"""
+    test_item = load_test_data("test_item.json")
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    body = {"fields": fields}
+
+    resp = app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    feature = resp_json["features"][0]
+
+    assert set(feature.keys()) == {
+        "id",
+        "stac_version",
+        "type",
+        "geometry",
+        "bbox",
+        "assets",
+        "properties",
+        "collection",
+        "stac_extensions",
+        "links",
+    }
+    assert set(feature["properties"].keys()) == {"datetime"}
+
+
+def test_field_extension_get_default_includes(app_client, load_test_data):
+    """Per https://github.com/stac-api-extensions/fields#includeexclude-semantics"""
+    test_item = load_test_data("test_item.json")
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    resp = app_client.get(
+        "/search?fields=-gsd"
+    )  # tough to get an empty string in to fields, so we just exclude one
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    feature = resp_json["features"][0]
+
+    assert set(feature.keys()) == {
+        "id",
+        "stac_version",
+        "type",
+        "geometry",
+        "bbox",
+        "assets",
+        "properties",
+        "collection",
+        "stac_extensions",
+        "links",
+    }
+    assert set(feature["properties"].keys()) == {"datetime"}
+
+
+def test_field_extension_single_include(app_client, load_test_data):
+    """Per https://github.com/stac-api-extensions/fields#includeexclude-semantics"""
+    test_item = load_test_data("test_item.json")
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    body = {"fields": {"include": ["properties.gsd"]}}
+
+    resp = app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    feature = resp_json["features"][0]
+
+    assert set(feature.keys()) == {
+        "id",
+        "stac_version",
+        "type",
+        "geometry",
+        "bbox",
+        "assets",
+        "properties",
+        "collection",
+        "stac_extensions",
+        "links",
+    }
+    assert set(feature["properties"].keys()) == {"datetime", "gsd"}
+
+
+def test_field_extension_single_exclude(app_client, load_test_data):
+    """Per https://github.com/stac-api-extensions/fields#includeexclude-semantics"""
+    test_item = load_test_data("test_item.json")
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    body = {"fields": {"exclude": ["assets"]}}
+
+    resp = app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    feature = resp_json["features"][0]
+
+    assert set(feature.keys()) == {
+        "id",
+        "stac_version",
+        "type",
+        "geometry",
+        "bbox",
+        "properties",
+        "collection",
+        "stac_extensions",
+        "links",
+    }
+    assert set(feature["properties"].keys()) == {"datetime"}
+
+
+def test_field_extension_include_and_exclude(app_client, load_test_data):
+    """Per https://github.com/stac-api-extensions/fields#includeexclude-semantics"""
+    test_item = load_test_data("test_item.json")
+    resp = app_client.post(
+        f"/collections/{test_item['collection']}/items", json=test_item
+    )
+    assert resp.status_code == 200
+
+    body = {"fields": {"include": ["assets"], "exclude": ["assets"]}}
+
+    resp = app_client.post("/search", json=body)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    feature = resp_json["features"][0]
+
+    assert set(feature.keys()) == {
+        "id",
+        "stac_version",
+        "type",
+        "geometry",
+        "assets",
+        "bbox",
+        "properties",
+        "collection",
+        "stac_extensions",
+        "links",
+    }
+    assert set(feature["properties"].keys()) == {"datetime"}
 
 
 def test_search_intersects_and_bbox(app_client):

@@ -1,5 +1,8 @@
 """Request models for the fields extension."""
 
+from __future__ import annotations
+
+import copy
 from typing import Dict, Optional, Set
 
 import attr
@@ -48,15 +51,29 @@ class PostFieldsExtension(BaseModel):
         to the API
         Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
         """
-        # Always include default_includes, even if they
-        # exist in the exclude list.
-        include = (self.include or set()) - (self.exclude or set())
-        include |= Settings.get().default_includes or set()
+        recommended = self.into_recommended()
 
         return {
-            "include": self._get_field_dict(include),
-            "exclude": self._get_field_dict(self.exclude),
+            "include": self._get_field_dict(recommended.include),
+            "exclude": self._get_field_dict(recommended.exclude),
         }
+
+    def into_recommended(self) -> PostFieldsExtension:
+        """Convert this fields extension into the recommended sets.
+
+        Based on https://github.com/stac-api-extensions/fields#includeexclude-semantics
+        """
+        include = self.include or set()
+        exclude = (self.exclude or set()) - include
+        # We can't do a simple set intersection, because we may include subkeys
+        # while excluding everything else. E.g. we may want to include an
+        # attribute of a specific asset, but exclude the rest of the asset
+        # dictionary.
+        default_include = copy.deepcopy(Settings.get().default_includes)
+        if any(incl.startswith("assets.") for incl in include):
+            default_include.remove("assets")
+        include = (include | default_include) - exclude
+        return PostFieldsExtension(include=include, exclude=exclude)
 
 
 @attr.s
