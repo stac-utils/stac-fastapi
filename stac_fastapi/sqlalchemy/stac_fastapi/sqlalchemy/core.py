@@ -110,6 +110,8 @@ class CoreCrudClient(PaginationTokenClient, BaseCoreClient):
         """Read an item collection from the database."""
         base_url = str(kwargs["request"].base_url)
         with self.session.reader.context_session() as session:
+            # Look up the collection first to get a 404 if it doesn't exist
+            _ = self._lookup_id(collection_id, self.collection_table, session)
             query = (
                 session.query(self.item_table)
                 .join(self.collection_table)
