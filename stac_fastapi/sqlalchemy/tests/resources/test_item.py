@@ -688,7 +688,7 @@ def test_item_search_get_query_extension(app_client, load_test_data):
 def test_get_missing_item_collection(app_client):
     """Test reading a collection which does not exist"""
     resp = app_client.get("/collections/invalid-collection/items")
-    assert resp.status_code == 200
+    assert resp.status_code == 404
 
 
 def test_pagination_item_collection(app_client, load_test_data):
