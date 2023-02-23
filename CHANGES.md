@@ -6,6 +6,7 @@
 
 * Validation checks in CI using [stac-api-validator](github.com/stac-utils/stac-api-validator) ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
 * Required links to the sqlalchemy ItemCollection endpoint ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
+* Publication of docker images to GHCR ([#525](https://github.com/stac-utils/stac-fastapi/pull/525))
 
 ### Changed
 
