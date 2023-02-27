@@ -65,11 +65,11 @@ pip install -e stac_fastapi/pgstac
 ### Pre-built Docker images
 
 Pre-built images are available from the [Github Container Registry](https://github.com/stac-utils/stac-fastapi/pkgs/container/stac-fastapi).
-The latest images are tagged with `latest-pgstac` and `latest-sqlalchemy`.
+The latest images are tagged with `master-pgstac` and `master-sqlalchemy`.
 To pull the image to your local system:
 
 ```shell
-docker pull ghcr.io/stac-utils/stac-fastapi:latest-pgstac  # or latest-sqlalchemy
+docker pull ghcr.io/stac-utils/stac-fastapi:master-pgstac  # or latest-sqlalchemy
 ```
 
 This repository provides two example [Docker compose](https://docs.docker.com/compose/) files that demonstrate how you might link the pre-built images with a postgres/pgstac database:
