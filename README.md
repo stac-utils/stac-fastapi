@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD033 MD041 -->
+
 <p align="center">
   <img src="https://github.com/radiantearth/stac-site/raw/master/images/logo/stac-030-long.png" width=400>
   <p align="center">FastAPI implemention of the STAC API spec.</p>
@@ -101,7 +103,23 @@ The application will be started on <http://localhost:8080>.
 By default, the apps are run with uvicorn hot-reloading enabled. This can be turned off by changing the value
 of the `RELOAD` env var in docker-compose.yml to `false`.
 
-#### Note to Docker for Windows users
+### nginx proxy
+
+This repo includes an example nginx proxy service.
+To start:
+
+```shell
+make docker-run-nginx-proxy
+```
+
+The proxy will be started on <http://localhost>, with the pgstac app available at <http://localhost/api/v1/pgstac/> and the sqlalchemy app at <http://localhost/api/v1/sqlalchemy/>.
+If you need to customize the proxy port, use the `STAC_FASTAPI_NGINX_PORT` environment variable:
+
+```shell
+STAC_FASTAPI_NGINX_PORT=7822 make docker-run-nginx-proxy
+```
+
+### Note to Docker for Windows users
 
 You'll need to enable experimental features on Docker for Windows in order to run the docker-compose,
 due to the "--platform" flag that is required to allow the project to run on some Apple architectures.

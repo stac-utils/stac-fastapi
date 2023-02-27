@@ -88,6 +88,7 @@ def run():
             port=settings.app_port,
             log_level="info",
             reload=settings.reload,
+            root_path=os.getenv("UVICORN_ROOT_PATH", ""),
         )
     except ImportError:
         raise RuntimeError("Uvicorn must be installed in order to use command")
