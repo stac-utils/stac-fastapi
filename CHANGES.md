@@ -14,6 +14,7 @@
 * Updated CI to test against [pgstac v0.6.12](https://github.com/stac-utils/pgstac/releases/tag/v0.6.12) ([#511](https://github.com/stac-utils/stac-fastapi/pull/511))
 * Reworked `update_openapi` and added a test for it ([#523](https://github.com/stac-utils/stac-fastapi/pull/523))
 * Limit values above 10,000 are now replaced with 10,000 instead of returning a 400 error ([#526](https://github.com/stac-utils/stac-fastapi/pull/526))
+* Updated pgstac to v0.7.1 ([#535](https://github.com/stac-utils/stac-fastapi/pull/535))
 
 ### Removed
 
