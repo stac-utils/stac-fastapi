@@ -1,0 +1,11 @@
+[flake8]
+ignore = "D203"
+exclude = [".git", "__pycache__", "docs/source/conf.py", "build", "dist"]
+max-complexity = 12
+max-line-length = 90
+
+[tool.isort]
+profile = "black"
+known_first_party = "stac_fastapi"
+known_third_party = ["rasterio", "stac-pydantic", "sqlalchemy", "geoalchemy2", "fastapi"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
