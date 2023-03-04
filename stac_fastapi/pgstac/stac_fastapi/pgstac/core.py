@@ -8,14 +8,13 @@ import attr
 import orjson
 from asyncpg.exceptions import InvalidDatetimeFormatError
 from buildpg import render
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from pydantic import ValidationError
 from pygeofilter.backends.cql2_json import to_cql2
 from pygeofilter.parsers.cql2_text import parse as parse_cql2_text
 from pypgstac.hydration import hydrate
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
-from starlette.requests import Request
 
 from stac_fastapi.pgstac.config import Settings
 from stac_fastapi.pgstac.models.links import (
@@ -38,13 +37,11 @@ NumType = Union[float, int]
 class CoreCrudClient(AsyncBaseCoreClient):
     """Client for core endpoints defined by stac."""
 
-    async def all_collections(self, **kwargs) -> Collections:
+    async def all_collections(self, request: Request, **kwargs) -> Collections:
         """Read all collections from the database."""
-        request: Request = kwargs["request"]
         base_url = get_base_url(request)
-        pool = request.app.state.readpool
 
-        async with pool.acquire() as conn:
+        async with request.app.state.get_connection(request, "r") as conn:
             collections = await conn.fetchval(
                 """
                 SELECT * FROM all_collections();
@@ -80,7 +77,9 @@ class CoreCrudClient(AsyncBaseCoreClient):
         collection_list = Collections(collections=linked_collections or [], links=links)
         return collection_list
 
-    async def get_collection(self, collection_id: str, **kwargs) -> Collection:
+    async def get_collection(
+        self, collection_id: str, request: Request, **kwargs
+    ) -> Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collection_id}`.
@@ -93,9 +92,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         """
         collection: Optional[Dict[str, Any]]
 
-        request: Request = kwargs["request"]
-        pool = request.app.state.readpool
-        async with pool.acquire() as conn:
+        async with request.app.state.get_connection(request, "r") as conn:
             q, p = render(
                 """
                 SELECT * FROM get_collection(:id::text);
@@ -125,8 +122,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         """
         item: Optional[Dict[str, Any]]
 
-        pool = request.app.state.readpool
-        async with pool.acquire() as conn:
+        async with request.app.state.get_connection(request, "r") as conn:
             q, p = render(
                 """
                 SELECT * FROM collection_base_item(:collection_id::text);
@@ -143,7 +139,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
     async def _search_base(
         self,
         search_request: PgstacSearch,
-        **kwargs: Any,
+        request: Request,
     ) -> ItemCollection:
         """Cross catalog search (POST).
 
@@ -157,21 +153,19 @@ class CoreCrudClient(AsyncBaseCoreClient):
         """
         items: Dict[str, Any]
 
-        request: Request = kwargs["request"]
         settings: Settings = request.app.state.settings
-        pool = request.app.state.readpool
 
         search_request.conf = search_request.conf or {}
         search_request.conf["nohydrate"] = settings.use_api_hydrate
-        req = search_request.json(exclude_none=True, by_alias=True)
+        search_request_json = search_request.json(exclude_none=True, by_alias=True)
 
         try:
-            async with pool.acquire() as conn:
+            async with request.app.state.get_connection(request, "r") as conn:
                 q, p = render(
                     """
                     SELECT * FROM search(:req::text::jsonb);
                     """,
-                    req=req,
+                    req=search_request_json,
                 )
                 items = await conn.fetchval(q, *p)
         except InvalidDatetimeFormatError:
@@ -253,6 +247,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
     async def item_collection(
         self,
         collection_id: str,
+        request: Request,
         bbox: Optional[List[NumType]] = None,
         datetime: Optional[Union[str, datetime]] = None,
         limit: Optional[int] = None,
@@ -272,7 +267,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
             An ItemCollection.
         """
         # If collection does not exist, NotFoundError wil be raised
-        await self.get_collection(collection_id, **kwargs)
+        await self.get_collection(collection_id, request)
 
         base_args = {
             "collections": [collection_id],
@@ -287,17 +282,19 @@ class CoreCrudClient(AsyncBaseCoreClient):
             if v is not None and v != []:
                 clean[k] = v
 
-        req = self.post_request_model(
+        search_request = self.post_request_model(
             **clean,
         )
-        item_collection = await self._search_base(req, **kwargs)
+        item_collection = await self._search_base(search_request, request)
         links = await ItemCollectionLinks(
-            collection_id=collection_id, request=kwargs["request"]
+            collection_id=collection_id, request=request
         ).get_links(extra_links=item_collection["links"])
         item_collection["links"] = links
         return item_collection
 
-    async def get_item(self, item_id: str, collection_id: str, **kwargs) -> Item:
+    async def get_item(
+        self, item_id: str, collection_id: str, request: Request, **kwargs
+    ) -> Item:
         """Get item by id.
 
         Called with `GET /collections/{collection_id}/items/{item_id}`.
@@ -310,12 +307,12 @@ class CoreCrudClient(AsyncBaseCoreClient):
             Item.
         """
         # If collection does not exist, NotFoundError wil be raised
-        await self.get_collection(collection_id, **kwargs)
+        await self.get_collection(collection_id, request)
 
-        req = self.post_request_model(
+        search_request = self.post_request_model(
             ids=[item_id], collections=[collection_id], limit=1
         )
-        item_collection = await self._search_base(req, **kwargs)
+        item_collection = await self._search_base(search_request, request)
         if not item_collection["features"]:
             raise NotFoundError(
                 f"Item {item_id} in Collection {collection_id} does not exist."
@@ -324,7 +321,7 @@ class CoreCrudClient(AsyncBaseCoreClient):
         return Item(**item_collection["features"][0])
 
     async def post_search(
-        self, search_request: PgstacSearch, **kwargs
+        self, search_request: PgstacSearch, request: Request, **kwargs
     ) -> ItemCollection:
         """Cross catalog search (POST).
 
@@ -336,11 +333,12 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             ItemCollection containing items which match the search criteria.
         """
-        item_collection = await self._search_base(search_request, **kwargs)
+        item_collection = await self._search_base(search_request, request)
         return ItemCollection(**item_collection)
 
     async def get_search(
         self,
+        request: Request,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[List[NumType]] = None,
@@ -362,7 +360,6 @@ class CoreCrudClient(AsyncBaseCoreClient):
         Returns:
             ItemCollection containing items which match the search criteria.
         """
-        request = kwargs["request"]
         query_params = str(request.query_params)
 
         # Kludgy fix because using factory does not allow alias for filter-lang
@@ -432,4 +429,4 @@ class CoreCrudClient(AsyncBaseCoreClient):
             raise HTTPException(
                 status_code=400, detail=f"Invalid parameters provided {e}"
             )
-        return await self.post_search(search_request, request=kwargs["request"])
+        return await self.post_search(search_request, request=request)
