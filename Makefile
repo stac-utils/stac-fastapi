@@ -14,6 +14,8 @@ run_pgstac = docker-compose run --rm \
 				-e APP_PORT=${APP_PORT} \
 				app-pgstac
 
+LOG_LEVEL ?= warning
+
 .PHONY: image
 image:
 	docker-compose build
@@ -44,15 +46,15 @@ docker-shell-pgstac:
 
 .PHONY: test-sqlalchemy
 test-sqlalchemy: run-joplin-sqlalchemy
-	$(run_sqlalchemy) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/sqlalchemy/tests/ && pytest -vvv'
+	$(run_sqlalchemy) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/sqlalchemy/tests/ && pytest -vvv --log-cli-level $(LOG_LEVEL)'
 
 .PHONY: test-pgstac
 test-pgstac:
-	$(run_pgstac) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/pgstac/tests/ && pytest -vvv'
+	$(run_pgstac) /bin/bash -c 'export && ./scripts/wait-for-it.sh database:5432 && cd /app/stac_fastapi/pgstac/tests/ && pytest -vvv --log-cli-level $(LOG_LEVEL)'
 
 .PHONY: test-api
 test-api:
-	$(run_sqlalchemy) /bin/bash -c 'cd /app/stac_fastapi/api && pytest -svvv'
+	$(run_sqlalchemy) /bin/bash -c 'cd /app/stac_fastapi/api && pytest -svvv --log-cli-level $(LOG_LEVEL)'
 
 .PHONY: run-database
 run-database:
