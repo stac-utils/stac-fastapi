@@ -29,6 +29,7 @@
 * Support `intersects` in GET requests ([#521](https://github.com/stac-utils/stac-fastapi/pull/521))
 * Deleting items that had repeated ids in other collections ([#520](https://github.com/stac-utils/stac-fastapi/pull/520))
 * 404 for missing collection on /items for sqlalchemy ([#528](https://github.com/stac-utils/stac-fastapi/pull/528))
+* Conformance URIs for the filter extension ([#540](https://github.com/stac-utils/stac-fastapi/pull/540))
 
 ### Deprecated
 
