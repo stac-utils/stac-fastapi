@@ -1,0 +1,46 @@
+name: packages
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+
+jobs:
+  docker-build-push:
+    runs-on: ubuntu-latest
+    needs: [test, validate, test-docs]
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        backend: ["sqlalchemy", "pgstac"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4.3.0
+        with:
+          images: ghcr.io/stac-utils/stac-fastapi
+          tags: |
+            type=schedule,suffix=-${{ matrix.backend }}
+            type=ref,event=branch,suffix=-${{ matrix.backend }}
+            type=ref,event=tag,suffix=-${{ matrix.backend }}
+            type=ref,event=pr,suffix=-${{ matrix.backend }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4.0.0
+        with:
+          context: .
+          file: docker/Dockerfile.${{ matrix.backend }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
