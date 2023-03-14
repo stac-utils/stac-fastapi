@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.4.4] - 2023-03-09
+
 ### Added
 
 * Nginx service as second docker-compose stack to demonstrate proxy ([#503](https://github.com/stac-utils/stac-fastapi/pull/503))
@@ -239,7 +241,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.3..master>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.4..master>
+[2.4.4]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.3..2.4.4>
 [2.4.3]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.2..2.4.3>
 [2.4.2]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.1..2.4.2>
 [2.4.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.0..2.4.1>
