@@ -11,7 +11,7 @@
   <a href="https://pypi.org/project/stac-fastapi" target="_blank">
       <img src="https://img.shields.io/pypi/v/stac-fastapi.api?color=%2334D058&label=pypi%20package" alt="Package version">
   </a>
-  <a href="https://github.com/stac-utils/stac-fastapi/blob/master/LICENSE" target="_blank">
+  <a href="https://github.com/stac-utils/stac-fastapi/blob/main/LICENSE" target="_blank">
       <img src="https://img.shields.io/github/license/stac-utils/stac-fastapi.svg" alt="License">
   </a>
 </p>
@@ -67,11 +67,11 @@ pip install -e stac_fastapi/pgstac
 ### Pre-built Docker images
 
 Pre-built images are available from the [Github Container Registry](https://github.com/stac-utils/stac-fastapi/pkgs/container/stac-fastapi).
-The latest images are tagged with `master-pgstac` and `master-sqlalchemy`.
+The latest images are tagged with `main-pgstac` and `main-sqlalchemy`.
 To pull the image to your local system:
 
 ```shell
-docker pull ghcr.io/stac-utils/stac-fastapi:master-pgstac  # or latest-sqlalchemy
+docker pull ghcr.io/stac-utils/stac-fastapi:main-pgstac  # or main-sqlalchemy
 ```
 
 This repository provides two example [Docker compose](https://docs.docker.com/compose/) files that demonstrate how you might link the pre-built images with a postgres/pgstac database:

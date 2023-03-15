@@ -2,7 +2,7 @@ name: packages
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - "*"
 
