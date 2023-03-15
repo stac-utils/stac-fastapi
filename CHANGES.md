@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+* Default branch to **main** ([#544](https://github.com/stac-utils/stac-fastapi/pull/544))
+
 ## [2.4.4] - 2023-03-09
 
 ### Added
