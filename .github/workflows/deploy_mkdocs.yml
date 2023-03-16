@@ -3,13 +3,13 @@ name: Publish docs via GitHub Pages
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       # Rebuild website when docs have changed or code has changed
-      - 'README.md'
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - '**.py'
+      - "README.md"
+      - "docs/**"
+      - "mkdocs.yml"
+      - "**.py"
 
 jobs:
   build:
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout master
+      - name: Checkout main
         uses: actions/checkout@v3
 
       - name: Set up Python 3.8

@@ -9,7 +9,7 @@
   <a href="https://pypi.org/project/stac-fastapi" target="_blank">
       <img src="https://img.shields.io/pypi/v/stac-fastapi?color=%2334D058&label=pypi%20package" alt="Package version">
   </a>
-  <a href="https://github.com/stac-utils/stac-fastapi/blob/master/LICENSE" target="_blank">
+  <a href="https://github.com/stac-utils/stac-fastapi/blob/main/LICENSE" target="_blank">
       <img src="https://img.shields.io/github/license/stac-utils/stac-fastapi.svg" alt="Downloads">
   </a>
 </p>
