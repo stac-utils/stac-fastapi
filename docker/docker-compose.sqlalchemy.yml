@@ -1,7 +1,7 @@
 version: '3'
 services:
   stac-fastapi-sqlalchemy:
-    image: ghcr.io/stac-utils/stac-fastapi:latest-sqlalchemy
+    image: ghcr.io/stac-utils/stac-fastapi:main-sqlalchemy
     platform: linux/amd64
     environment:
       - APP_HOST=0.0.0.0
@@ -32,7 +32,7 @@ services:
     command: postgres -N 500
 
   migrate:
-    image: ghcr.io/stac-utils/stac-fastapi:latest-sqlalchemy
+    image: ghcr.io/stac-utils/stac-fastapi:main-sqlalchemy
     command: bash -c "cd /app && alembic upgrade head"
     environment:
       - POSTGRES_USER=username
