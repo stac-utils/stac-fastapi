@@ -119,7 +119,15 @@ class BaseSearchPostRequest(BaseModel):
     ids: Optional[List[str]]
     bbox: Optional[BBox]
     intersects: Optional[
-        Union[Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon, GeometryCollection]
+        Union[
+            Point,
+            MultiPoint,
+            LineString,
+            MultiLineString,
+            Polygon,
+            MultiPolygon,
+            GeometryCollection,
+        ]
     ]
     datetime: Optional[str]
     limit: Optional[Limit] = 10
