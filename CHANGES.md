@@ -5,6 +5,7 @@
 ### Changed
 
 * Default branch to **main** ([#544](https://github.com/stac-utils/stac-fastapi/pull/544))
+* flake8 and isort replaced by ruff for pre-commit checks
 
 ### Fixed
 

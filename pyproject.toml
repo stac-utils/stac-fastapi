@@ -1,11 +1,19 @@
-[flake8]
-ignore = "D203"
-exclude = [".git", "__pycache__", "docs/source/conf.py", "build", "dist"]
-max-complexity = 12
-max-line-length = 90
+[tool.ruff]
+exclude = [
+    ".git",
+    "__pycache__",
+    "docs/source/conf.py",
+    "build",
+    "dist"
+]
+ignore = []
+line-length = 90
+select = [
+    "C9",
+    "E",
+    "F",
+    "W",
+]
 
-[tool.isort]
-profile = "black"
-known_first_party = "stac_fastapi"
-known_third_party = ["rasterio", "stac-pydantic", "sqlalchemy", "geoalchemy2", "fastapi"]
-sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+[tool.ruff.mccabe]
+max-complexity = 12
