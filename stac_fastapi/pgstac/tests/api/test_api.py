@@ -392,15 +392,9 @@ async def test_search_geometry_collection_intersects(
     intersects = {
         "type": "GeometryCollection",
         "geometries": [
-            {
-                "type": "Point",
-                "coordinates": point
-            },
-            {
-                "type": "LineString",
-                "coordinates": line
-            }
-        ]
+            {"type": "Point", "coordinates": point},
+            {"type": "LineString", "coordinates": line},
+        ],
     }
 
     params = {
