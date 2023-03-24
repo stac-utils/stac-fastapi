@@ -379,6 +379,40 @@ async def test_search_line_string_intersects(
     assert len(resp_json["features"]) == 1
 
 
+async def test_search_geometry_collection_intersects(
+    load_test_data, app_client, load_test_collection
+):
+    coll = load_test_collection
+    item = load_test_data("test_item.json")
+    resp = await app_client.post(f"/collections/{coll.id}/items", json=item)
+    assert resp.status_code == 200
+
+    point = [150.04, -33.14]
+    line = [[150.04, -33.14], [150.22, -33.89]]
+    intersects = {
+        "type": "GeometryCollection",
+        "geometries": [
+            {
+                "type": "Point",
+                "coordinates": point
+            },
+            {
+                "type": "LineString",
+                "coordinates": line
+            }
+        ]
+    }
+
+    params = {
+        "intersects": intersects,
+        "collections": [item["collection"]],
+    }
+    resp = await app_client.post("/search", json=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert len(resp_json["features"]) == 1
+
+
 @pytest.mark.asyncio
 async def test_landing_forwarded_header(
     load_test_data, app_client, load_test_collection
