@@ -77,7 +77,9 @@ docker pull ghcr.io/stac-utils/stac-fastapi:main-pgstac  # or main-sqlalchemy
 This repository provides two example [Docker compose](https://docs.docker.com/compose/) files that demonstrate how you might link the pre-built images with a postgres/pgstac database:
 
 - [docker-compose.pgstac.yml](./docker/docker-compose.pgstac.yml)
+- [docker-compose.pgstac_pgadmin.yml](./docker/docker-compose.pgstac_pgadmin.yml) (with built-in pgadmin at port 8081, username@mail.com, password)
 - [docker-compose.sqlalchemy.yml](./docker/docker-compose.sqlalchemy.yml)
+
 
 ## Local Development
 
