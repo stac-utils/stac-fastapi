@@ -7,7 +7,7 @@ from typing import Dict, Generator, Union
 import attr
 import orjson
 from asyncpg import exceptions, pool
-from buildpg import asyncpg, render, V
+from buildpg import V, asyncpg, render
 from fastapi import FastAPI
 
 from stac_fastapi.types.errors import (
