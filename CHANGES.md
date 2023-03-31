@@ -6,6 +6,10 @@
 
 * Default branch to **main** ([#544](https://github.com/stac-utils/stac-fastapi/pull/544))
 
+### Fixed
+
+* Use `V()` instead of f-strings for pgstac queries ([#554](https://github.com/stac-utils/stac-fastapi/pull/554))
+
 ## [2.4.4] - 2023-03-09
 
 ### Added

@@ -7,7 +7,7 @@ from typing import Dict, Generator, Union
 import attr
 import orjson
 from asyncpg import exceptions, pool
-from buildpg import asyncpg, render
+from buildpg import V, asyncpg, render
 from fastapi import FastAPI
 
 from stac_fastapi.types.errors import (
@@ -66,18 +66,20 @@ async def dbfunc(pool: pool, func: str, arg: Union[str, Dict]):
         if isinstance(arg, str):
             async with pool.acquire() as conn:
                 q, p = render(
-                    f"""
-                        SELECT * FROM {func}(:item::text);
-                        """,
+                    """
+                    SELECT * FROM :func(:item::text);
+                    """,
+                    func=V(func),
                     item=arg,
                 )
                 return await conn.fetchval(q, *p)
         else:
             async with pool.acquire() as conn:
                 q, p = render(
-                    f"""
-                        SELECT * FROM {func}(:item::text::jsonb);
-                        """,
+                    """
+                    SELECT * FROM :func(:item::text::jsonb);
+                    """,
+                    func=V(func),
                     item=json.dumps(arg),
                 )
                 return await conn.fetchval(q, *p)
