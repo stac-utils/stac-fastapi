@@ -13,13 +13,12 @@ WORKDIR /opt/src
 RUN python -m pip install \
     stac_fastapi/api \
     stac_fastapi/types \
-    stac_fastapi/extensions \
-    stac_fastapi/sqlalchemy
+    stac_fastapi/extensions
 
 CMD ["pdocs", \
-     "as_markdown", \
-     "--output_dir", \
-     "docs/api/", \
-     "--exclude_source", \
-     "--overwrite", \
-     "stac_fastapi"]
+    "as_markdown", \
+    "--output_dir", \
+    "docs/api/", \
+    "--exclude_source", \
+    "--overwrite", \
+    "stac_fastapi"]

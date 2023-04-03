@@ -32,7 +32,6 @@ jobs:
             stac_fastapi/api \
             stac_fastapi/types \
             stac_fastapi/extensions \
-            stac_fastapi/sqlalchemy
           python -m pip install mkdocs mkdocs-material pdocs
 
       - name: update API docs

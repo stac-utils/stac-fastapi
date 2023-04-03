@@ -5,7 +5,7 @@ services:
     container_name: stac-fastapi-docs-dev
     build:
       context: .
-      dockerfile: docker/Dockerfile.docs
+      dockerfile: Dockerfile.docs
     platform: linux/amd64
     environment:
       - POSTGRES_USER=username
