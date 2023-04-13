@@ -3,7 +3,7 @@
         "1": {
             "Name": "stac",
             "Group": "Servers",
-            "Host": "pgstac,
+            "Host": "pgstac",
             "Port": 5432,
             "MaintenanceDB": "postgres",
             "Username": "username",
