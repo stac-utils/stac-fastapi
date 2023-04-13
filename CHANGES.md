@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.4.5] - 2023-04-04
+
 ### Changed
 
 * Default branch to **main** ([#544](https://github.com/stac-utils/stac-fastapi/pull/544))
@@ -249,7 +251,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.4..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.5..main>
+[2.4.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.4..2.4.5>
 [2.4.4]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.3..2.4.4>
 [2.4.3]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.2..2.4.3>
 [2.4.2]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.1..2.4.2>
