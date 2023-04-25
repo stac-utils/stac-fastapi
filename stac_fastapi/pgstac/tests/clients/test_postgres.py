@@ -193,7 +193,10 @@ async def custom_get_connection(
 class TestDbConnect:
     @pytest.fixture
     async def app(self, api_client):
-        logger.warn("Customizing app setup")
+        """
+        app fixture override to setup app with a customized db connection getter
+        """
+        logger.debug("Customizing app setup")
         await connect_to_db(api_client.app, custom_get_connection)
         yield api_client.app
         await close_db_connection(api_client.app)
