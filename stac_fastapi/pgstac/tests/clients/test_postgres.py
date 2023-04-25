@@ -208,5 +208,5 @@ class TestDbConnect:
                 return await conn.fetchval("SELECT current_setting('api.test', true)")
 
         response = await app_client.get("/db-test")
-        assert response.status_code is 200
+        assert response.status_code == 200
         assert response.json() == "added-config"
