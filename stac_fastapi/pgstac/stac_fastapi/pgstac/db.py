@@ -6,7 +6,7 @@ from typing import AsyncIterator, Callable, Dict, Generator, Literal, Union
 
 import attr
 import orjson
-from asyncpg import exceptions, Connection
+from asyncpg import Connection, exceptions
 from buildpg import V, asyncpg, render
 from fastapi import FastAPI, Request
 

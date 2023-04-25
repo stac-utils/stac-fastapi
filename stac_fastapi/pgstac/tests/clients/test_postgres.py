@@ -6,9 +6,9 @@ from typing import Callable, Literal
 
 import pytest
 from fastapi import Request
-
 from stac_pydantic import Collection, Item
-from stac_fastapi.pgstac.db import connect_to_db, close_db_connection, get_connection
+
+from stac_fastapi.pgstac.db import close_db_connection, connect_to_db, get_connection
 
 # from tests.conftest import MockStarletteRequest
 logger = logging.getLogger(__name__)
