@@ -34,7 +34,7 @@ async def con_init(conn):
     )
 
 
-ConnectionGetter = Callable[[Request, str], AsyncIterator[Connection]]
+ConnectionGetter = Callable[[Request, Literal["r", "w"]], AsyncIterator[Connection]]
 
 
 async def connect_to_db(app: FastAPI, get_conn: ConnectionGetter = None) -> None:
