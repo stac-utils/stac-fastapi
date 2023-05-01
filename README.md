@@ -60,7 +60,7 @@ Install the packages in editable mode:
 pip install -e \
   'stac_fastapi/api[dev]' \
   'stac_fastapi/types[dev]' \
-  'stac_fastapi/extensions[dev]
+  'stac_fastapi/extensions[dev]'
 ```
 
 To run the tests:
