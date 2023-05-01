@@ -34,12 +34,12 @@ class TestRouteDependencies:
                 ), "Unauthenticated requests should be rejected"
                 assert response.json() == {"detail": "Not authenticated"}
 
-                make_request = getattr(client, route["method"].lower())
                 path = route["path"].format(
                     collectionId="test_collection", itemId="test_item"
                 )
-                response = make_request(
-                    path,
+                response = client.request(
+                    method=route["method"].lower(),
+                    url=path,
                     auth=("bob", "dobbs"),
                     data='{"dummy": "payload"}',
                     headers={"content-type": "application/json"},
