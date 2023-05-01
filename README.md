@@ -43,7 +43,7 @@ Backends are hosted in their own repositories:
 ## Installation
 
 ```bash
-# Install from pypi.org
+# Install from PyPI
 pip install stac-fastapi.api stac-fastapi.types stac-fastapi.extensions
 
 # Install a backend of your choice
@@ -51,6 +51,8 @@ pip install stac-fastapi.sqlalchemy
 # or
 pip install stac-fastapi.pgstac
 ```
+
+Other backends may be available from other sources, search [PyPI](https://pypi.org/) for more.
 
 ## Development
 
