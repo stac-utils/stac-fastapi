@@ -7,6 +7,7 @@
 ### Changed
 
 * Default branch to **main** ([#544](https://github.com/stac-utils/stac-fastapi/pull/544))
+* Fixed search endpoint to permit intersection queries using GeometryCollections ([#548](https://github.com/stac-utils/stac-fastapi/pull/548))
 
 ### Fixed
 
