@@ -1,10 +1,17 @@
+import logging
 import uuid
+from contextlib import asynccontextmanager
 from copy import deepcopy
-from typing import Callable
+from typing import Callable, Literal
 
+import pytest
+from fastapi import Request
 from stac_pydantic import Collection, Item
 
+from stac_fastapi.pgstac.db import close_db_connection, connect_to_db, get_connection
+
 # from tests.conftest import MockStarletteRequest
+logger = logging.getLogger(__name__)
 
 
 async def test_create_collection(app_client, load_test_data: Callable):
@@ -170,3 +177,36 @@ async def test_create_bulk_items(
 
 #     for item in fc.features:
 #         assert item.collection == coll.id
+
+
+@asynccontextmanager
+async def custom_get_connection(
+    request: Request,
+    readwrite: Literal["r", "w"],
+):
+    """An example of customizing the connection getter"""
+    async with get_connection(request, readwrite) as conn:
+        await conn.execute("SELECT set_config('api.test', 'added-config', false)")
+        yield conn
+
+
+class TestDbConnect:
+    @pytest.fixture
+    async def app(self, api_client):
+        """
+        app fixture override to setup app with a customized db connection getter
+        """
+        logger.debug("Customizing app setup")
+        await connect_to_db(api_client.app, custom_get_connection)
+        yield api_client.app
+        await close_db_connection(api_client.app)
+
+    async def test_db_setup(self, api_client, app_client):
+        @api_client.app.get(f"{api_client.router.prefix}/db-test")
+        async def example_view(request: Request):
+            async with request.app.state.get_connection(request, "r") as conn:
+                return await conn.fetchval("SELECT current_setting('api.test', true)")
+
+        response = await app_client.get("/db-test")
+        assert response.status_code == 200
+        assert response.json() == "added-config"

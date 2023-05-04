@@ -1,14 +1,14 @@
 """Database connection handling."""
 
 import json
-from contextlib import contextmanager
-from typing import Dict, Generator, Union
+from contextlib import asynccontextmanager, contextmanager
+from typing import AsyncIterator, Callable, Dict, Generator, Literal, Union
 
 import attr
 import orjson
-from asyncpg import exceptions, pool
+from asyncpg import Connection, exceptions
 from buildpg import V, asyncpg, render
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 from stac_fastapi.types.errors import (
     ConflictError,
@@ -34,8 +34,11 @@ async def con_init(conn):
     )
 
 
-async def connect_to_db(app: FastAPI) -> None:
-    """Connect to Database."""
+ConnectionGetter = Callable[[Request, Literal["r", "w"]], AsyncIterator[Connection]]
+
+
+async def connect_to_db(app: FastAPI, get_conn: ConnectionGetter = None) -> None:
+    """Create connection pools & connection retriever on application."""
     settings = app.state.settings
     if app.state.settings.testing:
         readpool = writepool = settings.testing_connection_string
@@ -45,6 +48,7 @@ async def connect_to_db(app: FastAPI) -> None:
     db = DB()
     app.state.readpool = await db.create_pool(readpool, settings)
     app.state.writepool = await db.create_pool(writepool, settings)
+    app.state.get_connection = get_conn if get_conn else get_connection
 
 
 async def close_db_connection(app: FastAPI) -> None:
@@ -53,7 +57,21 @@ async def close_db_connection(app: FastAPI) -> None:
     await app.state.writepool.close()
 
 
-async def dbfunc(pool: pool, func: str, arg: Union[str, Dict]):
+@asynccontextmanager
+async def get_connection(
+    request: Request,
+    readwrite: Literal["r", "w"] = "r",
+) -> AsyncIterator[Connection]:
+    """Retrieve connection from database conection pool."""
+    pool = (
+        request.app.state.writepool if readwrite == "w" else request.app.state.readpool
+    )
+    with translate_pgstac_errors():
+        async with pool.acquire() as conn:
+            yield conn
+
+
+async def dbfunc(conn: Connection, func: str, arg: Union[str, Dict]):
     """Wrap PLPGSQL Functions.
 
     Keyword arguments:
@@ -64,25 +82,23 @@ async def dbfunc(pool: pool, func: str, arg: Union[str, Dict]):
     """
     with translate_pgstac_errors():
         if isinstance(arg, str):
-            async with pool.acquire() as conn:
-                q, p = render(
-                    """
-                    SELECT * FROM :func(:item::text);
-                    """,
-                    func=V(func),
-                    item=arg,
-                )
-                return await conn.fetchval(q, *p)
+            q, p = render(
+                """
+                SELECT * FROM :func(:item::text);
+                """,
+                func=V(func),
+                item=arg,
+            )
+            return await conn.fetchval(q, *p)
         else:
-            async with pool.acquire() as conn:
-                q, p = render(
-                    """
-                    SELECT * FROM :func(:item::text::jsonb);
-                    """,
-                    func=V(func),
-                    item=json.dumps(arg),
-                )
-                return await conn.fetchval(q, *p)
+            q, p = render(
+                """
+                SELECT * FROM :func(:item::text::jsonb);
+                """,
+                func=V(func),
+                item=json.dumps(arg),
+            )
+            return await conn.fetchval(q, *p)
 
 
 @contextmanager
