@@ -79,6 +79,7 @@ This repository provides two example [Docker compose](https://docs.docker.com/co
 - [docker-compose.pgstac.yml](./docker/docker-compose.pgstac.yml)
 - [docker-compose.sqlalchemy.yml](./docker/docker-compose.sqlalchemy.yml)
 
+
 ## Local Development
 
 Use docker-compose via make to start the application, migrate the database, and ingest some example data:
@@ -164,4 +165,23 @@ Run individual tests by running pytest within a docker container:
 make docker-shell-pgstac # or docker-shell-sqlalchemy
 $ pip install -e stac_fastapi/pgstac[dev]
 $ pytest -v stac_fastapi/pgstac/tests/api/test_api.py 
+```
+
+### PGAdmin
+
+If you want to use PGAdmin in the same docker compose deployment, just add the following lines to the docker-compose file, this will provide PGAdmin on port 8081:
+
+```yaml
+  pgadmin:
+    image: dpage/pgadmin4
+    volumes:
+      - .:/var/lib/pgadmin/storage/username_email.com/
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=username@email.com
+      - PGADMIN_DEFAULT_PASSWORD=password
+    ports:
+      - "8081:80"
+    command: postgres -N 500
+    links:
+      - "pgstac"
 ```
