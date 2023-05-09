@@ -2,14 +2,37 @@
 
 ## [Unreleased]
 
+## [2.4.5] - 2023-04-04
+
+### Changed
+
+* Default branch to **main** ([#544](https://github.com/stac-utils/stac-fastapi/pull/544))
+
+### Removed
+
+* Backends ([#555](https://github.com/stac-utils/stac-fastapi/pull/555))
+  * **stac-fastapi-pgstac**: <https://github.com/stac-utils/stac-fastapi-pgstac>
+  * **stac-fastapi-sqlalchemy**: <https://github.com/stac-utils/stac-fastapi-sqlalchemy>
+
+### Fixed
+
+* Use `V()` instead of f-strings for pgstac queries ([#554](https://github.com/stac-utils/stac-fastapi/pull/554))
+
+## [2.4.4] - 2023-03-09
+
 ### Added
 
+* Nginx service as second docker-compose stack to demonstrate proxy ([#503](https://github.com/stac-utils/stac-fastapi/pull/503))
 * Validation checks in CI using [stac-api-validator](github.com/stac-utils/stac-api-validator) ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
 * Required links to the sqlalchemy ItemCollection endpoint ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
+* Publication of docker images to GHCR ([#525](https://github.com/stac-utils/stac-fastapi/pull/525))
 
 ### Changed
 
 * Updated CI to test against [pgstac v0.6.12](https://github.com/stac-utils/pgstac/releases/tag/v0.6.12) ([#511](https://github.com/stac-utils/stac-fastapi/pull/511))
+* Reworked `update_openapi` and added a test for it ([#523](https://github.com/stac-utils/stac-fastapi/pull/523))
+* Limit values above 10,000 are now replaced with 10,000 instead of returning a 400 error ([#526](https://github.com/stac-utils/stac-fastapi/pull/526))
+* Updated pgstac to v0.7.1 ([#535](https://github.com/stac-utils/stac-fastapi/pull/535))
 
 ### Removed
 
@@ -22,6 +45,14 @@
 * `self` link rel for `/collections/{c_id}/items` ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
 * Media type of the item collection endpoint ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
 * Manually exclude non-truthy optional values from sqlalchemy serialization of Collections ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
+* Support `intersects` in GET requests ([#521](https://github.com/stac-utils/stac-fastapi/pull/521))
+* Deleting items that had repeated ids in other collections ([#520](https://github.com/stac-utils/stac-fastapi/pull/520))
+* 404 for missing collection on /items for sqlalchemy ([#528](https://github.com/stac-utils/stac-fastapi/pull/528))
+* Conformance URIs for the filter extension ([#540](https://github.com/stac-utils/stac-fastapi/pull/540))
+
+### Deprecated
+
+* Deprecated `VndOaiResponse` and `config_openapi`, will be removed in v3.0 ([#523](https://github.com/stac-utils/stac-fastapi/pull/523))
 
 ## [2.4.3] - 2022-11-25
 
@@ -226,7 +257,9 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.3..master>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.5..main>
+[2.4.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.4..2.4.5>
+[2.4.4]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.3..2.4.4>
 [2.4.3]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.2..2.4.3>
 [2.4.2]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.1..2.4.2>
 [2.4.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.0..2.4.1>

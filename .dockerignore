@@ -2,7 +2,6 @@
 *.pyc
 *.pyo
 *.pyd
-.tox
 .coverage
 .coverage.*
 .vscode

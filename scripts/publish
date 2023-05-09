@@ -11,8 +11,6 @@ SUBPACKAGE_DIRS=(
     "stac_fastapi/types"
     "stac_fastapi/extensions"
     "stac_fastapi/api"
-    "stac_fastapi/sqlalchemy"
-    "stac_fastapi/pgstac"
 )
 
 function usage() {

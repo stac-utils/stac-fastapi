@@ -8,7 +8,7 @@ import operator
 from datetime import datetime
 from enum import auto
 from types import DynamicClassAttribute
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import attr
 from geojson_pydantic.geometries import (
@@ -20,7 +20,9 @@ from geojson_pydantic.geometries import (
     Polygon,
     _GeometryBase,
 )
-from pydantic import BaseModel, conint, validator
+from pydantic import BaseModel, ConstrainedInt, validator
+from pydantic.errors import NumberNotGtError
+from pydantic.validators import int_validator
 from stac_pydantic.shared import BBox
 from stac_pydantic.utils import AutoValueEnum
 
@@ -28,6 +30,28 @@ from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime, str_to_interval
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
+
+
+class Limit(ConstrainedInt):
+    """An positive integer that maxes out at 10,000."""
+
+    ge: int = 1
+    le: int = 10_000
+
+    @classmethod
+    def __get_validators__(cls) -> Generator[Callable[..., Any], None, None]:
+        """Yield the relevant validators."""
+        yield int_validator
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, value: int) -> int:
+        """Validate the integer value."""
+        if value < cls.ge:
+            raise NumberNotGtError(limit_value=cls.ge)
+        if value > cls.le:
+            return cls.le
+        return value
 
 
 class Operator(str, AutoValueEnum):
@@ -74,7 +98,7 @@ class BaseSearchGetRequest(APIRequest):
     collections: Optional[str] = attr.ib(default=None, converter=str2list)
     ids: Optional[str] = attr.ib(default=None, converter=str2list)
     bbox: Optional[str] = attr.ib(default=None, converter=str2list)
-    intersects: Optional[str] = attr.ib(default=None, converter=str2list)
+    intersects: Optional[str] = attr.ib(default=None)
     datetime: Optional[str] = attr.ib(default=None)
     limit: Optional[int] = attr.ib(default=10)
 
@@ -97,7 +121,7 @@ class BaseSearchPostRequest(BaseModel):
         Union[Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon]
     ]
     datetime: Optional[str]
-    limit: Optional[conint(gt=0, le=10000)] = 10
+    limit: Optional[Limit] = 10
 
     @property
     def start_date(self) -> Optional[datetime]:

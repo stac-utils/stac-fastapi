@@ -15,6 +15,7 @@ install_requires = [
 
 extra_reqs = {
     "dev": [
+        "httpx",
         "pytest",
         "pytest-cov",
         "pytest-asyncio",

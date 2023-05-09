@@ -3,13 +3,14 @@ name: Publish docs via GitHub Pages
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       # Rebuild website when docs have changed or code has changed
-      - 'README.md'
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - '**.py'
+      - "README.md"
+      - "docs/**"
+      - "mkdocs.yml"
+      - "**.py"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -17,23 +18,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout master
+      - name: Checkout main
         uses: actions/checkout@v3
 
       - name: Set up Python 3.8
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e \
-            stac_fastapi/api \
-            stac_fastapi/types \
-            stac_fastapi/extensions \
-            stac_fastapi/sqlalchemy
-          python -m pip install mkdocs mkdocs-material pdocs
+          pip install --upgrade pip
+          pip install \
+            stac_fastapi/api[docs] \
+            stac_fastapi/types[docs] \
+            stac_fastapi/extensions[docs] \
 
       - name: update API docs
         run: |
