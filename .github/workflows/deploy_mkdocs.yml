@@ -10,6 +10,7 @@ on:
       - "docs/**"
       - "mkdocs.yml"
       - "**.py"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -27,12 +28,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e \
-            stac_fastapi/api \
-            stac_fastapi/types \
-            stac_fastapi/extensions \
-          python -m pip install mkdocs mkdocs-material pdocs
+          pip install --upgrade pip
+          pip install \
+            stac_fastapi/api[docs] \
+            stac_fastapi/types[docs] \
+            stac_fastapi/extensions[docs] \
 
       - name: update API docs
         run: |
