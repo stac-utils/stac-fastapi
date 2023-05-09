@@ -8,6 +8,12 @@
 
 * Default branch to **main** ([#544](https://github.com/stac-utils/stac-fastapi/pull/544))
 
+### Removed
+
+* Backends ([#555](https://github.com/stac-utils/stac-fastapi/pull/555))
+  * **stac-fastapi-pgstac**: <https://github.com/stac-utils/stac-fastapi-pgstac>
+  * **stac-fastapi-sqlalchemy**: <https://github.com/stac-utils/stac-fastapi-sqlalchemy>
+
 ### Fixed
 
 * Use `V()` instead of f-strings for pgstac queries ([#554](https://github.com/stac-utils/stac-fastapi/pull/554))
