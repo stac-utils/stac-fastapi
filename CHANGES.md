@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [2.4.6] - 2023-05-09
+
+### Changed
+
+* Backends are now hosted in their own repositories ([https://github.com/stac-utils/stac-fastapi/pull/555]):
+  * [stac-fastapi-pgstac](https://github.com/stac-utils/stac-fastapi-pgstac)
+  * [stac-fastapi-sqlalchemy](https://github.com/stac-utils/stac-fastapi-sqlalchemy)
+
 ## [2.4.5] - 2023-04-04
 
 ### Changed
@@ -257,7 +265,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.5..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.6..main>
+[2.4.6]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.5..2.4.6>
 [2.4.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.4..2.4.5>
 [2.4.4]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.3..2.4.4>
 [2.4.3]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.2..2.4.3>
