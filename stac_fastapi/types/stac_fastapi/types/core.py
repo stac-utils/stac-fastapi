@@ -28,18 +28,21 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def create_item(
-        self, collection_id: str, item: stac_types.Item, **kwargs
-    ) -> Optional[Union[stac_types.Item, Response]]:
+        self,
+        collection_id: str,
+        item: Union[stac_types.Item, stac_types.ItemCollection],
+        **kwargs,
+    ) -> Optional[Union[stac_types.Item, Response, None]]:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
 
         Args:
-            item: the item
+            item: the item or item collection
             collection_id: the id of the collection from the resource path
 
         Returns:
-            The item that was created.
+            The item that was created or None if item collection.
 
         """
         ...
@@ -138,17 +141,21 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def create_item(
-        self, collection_id: str, item: stac_types.Item, **kwargs
-    ) -> Optional[Union[stac_types.Item, Response]]:
+        self,
+        collection_id: str,
+        item: Union[stac_types.Item, stac_types.ItemCollection],
+        **kwargs,
+    ) -> Optional[Union[stac_types.Item, Response, None]]:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
 
         Args:
-            item: the item
+            item: the item or item collection
+            collection_id: the id of the collection from the resource path
 
         Returns:
-            The item that was created.
+            The item that was created or None if item collection.
 
         """
         ...

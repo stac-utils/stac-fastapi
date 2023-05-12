@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+* Add support for POSTing ItemCollections to the /items endpoint of the Transaction Extension ([#547](https://github.com/stac-utils/stac-fastapi/pull/574)
+
 ## [2.4.6] - 2023-05-09
 
 ### Changed
