@@ -15,3 +15,6 @@ select = [
 known-first-party = ["stac_fastapi"]
 known-third-party = ["stac_pydantic", "fastapi"]
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.black]
+target-version = ["py38", "py39", "py310", "py311"]
