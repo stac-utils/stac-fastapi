@@ -1,4 +1,4 @@
-"""api middleware."""
+"""Api middleware."""
 import re
 import typing
 from http.client import HTTP_PORT, HTTPS_PORT
@@ -9,8 +9,8 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 
 class CORSMiddleware(_CORSMiddleware):
-    """
-    Subclass of Starlette's standard CORS middleware with default values set to those reccomended by the STAC API spec.
+    """Subclass of Starlette's standard CORS middleware with default values set to those
+    reccomended by the STAC API spec.
 
     https://github.com/radiantearth/stac-api-spec/blob/914cf8108302e2ec734340080a45aaae4859bb63/implementation.md#cors
     """
@@ -44,12 +44,11 @@ class CORSMiddleware(_CORSMiddleware):
 
 
 class ProxyHeaderMiddleware:
-    """
-    Account for forwarding headers when deriving base URL.
+    """Account for forwarding headers when deriving base URL.
 
     Prioritise standard Forwarded header, look for non-standard X-Forwarded-* if missing.
-    Default to what can be derived from the URL if no headers provided.
-    Middleware updates the host header that is interpreted by starlette when deriving Request.base_url.
+    Default to what can be derived from the URL if no headers provided. Middleware updates
+    the host header that is interpreted by starlette when deriving Request.base_url.
     """
 
     def __init__(self, app: ASGIApp):

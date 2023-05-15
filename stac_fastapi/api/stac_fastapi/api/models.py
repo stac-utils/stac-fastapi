@@ -1,4 +1,4 @@
-"""api request/response models."""
+"""Api request/response models."""
 
 import importlib.util
 from typing import Optional, Type, Union

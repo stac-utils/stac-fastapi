@@ -18,7 +18,8 @@ from .request import FilterExtensionGetRequest, FilterExtensionPostRequest
 class FilterConformanceClasses(str, Enum):
     """Conformance classes for the Filter extension.
 
-    See https://github.com/radiantearth/stac-api-spec/tree/v1.0.0-rc.1/fragments/filter
+    See
+    https://github.com/radiantearth/stac-api-spec/tree/v1.0.0-rc.1/fragments/filter
     """
 
     FILTER = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter"
@@ -50,8 +51,9 @@ class FilterConformanceClasses(str, Enum):
 class FilterExtension(ApiExtension):
     """Filter Extension.
 
-    The filter extension adds several endpoints which allow the retrieval of queryables and
-    provides an expressive mechanism for searching based on Item Attributes:
+    The filter extension adds several endpoints which allow the retrieval of
+    queryables and provides an expressive mechanism for searching based on Item
+    Attributes:
         GET /queryables
         GET /collections/{collection_id}/queryables
 
@@ -60,7 +62,6 @@ class FilterExtension(ApiExtension):
     Attributes:
         client: Queryables endpoint logic
         conformance_classes: Conformance classes provided by the extension
-
     """
 
     GET = FilterExtensionGetRequest

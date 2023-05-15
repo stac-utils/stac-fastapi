@@ -1,4 +1,4 @@
-"""sort extension."""
+"""Sort extension."""
 from typing import List, Optional
 
 import attr
@@ -13,9 +13,8 @@ from .request import SortExtensionGetRequest, SortExtensionPostRequest
 class SortExtension(ApiExtension):
     """Sort Extension.
 
-    The Sort extension adds the `sortby` parameter to the `/search` endpoint, allowing the caller to specify the sort
-    order of the returned items.
-
+    The Sort extension adds the `sortby` parameter to the `/search` endpoint, allowing the
+    caller to specify the sort order of the returned items.
     https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#sort
     """
 

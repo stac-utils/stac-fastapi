@@ -1,4 +1,4 @@
-"""query extension."""
+"""Query extension."""
 from typing import List, Optional
 
 import attr
@@ -13,9 +13,9 @@ from .request import QueryExtensionGetRequest, QueryExtensionPostRequest
 class QueryExtension(ApiExtension):
     """Query Extension.
 
-    The Query extension adds an additional `query` parameter to `/search` requests which allows the caller to perform
-    queries against item metadata (ex. find all images with cloud cover less than 15%).
-
+    The Query extension adds an additional `query` parameter to `/search` requests which
+    allows the caller to perform queries against item metadata (ex. find all images with
+    cloud cover less than 15%).
     https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#query
     """
 

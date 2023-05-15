@@ -1,4 +1,4 @@
-"""route factories."""
+"""Route factories."""
 import functools
 import inspect
 from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
@@ -104,7 +104,6 @@ def add_route_dependencies(
     """
     for scope in scopes:
         for route in routes:
-
             match, _ = route.matches({"type": "http", **scope})
             if match != Match.FULL:
                 continue
@@ -120,7 +119,8 @@ def add_route_dependencies(
                 )
 
             # Register dependencies directly on route so that they aren't ignored if
-            # the routes are later associated with an app (e.g. app.include_router(router))
+            # the routes are later associated with an app (e.g.
+            # app.include_router(router))
             # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/applications.py#L337-L360
             # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/routing.py#L677-L678
             route.dependencies.extend(dependencies)

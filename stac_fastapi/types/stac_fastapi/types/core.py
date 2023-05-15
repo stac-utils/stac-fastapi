@@ -43,7 +43,6 @@ class BaseTransactionsClient(abc.ABC):
 
         Returns:
             The item that was created or None if item collection.
-
         """
         ...
 
@@ -53,9 +52,10 @@ class BaseTransactionsClient(abc.ABC):
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
-        Called with `PUT /collections/{collection_id}/items`. It is expected that this item already exists.  The update
-        should do a diff against the saved item and perform any necessary updates.  Partial updates are not supported
-        by the transactions extension.
+        Called with `PUT /collections/{collection_id}/items`. It is expected
+        that this item already exists.  The update should do a diff against the
+        saved item and perform any necessary updates.  Partial updates are not
+        supported by the transactions extension.
 
         Args:
             item: the item (must be complete)
@@ -105,8 +105,9 @@ class BaseTransactionsClient(abc.ABC):
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections`. It is expected that this item already exists.  The update should do a diff
-        against the saved collection and perform any necessary updates.  Partial updates are not supported by the
+        Called with `PUT /collections`. It is expected that this item already
+        exists.  The update should do a diff against the saved collection and
+        perform any necessary updates.  Partial updates are not supported by the
         transactions extension.
 
         Args:
@@ -156,7 +157,6 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
         Returns:
             The item that was created or None if item collection.
-
         """
         ...
 
@@ -166,9 +166,10 @@ class AsyncBaseTransactionsClient(abc.ABC):
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
-        Called with `PUT /collections/{collection_id}/items`. It is expected that this item already exists.  The update
-        should do a diff against the saved item and perform any necessary updates.  Partial updates are not supported
-        by the transactions extension.
+        Called with `PUT /collections/{collection_id}/items`. It is expected
+        that this item already exists.  The update should do a diff against the
+        saved item and perform any necessary updates.  Partial updates are not
+        supported by the transactions extension.
 
         Args:
             item: the item (must be complete)
@@ -217,8 +218,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections`. It is expected that this item already exists.  The update should do a diff
-        against the saved collection and perform any necessary updates.  Partial updates are not supported by the
+        Called with `PUT /collections`. It is expected that this item already
+        exists.  The update should do a diff against the saved collection and
+        perform any necessary updates.  Partial updates are not supported by the
         transactions extension.
 
         Args:
@@ -325,7 +327,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     post_request_model = attr.ib(default=BaseSearchPostRequest)
 
     def conformance_classes(self) -> List[str]:
-        """Generate conformance classes by adding extension conformance to base conformance classes."""
+        """Generate conformance classes by adding extension conformance to base
+        conformance classes."""
         base_conformance_classes = self.base_conformance_classes.copy()
 
         for extension in self.extensions:
@@ -532,7 +535,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     post_request_model = attr.ib(default=BaseSearchPostRequest)
 
     def conformance_classes(self) -> List[str]:
-        """Generate conformance classes by adding extension conformance to base conformance classes."""
+        """Generate conformance classes by adding extension conformance to base
+        conformance classes."""
         conformance_classes = self.base_conformance_classes.copy()
 
         for extension in self.extensions:
@@ -725,12 +729,11 @@ class AsyncBaseFiltersClient(abc.ABC):
     ) -> Dict[str, Any]:
         """Get the queryables available for the given collection_id.
 
-        If collection_id is None, returns the intersection of all
-        queryables over all collections.
+        If collection_id is None, returns the intersection of all queryables over all
+        collections.
 
         This base implementation returns a blank queryable schema. This is not allowed
         under OGC CQL but it is allowed by the STAC API Filter Extension
-
         https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
         """
         return {
@@ -752,12 +755,11 @@ class BaseFiltersClient(abc.ABC):
     ) -> Dict[str, Any]:
         """Get the queryables available for the given collection_id.
 
-        If collection_id is None, returns the intersection of all
-        queryables over all collections.
+        If collection_id is None, returns the intersection of all queryables over all
+        collections.
 
         This base implementation returns a blank queryable schema. This is not allowed
         under OGC CQL but it is allowed by the STAC API Filter Extension
-
         https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
         """
         return {

@@ -1,4 +1,4 @@
-"""transaction extension."""
+"""Transaction extension."""
 from typing import List, Optional, Type, Union
 
 import attr
@@ -34,8 +34,8 @@ class PutItem(ItemUri):
 class TransactionExtension(ApiExtension):
     """Transaction Extension.
 
-    The transaction extension adds several endpoints which allow the creation, deletion, and updating of items and
-    collections:
+    The transaction extension adds several endpoints which allow the creation,
+    deletion, and updating of items and collections:
         POST /collections
         PUT /collections/{collection_id}
         DELETE /collections/{collection_id}
@@ -75,7 +75,8 @@ class TransactionExtension(ApiExtension):
         )
 
     def register_update_item(self):
-        """Register update item endpoint (PUT /collections/{collection_id}/items/{item_id})."""
+        """Register update item endpoint (PUT
+        /collections/{collection_id}/items/{item_id})."""
         self.router.add_api_route(
             name="Update Item",
             path="/collections/{collection_id}/items/{item_id}",
@@ -88,7 +89,8 @@ class TransactionExtension(ApiExtension):
         )
 
     def register_delete_item(self):
-        """Register delete item endpoint (DELETE /collections/{collection_id}/items/{item_id})."""
+        """Register delete item endpoint (DELETE
+        /collections/{collection_id}/items/{item_id})."""
         self.router.add_api_route(
             name="Delete Item",
             path="/collections/{collection_id}/items/{item_id}",

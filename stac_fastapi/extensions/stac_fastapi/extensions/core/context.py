@@ -1,4 +1,4 @@
-"""context extension."""
+"""Context extension."""
 from typing import List, Optional
 
 import attr
@@ -11,9 +11,9 @@ from stac_fastapi.types.extension import ApiExtension
 class ContextExtension(ApiExtension):
     """Context Extension.
 
-    The Context extension adds a JSON object to ItemCollection responses (`/search`, `/collections/{collection_id}/items`)
-    which includes the number of items matched, returned, and the limit requested.
-
+    The Context extension adds a JSON object to ItemCollection responses (`/search`,
+    `/collections/{collection_id}/items`) which includes the number of items matched,
+    returned, and the limit requested.
     https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#context
     """
 

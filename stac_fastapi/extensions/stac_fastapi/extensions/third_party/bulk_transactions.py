@@ -1,4 +1,4 @@
-"""bulk transactions extension."""
+"""Bulk transactions extension."""
 import abc
 from typing import Any, Dict, List, Optional, Union
 
@@ -46,7 +46,6 @@ class BaseBulkTransactionsClient(abc.ABC):
 
         Returns:
             Message indicating the status of the insert.
-
         """
         raise NotImplementedError
 
@@ -64,7 +63,6 @@ class AsyncBaseBulkTransactionsClient(abc.ABC):
 
         Returns:
             Message indicating the status of the insert.
-
         """
         raise NotImplementedError
 
@@ -73,9 +71,11 @@ class AsyncBaseBulkTransactionsClient(abc.ABC):
 class BulkTransactionExtension(ApiExtension):
     """Bulk Transaction Extension.
 
-    Bulk Transaction extension adds the `POST /collections/{collection_id}/bulk_items` endpoint to the application
-    for efficient bulk insertion of items. The input to this is an object with an attribute  "items", that has a value
-    that is an object with a group of attributes that are the ids of each Item, and the value is the Item entity.
+    Bulk Transaction extension adds the `POST
+    /collections/{collection_id}/bulk_items` endpoint to the application for
+    efficient bulk insertion of items. The input to this is an object with an
+    attribute  "items", that has a value that is an object with a group of
+    attributes that are the ids of each Item, and the value is the Item entity.
 
         {
         "items": {
@@ -83,7 +83,6 @@ class BulkTransactionExtension(ApiExtension):
             "id2": { "type": "Feature", ... },
             "id3": { "type": "Feature", ... }
         }
-
     """
 
     client: Union[

@@ -1,4 +1,4 @@
-"""pagination classes as extensions."""
+"""Pagination classes as extensions."""
 
 from .pagination import PaginationExtension
 from .token_pagination import TokenPaginationExtension
