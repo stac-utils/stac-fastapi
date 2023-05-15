@@ -18,7 +18,9 @@ from stac_fastapi.types.extension import ApiExtension
 class PostItem(CollectionUri):
     """Create Item."""
 
-    item: stac_types.Item = attr.ib(default=Body(None))
+    item: Union[stac_types.Item, stac_types.ItemCollection] = attr.ib(
+        default=Body(None)
+    )
 
 
 @attr.s

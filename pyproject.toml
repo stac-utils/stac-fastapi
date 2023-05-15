@@ -15,5 +15,8 @@ select = [
     "W",
 ]
 
-[tool.ruff.mccabe]
-max-complexity = 12
+[tool.isort]
+profile = "black"
+known_first_party = "stac_fastapi"
+known_third_party = ["stac-pydantic", "fastapi"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]

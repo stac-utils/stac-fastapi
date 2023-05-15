@@ -2,64 +2,77 @@ site_name: stac-fastapi
 site_description: STAC FastAPI.
 
 # Repository
-repo_name: 'stac-utils/stac-fastapi'
-repo_url: 'https://github.com/stac-utils/stac-fastapi'
-edit_uri: 'blob/master/docs/src/'
-
+repo_name: "stac-utils/stac-fastapi"
+repo_url: "https://github.com/stac-utils/stac-fastapi"
+edit_uri: "blob/master/docs/src/"
 
 # Social links
 extra:
   social:
-    - icon: 'fontawesome/brands/github'
-      link: 'https://github.com/stac-utils'
+    - icon: "fontawesome/brands/github"
+      link: "https://github.com/stac-utils"
 
 # Layout
 nav:
-  - Home: 'index.md'
+  - Home: "index.md"
   - API:
-    - stac_fastapi.api:
-      - app: api/stac_fastapi/api/app.md
-      - config: api/stac_fastapi/api/config.md
-      - errors: api/stac_fastapi/api/errors.md
-      - middleware: api/stac_fastapi/api/middleware.md
-      - models: api/stac_fastapi/api/models.md
-      - openapi: api/stac_fastapi/api/openapi.md
-      - routes: api/stac_fastapi/api/routes.md
-    - stac_fastapi.extensions:
-      - core:
-          - context: api/stac_fastapi/extensions/core/context.md
-          - filter: api/stac_fastapi/extensions/core/filter/filter.md
-          - fields: api/stac_fastapi/extensions/core/fields/fields.md
-          - query: api/stac_fastapi/extensions/core/query/query.md
-          - sort: api/stac_fastapi/extensions/core/sort/sort.md
-          - transaction: api/stac_fastapi/extensions/core/transaction.md
-          - pagination: api/stac_fastapi/extensions/core/pagination/pagination.md
-      - third_party:
-          - bulk_transactions: api/stac_fastapi/extensions/third_party/bulk_transactions.md
-    - stac_fastapi.server:
-      - app: api/stac_fastapi/server/app.md
-    - stac_fastapi.sqlalchemy:
-      - models:
-          - database: api/stac_fastapi/sqlalchemy/models/database.md
-          - decompose: api/stac_fastapi/sqlalchemy/models/decompose.md
-          - links: api/stac_fastapi/sqlalchemy/models/links.md
-          - schemas: api/stac_fastapi/sqlalchemy/models/schemas.md
-      - config: api/stac_fastapi/sqlalchemy/config.md
-      - core: api/stac_fastapi/sqlalchemy/core.md
-      - session: api/stac_fastapi/sqlalchemy/session.md
-      - tokens: api/stac_fastapi/sqlalchemy/tokens.md
-      - transactions: api/stac_fastapi/sqlalchemy/transactions.md
-      - version: api/stac_fastapi/sqlalchemy/version.md
-    - stac_fastapi.types:
-      - core: api/stac_fastapi/types/core.md
-      - config: api/stac_fastapi/types/config.md
-      - errors: api/stac_fastapi/types/errors.md
-      - extension: api/stac_fastapi/types/extension.md
-      - index: api/stac_fastapi/types/index.md
-      - search: api/stac_fastapi/types/search.md
-      - version: api/stac_fastapi/types/version.md
-  - Development - Contributing: 'contributing.md'
-  - Release Notes: 'release-notes.md'
+      - packages: api/stac_fastapi/index.md
+      - stac_fastapi.api:
+          - module: api/stac_fastapi/api/index.md
+          - app: api/stac_fastapi/api/app.md
+          - config: api/stac_fastapi/api/config.md
+          - errors: api/stac_fastapi/api/errors.md
+          - middleware: api/stac_fastapi/api/middleware.md
+          - models: api/stac_fastapi/api/models.md
+          - openapi: api/stac_fastapi/api/openapi.md
+          - routes: api/stac_fastapi/api/routes.md
+          - version: api/stac_fastapi/api/version.md
+      - stac_fastapi.extensions:
+          - module: api/stac_fastapi/extensions/index.md
+          - core:
+              - module: api/stac_fastapi/extensions/core/index.md
+              - context: api/stac_fastapi/extensions/core/context.md
+              - filter:
+                  - module: api/stac_fastapi/extensions/core/filter/index.md
+                  - filter: api/stac_fastapi/extensions/core/filter/filter.md
+                  - request: api/stac_fastapi/extensions/core/filter/request.md
+              - fields:
+                  - module: api/stac_fastapi/extensions/core/fields/index.md
+                  - fields: api/stac_fastapi/extensions/core/fields/fields.md
+                  - request: api/stac_fastapi/extensions/core/fields/request.md
+              - query:
+                  - module: api/stac_fastapi/extensions/core/query/index.md
+                  - query: api/stac_fastapi/extensions/core/query/query.md
+                  - request: api/stac_fastapi/extensions/core/query/request.md
+              - sort:
+                  - module: api/stac_fastapi/extensions/core/sort/index.md
+                  - request: api/stac_fastapi/extensions/core/sort/request.md
+                  - sort: api/stac_fastapi/extensions/core/sort/sort.md
+              - transaction: api/stac_fastapi/extensions/core/transaction.md
+              - pagination:
+                  - module: api/stac_fastapi/extensions/core/pagination/index.md
+                  - pagination: api/stac_fastapi/extensions/core/pagination/pagination.md
+                  - token_pagination: api/stac_fastapi/extensions/core/pagination/token_pagination.md
+              - version: api/stac_fastapi/extensions/version.md
+          - third_party:
+              - bulk_transactions: api/stac_fastapi/extensions/third_party/bulk_transactions.md
+              - index: api/stac_fastapi/extensions/third_party/index.md
+      - stac_fastapi.types:
+          - module: api/stac_fastapi/types/index.md
+          - config: api/stac_fastapi/types/config.md
+          - conformance: api/stac_fastapi/types/conformance.md
+          - core: api/stac_fastapi/types/core.md
+          - errors: api/stac_fastapi/types/errors.md
+          - extension: api/stac_fastapi/types/extension.md
+          - links: api/stac_fastapi/types/links.md
+          - requests: api/stac_fastapi/types/requests.md
+          - rfc3339: api/stac_fastapi/types/rfc3339.md
+          - search: api/stac_fastapi/types/search.md
+          - stac: api/stac_fastapi/types/stac.md
+          - version: api/stac_fastapi/types/version.md
+  - Development - Contributing: "contributing.md"
+  - Release Notes: "release-notes.md"
+  - Tips and Tricks: tips-and-tricks.md
 
 plugins:
   - search
@@ -67,13 +80,13 @@ plugins:
 # Theme
 theme:
   icon:
-    logo: 'material/home'
-    repo: 'fontawesome/brands/github'
-  name: 'material'
-  language: 'en'
+    logo: "material/home"
+    repo: "fontawesome/brands/github"
+  name: "material"
+  language: "en"
   font:
-    text: 'Nunito Sans'
-    code: 'Fira Code'
+    text: "Nunito Sans"
+    code: "Fira Code"
 
 extra_css:
   - stylesheets/extra.css
@@ -82,28 +95,28 @@ extra_css:
 # This way, I can write in Pandoc's Markdown and have it be supported here.
 # https://pandoc.org/MANUAL.html
 markdown_extensions:
-    - admonition
-    - attr_list
-    - codehilite:
-        guess_lang: false
-    - def_list
-    - footnotes
-    - pymdownx.arithmatex
-    - pymdownx.betterem
-    - pymdownx.caret:
-        insert: false
-    - pymdownx.details
-    - pymdownx.emoji
-    - pymdownx.escapeall:
-        hardbreak: true
-        nbsp: true
-    - pymdownx.magiclink:
-        hide_protocol: true
-        repo_url_shortener: true
-    - pymdownx.smartsymbols
-    - pymdownx.superfences
-    - pymdownx.tasklist:
-        custom_checkbox: true
-    - pymdownx.tilde
-    - toc:
-        permalink: true
+  - admonition
+  - attr_list
+  - codehilite:
+      guess_lang: false
+  - def_list
+  - footnotes
+  - pymdownx.arithmatex
+  - pymdownx.betterem
+  - pymdownx.caret:
+      insert: false
+  - pymdownx.details
+  - pymdownx.emoji
+  - pymdownx.escapeall:
+      hardbreak: true
+      nbsp: true
+  - pymdownx.magiclink:
+      hide_protocol: true
+      repo_url_shortener: true
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - toc:
+      permalink: true
