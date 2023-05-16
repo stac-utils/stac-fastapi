@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.4.7] - 2023-05-16
+
 ### Added
 
 * Add support for POSTing ItemCollections to the /items endpoint of the Transaction Extension ([#547](https://github.com/stac-utils/stac-fastapi/pull/574))
@@ -267,7 +269,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.6..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.7..main>
+[2.4.7]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.6..2.4.7>
 [2.4.6]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.5..2.4.6>
 [2.4.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.4..2.4.5>
 [2.4.4]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.3..2.4.4>
