@@ -28,8 +28,8 @@ class VndOaiResponse(JSONResponse):
 def update_openapi(app: FastAPI) -> FastAPI:
     """Update OpenAPI response content-type.
 
-    This function modifies the openapi route to comply with the STAC API spec's
-    required content-type response header.
+    This function modifies the openapi route to comply with the STAC API spec's required
+    content-type response header.
     """
     # Find the route for the openapi_url in the app
     openapi_route: Route = next(

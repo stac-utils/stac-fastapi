@@ -6,7 +6,10 @@ from typing import Optional, Tuple
 import iso8601
 from pystac.utils import datetime_to_str
 
-RFC33339_PATTERN = r"^(\d\d\d\d)\-(\d\d)\-(\d\d)(T|t)(\d\d):(\d\d):(\d\d)([.]\d+)?(Z|([-+])(\d\d):(\d\d))$"
+RFC33339_PATTERN = (
+    r"^(\d\d\d\d)\-(\d\d)\-(\d\d)(T|t)(\d\d):(\d\d):(\d\d)([.]\d+)?"
+    r"(Z|([-+])(\d\d):(\d\d))$"
+)
 
 
 def rfc3339_str_to_datetime(s: str) -> datetime:
@@ -63,9 +66,9 @@ def str_to_interval(
 
     start = None
     end = None
-    if not values[0] in ["..", ""]:
+    if values[0] not in ["..", ""]:
         start = rfc3339_str_to_datetime(values[0])
-    if not values[1] in ["..", ""]:
+    if values[1] not in ["..", ""]:
         end = rfc3339_str_to_datetime(values[1])
 
     if start is None and end is None:

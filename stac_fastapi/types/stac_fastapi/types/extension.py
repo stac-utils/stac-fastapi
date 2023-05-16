@@ -1,4 +1,4 @@
-"""base api extension."""
+"""Base api extension."""
 import abc
 from typing import List, Optional
 

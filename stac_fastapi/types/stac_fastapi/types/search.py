@@ -87,7 +87,8 @@ class APIRequest(abc.ABC):
     """Generic API Request base class."""
 
     def kwargs(self) -> Dict:
-        """Transform api request params into format which matches the signature of the endpoint."""
+        """Transform api request params into format which matches the signature of the
+        endpoint."""
         return self.__dict__
 
 
@@ -106,8 +107,8 @@ class BaseSearchGetRequest(APIRequest):
 class BaseSearchPostRequest(BaseModel):
     """Search model.
 
-    Replace base model in STAC-pydantic as it includes additional fields,
-    not in the core model.
+    Replace base model in STAC-pydantic as it includes additional fields, not in the core
+    model.
     https://github.com/radiantearth/stac-api-spec/tree/master/item-search#query-parameter-table
 
     PR to fix this:
@@ -204,9 +205,11 @@ class BaseSearchPostRequest(BaseModel):
 
     @property
     def spatial_filter(self) -> Optional[_GeometryBase]:
-        """Return a geojson-pydantic object representing the spatial filter for the search request.
+        """Return a geojson-pydantic object representing the spatial filter for the search
+        request.
 
-        Check for both because the ``bbox`` and ``intersects`` parameters are mutually exclusive.
+        Check for both because the ``bbox`` and ``intersects`` parameters are
+        mutually exclusive.
         """
         if self.bbox:
             return Polygon(
