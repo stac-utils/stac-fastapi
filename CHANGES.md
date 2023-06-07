@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.4.8] - 2023-06-07
+
+### Changed
+
+* Advertise STAC API v1.0.0 ([#578](https://github.com/stac-utils/stac-fastapi/pull/578))
+
 ## [2.4.7] - 2023-05-16
 
 ### Added
@@ -269,7 +275,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.7..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.8..main>
+[2.4.8]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.7..2.4.8>
 [2.4.7]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.6..2.4.7>
 [2.4.6]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.5..2.4.6>
 [2.4.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.4..2.4.5>
