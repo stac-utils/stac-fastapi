@@ -8,7 +8,7 @@ import enum
 class ApiExtensions(enum.Enum):
     """Enumeration of available stac api extensions.
 
-    Ref: https://github.com/radiantearth/stac-api-spec/tree/master/extensions
+    Ref: https://github.com/stac-api-extensions
     """
 
     context = "context"
