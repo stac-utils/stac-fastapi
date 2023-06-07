@@ -13,7 +13,7 @@ class FilterLang(str, Enum):
     """Choices for filter-lang value in a POST request.
 
     Based on
-    https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
+    https://github.com/stac-api-extensions/filter#queryables
 
     Note the addition of cql2-json, which is used by the pgstac backend,
     but is not included in the spec above.

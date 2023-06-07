@@ -135,7 +135,7 @@
 * Make item geometry and bbox nullable in sqlalchemy backend. ([#398](https://github.com/stac-utils/stac-fastapi/pull/398))
 * Transactions Extension update Item endpoint Item is now `/collections/{collection_id}/items/{item_id}` instead of
   `/collections/{collection_id}/items` to align with [STAC API
-  spec](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features/extensions/transaction#methods) ([#425](https://github.com/stac-utils/stac-fastapi/pull/425))
+  spec](https://github.com/stac-api-extensions/transaction#methods) ([#425](https://github.com/stac-utils/stac-fastapi/pull/425))
 
 ### Removed
 

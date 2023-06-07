@@ -15,14 +15,14 @@ class SortExtension(ApiExtension):
 
     The Sort extension adds the `sortby` parameter to the `/search` endpoint, allowing the
     caller to specify the sort order of the returned items.
-    https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#sort
+    https://github.com/stac-api-extensions/sort
     """
 
     GET = SortExtensionGetRequest
     POST = SortExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
-        factory=lambda: ["https://api.stacspec.org/v1.0.0-rc.1/item-search#sort"]
+        factory=lambda: ["https://api.stacspec.org/v1.0.0-rc.2/item-search#sort"]
     )
     schema_href: Optional[str] = attr.ib(default=None)
 

@@ -19,14 +19,14 @@ class FilterConformanceClasses(str, Enum):
     """Conformance classes for the Filter extension.
 
     See
-    https://github.com/radiantearth/stac-api-spec/tree/v1.0.0-rc.1/fragments/filter
+    https://github.com/stac-api-extensions/filter
     """
 
     FILTER = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter"
     FEATURES_FILTER = (
         "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"
     )
-    ITEM_SEARCH_FILTER = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter"
+    ITEM_SEARCH_FILTER = "https://api.stacspec.org/v1.0.0-rc.2/item-search#filter"
     CQL2_TEXT = "http://www.opengis.net/spec/cql2/1.0/conf/cql2-text"
     CQL2_JSON = "http://www.opengis.net/spec/cql2/1.0/conf/cql2-json"
     BASIC_CQL2 = "http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2"

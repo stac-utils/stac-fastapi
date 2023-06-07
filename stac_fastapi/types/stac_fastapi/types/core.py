@@ -760,7 +760,7 @@ class BaseFiltersClient(abc.ABC):
 
         This base implementation returns a blank queryable schema. This is not allowed
         under OGC CQL but it is allowed by the STAC API Filter Extension
-        https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
+        https://github.com/stac-api-extensions/filter#queryables
         """
         return {
             "$schema": "https://json-schema.org/draft/2019-09/schema",
