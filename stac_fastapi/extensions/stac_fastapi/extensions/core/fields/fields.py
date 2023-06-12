@@ -20,7 +20,7 @@ class FieldsExtension(ApiExtension):
     the Fields extension allows the API to return potentially invalid responses
     by excluding fields which are required by the STAC spec, such as geometry.
 
-    https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#fields
+    https://github.com/stac-api-extensions/fields
 
     Attributes:
         default_includes (set): defines the default set of included fields.
@@ -32,7 +32,7 @@ class FieldsExtension(ApiExtension):
     POST = FieldsExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
-        factory=lambda: ["https://api.stacspec.org/v1.0.0-rc.1/item-search#fields"]
+        factory=lambda: ["https://api.stacspec.org/v1.0.0-rc.3/item-search#fields"]
     )
     default_includes: Set[str] = attr.ib(
         factory=lambda: {
