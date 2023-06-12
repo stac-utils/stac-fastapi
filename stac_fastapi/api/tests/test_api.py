@@ -41,7 +41,7 @@ class TestRouteDependencies:
                     method=route["method"].lower(),
                     url=path,
                     auth=("bob", "dobbs"),
-                    data='{"dummy": "payload"}',
+                    content='{"dummy": "payload"}',
                     headers={"content-type": "application/json"},
                 )
                 assert (
