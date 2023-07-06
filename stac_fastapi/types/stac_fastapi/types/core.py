@@ -308,7 +308,7 @@ class LandingPageMixin(abc.ABC):
                 },
                 {
                     "rel": Relations.queryables.value,
-                    "type": MimeTypes.schemajson,
+                    "type": MimeTypes.jsonschema,
                     "title": "Queryables",
                     "href": urljoin(base_url, "queryables"),
                     "method": "GET",
