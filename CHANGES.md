@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Add `/queryables` link to the landing page ([#587](https://github.com/stac-utils/stac-fastapi/pull/587))
+
 ## [2.4.8] - 2023-06-07
 
 ### Changed
