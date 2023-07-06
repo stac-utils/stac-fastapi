@@ -306,6 +306,13 @@ class LandingPageMixin(abc.ABC):
                     "href": urljoin(base_url, "search"),
                     "method": "POST",
                 },
+                {
+                    "rel": Relations.queryables.value,
+                    "type": MimeTypes.schemajson,
+                    "title": "Queryables",
+                    "href": urljoin(base_url, "queryables"),
+                    "method": "GET",
+                },
             ],
             stac_extensions=extension_schemas,
         )
