@@ -1,3 +1,6 @@
+# Ignore stac-fastapi-sqlalchemy
+stac-fastapi-sqlalchemy
+
 .mypy_cache
 
 PIP_EXTRA_INDEX_URL
