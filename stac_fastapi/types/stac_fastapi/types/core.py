@@ -440,7 +440,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         datetime: Optional[Union[str, datetime]] = None,
         limit: Optional[int] = 10,
         query: Optional[str] = None,
-        token: Optional[str] = None,
+        # token: Optional[str] = None,
+        pt: Optional[str] = None,
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
         intersects: Optional[str] = None,
@@ -502,7 +503,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         bbox: Optional[List[NumType]] = None,
         datetime: Optional[Union[str, datetime]] = None,
         limit: int = 10,
-        token: str = None,
+        # token: str = None,
+        pt: str = None,
         **kwargs,
     ) -> stac_types.ItemCollection:
         """Get all items from a specific collection.
@@ -512,7 +514,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Args:
             collection_id: id of the collection.
             limit: number of items to return.
-            token: pagination token.
+            #token: pagination token.
+            pt: pagination token.
 
         Returns:
             An ItemCollection.
@@ -636,7 +639,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         datetime: Optional[Union[str, datetime]] = None,
         limit: Optional[int] = 10,
         query: Optional[str] = None,
-        token: Optional[str] = None,
+        # token: Optional[str] = None,
+        pt: Optional[str] = None,
         fields: Optional[List[str]] = None,
         sortby: Optional[str] = None,
         intersects: Optional[str] = None,
@@ -702,7 +706,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         bbox: Optional[List[NumType]] = None,
         datetime: Optional[Union[str, datetime]] = None,
         limit: int = 10,
-        token: str = None,
+        # token: str = None,
+        pt: str = None,
         **kwargs,
     ) -> stac_types.ItemCollection:
         """Get all items from a specific collection.
@@ -712,7 +717,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Args:
             collection_id: id of the collection.
             limit: number of items to return.
-            token: pagination token.
+            #token: pagination token.
+            pt: pagination token.
 
         Returns:
             An ItemCollection.

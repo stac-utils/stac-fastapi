@@ -131,14 +131,16 @@ class ItemCollectionUri(CollectionUri):
 class POSTTokenPagination(BaseModel):
     """Token pagination model for POST requests."""
 
-    token: Optional[str] = None
+    # token: Optional[str] = None
+    pt: Optional[str] = None
 
 
 @attr.s
 class GETTokenPagination(APIRequest):
     """Token pagination for GET requests."""
 
-    token: Optional[str] = attr.ib(default=None)
+    # token: Optional[str] = attr.ib(default=None)
+    pt: Optional[str] = attr.ib(default=None)
 
 
 class POSTPagination(BaseModel):
