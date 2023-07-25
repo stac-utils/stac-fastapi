@@ -53,6 +53,7 @@ class BaseLinks:
 
     def root(self) -> Dict[str, Any]:
         """Return the catalog root."""
+        # return dict(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
         return dict(
             rel=Relations.root, type=MimeTypes.json, href=self.href_builder.base_url
         )
@@ -75,6 +76,7 @@ class CollectionLinks(BaseLinks):
 
     def parent(self) -> Dict[str, Any]:
         """Create the `parent` link."""
+        # return dict(rel=Relations.parent, type=MimeTypes.json, href=self.base_url)
         return dict(rel=Relations.parent, type=MimeTypes.json, href=self.href_builder)
 
     def items(self) -> Dict[str, Any]:
@@ -116,14 +118,10 @@ class ItemLinks(BaseLinks):
 
     def parent(self) -> Dict[str, Any]:
         """Create the `parent` link."""
-        # return dict(
-        #    rel=Relations.parent,
-        #    type=MimeTypes.json,
-        #    href=urljoin(self.base_url, f"collections/{self.collection_id}"),
-        # )
         return dict(
             rel=Relations.parent,
             type=MimeTypes.json,
+            # href=urljoin(self.base_url, f"collections/{self.collection_id}"),
             href=urljoin(
                 self.href_builder.base_url, f"collections/{self.collection_id}"
             ),
@@ -131,14 +129,10 @@ class ItemLinks(BaseLinks):
 
     def collection(self) -> Dict[str, Any]:
         """Create the `collection` link."""
-        # return dict(
-        #    rel=Relations.collection,
-        #    type=MimeTypes.json,
-        #    href=urljoin(self.base_url, f"collections/{self.collection_id}"),
-        # )
         return dict(
             rel=Relations.collection,
             type=MimeTypes.json,
+            # href=urljoin(self.base_url, f"collections/{self.collection_id}"),
             href=urljoin(
                 self.href_builder.base_url, f"collections/{self.collection_id}"
             ),
