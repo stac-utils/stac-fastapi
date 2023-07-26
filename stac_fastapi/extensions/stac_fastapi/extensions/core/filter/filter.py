@@ -77,6 +77,14 @@ class FilterExtension(ApiExtension):
             FilterConformanceClasses.ITEM_SEARCH_FILTER,
             FilterConformanceClasses.BASIC_CQL2,
             FilterConformanceClasses.CQL2_TEXT,
+            FilterConformanceClasses.CQL2_JSON,
+            FilterConformanceClasses.ADVANCED_COMPARISON_OPERATORS,
+            FilterConformanceClasses.BASIC_SPATIAL_OPERATORS,
+            FilterConformanceClasses.SPATIAL_OPERATORS,
+            FilterConformanceClasses.TEMPORAL_OPERATORS,
+            FilterConformanceClasses.ARITHMETIC,
+            FilterConformanceClasses.PROPERTY_PROPERTY,
+
         ]
     )
     router: APIRouter = attr.ib(factory=APIRouter)
