@@ -1,4 +1,5 @@
 """Link helpers."""
+import abc
 from typing import Any, Dict, List
 from urllib.parse import urlencode, urljoin
 
@@ -27,20 +28,17 @@ def resolve_links(links: list, base_url: str) -> List[Dict]:
 
 
 @attr.s
-class BaseHrefBuilder:
+class BaseHrefBuilder(abc.ABC):
     """Builds hrefs for service links by extending service base url.
 
-    Adds `token` param to all hrefs.
-
-    Remember that token must be in a Dict as in `q["token"]`.
+    May be overridden for instance to always append certain query params (ie. API key or the like).
     """
 
     base_url: str = attr.ib()
-    token: str = attr.ib()
 
     def build(self, path: str = None, query: Dict[str, str] = None):
-        # with_path = urljoin(self.base_url, path)
-        return urljoin(path, "?" + urlencode(query)) if query else path
+        with_path = urljoin(self.base_url, path)
+        return urljoin(with_path, "?" + urlencode(query)) if query else with_path
 
 
 @attr.s
@@ -55,7 +53,7 @@ class BaseLinks:
         """Return the catalog root."""
         # return dict(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
         return dict(
-            rel=Relations.root, type=MimeTypes.json, href=self.href_builder.base_url
+            rel=Relations.root, type=MimeTypes.json, href=self.href_builder.build("./"),
         )
 
 
@@ -69,15 +67,13 @@ class CollectionLinks(BaseLinks):
             rel=Relations.self,
             type=MimeTypes.json,
             # href=urljoin(self.base_url, f"collections/{self.collection_id}"),
-            href=urljoin(
-                self.href_builder.base_url, f"collections/{self.collection_id}"
-            ),
+            href=self.href_builder.build(f"collections/{self.collection_id}"),
         )
 
     def parent(self) -> Dict[str, Any]:
         """Create the `parent` link."""
         # return dict(rel=Relations.parent, type=MimeTypes.json, href=self.base_url)
-        return dict(rel=Relations.parent, type=MimeTypes.json, href=self.href_builder)
+        return dict(rel=Relations.parent, type=MimeTypes.json, href=self.href_builder.build("./"))
 
     def items(self) -> Dict[str, Any]:
         """Create the `items` link."""
@@ -85,9 +81,7 @@ class CollectionLinks(BaseLinks):
             rel="items",
             type=MimeTypes.geojson,
             # href=urljoin(self.base_url, f"collections/{self.collection_id}/items"),
-            href=urljoin(
-                self.href_builder.base_url, f"collections/{self.collection_id}/items"
-            ),
+            href=self.href_builder.build(f"collections/{self.collection_id}/items"),
         )
 
     def create_links(self) -> List[Dict[str, Any]]:
