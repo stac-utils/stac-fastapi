@@ -341,6 +341,14 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         """Check if an api extension is enabled."""
         return any([type(ext).__name__ == extension for ext in self.extensions])
 
+    def get_extension(self, extension: str) -> ApiExtension:
+        extensions = [ext for ext in self.extensions if type(
+            ext).__name__ == extension]
+        if extensions:
+            return extensions[0]
+        else:
+            raise NotFoundError(f"Extenson {extension} not found")
+
     def list_conformance_classes(self):
         """Return a list of conformance classes, including implemented extensions."""
         base_conformance = BASE_CONFORMANCE_CLASSES
