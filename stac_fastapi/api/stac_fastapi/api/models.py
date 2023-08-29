@@ -127,6 +127,8 @@ class ItemCollectionUri(CollectionUri):
     bbox: Optional[str] = attr.ib(default=None, converter=str2list)
     datetime: Optional[str] = attr.ib(default=None)
 
+    crs: Optional[str] = attr.ib(default=None)
+
 
 class POSTTokenPagination(BaseModel):
     """Token pagination model for POST requests."""
