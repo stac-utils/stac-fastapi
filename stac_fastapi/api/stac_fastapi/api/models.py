@@ -127,7 +127,7 @@ class ItemCollectionUri(CollectionUri):
     bbox: Optional[str] = attr.ib(default=None, converter=str2list)
     datetime: Optional[str] = attr.ib(default=None)
 
-    crs: Optional[str] = attr.ib(default=None)
+    crs: Optional[str] = attr.ib(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84")
 
 
 class POSTTokenPagination(BaseModel):
