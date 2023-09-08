@@ -10,7 +10,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 class CORSMiddleware(_CORSMiddleware):
     """Subclass of Starlette's standard CORS middleware with default values set to those
-    reccomended by the STAC API spec.
+    recommended by the STAC API spec.
 
     https://github.com/radiantearth/stac-api-spec/blob/914cf8108302e2ec734340080a45aaae4859bb63/implementation.md#cors
     """
