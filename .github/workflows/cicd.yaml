@@ -39,7 +39,7 @@ jobs:
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Setup Python (faster than using Python container)
       - name: Setup Python
@@ -73,6 +73,6 @@ jobs:
   test-docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Test generating docs
         run: make docs
