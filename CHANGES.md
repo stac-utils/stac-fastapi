@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Forward `x-forwarded-host` ([#586](https://github.com/stac-utils/stac-fastapi/pull/586))
+
 ## [2.4.8] - 2023-06-07
 
 ### Changed
