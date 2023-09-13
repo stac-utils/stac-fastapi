@@ -110,6 +110,9 @@ class ItemUri(CollectionUri):
     """Delete item."""
 
     item_id: str = attr.ib(default=Path(..., description="Item ID"))
+    # Not implementet descriptions yet
+    # crs: Optional[str] = attr.ib(default=Query(None, description=descriptions.CRS))
+    crs: Optional[str] = attr.ib(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84")
 
 
 @attr.s
