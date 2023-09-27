@@ -1,18 +1,24 @@
 """context extension."""
-from typing import List, Optional
+from typing import List
 
 import attr
 from fastapi import FastAPI
-import fastapi
-from stac_fastapi.types.errors import NotFoundError
 
 from stac_fastapi.types.extension import ApiExtension
+
+from .request import CrsExtensionGetRequest, CrsExtensionPostRequest
 
 
 @attr.s
 class CrsExtension(ApiExtension):
     """Crs Extension.
+
+    The Crs extension adds the `crs` parameter to the `/search` endpoint, allowing the
+    caller to specify what crs geometries is returned in.
     """
+
+    GET = CrsExtensionGetRequest
+    POST = CrsExtensionPostRequest
 
     crs: List[str] = attr.ib(
         factory=lambda: [
