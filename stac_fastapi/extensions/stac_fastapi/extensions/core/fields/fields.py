@@ -32,7 +32,7 @@ class FieldsExtension(ApiExtension):
     POST = FieldsExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
-        factory=lambda: ["https://api.stacspec.org/v1.0.0-rc.3/item-search#fields"]
+        factory=lambda: ["https://api.stacspec.org/v1.0.0/item-search#fields"]
     )
     default_includes: Set[str] = attr.ib(
         factory=lambda: {
