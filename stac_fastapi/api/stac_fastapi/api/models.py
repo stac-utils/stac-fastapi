@@ -128,6 +128,7 @@ class ItemCollectionUri(CollectionUri):
 
     limit: int = attr.ib(default=10)
     bbox: Optional[str] = attr.ib(default=None, converter=str2list)
+    bbox_crs: Optional[str] = attr.ib(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84")
     datetime: Optional[str] = attr.ib(default=None)
 
     crs: Optional[str] = attr.ib(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84")
