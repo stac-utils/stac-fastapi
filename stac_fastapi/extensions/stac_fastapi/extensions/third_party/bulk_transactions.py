@@ -23,6 +23,7 @@ class Items(BaseModel):
     """A group of STAC Item objects, in the form of a dictionary from Item.id -> Item."""
 
     items: Dict[str, Any]
+    method: BulkTransactionMethod = BulkTransactionMethod.INSERT
 
     def __iter__(self):
         """Return an iterable of STAC Item objects."""
@@ -47,7 +48,6 @@ class BaseBulkTransactionsClient(abc.ABC):
         self,
         items: Items,
         chunk_size: Optional[int] = None,
-        method: BulkTransactionMethod = BulkTransactionMethod.INSERT,
         **kwargs,
     ) -> str:
         """Bulk creation of items.
@@ -71,7 +71,6 @@ class AsyncBaseBulkTransactionsClient(abc.ABC):
     async def bulk_item_insert(
         self,
         items: Items,
-        method: BulkTransactionMethod = BulkTransactionMethod.INSERT,
         **kwargs,
     ) -> str:
         """Bulk creation of items.
