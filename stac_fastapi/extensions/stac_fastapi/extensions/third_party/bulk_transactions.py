@@ -68,7 +68,12 @@ class AsyncBaseBulkTransactionsClient(abc.ABC):
     """BulkTransactionsClient."""
 
     @abc.abstractmethod
-    async def bulk_item_insert(self, items: Items, **kwargs) -> str:
+    async def bulk_item_insert(
+        self,
+        items: Items,
+        method: BulkTransactionMethod = BulkTransactionMethod.INSERT,
+        **kwargs,
+    ) -> str:
         """Bulk creation of items.
 
         Args:
