@@ -55,7 +55,6 @@ class BaseBulkTransactionsClient(abc.ABC):
         Args:
             items: list of items.
             chunk_size: number of items processed at a time.
-            method: method for inserting data into the database.
 
         Returns:
             Message indicating the status of the insert.
@@ -94,11 +93,19 @@ class BulkTransactionExtension(ApiExtension):
     attribute  "items", that has a value that is an object with a group of
     attributes that are the ids of each Item, and the value is the Item entity.
 
+    Optionally, clients can specify a "method" attribute that is either "insert"
+    or "upsert". If "insert", then the items will be inserted if they do not
+    exist, and an error will be returned if they do. If "upsert", then the items
+    will be inserted if they do not exist, and updated if they do. This defaults
+    to "insert".
+
         {
-        "items": {
-            "id1": { "type": "Feature", ... },
-            "id2": { "type": "Feature", ... },
-            "id3": { "type": "Feature", ... }
+            "items": {
+                "id1": { "type": "Feature", ... },
+                "id2": { "type": "Feature", ... },
+                "id3": { "type": "Feature", ... }
+            },
+            "method": "insert"
         }
     """
 

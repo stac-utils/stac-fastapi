@@ -4,6 +4,7 @@
 
 * Forward `x-forwarded-host` ([#586](https://github.com/stac-utils/stac-fastapi/pull/586))
 * Add CQL2-json to filter conformance class ([#611](https://github.com/stac-utils/stac-fastapi/issues/611))
+* Add `method` parameter to Bulk Transactions extension in order to support upserting bulk data ([#614](https://github.com/stac-utils/stac-fastapi/pull/614))
 
 ## [2.4.8] - 2023-06-07
 
