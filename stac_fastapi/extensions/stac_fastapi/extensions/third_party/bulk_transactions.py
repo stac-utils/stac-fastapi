@@ -1,5 +1,6 @@
 """Bulk transactions extension."""
 import abc
+from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 import attr
@@ -9,6 +10,13 @@ from pydantic import BaseModel
 from stac_fastapi.api.models import create_request_model
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.extension import ApiExtension
+
+
+class BulkTransactionMethod(str, Enum):
+    """Bulk Transaction Methods."""
+
+    INSERT = "insert"
+    UPSERT = "upsert"
 
 
 class Items(BaseModel):
@@ -36,13 +44,18 @@ class BaseBulkTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def bulk_item_insert(
-        self, items: Items, chunk_size: Optional[int] = None, **kwargs
+        self,
+        items: Items,
+        chunk_size: Optional[int] = None,
+        method: BulkTransactionMethod = BulkTransactionMethod.INSERT,
+        **kwargs,
     ) -> str:
         """Bulk creation of items.
 
         Args:
             items: list of items.
             chunk_size: number of items processed at a time.
+            method: method for inserting data into the database.
 
         Returns:
             Message indicating the status of the insert.
