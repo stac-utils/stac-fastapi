@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## Changes
+
+* Update to pydantic v2 and stac_pydantic v3
+* Removed internal Stac, Search and Operator Types in favor to stac_pydantic Types
+
 ## [2.4.9] - 2023-11-17
 
 ### Added
