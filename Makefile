@@ -5,9 +5,9 @@ image:
 .PHONY: install
 install:
 	pip install wheel && \
-	pip install -e ./stac_fastapi/api[dev] && \
 	pip install -e ./stac_fastapi/types[dev] && \
-	pip install -e ./stac_fastapi/extensions[dev]
+	pip install -e ./stac_fastapi/extensions[dev] && \
+	pip install -e ./stac_fastapi/api[dev] 
 
 .PHONY: docs-image
 docs-image:

@@ -6,7 +6,7 @@ from typing import Optional, Type, Union
 import attr
 from fastapi import Body, Path
 from pydantic import BaseModel, create_model
-from pydantic.fields import UndefinedType
+from pydantic.fields import PydanticUndefined
 
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import (
@@ -48,7 +48,7 @@ def create_request_model(
                 field_info = v.field_info
                 body = Body(
                     None
-                    if isinstance(field_info.default, UndefinedType)
+                    if isinstance(field_info.default, PydanticUndefined)
                     else field_info.default,
                     default_factory=field_info.default_factory,
                     alias=field_info.alias,

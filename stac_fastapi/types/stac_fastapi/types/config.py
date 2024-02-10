@@ -1,7 +1,7 @@
 """stac_fastapi.types.config module."""
 from typing import Optional, Set
 
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 class ApiSettings(BaseSettings):

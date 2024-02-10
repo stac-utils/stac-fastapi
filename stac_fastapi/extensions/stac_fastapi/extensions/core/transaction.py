@@ -3,12 +3,11 @@ from typing import List, Optional, Type, Union
 
 import attr
 from fastapi import APIRouter, Body, FastAPI
-from stac_pydantic import Collection, Item
+from stac_pydantic import Collection, Item, ItemCollection
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.models import CollectionUri, ItemUri
 from stac_fastapi.api.routes import create_async_endpoint
-from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
@@ -18,16 +17,14 @@ from stac_fastapi.types.extension import ApiExtension
 class PostItem(CollectionUri):
     """Create Item."""
 
-    item: Union[stac_types.Item, stac_types.ItemCollection] = attr.ib(
-        default=Body(None)
-    )
+    item: Union[Item, ItemCollection] = attr.ib(default=Body(None))
 
 
 @attr.s
 class PutItem(ItemUri):
     """Update Item."""
 
-    item: stac_types.Item = attr.ib(default=Body(None))
+    item: Item = attr.ib(default=Body(None))
 
 
 @attr.s
@@ -111,9 +108,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=create_async_endpoint(
-                self.client.create_collection, stac_types.Collection
-            ),
+            endpoint=create_async_endpoint(self.client.create_collection, Collection),
         )
 
     def register_update_collection(self):
@@ -126,9 +121,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_async_endpoint(
-                self.client.update_collection, stac_types.Collection
-            ),
+            endpoint=create_async_endpoint(self.client.update_collection, Collection),
         )
 
     def register_delete_collection(self):
