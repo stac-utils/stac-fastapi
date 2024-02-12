@@ -1,7 +1,8 @@
 """Bulk transactions extension."""
+
 import abc
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -22,7 +23,7 @@ class BulkTransactionMethod(str, Enum):
 class Items(BaseModel):
     """A group of STAC Item objects, in the form of a dictionary from Item.id -> Item."""
 
-    items: Dict[str, Any]
+    items: dict[str, Any]
     method: BulkTransactionMethod = BulkTransactionMethod.INSERT
 
     def __iter__(self):
@@ -109,10 +110,10 @@ class BulkTransactionExtension(ApiExtension):
         }
     """
 
-    client: Union[
-        AsyncBaseBulkTransactionsClient, BaseBulkTransactionsClient
-    ] = attr.ib()
-    conformance_classes: List[str] = attr.ib(default=list())
+    client: Union[AsyncBaseBulkTransactionsClient, BaseBulkTransactionsClient] = (
+        attr.ib()
+    )
+    conformance_classes: list[str] = attr.ib(default=list())
     schema_href: Optional[str] = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:

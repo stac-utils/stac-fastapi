@@ -4,9 +4,8 @@ import importlib.util
 from typing import Optional, Type, Union
 
 import attr
-from fastapi import Body, Path
+from fastapi import Path
 from pydantic import BaseModel, create_model
-from pydantic.fields import UndefinedType
 
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import (
@@ -44,31 +43,8 @@ def create_request_model(
     # Handle POST requests
     elif all([issubclass(m, BaseModel) for m in models]):
         for model in models:
-            for k, v in model.__fields__.items():
-                field_info = v.field_info
-                body = Body(
-                    None
-                    if isinstance(field_info.default, UndefinedType)
-                    else field_info.default,
-                    default_factory=field_info.default_factory,
-                    alias=field_info.alias,
-                    alias_priority=field_info.alias_priority,
-                    title=field_info.title,
-                    description=field_info.description,
-                    const=field_info.const,
-                    gt=field_info.gt,
-                    ge=field_info.ge,
-                    lt=field_info.lt,
-                    le=field_info.le,
-                    multiple_of=field_info.multiple_of,
-                    min_items=field_info.min_items,
-                    max_items=field_info.max_items,
-                    min_length=field_info.min_length,
-                    max_length=field_info.max_length,
-                    regex=field_info.regex,
-                    extra=field_info.extra,
-                )
-                fields[k] = (v.outer_type_, body)
+            for k, field_info in model.model_fields.items():
+                fields[k] = (field_info.annotation, field_info)
         return create_model(model_name, **fields, __base__=base_model)
 
     raise TypeError("Mixed Request Model types. Check extension request types.")

@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11"]
     timeout-minutes: 20
 
     services:
@@ -48,7 +48,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Lint code
-        if: ${{ matrix.python-version == 3.8 }}
+        if: ${{ matrix.python-version == 3.9 }}
         run: |
           python -m pip install pre-commit
           pre-commit run --all-files

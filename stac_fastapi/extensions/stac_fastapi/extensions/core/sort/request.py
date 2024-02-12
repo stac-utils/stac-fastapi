@@ -1,7 +1,7 @@
 # encoding: utf-8
 """Request model for the Sort Extension."""
 
-from typing import List, Optional
+from typing import Optional
 
 import attr
 from pydantic import BaseModel
@@ -20,4 +20,4 @@ class SortExtensionGetRequest(APIRequest):
 class SortExtensionPostRequest(BaseModel):
     """Sortby parameter for POST requests."""
 
-    sortby: Optional[List[PostSortModel]]
+    sortby: Optional[list[PostSortModel]] = None

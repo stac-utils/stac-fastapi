@@ -1,5 +1,6 @@
 """Fields extension."""
-from typing import List, Optional, Set
+
+from typing import Optional
 
 import attr
 from fastapi import FastAPI
@@ -31,10 +32,10 @@ class FieldsExtension(ApiExtension):
     GET = FieldsExtensionGetRequest
     POST = FieldsExtensionPostRequest
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         factory=lambda: ["https://api.stacspec.org/v1.0.0/item-search#fields"]
     )
-    default_includes: Set[str] = attr.ib(
+    default_includes: set[str] = attr.ib(
         factory=lambda: {
             "id",
             "type",

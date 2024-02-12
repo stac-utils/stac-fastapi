@@ -1,8 +1,9 @@
 """Api middleware."""
+
 import re
 import typing
 from http.client import HTTP_PORT, HTTPS_PORT
-from typing import List, Tuple
+from typing import Tuple
 
 from starlette.middleware.cors import CORSMiddleware as _CORSMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
@@ -126,7 +127,7 @@ class ProxyHeaderMiddleware:
     @staticmethod
     def _replace_header_value_by_name(
         scope: Scope, header_name: str, new_value: str
-    ) -> List[Tuple[str]]:
+    ) -> list[Tuple[str]]:
         return [
             (name, value)
             for name, value in scope["headers"]

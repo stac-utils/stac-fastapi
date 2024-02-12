@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+* Removing support for Python 3.8
+* Update to pydantic v2 and stac_pydantic v3
+
 ## [2.4.9] - 2023-11-17
 
 ### Added

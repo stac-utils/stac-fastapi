@@ -1,5 +1,6 @@
 """Query extension."""
-from typing import List, Optional
+
+from typing import Optional
 
 import attr
 from fastapi import FastAPI
@@ -22,7 +23,7 @@ class QueryExtension(ApiExtension):
     GET = QueryExtensionGetRequest
     POST = QueryExtensionPostRequest
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         factory=lambda: ["https://api.stacspec.org/v1.0.0/item-search#query"]
     )
     schema_href: Optional[str] = attr.ib(default=None)

@@ -10,7 +10,7 @@ $ cd stac-fastapi
 $ pip install -e stac_fastapi/api[dev]
 ```
 
-**Python3.8 only**
+**Python3.9 only**
 
 This repo is set to use `pre-commit` to run *ruff*, *pydocstring*, *black* ("uncompromising Python code formatter") and mypy when committing new code.
 

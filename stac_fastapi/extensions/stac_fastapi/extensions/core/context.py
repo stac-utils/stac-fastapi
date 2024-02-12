@@ -1,5 +1,6 @@
 """Context extension."""
-from typing import List, Optional
+
+from typing import Optional
 
 import attr
 from fastapi import FastAPI
@@ -17,7 +18,7 @@ class ContextExtension(ApiExtension):
     https://github.com/stac-api-extensions/context
     """
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         factory=lambda: ["https://api.stacspec.org/v1.0.0-rc.2/item-search#context"]
     )
     schema_href: Optional[str] = attr.ib(

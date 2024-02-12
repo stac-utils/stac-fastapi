@@ -6,10 +6,6 @@ with open("README.md") as f:
     desc = f.read()
 
 install_requires = [
-    "attrs",
-    "pydantic[dotenv]<2",
-    "stac_pydantic==2.0.*",
-    "stac-fastapi.types",
     "stac-fastapi.api",
 ]
 
@@ -30,12 +26,12 @@ setup(
     description="An implementation of STAC API based on the FastAPI framework.",
     long_description=desc,
     long_description_content_type="text/markdown",
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "License :: OSI Approved :: MIT License",
     ],
     keywords="STAC FastAPI COG",

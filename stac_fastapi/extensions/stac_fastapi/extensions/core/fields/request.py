@@ -1,6 +1,6 @@
 """Request models for the fields extension."""
 
-from typing import Dict, Optional, Set
+from typing import Optional
 
 import attr
 from pydantic import BaseModel, Field
@@ -17,11 +17,11 @@ class PostFieldsExtension(BaseModel):
         exclude: set of fields to exclude.
     """
 
-    include: Optional[Set[str]] = set()
-    exclude: Optional[Set[str]] = set()
+    include: Optional[set[str]] = set()
+    exclude: Optional[set[str]] = set()
 
     @staticmethod
-    def _get_field_dict(fields: Optional[Set[str]]) -> Dict:
+    def _get_field_dict(fields: Optional[set[str]]) -> dict:
         """Pydantic include/excludes notation.
 
         Internal method to create a dictionary for advanced include or exclude
@@ -42,7 +42,7 @@ class PostFieldsExtension(BaseModel):
         return field_dict
 
     @property
-    def filter_fields(self) -> Dict:
+    def filter_fields(self) -> dict:
         """Create pydantic include/exclude expression.
 
         Create dictionary of fields to include/exclude on model export based on

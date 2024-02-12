@@ -1,7 +1,8 @@
 """Route factories."""
+
 import functools
 import inspect
-from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
+from typing import Any, Callable, Optional, Type, Union
 
 from fastapi import Depends, params
 from fastapi.dependencies.utils import get_parameterless_sub_dependant
@@ -11,6 +12,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import BaseRoute, Match
 from starlette.status import HTTP_204_NO_CONTENT
+from typing_extensions import TypedDict
 
 from stac_fastapi.api.models import APIRequest
 
@@ -36,7 +38,7 @@ def sync_to_async(func):
 
 def create_async_endpoint(
     func: Callable,
-    request_model: Union[Type[APIRequest], Type[BaseModel], Dict],
+    request_model: Union[Type[APIRequest], Type[BaseModel], dict],
     response_class: Type[Response] = JSONResponse,
 ):
     """Wrap a function in a coroutine which may be used to create a FastAPI endpoint.
@@ -72,7 +74,7 @@ def create_async_endpoint(
 
         async def _endpoint(
             request: Request,
-            request_data: Dict[str, Any],  # type:ignore
+            request_data: dict[str, Any],  # type:ignore
         ):
             """Endpoint."""
             return _wrap_response(
@@ -92,7 +94,7 @@ class Scope(TypedDict, total=False):
 
 
 def add_route_dependencies(
-    routes: List[BaseRoute], scopes: List[Scope], dependencies=List[params.Depends]
+    routes: list[BaseRoute], scopes: list[Scope], dependencies=list[params.Depends]
 ) -> None:
     """Add dependencies to routes.
 

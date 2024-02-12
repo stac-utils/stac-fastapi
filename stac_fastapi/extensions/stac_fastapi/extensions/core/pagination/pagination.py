@@ -1,6 +1,6 @@
 """Pagination API extension."""
 
-from typing import List, Optional
+from typing import Optional
 
 import attr
 from fastapi import FastAPI
@@ -22,7 +22,7 @@ class PaginationExtension(ApiExtension):
     GET = GETPagination
     POST = POSTPagination
 
-    conformance_classes: List[str] = attr.ib(factory=list)
+    conformance_classes: list[str] = attr.ib(factory=list)
     schema_href: Optional[str] = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:

@@ -1,13 +1,14 @@
 """Error handling."""
 
 import logging
-from typing import Callable, Dict, Type, TypedDict
+from typing import Callable, Type
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
+from typing_extensions import TypedDict
 
 from stac_fastapi.types.errors import (
     ConflictError,
@@ -67,7 +68,7 @@ def exception_handler_factory(status_code: int) -> Callable:
 
 
 def add_exception_handlers(
-    app: FastAPI, status_codes: Dict[Type[Exception], int]
+    app: FastAPI, status_codes: dict[Type[Exception], int]
 ) -> None:
     """Add exception handlers to the FastAPI application.
 

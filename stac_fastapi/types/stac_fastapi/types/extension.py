@@ -1,6 +1,7 @@
 """Base api extension."""
+
 import abc
-from typing import List, Optional
+from typing import Optional
 
 import attr
 from fastapi import FastAPI
@@ -21,7 +22,7 @@ class ApiExtension(abc.ABC):
         """
         return getattr(self, verb)
 
-    conformance_classes: List[str] = attr.ib(factory=list)
+    conformance_classes: list[str] = attr.ib(factory=list)
     schema_href: Optional[str] = attr.ib(default=None)
 
     @abc.abstractmethod

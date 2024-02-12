@@ -5,10 +5,9 @@
 
 import abc
 import operator
-from datetime import datetime
 from enum import auto
 from types import DynamicClassAttribute
-from typing import Any, Callable, Dict, Generator, List, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import attr
 from geojson_pydantic.geometries import (
@@ -20,38 +19,17 @@ from geojson_pydantic.geometries import (
     Polygon,
     _GeometryBase,
 )
-from pydantic import BaseModel, ConstrainedInt, validator
-from pydantic.errors import NumberNotGtError
-from pydantic.validators import int_validator
+from pydantic import BaseModel, Field, PositiveInt, field_validator, model_validator
 from stac_pydantic.shared import BBox
 from stac_pydantic.utils import AutoValueEnum
+from typing_extensions import Annotated, Self
 
 from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime, str_to_interval
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
 
-
-class Limit(ConstrainedInt):
-    """An positive integer that maxes out at 10,000."""
-
-    ge: int = 1
-    le: int = 10_000
-
-    @classmethod
-    def __get_validators__(cls) -> Generator[Callable[..., Any], None, None]:
-        """Yield the relevant validators."""
-        yield int_validator
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, value: int) -> int:
-        """Validate the integer value."""
-        if value < cls.ge:
-            raise NumberNotGtError(limit_value=cls.ge)
-        if value > cls.le:
-            return cls.le
-        return value
+Limit = Annotated[PositiveInt, Field(strict=True, le=10000)]
 
 
 class Operator(str, AutoValueEnum):
@@ -76,7 +54,7 @@ class Operator(str, AutoValueEnum):
         return getattr(operator, self._value_)
 
 
-def str2list(x: str) -> Optional[List]:
+def str2list(x: str) -> Optional[list]:
     """Convert string to list base on , delimiter."""
     if x:
         return x.split(",")
@@ -86,7 +64,7 @@ def str2list(x: str) -> Optional[List]:
 class APIRequest(abc.ABC):
     """Generic API Request base class."""
 
-    def kwargs(self) -> Dict:
+    def kwargs(self) -> dict:
         """Transform api request params into format which matches the signature of the
         endpoint."""
         return self.__dict__
@@ -115,13 +93,13 @@ class BaseSearchPostRequest(BaseModel):
     https://github.com/stac-utils/stac-pydantic/pull/100
     """
 
-    collections: Optional[List[str]]
-    ids: Optional[List[str]]
-    bbox: Optional[BBox]
+    collections: Optional[list[str]] = None
+    ids: Optional[list[str]] = None
+    bbox: Optional[BBox] = None
     intersects: Optional[
         Union[Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon]
-    ]
-    datetime: Optional[str]
+    ] = None
+    datetime: Optional[str] = None
     limit: Optional[Limit] = 10
 
     @property
@@ -136,14 +114,15 @@ class BaseSearchPostRequest(BaseModel):
         interval = str_to_interval(self.datetime)
         return interval[1] if interval else None
 
-    @validator("intersects")
-    def validate_spatial(cls, v, values):
+    @model_validator(mode="before")
+    def validate_spatial(self) -> Self:
         """Check bbox and intersects are not both supplied."""
-        if v and values["bbox"]:
+        if self.get("intersects") and self.get("bbox") is not None:
             raise ValueError("intersects and bbox parameters are mutually exclusive")
-        return v
+        return self
 
-    @validator("bbox")
+    @field_validator("bbox")
+    @classmethod
     def validate_bbox(cls, v: BBox):
         """Check order of supplied bbox coordinates."""
         if v:
@@ -173,7 +152,8 @@ class BaseSearchPostRequest(BaseModel):
 
         return v
 
-    @validator("datetime")
+    @field_validator("datetime")
+    @classmethod
     def validate_datetime(cls, v):
         """Validate datetime."""
         if "/" in v:

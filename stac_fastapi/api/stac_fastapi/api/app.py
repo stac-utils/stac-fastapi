@@ -1,5 +1,6 @@
 """Fastapi app creation."""
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+
+from typing import Any, Optional, Tuple, Type, Union
 
 import attr
 from brotli_asgi import BrotliMiddleware
@@ -9,7 +10,7 @@ from fastapi.params import Depends
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.collections import Collections
-from stac_pydantic.version import STAC_VERSION
+from stac_pydantic.api.version import STAC_API_VERSION
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
@@ -67,8 +68,8 @@ class StacApi:
 
     settings: ApiSettings = attr.ib()
     client: Union[AsyncBaseCoreClient, BaseCoreClient] = attr.ib()
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    exceptions: Dict[Type[Exception], int] = attr.ib(
+    extensions: list[ApiExtension] = attr.ib(default=attr.Factory(list))
+    exceptions: dict[Type[Exception], int] = attr.ib(
         default=attr.Factory(lambda: DEFAULT_STATUS_CODES)
     )
     app: FastAPI = attr.ib(
@@ -85,7 +86,7 @@ class StacApi:
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
     title: str = attr.ib(default="stac-fastapi")
     api_version: str = attr.ib(default="0.1")
-    stac_version: str = attr.ib(default=STAC_VERSION)
+    stac_version: str = attr.ib(default=STAC_API_VERSION)
     description: str = attr.ib(default="stac-fastapi")
     search_get_request_model: Type[BaseSearchGetRequest] = attr.ib(
         default=BaseSearchGetRequest
@@ -95,12 +96,12 @@ class StacApi:
     )
     pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
-    middlewares: List = attr.ib(
+    middlewares: list = attr.ib(
         default=attr.Factory(
             lambda: [BrotliMiddleware, CORSMiddleware, ProxyHeaderMiddleware]
         )
     )
-    route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
+    route_dependencies: list[Tuple[list[Scope], list[Depends]]] = attr.ib(default=[])
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -125,9 +126,9 @@ class StacApi:
         self.router.add_api_route(
             name="Landing Page",
             path="/",
-            response_model=LandingPage
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                LandingPage if self.settings.enable_response_models else None
+            ),
             response_class=self.response_class,
             response_model_exclude_unset=False,
             response_model_exclude_none=True,
@@ -146,9 +147,9 @@ class StacApi:
         self.router.add_api_route(
             name="Conformance Classes",
             path="/conformance",
-            response_model=ConformanceClasses
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                ConformanceClasses if self.settings.enable_response_models else None
+            ),
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -187,9 +188,11 @@ class StacApi:
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(ItemCollection if not fields_ext else None)
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                (ItemCollection if not fields_ext else None)
+                if self.settings.enable_response_models
+                else None
+            ),
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -209,9 +212,11 @@ class StacApi:
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(ItemCollection if not fields_ext else None)
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                (ItemCollection if not fields_ext else None)
+                if self.settings.enable_response_models
+                else None
+            ),
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -230,9 +235,9 @@ class StacApi:
         self.router.add_api_route(
             name="Get Collections",
             path="/collections",
-            response_model=Collections
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                Collections if self.settings.enable_response_models else None
+            ),
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -280,9 +285,9 @@ class StacApi:
         self.router.add_api_route(
             name="Get ItemCollection",
             path="/collections/{collection_id}/items",
-            response_model=ItemCollection
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                ItemCollection if self.settings.enable_response_models else None
+            ),
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -318,7 +323,7 @@ class StacApi:
         self.register_get_collection()
         self.register_get_item_collection()
 
-    def customize_openapi(self) -> Optional[Dict[str, Any]]:
+    def customize_openapi(self) -> Optional[dict[str, Any]]:
         """Customize openapi schema."""
         if self.app.openapi_schema:
             return self.app.openapi_schema
@@ -346,7 +351,7 @@ class StacApi:
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
 
     def add_route_dependencies(
-        self, scopes: List[Scope], dependencies=List[Depends]
+        self, scopes: list[Scope], dependencies=list[Depends]
     ) -> None:
         """Add custom dependencies to routes.
 

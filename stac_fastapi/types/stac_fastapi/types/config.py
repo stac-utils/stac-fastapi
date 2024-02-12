@@ -1,7 +1,8 @@
 """stac_fastapi.types.config module."""
-from typing import Optional, Set
 
-from pydantic import BaseSettings
+from typing import Optional
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class ApiSettings(BaseSettings):
@@ -20,7 +21,7 @@ class ApiSettings(BaseSettings):
 
     # TODO: Remove `default_includes` attribute so we can use
     # `pydantic.BaseSettings` instead
-    default_includes: Optional[Set[str]] = None
+    default_includes: Optional[set[str]] = None
 
     app_host: str = "0.0.0.0"
     app_port: int = 8000
@@ -29,12 +30,7 @@ class ApiSettings(BaseSettings):
 
     openapi_url: str = "/api"
     docs_url: str = "/api.html"
-
-    class Config:
-        """Model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
-
-        extra = "allow"
-        env_file = ".env"
+    model_config = SettingsConfigDict(extra="allow", env_file=".env")
 
 
 class Settings:

@@ -1,7 +1,7 @@
 """Filter extension request models."""
 
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import attr
 from pydantic import BaseModel, Field
@@ -36,6 +36,6 @@ class FilterExtensionGetRequest(APIRequest):
 class FilterExtensionPostRequest(BaseModel):
     """Filter extension POST request model."""
 
-    filter: Optional[Dict[str, Any]] = None
+    filter: Optional[dict[str, Any]] = None
     filter_crs: Optional[str] = Field(alias="filter-crs", default=None)
     filter_lang: Optional[FilterLang] = Field(alias="filter-lang", default="cql-json")

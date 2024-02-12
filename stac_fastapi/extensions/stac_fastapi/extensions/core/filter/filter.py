@@ -1,7 +1,7 @@
 # encoding: utf-8
 """Filter Extension."""
 from enum import Enum
-from typing import List, Type, Union
+from typing import Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -70,7 +70,7 @@ class FilterExtension(ApiExtension):
     client: Union[AsyncBaseFiltersClient, BaseFiltersClient] = attr.ib(
         factory=BaseFiltersClient
     )
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         default=[
             FilterConformanceClasses.FILTER,
             FilterConformanceClasses.FEATURES_FILTER,

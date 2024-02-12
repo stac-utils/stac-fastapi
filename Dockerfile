@@ -1,4 +1,4 @@
-FROM python:3.8-slim as base
+FROM python:3.9-slim as base
 
 # Any python libraries that require system libraries to be installed will likely
 # need the following packages in order to build
