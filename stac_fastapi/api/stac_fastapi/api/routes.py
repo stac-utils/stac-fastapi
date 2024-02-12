@@ -1,4 +1,5 @@
 """Route factories."""
+
 import functools
 import inspect
 from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
@@ -6,6 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
 from fastapi import Depends, params
 from fastapi.dependencies.utils import get_parameterless_sub_dependant
 from pydantic import BaseModel
+from stac_pydantic.api import LandingPage
 from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
@@ -17,6 +19,8 @@ from stac_fastapi.api.models import APIRequest
 
 def _wrap_response(resp: Any, response_class: Type[Response]) -> Response:
     if isinstance(resp, Response):
+        return resp
+    elif isinstance(resp, LandingPage):
         return resp
     elif resp is not None:
         return response_class(resp)
