@@ -68,7 +68,6 @@ nav:
           - requests: api/stac_fastapi/types/requests.md
           - rfc3339: api/stac_fastapi/types/rfc3339.md
           - search: api/stac_fastapi/types/search.md
-          - stac: api/stac_fastapi/types/stac.md
           - version: api/stac_fastapi/types/version.md
   - Development - Contributing: "contributing.md"
   - Release Notes: "release-notes.md"

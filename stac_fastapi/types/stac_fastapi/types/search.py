@@ -19,17 +19,26 @@ from geojson_pydantic.geometries import (
     Polygon,
     _GeometryBase,
 )
-from pydantic import BaseModel, Field, PositiveInt, field_validator, model_validator
+from pydantic import BaseModel, PositiveInt, field_validator, model_validator
+from pydantic.functional_validators import AfterValidator
 from stac_pydantic.shared import BBox
 from stac_pydantic.utils import AutoValueEnum
 from typing_extensions import Annotated, Self
 
 from stac_fastapi.types.rfc3339 import rfc3339_str_to_datetime, str_to_interval
 
+
+def check_limit(v: int) -> int:
+    """Validate input value."""
+    if v > 10000:
+        return 10000
+    else:
+        return v
+
+
+Limit = Annotated[PositiveInt, AfterValidator(check_limit)]
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
-
-Limit = Annotated[PositiveInt, Field(strict=True, le=10000)]
 
 
 class Operator(str, AutoValueEnum):

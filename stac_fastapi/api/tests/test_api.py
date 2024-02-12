@@ -1,4 +1,8 @@
+import json
+
+import pytest
 from fastapi import Depends, HTTPException, security, status
+from stac_pydantic import Collection, Item
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
@@ -41,7 +45,7 @@ class TestRouteDependencies:
                     method=route["method"].lower(),
                     url=path,
                     auth=("bob", "dobbs"),
-                    content='{"dummy": "payload"}',
+                    content=route.get("payload"),
                     headers={"content-type": "application/json"},
                 )
                 assert (
@@ -58,27 +62,53 @@ class TestRouteDependencies:
                 == "application/vnd.oai.openapi+json;version=3.0"
             )
 
-    def test_build_api_with_route_dependencies(self):
+    def test_build_api_with_route_dependencies(
+        self, collection: Collection, item: Item
+    ):
         routes = [
-            {"path": "/collections", "method": "POST"},
-            {"path": "/collections", "method": "PUT"},
+            {"path": "/collections", "method": "POST", "payload": collection},
+            {"path": "/collections", "method": "PUT", "payload": collection},
             {"path": "/collections/{collectionId}", "method": "DELETE"},
-            {"path": "/collections/{collectionId}/items", "method": "POST"},
-            {"path": "/collections/{collectionId}/items/{itemId}", "method": "PUT"},
-            {"path": "/collections/{collectionId}/items/{itemId}", "method": "DELETE"},
+            {
+                "path": "/collections/{collectionId}/items",
+                "method": "POST",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "PUT",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "DELETE",
+            },
         ]
         dependencies = [Depends(must_be_bob)]
         api = self._build_api(route_dependencies=[(routes, dependencies)])
         self._assert_dependency_applied(api, routes)
 
-    def test_add_route_dependencies_after_building_api(self):
+    def test_add_route_dependencies_after_building_api(
+        self, collection: Collection, item: Item
+    ):
         routes = [
-            {"path": "/collections", "method": "POST"},
-            {"path": "/collections", "method": "PUT"},
+            {"path": "/collections", "method": "POST", "payload": collection},
+            {"path": "/collections", "method": "PUT", "payload": collection},
             {"path": "/collections/{collectionId}", "method": "DELETE"},
-            {"path": "/collections/{collectionId}/items", "method": "POST"},
-            {"path": "/collections/{collectionId}/items/{itemId}", "method": "PUT"},
-            {"path": "/collections/{collectionId}/items/{itemId}", "method": "DELETE"},
+            {
+                "path": "/collections/{collectionId}/items",
+                "method": "POST",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "PUT",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "DELETE",
+            },
         ]
         api = self._build_api()
         api.add_route_dependencies(scopes=routes, dependencies=[Depends(must_be_bob)])
@@ -131,4 +161,40 @@ def must_be_bob(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="You're not Bob",
         headers={"WWW-Authenticate": "Basic"},
+    )
+
+
+@pytest.fixture
+def collection():
+    return json.dumps(
+        {
+            "id": "test_collection",
+            "title": "Test collection",
+            "description": "This is a test collection",
+            "license": "open",
+            "keywords": [],
+            "extent": {
+                "spatial": {"bbox": [[-105, 40, -105, 40]]},
+                "temporal": {"interval": [["2023-02-12T12:00:00Z", None]]},
+            },
+            "links": [],
+        }
+    )
+
+
+@pytest.fixture
+def item():
+    return json.dumps(
+        {
+            "type": "Feature",
+            "stac_version": "1.0.0",
+            "stac_extensions": [],
+            "id": "test_item",
+            "geometry": {"type": "Point", "coordinates": [-105, 40]},
+            "bbox": [-105, 40, -105, 40],
+            "properties": {"datetime": "2023-02-12T12:00:00Z"},
+            "links": [],
+            "assets": {},
+            "collection": "test_collection",
+        }
     )
