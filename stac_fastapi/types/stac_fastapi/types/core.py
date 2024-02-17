@@ -582,7 +582,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "type": "application/vnd.oai.openapi+json;version=3.0",
                 "title": "OpenAPI service description",
                 "href": urljoin(
-                    str(request.base_url), request.app.openapi_url.lstrip("/")
+                    base_url, request.app.openapi_url.lstrip("/")
                 ),
             }
         )
@@ -594,7 +594,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "type": "text/html",
                 "title": "OpenAPI service documentation",
                 "href": urljoin(
-                    str(request.base_url), request.app.docs_url.lstrip("/")
+                    base_url, request.app.docs_url.lstrip("/")
                 ),
             }
         )
