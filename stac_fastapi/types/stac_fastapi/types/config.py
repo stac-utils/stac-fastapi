@@ -29,6 +29,7 @@ class ApiSettings(BaseSettings):
 
     openapi_url: str = "/api"
     docs_url: str = "/api.html"
+    base_url: Optional[str] = None
 
     class Config:
         """Model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
