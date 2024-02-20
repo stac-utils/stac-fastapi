@@ -1,4 +1,5 @@
 """Fastapi app creation."""
+
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import attr
@@ -125,9 +126,9 @@ class StacApi:
         self.router.add_api_route(
             name="Landing Page",
             path="/",
-            response_model=LandingPage
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                LandingPage if self.settings.enable_response_models else None
+            ),
             response_class=self.response_class,
             response_model_exclude_unset=False,
             response_model_exclude_none=True,
@@ -146,9 +147,9 @@ class StacApi:
         self.router.add_api_route(
             name="Conformance Classes",
             path="/conformance",
-            response_model=ConformanceClasses
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                ConformanceClasses if self.settings.enable_response_models else None
+            ),
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -187,9 +188,11 @@ class StacApi:
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(ItemCollection if not fields_ext else None)
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                (ItemCollection if not fields_ext else None)
+                if self.settings.enable_response_models
+                else None
+            ),
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -209,9 +212,11 @@ class StacApi:
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(ItemCollection if not fields_ext else None)
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                (ItemCollection if not fields_ext else None)
+                if self.settings.enable_response_models
+                else None
+            ),
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -230,9 +235,9 @@ class StacApi:
         self.router.add_api_route(
             name="Get Collections",
             path="/collections",
-            response_model=Collections
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                Collections if self.settings.enable_response_models else None
+            ),
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -280,9 +285,9 @@ class StacApi:
         self.router.add_api_route(
             name="Get ItemCollection",
             path="/collections/{collection_id}/items",
-            response_model=ItemCollection
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                ItemCollection if self.settings.enable_response_models else None
+            ),
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,

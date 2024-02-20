@@ -1,4 +1,5 @@
 """Transaction extension."""
+
 from typing import List, Optional, Type, Union
 
 import attr
