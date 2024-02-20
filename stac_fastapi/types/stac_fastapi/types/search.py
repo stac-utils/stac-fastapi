@@ -3,12 +3,13 @@
 """
 
 import abc
-from typing import Annotated, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import attr
 from pydantic import PositiveInt
 from pydantic.functional_validators import AfterValidator
 from stac_pydantic.api import Search
+from typing_extensions import Annotated
 
 
 def crop(v: PositiveInt) -> PositiveInt:
