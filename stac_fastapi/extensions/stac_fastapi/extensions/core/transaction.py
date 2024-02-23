@@ -135,9 +135,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=create_async_endpoint(
-                self.client.delete_collection, CollectionUri
-            ),
+            endpoint=create_async_endpoint(self.client.delete_collection, CollectionUri),
         )
 
     def register(self, app: FastAPI) -> None:

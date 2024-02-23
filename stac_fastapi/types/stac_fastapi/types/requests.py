@@ -9,6 +9,4 @@ def get_base_url(request: Request) -> str:
     if not app.state.router_prefix:
         return str(request.base_url)
     else:
-        return "{}{}/".format(
-            str(request.base_url), app.state.router_prefix.lstrip("/")
-        )
+        return "{}{}/".format(str(request.base_url), app.state.router_prefix.lstrip("/"))

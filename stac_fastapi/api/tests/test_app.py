@@ -31,7 +31,6 @@ def cleanup():
     ],
 )
 def test_app(validate, response_type, collection_dict, item_dict, cleanup):
-
     os.environ["VALIDATE_RESPONSE"] = str(validate)
     importlib.reload(response_model)
     importlib.reload(core)
@@ -58,7 +57,6 @@ def test_app(validate, response_type, collection_dict, item_dict, cleanup):
             intersects: str | None = None,
             **kwargs,
         ) -> response_model.ItemCollection:
-
             # FIXME: hyphen alias for filter_crs and filter_lang are currently not working
             # assert kwargs.get("filter_crs") == "EPSG:4326"
             # assert kwargs.get("filter_lang") == "cql-test"
@@ -73,7 +71,6 @@ def test_app(validate, response_type, collection_dict, item_dict, cleanup):
             return response_model.Item(**item_dict)
 
         def all_collections(self, **kwargs) -> response_model.Collections:
-
             return response_model.Collections(
                 collections=[response_model.Collection(**collection_dict)],
                 links=[
@@ -130,7 +127,6 @@ def test_app(validate, response_type, collection_dict, item_dict, cleanup):
     )
 
     with TestClient(test_app.app) as client:
-
         landing = client.get("/")
         collection = client.get("/collections/test")
         collections = client.get("/collections")

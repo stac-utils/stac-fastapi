@@ -10,7 +10,6 @@ from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostReques
 
 
 def test_create_get_request_model():
-
     extensions = [FilterExtension()]
     request_model = create_get_request_model(extensions, BaseSearchGetRequest)
 

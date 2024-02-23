@@ -415,9 +415,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": "service-doc",
                 "type": "text/html",
                 "title": "OpenAPI service documentation",
-                "href": urljoin(
-                    str(request.base_url), request.app.docs_url.lstrip("/")
-                ),
+                "href": urljoin(str(request.base_url), request.app.docs_url.lstrip("/")),
             }
         )
 
@@ -474,9 +472,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_item(
-        self, item_id: str, collection_id: str, **kwargs
-    ) -> response_model.Item:
+    def get_item(self, item_id: str, collection_id: str, **kwargs) -> response_model.Item:
         """Get item by id.
 
         Called with `GET /collections/{collection_id}/items/{item_id}`.
@@ -620,9 +616,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": "service-doc",
                 "type": "text/html",
                 "title": "OpenAPI service documentation",
-                "href": urljoin(
-                    str(request.base_url), request.app.docs_url.lstrip("/")
-                ),
+                "href": urljoin(str(request.base_url), request.app.docs_url.lstrip("/")),
             }
         )
 

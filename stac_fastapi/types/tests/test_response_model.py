@@ -23,7 +23,6 @@ def cleanup():
     ],
 )
 def test_response_model(validate, response_type, cleanup):
-
     os.environ["VALIDATE_RESPONSE"] = str(validate)
     importlib.reload(response_model)
 

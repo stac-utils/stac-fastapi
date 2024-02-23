@@ -110,9 +110,7 @@ class BulkTransactionExtension(ApiExtension):
         }
     """
 
-    client: Union[AsyncBaseBulkTransactionsClient, BaseBulkTransactionsClient] = (
-        attr.ib()
-    )
+    client: Union[AsyncBaseBulkTransactionsClient, BaseBulkTransactionsClient] = attr.ib()
     conformance_classes: List[str] = attr.ib(default=list())
     schema_href: Optional[str] = attr.ib(default=None)
 
