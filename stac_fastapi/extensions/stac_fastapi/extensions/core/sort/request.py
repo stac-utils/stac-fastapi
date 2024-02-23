@@ -20,4 +20,4 @@ class SortExtensionGetRequest(APIRequest):
 class SortExtensionPostRequest(BaseModel):
     """Sortby parameter for POST requests."""
 
-    sortby: Optional[List[PostSortModel]]
+    sortby: Optional[List[PostSortModel]] = None

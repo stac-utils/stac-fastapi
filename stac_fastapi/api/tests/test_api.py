@@ -1,6 +1,4 @@
-import pytest
 from fastapi import Depends, HTTPException, security, status
-from stac_pydantic import Collection, Item
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
@@ -158,32 +156,3 @@ def must_be_bob(
         detail="You're not Bob",
         headers={"WWW-Authenticate": "Basic"},
     )
-
-
-@pytest.fixture
-def collection():
-    return Collection(
-        id="test_collection",
-        title="Test Collection",
-        description="A test collection",
-        keywords=["test"],
-        license="proprietary",
-        extent={
-            "spatial": {"bbox": [[-180, -90, 180, 90]]},
-            "temporal": {"interval": [["2000-01-01T00:00:00Z", None]]},
-        },
-        links=[],
-    ).model_dump_json()
-
-
-@pytest.fixture
-def item():
-    return Item(
-        id="test_item",
-        type="Feature",
-        geometry={"type": "Point", "coordinates": [0, 0]},
-        bbox=[-180, -90, 180, 90],
-        properties={"datetime": "2000-01-01T00:00:00Z"},
-        links=[],
-        assets={},
-    ).model_dump_json()
