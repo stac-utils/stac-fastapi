@@ -88,8 +88,8 @@ def test_app(validate, response_type, collection_dict, item_dict, cleanup):
         def item_collection(
             self,
             collection_id: str,
-            bbox: List[float | int] | None = None,
-            datetime: str | datetime | None = None,
+            bbox: Optional[List[Union[float, int]]] = None,
+            datetime: Optional[Union[str, datetime]] = None,
             limit: int = 10,
             token: str = None,
             **kwargs,
