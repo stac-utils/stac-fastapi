@@ -41,7 +41,7 @@ class TestRouteDependencies:
                     method=route["method"].lower(),
                     url=path,
                     auth=("bob", "dobbs"),
-                    content='{"dummy": "payload"}',
+                    content=route["payload"],
                     headers={"content-type": "application/json"},
                 )
                 assert (
@@ -58,27 +58,51 @@ class TestRouteDependencies:
                 == "application/vnd.oai.openapi+json;version=3.0"
             )
 
-    def test_build_api_with_route_dependencies(self):
+    def test_build_api_with_route_dependencies(self, collection, item):
         routes = [
-            {"path": "/collections", "method": "POST"},
-            {"path": "/collections", "method": "PUT"},
-            {"path": "/collections/{collectionId}", "method": "DELETE"},
-            {"path": "/collections/{collectionId}/items", "method": "POST"},
-            {"path": "/collections/{collectionId}/items/{itemId}", "method": "PUT"},
-            {"path": "/collections/{collectionId}/items/{itemId}", "method": "DELETE"},
+            {"path": "/collections", "method": "POST", "payload": collection},
+            {"path": "/collections", "method": "PUT", "payload": collection},
+            {"path": "/collections/{collectionId}", "method": "DELETE", "payload": ""},
+            {
+                "path": "/collections/{collectionId}/items",
+                "method": "POST",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "PUT",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "DELETE",
+                "payload": "",
+            },
         ]
         dependencies = [Depends(must_be_bob)]
         api = self._build_api(route_dependencies=[(routes, dependencies)])
         self._assert_dependency_applied(api, routes)
 
-    def test_add_route_dependencies_after_building_api(self):
+    def test_add_route_dependencies_after_building_api(self, collection, item):
         routes = [
-            {"path": "/collections", "method": "POST"},
-            {"path": "/collections", "method": "PUT"},
-            {"path": "/collections/{collectionId}", "method": "DELETE"},
-            {"path": "/collections/{collectionId}/items", "method": "POST"},
-            {"path": "/collections/{collectionId}/items/{itemId}", "method": "PUT"},
-            {"path": "/collections/{collectionId}/items/{itemId}", "method": "DELETE"},
+            {"path": "/collections", "method": "POST", "payload": collection},
+            {"path": "/collections", "method": "PUT", "payload": collection},
+            {"path": "/collections/{collectionId}", "method": "DELETE", "payload": ""},
+            {
+                "path": "/collections/{collectionId}/items",
+                "method": "POST",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "PUT",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "DELETE",
+                "payload": "",
+            },
         ]
         api = self._build_api()
         api.add_route_dependencies(scopes=routes, dependencies=[Depends(must_be_bob)])

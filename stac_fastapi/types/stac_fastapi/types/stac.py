@@ -1,4 +1,5 @@
 """STAC types."""
+
 import sys
 from typing import Any, Dict, List, Literal, Optional, Union
 
@@ -14,25 +15,6 @@ else:
 NumType = Union[float, int]
 
 
-class LandingPage(TypedDict, total=False):
-    """STAC Landing Page."""
-
-    type: str
-    stac_version: str
-    stac_extensions: Optional[List[str]]
-    id: str
-    title: str
-    description: str
-    conformsTo: List[str]
-    links: List[Dict[str, Any]]
-
-
-class Conformance(TypedDict):
-    """STAC Conformance Classes."""
-
-    conformsTo: List[str]
-
-
 class Catalog(TypedDict, total=False):
     """STAC Catalog."""
 
@@ -43,6 +25,18 @@ class Catalog(TypedDict, total=False):
     title: Optional[str]
     description: str
     links: List[Dict[str, Any]]
+
+
+class LandingPage(Catalog, total=False):
+    """STAC Landing Page."""
+
+    conformsTo: List[str]
+
+
+class Conformance(TypedDict):
+    """STAC Conformance Classes."""
+
+    conformsTo: List[str]
 
 
 class Collection(Catalog, total=False):
@@ -82,7 +76,6 @@ class ItemCollection(TypedDict, total=False):
 
 class Collections(TypedDict, total=False):
     """All collections endpoint.
-
     https://github.com/radiantearth/stac-api-spec/tree/master/collections
     """
 

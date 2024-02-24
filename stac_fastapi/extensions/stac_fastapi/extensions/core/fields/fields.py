@@ -1,4 +1,5 @@
 """Fields extension."""
+
 from typing import List, Optional, Set
 
 import attr

@@ -1,4 +1,5 @@
 """Sort extension."""
+
 from typing import List, Optional
 
 import attr

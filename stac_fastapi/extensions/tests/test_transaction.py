@@ -2,13 +2,14 @@ import json
 from typing import Iterator, Union
 
 import pytest
+from stac_pydantic.item import Item
+from stac_pydantic.item_collection import ItemCollection
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import TransactionExtension
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseCoreClient, BaseTransactionsClient
-from stac_fastapi.types.stac import Item, ItemCollection
 
 
 class DummyCoreClient(BaseCoreClient):
@@ -35,7 +36,7 @@ class DummyTransactionsClient(BaseTransactionsClient):
     """Defines a pattern for implementing the STAC transaction extension."""
 
     def create_item(self, item: Union[Item, ItemCollection], *args, **kwargs):
-        return {"created": True, "type": item["type"]}
+        return {"created": True, "type": item.type}
 
     def update_item(self, *args, **kwargs):
         raise NotImplementedError
@@ -114,7 +115,7 @@ def item() -> Item:
         "id": "test_item",
         "geometry": {"type": "Point", "coordinates": [-105, 40]},
         "bbox": [-105, 40, -105, 40],
-        "properties": {},
+        "properties": {"datetime": "2020-06-13T13:00:00Z"},
         "links": [],
         "assets": {},
         "collection": "test_collection",

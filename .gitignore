@@ -129,6 +129,7 @@ docs/api/*
 
 # Virtualenv
 venv
+.venv/
 
 # IDE
 .vscode

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## Changes
+
+* Update to pydantic v2 and stac_pydantic v3
+* Removed internal Search and Operator Types in favor of stac_pydantic Types
+* Add switch to choose between TypeDict and StacPydantic response models
+* Add support for Python 3.12
+* Replace Black with Ruff Format
+
 ## [2.4.9] - 2023-11-17
 
 ### Added
