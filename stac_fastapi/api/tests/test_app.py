@@ -1,7 +1,7 @@
 import importlib
 import os
 from datetime import datetime
-from typing import List
+from typing import List, Optional, Union
 
 import pytest
 from fastapi.testclient import TestClient
@@ -45,16 +45,16 @@ def test_app(validate, response_type, collection_dict, item_dict, cleanup):
 
         def get_search(
             self,
-            collections: List[str] | None = None,
-            ids: List[str] | None = None,
-            bbox: List[float | int] | None = None,
-            datetime: str | datetime | None = None,
-            limit: int | None = 10,
-            query: str | None = None,
-            token: str | None = None,
-            fields: List[str] | None = None,
-            sortby: str | None = None,
-            intersects: str | None = None,
+            collections: Optional[List[str]] = None,
+            ids: Optional[List[str]] = None,
+            bbox: Optional[List[Union[float, int]]] = None,
+            datetime: Optional[Union[str, datetime]] = None,
+            limit: Optional[int] = 10,
+            query: Optional[str] = None,
+            token: Optional[str] = None,
+            fields: Optional[List[str]] = None,
+            sortby: Optional[str] = None,
+            intersects: Optional[str] = None,
             **kwargs,
         ) -> response_model.ItemCollection:
             # FIXME: hyphen alias for filter_crs and filter_lang are currently not working
