@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `id`, `title`, `description` and `api_version` fields can be customized via env variables
+
 ## [2.4.9] - 2023-11-17
 
 ### Added
