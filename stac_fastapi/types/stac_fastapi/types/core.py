@@ -1,5 +1,6 @@
 """Base clients."""
 import abc
+import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
@@ -253,9 +254,11 @@ class LandingPageMixin(abc.ABC):
     """Create a STAC landing page (GET /)."""
 
     stac_version: str = attr.ib(default=STAC_VERSION)
-    landing_page_id: str = attr.ib(default="stac-fastapi")
-    title: str = attr.ib(default="stac-fastapi")
-    description: str = attr.ib(default="stac-fastapi")
+    landing_page_id: str = attr.ib(default=os.getenv("STAC_FASTAPI_ID", "0.1"))
+    title: str = attr.ib(default=os.getenv("STAC_FASTAPI_TITLE", "stac-fastapi"))
+    description: str = attr.ib(
+        default=os.getenv("STAC_FASTAPI_DESCRIPTION", "stac-fastapi")
+    )
 
     def _landing_page(
         self,
