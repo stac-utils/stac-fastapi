@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+* Add `items` link to inferred link relations ([#634](https://github.com/stac-utils/stac-fastapi/issues/634))
+
 ## [2.4.9] - 2023-11-17
 
 ### Added
