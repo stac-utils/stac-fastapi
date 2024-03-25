@@ -128,7 +128,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["PUT"],
             endpoint=create_async_endpoint(
-                self.client.update_collection, CollectionUri, stac_types.Collection
+                self.client.update_collection, stac_types.Collection
             ),
         )
 

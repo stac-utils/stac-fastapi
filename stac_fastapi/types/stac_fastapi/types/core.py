@@ -215,17 +215,18 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def update_collection(
-        self, collection: stac_types.Collection, **kwargs
+        self, collection_id: str, collection: stac_types.Collection, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections`. It is expected that this item already
-        exists.  The update should do a diff against the saved collection and
+        Called with `PUT /collections/{collection_id}`. It is expected that this item
+        already exists.  The update should do a diff against the saved collection and
         perform any necessary updates.  Partial updates are not supported by the
         transactions extension.
 
         Args:
-            collection: the collection (must be complete)
+            collection_id: id of the existing collection to be updated
+            collection: the updated collection (must be complete)
 
         Returns:
             The updated collection.
