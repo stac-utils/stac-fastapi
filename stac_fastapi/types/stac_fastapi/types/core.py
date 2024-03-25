@@ -291,7 +291,7 @@ class LandingPageMixin(abc.ABC):
                 {
                     "rel": Relations.conformance.value,
                     "type": MimeTypes.json,
-                    "title": "STAC/WFS3 conformance classes implemented by this server",
+                    "title": "STAC/OGC conformance classes implemented by this server",
                     "href": urljoin(base_url, "conformance"),
                 },
                 {
