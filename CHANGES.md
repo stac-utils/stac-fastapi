@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Updated the collection update endpoint to match with the collection-transaction extension. ([#630](https://github.com/stac-utils/stac-fastapi/issues/630))
+
 ## [2.4.9] - 2023-11-17
 
 ### Added

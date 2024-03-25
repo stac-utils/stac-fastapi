@@ -18,3 +18,7 @@ docs-image:
 docs: docs-image
 	docker-compose -f docker-compose.docs.yml \
 		run docs
+
+.PHONY: test
+test: image
+	pytest .
