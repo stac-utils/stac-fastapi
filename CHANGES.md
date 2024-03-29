@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added 
+
+* Add enhanced middleware configuration to the StacApi class, enabling specific middleware options and dynamic addition post-application initialization. ([#442](https://github.com/stac-utils/stac-fastapi/pull/442))
+
 ## [2.4.9] - 2023-11-17
 
 ### Added
