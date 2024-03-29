@@ -33,7 +33,8 @@ DEFAULT_STATUS_CODES = {
 class ErrorResponse(TypedDict):
     """A JSON error response returned by the API.
 
-    The STAC API spec expects that `code` and `description` are both present in the payload.
+    The STAC API spec expects that `code` and `description` are both present in
+    the payload.
 
     Attributes:
         code: A code representing the error, semantics are up to implementor.
@@ -77,7 +78,7 @@ def add_exception_handlers(
     Returns:
         None
     """
-    for (exc, code) in status_codes.items():
+    for exc, code in status_codes.items():
         app.add_exception_handler(exc, exception_handler_factory(code))
 
     # By default FastAPI will return 422 status codes for invalid requests

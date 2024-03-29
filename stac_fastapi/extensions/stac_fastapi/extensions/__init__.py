@@ -1,1 +1,1 @@
-"""extensions submodule."""
+"""Extensions submodule."""

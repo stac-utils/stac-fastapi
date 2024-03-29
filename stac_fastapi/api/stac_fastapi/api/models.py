@@ -1,4 +1,4 @@
-"""api request/response models."""
+"""Api request/response models."""
 
 import importlib.util
 from typing import Optional, Type, Union
@@ -46,7 +46,7 @@ def create_request_model(
     # Handle POST requests
     elif all([issubclass(m, BaseModel) for m in models]):
         for model in models:
-            for (k, v) in model.__fields__.items():
+            for k, v in model.__fields__.items():
                 field_info = v.field_info
                 body = Body(
                     None

@@ -112,6 +112,14 @@ def test_replace_header_value_by_name(
             {
                 "scheme": "http",
                 "server": ["testserver", 80],
+                "headers": [(b"x-forwarded-host", b"test")],
+            },
+            ("http", "test", 80),
+        ),
+        (
+            {
+                "scheme": "http",
+                "server": ["testserver", 80],
                 "headers": [(b"x-forwarded-proto", b"https")],
             },
             ("https", "testserver", 80),
@@ -138,6 +146,7 @@ def test_replace_header_value_by_name(
                 "server": ["testserver", 80],
                 "headers": [
                     (b"forwarded", b"proto=https;host=test:1234"),
+                    (b"x-forwarded-host", b"another-test"),
                     (b"x-forwarded-port", b"1111"),
                     (b"x-forwarded-proto", b"https"),
                 ],
