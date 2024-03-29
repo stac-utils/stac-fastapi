@@ -1,10 +1,11 @@
 """STAC types."""
 import sys
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 # Avoids a Pydantic error:
-# TypeError: You should use `typing_extensions.TypedDict` instead of `typing.TypedDict` with Python < 3.9.2.
-# Without it, there is no way to differentiate required and optional fields when subclassed.
+# TypeError: You should use `typing_extensions.TypedDict` instead of
+# `typing.TypedDict` with Python < 3.9.2.  Without it, there is no way to
+# differentiate required and optional fields when subclassed.
 if sys.version_info < (3, 9, 2):
     from typing_extensions import TypedDict
 else:
@@ -58,7 +59,7 @@ class Collection(Catalog, total=False):
 class Item(TypedDict, total=False):
     """STAC Item."""
 
-    type: str
+    type: Literal["Feature"]
     stac_version: str
     stac_extensions: Optional[List[str]]
     id: str
@@ -73,7 +74,7 @@ class Item(TypedDict, total=False):
 class ItemCollection(TypedDict, total=False):
     """STAC Item Collection."""
 
-    type: str
+    type: Literal["FeatureCollection"]
     features: List[Item]
     links: List[Dict[str, Any]]
     context: Optional[Dict[str, int]]

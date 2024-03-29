@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## [2.4.9] - 2023-11-17
+
+### Added
+
+* Add CQL2-json to filter conformance class ([#611](https://github.com/stac-utils/stac-fastapi/issues/611))
+* Add Elasticsearch backend ([#616](https://github.com/stac-utils/stac-fastapi/pull/616))
+
+### Changed
+
+* Forward `x-forwarded-host` ([#586](https://github.com/stac-utils/stac-fastapi/pull/586))
+* Add `method` parameter to Bulk Transactions extension in order to support upserting bulk data ([#614](https://github.com/stac-utils/stac-fastapi/pull/614))
+
+## [2.4.8] - 2023-06-07
+
+### Changed
+
+* Advertise STAC API v1.0.0 ([#578](https://github.com/stac-utils/stac-fastapi/pull/578))
+
+## [2.4.7] - 2023-05-16
+
+### Added
+
+* Add support for POSTing ItemCollections to the /items endpoint of the Transaction Extension ([#547](https://github.com/stac-utils/stac-fastapi/pull/574))
+
+### Changed
+
+* flake8, isort, and pydocstyle replaced by ruff for pre-commit checks ([#549](https://github.com/stac-utils/stac-fastapi/pull/549))
+
 ## [2.4.6] - 2023-05-09
 
 ### Changed
@@ -15,12 +43,6 @@
 ### Changed
 
 * Default branch to **main** ([#544](https://github.com/stac-utils/stac-fastapi/pull/544))
-
-### Removed
-
-* Backends ([#555](https://github.com/stac-utils/stac-fastapi/pull/555))
-  * **stac-fastapi-pgstac**: <https://github.com/stac-utils/stac-fastapi-pgstac>
-  * **stac-fastapi-sqlalchemy**: <https://github.com/stac-utils/stac-fastapi-sqlalchemy>
 
 ### Fixed
 
@@ -131,7 +153,7 @@
 * Make item geometry and bbox nullable in sqlalchemy backend. ([#398](https://github.com/stac-utils/stac-fastapi/pull/398))
 * Transactions Extension update Item endpoint Item is now `/collections/{collection_id}/items/{item_id}` instead of
   `/collections/{collection_id}/items` to align with [STAC API
-  spec](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features/extensions/transaction#methods) ([#425](https://github.com/stac-utils/stac-fastapi/pull/425))
+  spec](https://github.com/stac-api-extensions/transaction#methods) ([#425](https://github.com/stac-utils/stac-fastapi/pull/425))
 
 ### Removed
 
@@ -265,7 +287,10 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.6..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.9..main>
+[2.4.9]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.8..2.4.9>
+[2.4.8]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.7..2.4.8>
+[2.4.7]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.6..2.4.7>
 [2.4.6]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.5..2.4.6>
 [2.4.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.4..2.4.5>
 [2.4.4]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.3..2.4.4>

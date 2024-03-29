@@ -1,4 +1,4 @@
-"""requests helpers."""
+"""Requests helpers."""
 
 from starlette.requests import Request
 

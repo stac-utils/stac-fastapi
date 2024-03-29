@@ -1,4 +1,4 @@
-"""link helpers."""
+"""Link helpers."""
 
 from typing import Any, Dict, List
 from urllib.parse import urljoin
@@ -8,7 +8,8 @@ from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 
 # These can be inferred from the item/collection so they aren't included in the database
-# Instead they are dynamically generated when querying the database using the classes defined below
+# Instead they are dynamically generated when querying the database using the
+# classes defined below
 INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root"]
 
 

@@ -1,4 +1,4 @@
-"""transaction extension."""
+"""Transaction extension."""
 from typing import List, Optional, Type, Union
 
 import attr
@@ -18,7 +18,9 @@ from stac_fastapi.types.extension import ApiExtension
 class PostItem(CollectionUri):
     """Create Item."""
 
-    item: stac_types.Item = attr.ib(default=Body(None))
+    item: Union[stac_types.Item, stac_types.ItemCollection] = attr.ib(
+        default=Body(None)
+    )
 
 
 @attr.s
@@ -32,8 +34,8 @@ class PutItem(ItemUri):
 class TransactionExtension(ApiExtension):
     """Transaction Extension.
 
-    The transaction extension adds several endpoints which allow the creation, deletion, and updating of items and
-    collections:
+    The transaction extension adds several endpoints which allow the creation,
+    deletion, and updating of items and collections:
         POST /collections
         PUT /collections/{collection_id}
         DELETE /collections/{collection_id}
@@ -51,8 +53,7 @@ class TransactionExtension(ApiExtension):
     settings: ApiSettings = attr.ib()
     conformance_classes: List[str] = attr.ib(
         factory=lambda: [
-            "https://api.stacspec.org/v1.0.0-rc.1/ogcapi-features/extensions/transaction",
-            "http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/simpletx",
+            "https://api.stacspec.org/v1.0.0-rc.3/ogcapi-features/extensions/transaction",
         ]
     )
     schema_href: Optional[str] = attr.ib(default=None)
@@ -73,7 +74,8 @@ class TransactionExtension(ApiExtension):
         )
 
     def register_update_item(self):
-        """Register update item endpoint (PUT /collections/{collection_id}/items/{item_id})."""
+        """Register update item endpoint (PUT
+        /collections/{collection_id}/items/{item_id})."""
         self.router.add_api_route(
             name="Update Item",
             path="/collections/{collection_id}/items/{item_id}",
@@ -86,7 +88,8 @@ class TransactionExtension(ApiExtension):
         )
 
     def register_delete_item(self):
-        """Register delete item endpoint (DELETE /collections/{collection_id}/items/{item_id})."""
+        """Register delete item endpoint (DELETE
+        /collections/{collection_id}/items/{item_id})."""
         self.router.add_api_route(
             name="Delete Item",
             path="/collections/{collection_id}/items/{item_id}",
