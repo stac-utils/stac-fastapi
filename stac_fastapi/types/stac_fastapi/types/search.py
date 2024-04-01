@@ -20,7 +20,7 @@ from geojson_pydantic.geometries import (
     Polygon,
     _GeometryBase,
 )
-from pydantic import BaseModel, ConstrainedInt, validator
+from pydantic import BaseModel, ConstrainedInt, Field, validator
 from pydantic.errors import NumberNotGtError
 from pydantic.validators import int_validator
 from stac_pydantic.shared import BBox
@@ -130,7 +130,7 @@ class BaseSearchPostRequest(BaseModel):
         Union[Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon]
     ]
     datetime: Optional[DateTimeType]
-    limit: Optional[conint(gt=0, le=10000)] = 10
+    limit: Optional[Limit] = Field(default=10)
 
     @property
     def start_date(self) -> Optional[datetime]:
