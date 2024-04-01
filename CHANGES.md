@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+* Improve bbox and datetime typing ([#490](https://github.com/stac-utils/stac-fastapi/pull/490))
+
 ## [2.4.9] - 2023-11-17
 
 ### Added
