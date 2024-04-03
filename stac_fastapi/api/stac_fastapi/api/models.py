@@ -4,9 +4,11 @@ import importlib.util
 from typing import Optional, Type, Union
 
 import attr
-from fastapi import Body, Path
+from fastapi import Body, Path, Query
 from pydantic import BaseModel, create_model
 from pydantic.fields import UndefinedType
+
+from stac_fastapi.api import descriptions
 
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import (
@@ -130,9 +132,12 @@ class ItemCollectionUri(CollectionUri):
     bbox: Optional[str] = attr.ib(default=None, converter=str2list)
     bbox_crs: Optional[str] = attr.ib(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84")
     datetime: Optional[str] = attr.ib(default=None)
-
     crs: Optional[str] = attr.ib(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84")
-
+    filter: Optional[str] = attr.ib(default=Query(None, description=descriptions.FILTER))
+    filter_lang: Optional[str] = attr.ib(
+            default=Query(default="cql-json", alias="filter-lang", description=descriptions.FILTER_LANG)
+        )
+    filter_crs: Optional[str] = attr.ib(default=Query(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84", alias="filter-crs", description=descriptions.FILTER_CRS))
 
 class POSTTokenPagination(BaseModel):
     """Token pagination model for POST requests."""
