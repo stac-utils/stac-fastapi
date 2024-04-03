@@ -1,0 +1,4 @@
+[submodule "stac-fastapi-sqlalchemy"]
+	path = stac-fastapi-sqlalchemy
+	url = https://github.com/SDFIdk/stac-fastapi-sqlalchemy
+	branch = test
