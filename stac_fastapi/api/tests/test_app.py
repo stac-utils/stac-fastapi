@@ -1,3 +1,6 @@
+"""Implement all read_only methods of BaseCoreClient
+and test all GET endpoints of the API"""
+
 import importlib
 import os
 from datetime import datetime
@@ -30,8 +33,9 @@ def cleanup():
         ("False", dict),
     ],
 )
-def test_app(validate, response_type, collection_dict, item_dict, cleanup):
-    os.environ["VALIDATE_RESPONSE"] = str(validate)
+def test_app(validate, response_type, collection_dict, item_dict, cleanup, monkeypatch):
+    monkeypatch.setenv("VALIDATE_RESPONSE", validate)
+
     importlib.reload(response_model)
     importlib.reload(core)
 
