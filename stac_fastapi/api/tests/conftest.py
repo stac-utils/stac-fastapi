@@ -1,6 +1,13 @@
+from datetime import datetime
+from typing import List, Optional, Union
+
 import pytest
 from stac_pydantic import Collection, Item
 from stac_pydantic.api.utils import link_factory
+
+from stac_fastapi.types import core, response_model
+from stac_fastapi.types.core import NumType
+from stac_fastapi.types.search import BaseSearchPostRequest
 
 collection_links = link_factory.CollectionLinks("/", "test").create_links()
 item_links = link_factory.ItemLinks("/", "test", "test").create_links()
@@ -53,3 +60,63 @@ def item(_item: Item):
 @pytest.fixture
 def item_dict(_item: Item):
     return _item.model_dump(mode="json")
+
+
+@pytest.fixture
+def TestCoreClient(collection_dict, item_dict):
+    class CoreClient(core.BaseCoreClient):
+        def post_search(
+            self, search_request: BaseSearchPostRequest, **kwargs
+        ) -> response_model.ItemCollection:
+            return response_model.ItemCollection(
+                type="FeatureCollection", features=[response_model.Item(**item_dict)]
+            )
+
+        def get_search(
+            self,
+            collections: Optional[List[str]] = None,
+            ids: Optional[List[str]] = None,
+            bbox: Optional[List[NumType]] = None,
+            intersects: Optional[str] = None,
+            datetime: Optional[Union[str, datetime]] = None,
+            limit: Optional[int] = 10,
+            **kwargs,
+        ) -> response_model.ItemCollection:
+            return response_model.ItemCollection(
+                type="FeatureCollection", features=[response_model.Item(**item_dict)]
+            )
+
+        def get_item(
+            self, item_id: str, collection_id: str, **kwargs
+        ) -> response_model.Item:
+            return response_model.Item(**item_dict)
+
+        def all_collections(self, **kwargs) -> response_model.Collections:
+            return response_model.Collections(
+                collections=[response_model.Collection(**collection_dict)],
+                links=[
+                    {"href": "test", "rel": "root"},
+                    {"href": "test", "rel": "self"},
+                    {"href": "test", "rel": "parent"},
+                ],
+            )
+
+        def get_collection(
+            self, collection_id: str, **kwargs
+        ) -> response_model.Collection:
+            return response_model.Collection(**collection_dict)
+
+        def item_collection(
+            self,
+            collection_id: str,
+            bbox: Optional[List[Union[float, int]]] = None,
+            datetime: Optional[Union[str, datetime]] = None,
+            limit: int = 10,
+            token: str = None,
+            **kwargs,
+        ) -> response_model.ItemCollection:
+            return response_model.ItemCollection(
+                type="FeatureCollection", features=[response_model.Item(**item_dict)]
+            )
+
+    return CoreClient

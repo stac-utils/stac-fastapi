@@ -1,20 +1,13 @@
 """stac_fastapi: api module."""
 
-from distutils.util import convert_path
-
 from setuptools import find_namespace_packages, setup
-
-main_ns = {}
-ver_path = convert_path("stac_fastapi/api/version.py")
-with open(ver_path) as ver_file:
-    exec(ver_file.read(), main_ns)
 
 with open("README.md") as f:
     desc = f.read()
 
 install_requires = [
     "brotli_asgi",
-    f"stac-fastapi.types=={main_ns['__version__']}",
+    "stac-fastapi.types==2.4.9",
 ]
 
 extra_reqs = {
@@ -58,5 +51,5 @@ setup(
     install_requires=install_requires,
     tests_require=extra_reqs["dev"],
     extras_require=extra_reqs,
-    version=main_ns["__version__"],
+    version="2.4.9",
 )

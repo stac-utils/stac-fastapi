@@ -453,13 +453,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[List[NumType]] = None,
+        intersects: Optional[str] = None,
         datetime: Optional[Union[str, datetime]] = None,
         limit: Optional[int] = 10,
-        query: Optional[str] = None,
-        token: Optional[str] = None,
-        fields: Optional[List[str]] = None,
-        sortby: Optional[str] = None,
-        intersects: Optional[str] = None,
         **kwargs,
     ) -> response_model.ItemCollection:
         """Cross catalog search (GET).

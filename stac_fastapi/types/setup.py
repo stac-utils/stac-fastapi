@@ -1,13 +1,6 @@
 """stac_fastapi: types module."""
 
-from distutils.util import convert_path
-
 from setuptools import find_namespace_packages, setup
-
-main_ns = {}
-ver_path = convert_path("stac_fastapi/types/version.py")
-with open(ver_path) as ver_file:
-    exec(ver_file.read(), main_ns)
 
 with open("README.md") as f:
     desc = f.read()
@@ -60,5 +53,5 @@ setup(
     install_requires=install_requires,
     tests_require=extra_reqs["dev"],
     extras_require=extra_reqs,
-    version=main_ns["__version__"],
+    version="2.4.9",
 )

@@ -26,7 +26,8 @@ def test_create_get_request_model():
         datetime="2020-01-01T00:00:00Z",
         limit=10,
         filter="test==test",
-        # FIXME: hyphen aliases are not properly working
+        # FIXME: https://github.com/stac-utils/stac-fastapi/issues/638
+        # hyphen aliases are not properly working
         # **{"filter-crs": "epsg:4326", "filter-lang": "cql2-text"},
     )
 

@@ -23,4 +23,5 @@ try:
     Conformance = response_model.Conformance
 except AttributeError:
     # TODO: class name needs to be fixed in stac_pydantic
+    # stac-utils/stac-pydantic#136
     Conformance = response_model.ConformanceClasses
