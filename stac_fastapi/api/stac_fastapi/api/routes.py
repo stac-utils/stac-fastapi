@@ -10,20 +10,25 @@ from pydantic import BaseModel
 from stac_pydantic.shared import StacBaseModel
 from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
+from starlette.responses import Response
 from starlette.routing import BaseRoute, Match
 from starlette.status import HTTP_204_NO_CONTENT
 
 from stac_fastapi.api.models import APIRequest
 
 
-def _wrap_response(resp: Any, response_class: Type[Response]) -> Response:
+def _wrap_response(
+    resp: Any,
+    response_class: Optional[Type[Response]] = None,
+) -> Response:
     if isinstance(resp, Response):
         return resp
     elif isinstance(resp, StacBaseModel):
         return resp
     elif resp is not None:
-        return response_class(resp)
+        if response_class:
+            return response_class(resp)
+        return resp
     else:  # None is returned as 204 No Content
         return Response(status_code=HTTP_204_NO_CONTENT)
 
@@ -41,7 +46,7 @@ def sync_to_async(func):
 def create_async_endpoint(
     func: Callable,
     request_model: Union[Type[APIRequest], Type[BaseModel], Dict],
-    response_class: Type[Response] = JSONResponse,
+    response_class: Optional[Type[Response]] = None,
 ):
     """Wrap a function in a coroutine which may be used to create a FastAPI endpoint.
 
