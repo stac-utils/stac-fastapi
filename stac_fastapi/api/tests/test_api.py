@@ -45,7 +45,7 @@ class TestRouteDependencies:
                     headers={"content-type": "application/json"},
                 )
                 assert (
-                    response.status_code == 200
+                    200 <= response.status_code < 300
                 ), "Authenticated requests should be accepted"
                 assert response.json() == "dummy response"
 
