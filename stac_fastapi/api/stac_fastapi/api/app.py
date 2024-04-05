@@ -141,9 +141,7 @@ class StacApi:
             response_model_exclude_unset=False,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.landing_page, EmptyRequest, self.response_class
-            ),
+            endpoint=create_async_endpoint(self.client.landing_page, EmptyRequest),
         )
 
     def register_conformance_classes(self):
@@ -170,9 +168,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.conformance, EmptyRequest, self.response_class
-            ),
+            endpoint=create_async_endpoint(self.client.conformance, EmptyRequest),
         )
 
     def register_get_item(self):
@@ -197,9 +193,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.get_item, ItemUri, GeoJSONResponse
-            ),
+            endpoint=create_async_endpoint(self.client.get_item, ItemUri),
         )
 
     def register_post_search(self):
@@ -230,7 +224,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=create_async_endpoint(
-                self.client.post_search, self.search_post_request_model, GeoJSONResponse
+                self.client.post_search, self.search_post_request_model
             ),
         )
 
@@ -262,7 +256,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=create_async_endpoint(
-                self.client.get_search, self.search_get_request_model, GeoJSONResponse
+                self.client.get_search, self.search_get_request_model
             ),
         )
 
@@ -290,9 +284,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.all_collections, EmptyRequest, self.response_class
-            ),
+            endpoint=create_async_endpoint(self.client.all_collections, EmptyRequest),
         )
 
     def register_get_collection(self):
@@ -319,9 +311,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.get_collection, CollectionUri, self.response_class
-            ),
+            endpoint=create_async_endpoint(self.client.get_collection, CollectionUri),
         )
 
     def register_get_item_collection(self):
@@ -358,9 +348,7 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.item_collection, request_model, GeoJSONResponse
-            ),
+            endpoint=create_async_endpoint(self.client.item_collection, request_model),
         )
 
     def register_core(self):
