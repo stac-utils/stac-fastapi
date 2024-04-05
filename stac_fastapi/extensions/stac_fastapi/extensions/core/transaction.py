@@ -5,6 +5,7 @@ from typing import List, Optional, Type, Union
 import attr
 from fastapi import APIRouter, Body, FastAPI
 from stac_pydantic import Collection, Item, ItemCollection
+from stac_pydantic.shared import MimeTypes
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.models import CollectionUri, ItemUri
@@ -63,7 +64,16 @@ class TransactionExtension(ApiExtension):
         self.router.add_api_route(
             name="Create Item",
             path="/collections/{collection_id}/items",
+            status_code=201,
             response_model=Item if self.settings.enable_response_models else None,
+            responses={
+                201: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": Item,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -78,6 +88,14 @@ class TransactionExtension(ApiExtension):
             name="Update Item",
             path="/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": Item,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -92,6 +110,14 @@ class TransactionExtension(ApiExtension):
             name="Delete Item",
             path="/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": Item,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -104,7 +130,16 @@ class TransactionExtension(ApiExtension):
         self.router.add_api_route(
             name="Create Collection",
             path="/collections",
+            status_code=201,
             response_model=Collection if self.settings.enable_response_models else None,
+            responses={
+                201: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": Collection,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -118,6 +153,14 @@ class TransactionExtension(ApiExtension):
             name="Update Collection",
             path="/collections",
             response_model=Collection if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": Collection,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -131,6 +174,14 @@ class TransactionExtension(ApiExtension):
             name="Delete Collection",
             path="/collections/{collection_id}",
             response_model=Collection if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": Collection,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
