@@ -6,7 +6,9 @@
 
 * Update to pydantic v2 and stac_pydantic v3
 * Removed internal Search and Operator Types in favor of stac_pydantic Types
-* Add switch to choose between TypeDict and StacPydantic response models
+* Fix response model validation
+* Add Response Model to OpenAPI, even if model validation is turned off
+* Use status code 201 for Item/ Collection creation
 * Add support for Python 3.12
 * Replace Black with Ruff Format
 

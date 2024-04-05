@@ -378,8 +378,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add Collections links
-        _collections = self.all_collections(request=kwargs["request"])
-        collections = _collections
+        collections = self.all_collections(request=kwargs["request"])
 
         for collection in collections["collections"]:
             landing_page["links"].append(
@@ -573,8 +572,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add Collections links
-        _collections = await self.all_collections(request=kwargs["request"])
-        collections = _collections
+        collections = await self.all_collections(request=kwargs["request"])
 
         for collection in collections["collections"]:
             landing_page["links"].append(
