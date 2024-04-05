@@ -31,8 +31,6 @@ class ApiSettings(BaseSettings):
     openapi_url: str = "/api"
     docs_url: str = "/api.html"
 
-    validate_response: bool = False
-
     model_config = SettingsConfigDict(env_file=".env", extra="allow")
 
 

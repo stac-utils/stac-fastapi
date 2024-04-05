@@ -7,14 +7,13 @@ from urllib.parse import urljoin
 
 import attr
 from fastapi import Request
-from pydantic import BaseModel
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api.version import STAC_API_VERSION
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 from starlette.responses import Response
 
-from stac_fastapi.types import response_model
+from stac_fastapi.types import stac
 from stac_fastapi.types.config import Settings
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
@@ -265,8 +264,8 @@ class LandingPageMixin(abc.ABC):
         base_url: str,
         conformance_classes: List[str],
         extension_schemas: List[str],
-    ) -> Dict[str, Any]:
-        landing_page = response_model.LandingPage(
+    ) -> stac.LandingPage:
+        landing_page = stac.LandingPage(
             type="Catalog",
             id=self.landing_page_id,
             title=self.title,
@@ -276,42 +275,42 @@ class LandingPageMixin(abc.ABC):
             links=[
                 {
                     "rel": Relations.self.value,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.json.value,
                     "href": base_url,
                 },
                 {
                     "rel": Relations.root.value,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.json.value,
                     "href": base_url,
                 },
                 {
-                    "rel": "data",
-                    "type": MimeTypes.json,
+                    "rel": Relations.data.value,
+                    "type": MimeTypes.json.value,
                     "href": urljoin(base_url, "collections"),
                 },
                 {
                     "rel": Relations.conformance.value,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.json.value,
                     "title": "STAC/OGC conformance classes implemented by this server",
                     "href": urljoin(base_url, "conformance"),
                 },
                 {
                     "rel": Relations.search.value,
-                    "type": MimeTypes.geojson,
+                    "type": MimeTypes.geojson.value,
                     "title": "STAC search",
                     "href": urljoin(base_url, "search"),
                     "method": "GET",
                 },
                 {
                     "rel": Relations.search.value,
-                    "type": MimeTypes.geojson,
+                    "type": MimeTypes.geojson.value,
                     "title": "STAC search",
                     "href": urljoin(base_url, "search"),
                     "method": "POST",
                 },
                 {
                     "rel": Relations.service_desc.value,
-                    "type": MimeTypes.geojson,
+                    "type": MimeTypes.geojson.value,
                     "title": "Service Description",
                     "href": Settings.get().openapi_url,
                 },
@@ -319,10 +318,7 @@ class LandingPageMixin(abc.ABC):
             stac_extensions=extension_schemas,
         )
 
-        if isinstance(landing_page, BaseModel):
-            return landing_page.model_dump(mode="json")
-        else:
-            return landing_page
+        return landing_page
 
 
 @attr.s  # type:ignore
@@ -364,7 +360,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
         return base_conformance
 
-    def landing_page(self, **kwargs) -> response_model.LandingPage:
+    def landing_page(self, **kwargs) -> stac.LandingPage:
         """Landing page.
 
         Called with `GET /`.
@@ -383,10 +379,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
         # Add Collections links
         _collections = self.all_collections(request=kwargs["request"])
-        if isinstance(_collections, BaseModel):
-            collections = _collections.model_dump(mode="json")
-        else:
-            collections = _collections
+        collections = _collections
+
         for collection in collections["collections"]:
             landing_page["links"].append(
                 {
@@ -400,8 +394,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         # Add OpenAPI URL
         landing_page["links"].append(
             {
-                "rel": "service-desc",
-                "type": "application/vnd.oai.openapi+json;version=3.0",
+                "rel": Relations.service_desc.value,
+                "type": MimeTypes.openapi.value,
                 "title": "OpenAPI service description",
                 "href": urljoin(
                     str(request.base_url), request.app.openapi_url.lstrip("/")
@@ -412,16 +406,16 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         # Add human readable service-doc
         landing_page["links"].append(
             {
-                "rel": "service-doc",
-                "type": "text/html",
+                "rel": Relations.service_doc.value,
+                "type": MimeTypes.html.value,
                 "title": "OpenAPI service documentation",
                 "href": urljoin(str(request.base_url), request.app.docs_url.lstrip("/")),
             }
         )
 
-        return response_model.LandingPage(**landing_page)
+        return stac.LandingPage(**landing_page)
 
-    def conformance(self, **kwargs) -> response_model.Conformance:
+    def conformance(self, **kwargs) -> stac.Conformance:
         """Conformance classes.
 
         Called with `GET /conformance`.
@@ -429,12 +423,12 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             Conformance classes which the server conforms to.
         """
-        return response_model.Conformance(conformsTo=self.conformance_classes())
+        return stac.Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
     def post_search(
         self, search_request: BaseSearchPostRequest, **kwargs
-    ) -> response_model.ItemCollection:
+    ) -> stac.ItemCollection:
         """Cross catalog search (POST).
 
         Called with `POST /search`.
@@ -457,7 +451,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         datetime: Optional[Union[str, datetime]] = None,
         limit: Optional[int] = 10,
         **kwargs,
-    ) -> response_model.ItemCollection:
+    ) -> stac.ItemCollection:
         """Cross catalog search (GET).
 
         Called with `GET /search`.
@@ -468,7 +462,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_item(self, item_id: str, collection_id: str, **kwargs) -> response_model.Item:
+    def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
         """Get item by id.
 
         Called with `GET /collections/{collection_id}/items/{item_id}`.
@@ -483,7 +477,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def all_collections(self, **kwargs) -> response_model.Collections:
+    def all_collections(self, **kwargs) -> stac.Collections:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -494,7 +488,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_collection(self, collection_id: str, **kwargs) -> response_model.Collection:
+    def get_collection(self, collection_id: str, **kwargs) -> stac.Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collection_id}`.
@@ -516,7 +510,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         limit: int = 10,
         token: str = None,
         **kwargs,
-    ) -> response_model.ItemCollection:
+    ) -> stac.ItemCollection:
         """Get all items from a specific collection.
 
         Called with `GET /collections/{collection_id}/items`
@@ -561,7 +555,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         """Check if an api extension is enabled."""
         return any([type(ext).__name__ == extension for ext in self.extensions])
 
-    async def landing_page(self, **kwargs) -> response_model.LandingPage:
+    async def landing_page(self, **kwargs) -> stac.LandingPage:
         """Landing page.
 
         Called with `GET /`.
@@ -580,10 +574,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
 
         # Add Collections links
         _collections = await self.all_collections(request=kwargs["request"])
-        if isinstance(_collections, BaseModel):
-            collections = _collections.model_dump(mode="json")
-        else:
-            collections = _collections
+        collections = _collections
+
         for collection in collections["collections"]:
             landing_page["links"].append(
                 {
@@ -597,8 +589,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         # Add OpenAPI URL
         landing_page["links"].append(
             {
-                "rel": "service-desc",
-                "type": "application/vnd.oai.openapi+json;version=3.0",
+                "rel": Relations.service_desc.value,
+                "type": MimeTypes.openapi.value,
                 "title": "OpenAPI service description",
                 "href": urljoin(
                     str(request.base_url), request.app.openapi_url.lstrip("/")
@@ -609,16 +601,16 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         # Add human readable service-doc
         landing_page["links"].append(
             {
-                "rel": "service-doc",
-                "type": "text/html",
+                "rel": Relations.service_doc.value,
+                "type": MimeTypes.html.value,
                 "title": "OpenAPI service documentation",
                 "href": urljoin(str(request.base_url), request.app.docs_url.lstrip("/")),
             }
         )
 
-        return response_model.LandingPage(**landing_page)
+        return stac.LandingPage(**landing_page)
 
-    async def conformance(self, **kwargs) -> response_model.Conformance:
+    async def conformance(self, **kwargs) -> stac.Conformance:
         """Conformance classes.
 
         Called with `GET /conformance`.
@@ -626,12 +618,12 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             Conformance classes which the server conforms to.
         """
-        return response_model.Conformance(conformsTo=self.conformance_classes())
+        return stac.Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
     async def post_search(
         self, search_request: BaseSearchPostRequest, **kwargs
-    ) -> response_model.ItemCollection:
+    ) -> stac.ItemCollection:
         """Cross catalog search (POST).
 
         Called with `POST /search`.
@@ -650,15 +642,11 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[List[NumType]] = None,
+        intersects: Optional[str] = None,
         datetime: Optional[Union[str, datetime]] = None,
         limit: Optional[int] = 10,
-        query: Optional[str] = None,
-        token: Optional[str] = None,
-        fields: Optional[List[str]] = None,
-        sortby: Optional[str] = None,
-        intersects: Optional[str] = None,
         **kwargs,
-    ) -> response_model.ItemCollection:
+    ) -> stac.ItemCollection:
         """Cross catalog search (GET).
 
         Called with `GET /search`.
@@ -669,9 +657,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_item(
-        self, item_id: str, collection_id: str, **kwargs
-    ) -> response_model.Item:
+    async def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
         """Get item by id.
 
         Called with `GET /collections/{collection_id}/items/{item_id}`.
@@ -686,7 +672,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def all_collections(self, **kwargs) -> response_model.Collections:
+    async def all_collections(self, **kwargs) -> stac.Collections:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -697,9 +683,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_collection(
-        self, collection_id: str, **kwargs
-    ) -> response_model.Collection:
+    async def get_collection(self, collection_id: str, **kwargs) -> stac.Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collection_id}`.
@@ -721,7 +705,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         limit: int = 10,
         token: str = None,
         **kwargs,
-    ) -> response_model.ItemCollection:
+    ) -> stac.ItemCollection:
         """Get all items from a specific collection.
 
         Called with `GET /collections/{collection_id}/items`

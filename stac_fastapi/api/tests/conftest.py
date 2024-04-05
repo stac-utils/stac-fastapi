@@ -5,7 +5,7 @@ import pytest
 from stac_pydantic import Collection, Item
 from stac_pydantic.api.utils import link_factory
 
-from stac_fastapi.types import core, response_model
+from stac_fastapi.types import core, stac
 from stac_fastapi.types.core import NumType
 from stac_fastapi.types.search import BaseSearchPostRequest
 
@@ -67,9 +67,9 @@ def TestCoreClient(collection_dict, item_dict):
     class CoreClient(core.BaseCoreClient):
         def post_search(
             self, search_request: BaseSearchPostRequest, **kwargs
-        ) -> response_model.ItemCollection:
-            return response_model.ItemCollection(
-                type="FeatureCollection", features=[response_model.Item(**item_dict)]
+        ) -> stac.ItemCollection:
+            return stac.ItemCollection(
+                type="FeatureCollection", features=[stac.Item(**item_dict)]
             )
 
         def get_search(
@@ -81,19 +81,17 @@ def TestCoreClient(collection_dict, item_dict):
             datetime: Optional[Union[str, datetime]] = None,
             limit: Optional[int] = 10,
             **kwargs,
-        ) -> response_model.ItemCollection:
-            return response_model.ItemCollection(
-                type="FeatureCollection", features=[response_model.Item(**item_dict)]
+        ) -> stac.ItemCollection:
+            return stac.ItemCollection(
+                type="FeatureCollection", features=[stac.Item(**item_dict)]
             )
 
-        def get_item(
-            self, item_id: str, collection_id: str, **kwargs
-        ) -> response_model.Item:
-            return response_model.Item(**item_dict)
+        def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
+            return stac.Item(**item_dict)
 
-        def all_collections(self, **kwargs) -> response_model.Collections:
-            return response_model.Collections(
-                collections=[response_model.Collection(**collection_dict)],
+        def all_collections(self, **kwargs) -> stac.Collections:
+            return stac.Collections(
+                collections=[stac.Collection(**collection_dict)],
                 links=[
                     {"href": "test", "rel": "root"},
                     {"href": "test", "rel": "self"},
@@ -101,10 +99,8 @@ def TestCoreClient(collection_dict, item_dict):
                 ],
             )
 
-        def get_collection(
-            self, collection_id: str, **kwargs
-        ) -> response_model.Collection:
-            return response_model.Collection(**collection_dict)
+        def get_collection(self, collection_id: str, **kwargs) -> stac.Collection:
+            return stac.Collection(**collection_dict)
 
         def item_collection(
             self,
@@ -114,9 +110,9 @@ def TestCoreClient(collection_dict, item_dict):
             limit: int = 10,
             token: str = None,
             **kwargs,
-        ) -> response_model.ItemCollection:
-            return response_model.ItemCollection(
-                type="FeatureCollection", features=[response_model.Item(**item_dict)]
+        ) -> stac.ItemCollection:
+            return stac.ItemCollection(
+                type="FeatureCollection", features=[stac.Item(**item_dict)]
             )
 
     return CoreClient
