@@ -131,6 +131,7 @@ def test_benchmark_items(
             )
 
     benchmark.group = "Items With Model validation" if validate else "Items"
+    benchmark.name = "Items With Model validation" if validate else "Items"
 
     response = benchmark(f, params)
     assert response.status_code == 200
@@ -149,6 +150,7 @@ def test_benchmark_collection(
             return client_no_validation.get("/collections/fake_collection")
 
     benchmark.group = "Collection With Model validation" if validate else "Collection"
+    benchmark.name = "Collection With Model validation" if validate else "Collection"
 
     response = benchmark(f)
     assert response.status_code == 200
@@ -167,6 +169,7 @@ def test_benchmark_collections(
             return client_no_validation.get("/collections")
 
     benchmark.group = "Collections With Model validation" if validate else "Collections"
+    benchmark.name = "Collections With Model validation" if validate else "Collections"
 
     response = benchmark(f)
     assert response.status_code == 200
