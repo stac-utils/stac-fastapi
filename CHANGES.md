@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Changed
+
+* Make sure FastAPI use Pydantic validatio and serialization by no wrapping endpoint output with a Response object ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+
+### Removed
+
+* Deprecate `response_class` option in `stac_fastapi.api.routes.create_async_endpoint` method ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+
+### Added
+
+* Add benchmark in CI ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+
 ## [2.4.9] - 2023-11-17
 
 ### Added
