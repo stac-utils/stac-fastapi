@@ -53,8 +53,7 @@ class TransactionExtension(ApiExtension):
     settings: ApiSettings = attr.ib()
     conformance_classes: List[str] = attr.ib(
         factory=lambda: [
-            "https://api.stacspec.org/v1.0.0-rc.2/ogcapi-features/extensions/transaction",
-            "http://www.opengis.net/spec/ogcapi-features-4/1.0/conf/simpletx",
+            "https://api.stacspec.org/v1.0.0-rc.3/ogcapi-features/extensions/transaction",
         ]
     )
     schema_href: Optional[str] = attr.ib(default=None)

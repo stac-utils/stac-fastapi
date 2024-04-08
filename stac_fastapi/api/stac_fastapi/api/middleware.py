@@ -10,7 +10,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 class CORSMiddleware(_CORSMiddleware):
     """Subclass of Starlette's standard CORS middleware with default values set to those
-    reccomended by the STAC API spec.
+    recommended by the STAC API spec.
 
     https://github.com/radiantearth/stac-api-spec/blob/914cf8108302e2ec734340080a45aaae4859bb63/implementation.md#cors
     """
@@ -103,6 +103,7 @@ class ProxyHeaderMiddleware:
                             # ignore ports that are not valid integers
                             pass
         else:
+            domain = self._get_header_value_by_name(scope, "x-forwarded-host", domain)
             proto = self._get_header_value_by_name(scope, "x-forwarded-proto", proto)
             port_str = self._get_header_value_by_name(scope, "x-forwarded-port", port)
             try:

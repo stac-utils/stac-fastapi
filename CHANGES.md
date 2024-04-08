@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [2.4.9] - 2023-11-17
+
+### Added
+
+* Add CQL2-json to filter conformance class ([#611](https://github.com/stac-utils/stac-fastapi/issues/611))
+* Add Elasticsearch backend ([#616](https://github.com/stac-utils/stac-fastapi/pull/616))
+
+### Changed
+
+* Forward `x-forwarded-host` ([#586](https://github.com/stac-utils/stac-fastapi/pull/586))
+* Add `method` parameter to Bulk Transactions extension in order to support upserting bulk data ([#614](https://github.com/stac-utils/stac-fastapi/pull/614))
+
 ## [2.4.8] - 2023-06-07
 
 ### Changed
@@ -275,7 +287,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.8..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.9..main>
+[2.4.9]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.8..2.4.9>
 [2.4.8]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.7..2.4.8>
 [2.4.7]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.6..2.4.7>
 [2.4.6]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.5..2.4.6>
