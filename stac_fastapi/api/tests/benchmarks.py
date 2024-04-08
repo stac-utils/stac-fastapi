@@ -67,7 +67,7 @@ class CoreClient(BaseCoreClient):
 
     def all_collections(self, **kwargs) -> stac_types.Collections:
         return stac_types.Collections(
-            collections=[collections],
+            collections=collections,
             links=[
                 {"href": "test", "rel": "root"},
                 {"href": "test", "rel": "self"},
@@ -88,29 +88,33 @@ class CoreClient(BaseCoreClient):
         **kwargs,
     ) -> stac_types.ItemCollection:
         return stac_types.ItemCollection(
-            type="FeatureCollection", features=[items[0:limit]]
+            type="FeatureCollection",
+            features=items[0:limit],
+            links=[
+                {"href": "test", "rel": "root"},
+                {"href": "test", "rel": "self"},
+                {"href": "test", "rel": "parent"},
+            ],
         )
 
 
 @pytest.fixture(autouse=True)
 def client_validation() -> TestClient:
-    app = StacApi(
-        settings=ApiSettings(enable_response_models=True), client=CoreClient()
-    )
+    settings = ApiSettings(enable_response_models=True)
+    app = StacApi(settings=settings, client=CoreClient())
     with TestClient(app.app) as client:
         yield client
 
 
 @pytest.fixture(autouse=True)
 def client_no_validation() -> TestClient:
-    app = StacApi(
-        settings=ApiSettings(enable_response_models=False), client=CoreClient()
-    )
+    settings = ApiSettings(enable_response_models=False)
+    app = StacApi(settings=settings, client=CoreClient())
     with TestClient(app.app) as client:
         yield client
 
 
-@pytest.mark.parametrize("limit", [1, 10, 50, 100, 200, 250])
+@pytest.mark.parametrize("limit", [1, 10, 50, 100, 200, 250, 1000])
 @pytest.mark.parametrize("validate", [True, False])
 def test_benchmark_items(
     benchmark, client_validation, client_no_validation, validate, limit
