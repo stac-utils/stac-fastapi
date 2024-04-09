@@ -14,11 +14,12 @@ class ApiSettings(BaseSettings):
         debug: toggles debug mode.
         forbidden_fields: set of fields defined by STAC but not included in the database.
         indexed_fields:
-            set of fields which are usually in `item.properties` but are indexed as distinct columns in
-            the database.
+            set of fields which are usually in `item.properties` but are indexed
+            as distinct columns in the database.
     """
 
-    # TODO: Remove `default_includes` attribute so we can use `pydantic.BaseSettings` instead
+    # TODO: Remove `default_includes` attribute so we can use
+    # `pydantic.BaseSettings` instead
     default_includes: Optional[Set[str]] = None
 
     app_host: str = "0.0.0.0"
@@ -39,7 +40,7 @@ class ApiSettings(BaseSettings):
     api_tags: List[Dict[str, Any]] = []
 
     class Config:
-        """model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
+        """Model config (https://pydantic-docs.helpmanual.io/usage/model_config/)."""
 
         extra = "allow"
         env_file = ".env"
@@ -57,7 +58,10 @@ class Settings:
 
     @classmethod
     def get(cls) -> ApiSettings:
-        """Get the settings. If they have not yet been set, throws an exception."""
+        """Get the settings.
+
+        If they have not yet been set, throws an exception.
+        """
         if cls._instance is None:
             raise ValueError("Settings have not yet been set.")
         return cls._instance

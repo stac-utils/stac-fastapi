@@ -1,4 +1,4 @@
-"""context extension."""
+"""Context extension."""
 from typing import List, Optional
 
 import attr
@@ -11,17 +11,17 @@ from stac_fastapi.types.extension import ApiExtension
 class ContextExtension(ApiExtension):
     """Context Extension.
 
-    The Context extension adds a JSON object to ItemCollection responses (`/search`, `/collections/{collection_id}/items`)
-    which includes the number of items matched, returned, and the limit requested.
-
-    https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#context
+    The Context extension adds a JSON object to ItemCollection responses (`/search`,
+    `/collections/{collection_id}/items`) which includes the number of items matched,
+    returned, and the limit requested.
+    https://github.com/stac-api-extensions/context
     """
 
     conformance_classes: List[str] = attr.ib(
-        factory=lambda: ["https://api.stacspec.org/v1.0.0-rc.1/item-search#context"]
+        factory=lambda: ["https://api.stacspec.org/v1.0.0-rc.2/item-search#context"]
     )
     schema_href: Optional[str] = attr.ib(
-        default="https://raw.githubusercontent.com/radiantearth/stac-api-spec/v1.0.0-rc.1/fragments/context/json-schema/schema.json"
+        default="https://raw.githubusercontent.com/stac-api-extensions/context/v1.0.0-rc.2/json-schema/schema.json"
     )
 
     def register(self, app: FastAPI) -> None:

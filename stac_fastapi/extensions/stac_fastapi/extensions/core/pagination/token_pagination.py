@@ -13,10 +13,10 @@ from stac_fastapi.types.extension import ApiExtension
 class TokenPaginationExtension(ApiExtension):
     """Token Pagination.
 
-    Though not strictly an extension, the chosen pagination will modify the
-    form of the request object. By making pagination an extension class, we can
-    use create_request_model to dynamically add the correct pagination parameter
-    to the request model for OpenAPI generation.
+    Though not strictly an extension, the chosen pagination will modify the form of the
+    request object. By making pagination an extension class, we can use
+    create_request_model to dynamically add the correct pagination parameter to the
+    request model for OpenAPI generation.
     """
 
     GET = GETTokenPagination

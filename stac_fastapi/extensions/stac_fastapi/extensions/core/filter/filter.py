@@ -18,43 +18,50 @@ from .request import FilterExtensionGetRequest, FilterExtensionPostRequest
 class FilterConformanceClasses(str, Enum):
     """Conformance classes for the Filter extension.
 
-    See https://github.com/radiantearth/stac-api-spec/tree/v1.0.0-rc.1/fragments/filter
+    See
+    https://github.com/stac-api-extensions/filter
     """
 
     FILTER = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter"
     FEATURES_FILTER = (
         "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"
     )
-    ITEM_SEARCH_FILTER = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter"
-    CQL_TEXT = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:cql-text"
-    CQL_JSON = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:cql-json"
-    BASIC_CQL = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:basic-cql"
-    BASIC_SPATIAL_OPERATORS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:basic-spatial-operators"
-    BASIC_TEMPORAL_OPERATORS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:basic-temporal-operators"
-    ENHANCED_COMPARISON_OPERATORS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:enhanced-comparison-operators"
-    ENHANCED_SPATIAL_OPERATORS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:enhanced-spatial-operators"
-    ENHANCED_TEMPORAL_OPERATORS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:enhanced-temporal-operators"
-    FUNCTIONS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:functions"
-    ARITHMETIC = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:arithmetic"
-    ARRAYS = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:arrays"
-    QUERYABLE_SECOND_OPERAND = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter:queryable-second-operand"
+    ITEM_SEARCH_FILTER = "https://api.stacspec.org/v1.0.0-rc.2/item-search#filter"
+    CQL2_TEXT = "http://www.opengis.net/spec/cql2/1.0/conf/cql2-text"
+    CQL2_JSON = "http://www.opengis.net/spec/cql2/1.0/conf/cql2-json"
+    BASIC_CQL2 = "http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2"
+    BASIC_SPATIAL_OPERATORS = (
+        "http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-operators"
+    )
+    TEMPORAL_OPERATORS = " http://www.opengis.net/spec/cql2/1.0/conf/temporal-operators"
+    ADVANCED_COMPARISON_OPERATORS = (
+        "http://www.opengis.net/spec/cql2/1.0/conf/advanced-comparison-operators"
+    )
+    SPATIAL_OPERATORS = "http://www.opengis.net/spec/cql2/1.0/conf/spatial-operators"
+    FUNCTIONS = "http://www.opengis.net/spec/cql2/1.0/conf/functions"
+    ARITHMETIC = "http://www.opengis.net/spec/cql2/1.0/conf/arithmetic"
+    ARRAYS = "http://www.opengis.net/spec/cql2/1.0/conf/array-operators"
+    PROPERTY_PROPERTY = "http://www.opengis.net/spec/cql2/1.0/conf/property-property"
+    ACCENT_CASE_INSENSITIVE_COMPARISON = (
+        "http://www.opengis.net/spec/cql2/1.0/conf/accent-case-insensitive-comparison"
+    )
 
 
 @attr.s
 class FilterExtension(ApiExtension):
     """Filter Extension.
 
-    The filter extension adds several endpoints which allow the retrieval of queryables and
-    provides an expressive mechanism for searching based on Item Attributes:
+    The filter extension adds several endpoints which allow the retrieval of
+    queryables and provides an expressive mechanism for searching based on Item
+    Attributes:
         GET /queryables
         GET /collections/{collection_id}/queryables
 
-    https://github.com/radiantearth/stac-api-spec/blob/master/fragments/filter/README.md
+    https://github.com/stac-api-extensions/filter/blob/main/README.md
 
     Attributes:
         client: Queryables endpoint logic
         conformance_classes: Conformance classes provided by the extension
-
     """
 
     GET = FilterExtensionGetRequest
@@ -68,8 +75,9 @@ class FilterExtension(ApiExtension):
             FilterConformanceClasses.FILTER,
             FilterConformanceClasses.FEATURES_FILTER,
             FilterConformanceClasses.ITEM_SEARCH_FILTER,
-            FilterConformanceClasses.BASIC_CQL,
-            FilterConformanceClasses.CQL_TEXT,
+            FilterConformanceClasses.BASIC_CQL2,
+            FilterConformanceClasses.CQL2_JSON,
+            FilterConformanceClasses.CQL2_TEXT,
         ]
     )
     router: APIRouter = attr.ib(factory=APIRouter)

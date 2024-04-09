@@ -39,14 +39,14 @@ class TestRouteDependencies:
                 ), "Unauthenticated requests should be rejected"
                 assert response.json() == {"detail": "Not authenticated"}
 
-                make_request = getattr(client, route["method"].lower())
                 path = route["path"].format(
                     collectionId="test_collection", itemId="test_item"
                 )
-                response = make_request(
-                    path,
+                response = client.request(
+                    method=route["method"].lower(),
+                    url=path,
                     auth=("bob", "dobbs"),
-                    data='{"dummy": "payload"}',
+                    content='{"dummy": "payload"}',
                     headers={"content-type": "application/json"},
                 )
                 assert (
@@ -54,10 +54,19 @@ class TestRouteDependencies:
                 ), "Authenticated requests should be accepted"
                 assert response.json() == "dummy response"
 
+    def test_openapi_content_type(self):
+        api = self._build_api()
+        with TestClient(api.app) as client:
+            response = client.get(api.settings.openapi_url)
+            assert (
+                response.headers["content-type"]
+                == "application/vnd.oai.openapi+json;version=3.0"
+            )
+
     def test_build_api_with_route_dependencies(self):
         routes = [
             {"path": "/collections", "method": "POST"},
-            {"path": "/collections", "method": "PUT"},
+            {"path": "/collections/{collectionId}", "method": "PUT"},
             {"path": "/collections/{collectionId}", "method": "DELETE"},
             {"path": "/collections/{collectionId}/items", "method": "POST"},
             {"path": "/collections/{collectionId}/items/{itemId}", "method": "PUT"},
@@ -70,7 +79,7 @@ class TestRouteDependencies:
     def test_add_route_dependencies_after_building_api(self):
         routes = [
             {"path": "/collections", "method": "POST"},
-            {"path": "/collections", "method": "PUT"},
+            {"path": "/collections/{collectionId}", "method": "PUT"},
             {"path": "/collections/{collectionId}", "method": "DELETE"},
             {"path": "/collections/{collectionId}/items", "method": "POST"},
             {"path": "/collections/{collectionId}/items/{itemId}", "method": "PUT"},
