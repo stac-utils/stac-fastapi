@@ -18,14 +18,15 @@ from .request import FilterExtensionGetRequest, FilterExtensionPostRequest
 class FilterConformanceClasses(str, Enum):
     """Conformance classes for the Filter extension.
 
-    See https://github.com/radiantearth/stac-api-spec/tree/v1.0.0-rc.1/fragments/filter
+    See
+    https://github.com/stac-api-extensions/filter
     """
 
     FILTER = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter"
     FEATURES_FILTER = (
         "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"
     )
-    ITEM_SEARCH_FILTER = "https://api.stacspec.org/v1.0.0-rc.1/item-search#filter"
+    ITEM_SEARCH_FILTER = "https://api.stacspec.org/v1.0.0-rc.2/item-search#filter"
     CQL2_TEXT = "http://www.opengis.net/spec/cql2/1.0/conf/cql2-text"
     CQL2_JSON = "http://www.opengis.net/spec/cql2/1.0/conf/cql2-json"
     BASIC_CQL2 = "http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2"
@@ -50,17 +51,17 @@ class FilterConformanceClasses(str, Enum):
 class FilterExtension(ApiExtension):
     """Filter Extension.
 
-    The filter extension adds several endpoints which allow the retrieval of queryables and
-    provides an expressive mechanism for searching based on Item Attributes:
+    The filter extension adds several endpoints which allow the retrieval of
+    queryables and provides an expressive mechanism for searching based on Item
+    Attributes:
         GET /queryables
         GET /collections/{collection_id}/queryables
 
-    https://github.com/radiantearth/stac-api-spec/blob/master/fragments/filter/README.md
+    https://github.com/stac-api-extensions/filter/blob/main/README.md
 
     Attributes:
         client: Queryables endpoint logic
         conformance_classes: Conformance classes provided by the extension
-
     """
 
     GET = FilterExtensionGetRequest
@@ -75,6 +76,7 @@ class FilterExtension(ApiExtension):
             FilterConformanceClasses.FEATURES_FILTER,
             FilterConformanceClasses.ITEM_SEARCH_FILTER,
             FilterConformanceClasses.BASIC_CQL2,
+            FilterConformanceClasses.CQL2_JSON,
             FilterConformanceClasses.CQL2_TEXT,
         ]
     )

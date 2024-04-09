@@ -2,6 +2,57 @@
 
 ## [Unreleased]
 
+### Added
+
+* Add benchmark in CI ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+
+### Changed
+
+* Updated the collection update endpoint to match with the collection-transaction extension. ([#630](https://github.com/stac-utils/stac-fastapi/issues/630))
+* Improve bbox and datetime typing ([#490](https://github.com/stac-utils/stac-fastapi/pull/490)
+* Add `items` link to inferred link relations ([#634](https://github.com/stac-utils/stac-fastapi/issues/634))
+* Make sure FastAPI uses Pydantic validation and serialization by not wrapping endpoint output with a Response object ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+
+### Removed
+
+* Deprecate `response_class` option in `stac_fastapi.api.routes.create_async_endpoint` method ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+
+## [2.4.9] - 2023-11-17
+
+### Added
+
+* Add CQL2-json to filter conformance class ([#611](https://github.com/stac-utils/stac-fastapi/issues/611))
+* Add Elasticsearch backend ([#616](https://github.com/stac-utils/stac-fastapi/pull/616))
+
+### Changed
+
+* Forward `x-forwarded-host` ([#586](https://github.com/stac-utils/stac-fastapi/pull/586))
+* Add `method` parameter to Bulk Transactions extension in order to support upserting bulk data ([#614](https://github.com/stac-utils/stac-fastapi/pull/614))
+
+## [2.4.8] - 2023-06-07
+
+### Changed
+
+* Advertise STAC API v1.0.0 ([#578](https://github.com/stac-utils/stac-fastapi/pull/578))
+
+## [2.4.7] - 2023-05-16
+
+### Added
+
+* Add support for POSTing ItemCollections to the /items endpoint of the Transaction Extension ([#547](https://github.com/stac-utils/stac-fastapi/pull/574))
+
+### Changed
+
+* flake8, isort, and pydocstyle replaced by ruff for pre-commit checks ([#549](https://github.com/stac-utils/stac-fastapi/pull/549))
+
+## [2.4.6] - 2023-05-09
+
+### Changed
+
+* Backends are now hosted in their own repositories ([https://github.com/stac-utils/stac-fastapi/pull/555]):
+  * [stac-fastapi-pgstac](https://github.com/stac-utils/stac-fastapi-pgstac)
+  * [stac-fastapi-sqlalchemy](https://github.com/stac-utils/stac-fastapi-sqlalchemy)
+
 ## [2.4.5] - 2023-04-04
 
 ### Changed
@@ -118,7 +169,7 @@
 * Make item geometry and bbox nullable in sqlalchemy backend. ([#398](https://github.com/stac-utils/stac-fastapi/pull/398))
 * Transactions Extension update Item endpoint Item is now `/collections/{collection_id}/items/{item_id}` instead of
   `/collections/{collection_id}/items` to align with [STAC API
-  spec](https://github.com/radiantearth/stac-api-spec/tree/main/ogcapi-features/extensions/transaction#methods) ([#425](https://github.com/stac-utils/stac-fastapi/pull/425))
+  spec](https://github.com/stac-api-extensions/transaction#methods) ([#425](https://github.com/stac-utils/stac-fastapi/pull/425))
 
 ### Removed
 
@@ -252,7 +303,11 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.5..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.9..main>
+[2.4.9]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.8..2.4.9>
+[2.4.8]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.7..2.4.8>
+[2.4.7]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.6..2.4.7>
+[2.4.6]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.5..2.4.6>
 [2.4.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.4..2.4.5>
 [2.4.4]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.3..2.4.4>
 [2.4.3]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.2..2.4.3>

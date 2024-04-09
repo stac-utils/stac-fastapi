@@ -24,7 +24,8 @@ class PostFieldsExtension(BaseModel):
     def _get_field_dict(fields: Optional[Set[str]]) -> Dict:
         """Pydantic include/excludes notation.
 
-        Internal method to create a dictionary for advanced include or exclude of pydantic fields on model export
+        Internal method to create a dictionary for advanced include or exclude
+        of pydantic fields on model export
         Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
         """
         field_dict = {}
@@ -44,8 +45,8 @@ class PostFieldsExtension(BaseModel):
     def filter_fields(self) -> Dict:
         """Create pydantic include/exclude expression.
 
-        Create dictionary of fields to include/exclude on model export based on the included and excluded fields passed
-        to the API
+        Create dictionary of fields to include/exclude on model export based on
+        the included and excluded fields passed to the API
         Ref: https://pydantic-docs.helpmanual.io/usage/exporting_models/#advanced-include-and-exclude
         """
         # Always include default_includes, even if they

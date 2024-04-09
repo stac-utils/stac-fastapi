@@ -1,13 +1,13 @@
 """Base clients."""
+
 import abc
-from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
 from fastapi import Request
 from stac_pydantic.links import Relations
-from stac_pydantic.shared import MimeTypes
+from stac_pydantic.shared import BBox, MimeTypes
 from stac_pydantic.version import STAC_VERSION
 from starlette.responses import Response
 
@@ -15,6 +15,7 @@ from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
+from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import BaseSearchPostRequest
 from stac_fastapi.types.stac import Conformance
 
@@ -28,19 +29,21 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def create_item(
-        self, collection_id: str, item: stac_types.Item, **kwargs
-    ) -> Optional[Union[stac_types.Item, Response]]:
+        self,
+        collection_id: str,
+        item: Union[stac_types.Item, stac_types.ItemCollection],
+        **kwargs,
+    ) -> Optional[Union[stac_types.Item, Response, None]]:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
 
         Args:
-            item: the item
+            item: the item or item collection
             collection_id: the id of the collection from the resource path
 
         Returns:
-            The item that was created.
-
+            The item that was created or None if item collection.
         """
         ...
 
@@ -50,9 +53,10 @@ class BaseTransactionsClient(abc.ABC):
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
-        Called with `PUT /collections/{collection_id}/items`. It is expected that this item already exists.  The update
-        should do a diff against the saved item and perform any necessary updates.  Partial updates are not supported
-        by the transactions extension.
+        Called with `PUT /collections/{collection_id}/items`. It is expected
+        that this item already exists.  The update should do a diff against the
+        saved item and perform any necessary updates.  Partial updates are not
+        supported by the transactions extension.
 
         Args:
             item: the item (must be complete)
@@ -98,17 +102,18 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def update_collection(
-        self, collection: stac_types.Collection, **kwargs
+        self, collection_id: str, collection: stac_types.Collection, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections`. It is expected that this item already exists.  The update should do a diff
-        against the saved collection and perform any necessary updates.  Partial updates are not supported by the
+        Called with `PUT /collections/{collection_id}`. It is expected that this item
+        already exists.  The update should do a diff against the saved collection and
+        perform any necessary updates.  Partial updates are not supported by the
         transactions extension.
 
         Args:
-            collection: the collection (must be complete)
-            collection_id: the id of the collection from the resource path
+            collection_id: id of the existing collection to be updated
+            collection: the updated collection (must be complete)
 
         Returns:
             The updated collection.
@@ -138,18 +143,21 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def create_item(
-        self, collection_id: str, item: stac_types.Item, **kwargs
-    ) -> Optional[Union[stac_types.Item, Response]]:
+        self,
+        collection_id: str,
+        item: Union[stac_types.Item, stac_types.ItemCollection],
+        **kwargs,
+    ) -> Optional[Union[stac_types.Item, Response, None]]:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
 
         Args:
-            item: the item
+            item: the item or item collection
+            collection_id: the id of the collection from the resource path
 
         Returns:
-            The item that was created.
-
+            The item that was created or None if item collection.
         """
         ...
 
@@ -159,9 +167,10 @@ class AsyncBaseTransactionsClient(abc.ABC):
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
-        Called with `PUT /collections/{collection_id}/items`. It is expected that this item already exists.  The update
-        should do a diff against the saved item and perform any necessary updates.  Partial updates are not supported
-        by the transactions extension.
+        Called with `PUT /collections/{collection_id}/items`. It is expected
+        that this item already exists.  The update should do a diff against the
+        saved item and perform any necessary updates.  Partial updates are not
+        supported by the transactions extension.
 
         Args:
             item: the item (must be complete)
@@ -206,16 +215,18 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def update_collection(
-        self, collection: stac_types.Collection, **kwargs
+        self, collection_id: str, collection: stac_types.Collection, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections`. It is expected that this item already exists.  The update should do a diff
-        against the saved collection and perform any necessary updates.  Partial updates are not supported by the
+        Called with `PUT /collections/{collection_id}`. It is expected that this item
+        already exists.  The update should do a diff against the saved collection and
+        perform any necessary updates.  Partial updates are not supported by the
         transactions extension.
 
         Args:
-            collection: the collection (must be complete)
+            collection_id: id of the existing collection to be updated
+            collection: the updated collection (must be complete)
 
         Returns:
             The updated collection.
@@ -280,7 +291,7 @@ class LandingPageMixin(abc.ABC):
                 {
                     "rel": Relations.conformance.value,
                     "type": MimeTypes.json,
-                    "title": "STAC/WFS3 conformance classes implemented by this server",
+                    "title": "STAC/OGC conformance classes implemented by this server",
                     "href": urljoin(base_url, "conformance"),
                 },
                 {
@@ -318,7 +329,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     post_request_model = attr.ib(default=BaseSearchPostRequest)
 
     def conformance_classes(self) -> List[str]:
-        """Generate conformance classes by adding extension conformance to base conformance classes."""
+        """Generate conformance classes by adding extension conformance to base
+        conformance classes."""
         base_conformance_classes = self.base_conformance_classes.copy()
 
         for extension in self.extensions:
@@ -426,8 +438,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         self,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
-        bbox: Optional[List[NumType]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: Optional[BBox] = None,
+        datetime: Optional[DateTimeType] = None,
         limit: Optional[int] = 10,
         query: Optional[str] = None,
         token: Optional[str] = None,
@@ -489,8 +501,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     def item_collection(
         self,
         collection_id: str,
-        bbox: Optional[List[NumType]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: Optional[BBox] = None,
+        datetime: Optional[DateTimeType] = None,
         limit: int = 10,
         token: str = None,
         **kwargs,
@@ -525,7 +537,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     post_request_model = attr.ib(default=BaseSearchPostRequest)
 
     def conformance_classes(self) -> List[str]:
-        """Generate conformance classes by adding extension conformance to base conformance classes."""
+        """Generate conformance classes by adding extension conformance to base
+        conformance classes."""
         conformance_classes = self.base_conformance_classes.copy()
 
         for extension in self.extensions:
@@ -570,9 +583,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": "service-desc",
                 "type": "application/vnd.oai.openapi+json;version=3.0",
                 "title": "OpenAPI service description",
-                "href": urljoin(
-                    str(request.base_url), request.app.openapi_url.lstrip("/")
-                ),
+                "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
             }
         )
 
@@ -582,9 +593,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": "service-doc",
                 "type": "text/html",
                 "title": "OpenAPI service documentation",
-                "href": urljoin(
-                    str(request.base_url), request.app.docs_url.lstrip("/")
-                ),
+                "href": urljoin(base_url, request.app.docs_url.lstrip("/")),
             }
         )
 
@@ -621,8 +630,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         self,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
-        bbox: Optional[List[NumType]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: Optional[BBox] = None,
+        datetime: Optional[DateTimeType] = None,
         limit: Optional[int] = 10,
         query: Optional[str] = None,
         token: Optional[str] = None,
@@ -688,8 +697,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     async def item_collection(
         self,
         collection_id: str,
-        bbox: Optional[List[NumType]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: Optional[BBox] = None,
+        datetime: Optional[DateTimeType] = None,
         limit: int = 10,
         token: str = None,
         **kwargs,
@@ -718,12 +727,11 @@ class AsyncBaseFiltersClient(abc.ABC):
     ) -> Dict[str, Any]:
         """Get the queryables available for the given collection_id.
 
-        If collection_id is None, returns the intersection of all
-        queryables over all collections.
+        If collection_id is None, returns the intersection of all queryables over all
+        collections.
 
         This base implementation returns a blank queryable schema. This is not allowed
         under OGC CQL but it is allowed by the STAC API Filter Extension
-
         https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
         """
         return {
@@ -745,13 +753,12 @@ class BaseFiltersClient(abc.ABC):
     ) -> Dict[str, Any]:
         """Get the queryables available for the given collection_id.
 
-        If collection_id is None, returns the intersection of all
-        queryables over all collections.
+        If collection_id is None, returns the intersection of all queryables over all
+        collections.
 
         This base implementation returns a blank queryable schema. This is not allowed
         under OGC CQL but it is allowed by the STAC API Filter Extension
-
-        https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
+        https://github.com/stac-api-extensions/filter#queryables
         """
         return {
             "$schema": "https://json-schema.org/draft/2019-09/schema",

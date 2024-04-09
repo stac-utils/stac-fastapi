@@ -1,4 +1,4 @@
-"""api request/response models."""
+"""Api request/response models."""
 
 import importlib.util
 from typing import Optional, Type, Union
@@ -7,13 +7,15 @@ import attr
 from fastapi import Body, Path
 from pydantic import BaseModel, create_model
 from pydantic.fields import UndefinedType
+from stac_pydantic.shared import BBox
 
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import (
     APIRequest,
     BaseSearchGetRequest,
     BaseSearchPostRequest,
-    str2list,
+    str2bbox,
 )
 
 
@@ -44,7 +46,7 @@ def create_request_model(
     # Handle POST requests
     elif all([issubclass(m, BaseModel) for m in models]):
         for model in models:
-            for (k, v) in model.__fields__.items():
+            for k, v in model.__fields__.items():
                 field_info = v.field_info
                 body = Body(
                     None
@@ -124,8 +126,8 @@ class ItemCollectionUri(CollectionUri):
     """Get item collection."""
 
     limit: int = attr.ib(default=10)
-    bbox: Optional[str] = attr.ib(default=None, converter=str2list)
-    datetime: Optional[str] = attr.ib(default=None)
+    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
+    datetime: Optional[DateTimeType] = attr.ib(default=None)
 
 
 class POSTTokenPagination(BaseModel):

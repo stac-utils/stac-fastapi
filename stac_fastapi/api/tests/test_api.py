@@ -41,7 +41,7 @@ class TestRouteDependencies:
                     method=route["method"].lower(),
                     url=path,
                     auth=("bob", "dobbs"),
-                    data='{"dummy": "payload"}',
+                    content='{"dummy": "payload"}',
                     headers={"content-type": "application/json"},
                 )
                 assert (
@@ -61,7 +61,7 @@ class TestRouteDependencies:
     def test_build_api_with_route_dependencies(self):
         routes = [
             {"path": "/collections", "method": "POST"},
-            {"path": "/collections", "method": "PUT"},
+            {"path": "/collections/{collectionId}", "method": "PUT"},
             {"path": "/collections/{collectionId}", "method": "DELETE"},
             {"path": "/collections/{collectionId}/items", "method": "POST"},
             {"path": "/collections/{collectionId}/items/{itemId}", "method": "PUT"},
@@ -74,7 +74,7 @@ class TestRouteDependencies:
     def test_add_route_dependencies_after_building_api(self):
         routes = [
             {"path": "/collections", "method": "POST"},
-            {"path": "/collections", "method": "PUT"},
+            {"path": "/collections/{collectionId}", "method": "PUT"},
             {"path": "/collections/{collectionId}", "method": "DELETE"},
             {"path": "/collections/{collectionId}/items", "method": "POST"},
             {"path": "/collections/{collectionId}/items/{itemId}", "method": "PUT"},

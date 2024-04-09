@@ -1,4 +1,4 @@
-"""fields extension."""
+"""Fields extension."""
 from typing import List, Optional, Set
 
 import attr
@@ -13,24 +13,26 @@ from .request import FieldsExtensionGetRequest, FieldsExtensionPostRequest
 class FieldsExtension(ApiExtension):
     """Fields Extension.
 
-    The Fields extension adds functionality to the `/search` endpoint which allows the caller to include or exclude
-    specific from the API response.  Registering this extension with the application has the added effect of removing
-    the `ItemCollection` response model from the `/search` endpoint, as the Fields extension allows the API to return
-    potentially invalid responses by excluding fields which are required by the STAC spec, such as geometry.
+    The Fields extension adds functionality to the `/search` endpoint which
+    allows the caller to include or exclude specific from the API response.
+    Registering this extension with the application has the added effect of
+    removing the `ItemCollection` response model from the `/search` endpoint, as
+    the Fields extension allows the API to return potentially invalid responses
+    by excluding fields which are required by the STAC spec, such as geometry.
 
-    https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#fields
+    https://github.com/stac-api-extensions/fields
 
     Attributes:
         default_includes (set): defines the default set of included fields.
-        conformance_classes (list): Defines the list of conformance classes for the extension
-
+        conformance_classes (list): Defines the list of conformance classes for
+            the extension
     """
 
     GET = FieldsExtensionGetRequest
     POST = FieldsExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
-        factory=lambda: ["https://api.stacspec.org/v1.0.0-rc.1/item-search#fields"]
+        factory=lambda: ["https://api.stacspec.org/v1.0.0/item-search#fields"]
     )
     default_includes: Set[str] = attr.ib(
         factory=lambda: {
