@@ -4,7 +4,10 @@ site_description: STAC FastAPI.
 # Repository
 repo_name: "stac-utils/stac-fastapi"
 repo_url: "https://github.com/stac-utils/stac-fastapi"
-edit_uri: "blob/master/docs/src/"
+edit_uri: "blob/main/docs/src/"
+
+docs_dir: 'src'
+site_dir: 'build'
 
 # Social links
 extra:
@@ -15,6 +18,7 @@ extra:
 # Layout
 nav:
   - Home: "index.md"
+  - Tips and Tricks: tips-and-tricks.md
   - API:
       - packages: api/stac_fastapi/index.md
       - stac_fastapi.api:
@@ -70,9 +74,9 @@ nav:
           - search: api/stac_fastapi/types/search.md
           - stac: api/stac_fastapi/types/stac.md
           - version: api/stac_fastapi/types/version.md
+  - Performance Benchmarks: benchmarks.html
   - Development - Contributing: "contributing.md"
   - Release Notes: "release-notes.md"
-  - Tips and Tricks: tips-and-tricks.md
 
 plugins:
   - search
