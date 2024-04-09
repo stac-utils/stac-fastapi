@@ -2,12 +2,12 @@
 
 import functools
 import inspect
+import warnings
 from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
 
 from fastapi import Depends, params
 from fastapi.dependencies.utils import get_parameterless_sub_dependant
 from pydantic import BaseModel
-from stac_pydantic.shared import StacBaseModel
 from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
 from starlette.responses import Response
@@ -17,17 +17,8 @@ from starlette.status import HTTP_204_NO_CONTENT
 from stac_fastapi.api.models import APIRequest
 
 
-def _wrap_response(
-    resp: Any,
-    response_class: Optional[Type[Response]] = None,
-) -> Response:
-    if isinstance(resp, Response):
-        return resp
-    elif isinstance(resp, StacBaseModel):
-        return resp
-    elif resp is not None:
-        if response_class:
-            return response_class(resp)
+def _wrap_response(resp: Any) -> Any:
+    if resp is not None:
         return resp
     else:  # None is returned as 204 No Content
         return Response(status_code=HTTP_204_NO_CONTENT)
@@ -52,6 +43,13 @@ def create_async_endpoint(
 
     Synchronous functions are executed asynchronously using a background thread.
     """
+
+    if response_class:
+        warnings.warns(
+            "`response_class` option is deprecated, please set the Response class directly in the endpoint.",  # noqa: E501
+            DeprecationWarning,
+        )
+
     if not inspect.iscoroutinefunction(func):
         func = sync_to_async(func)
 
@@ -62,9 +60,7 @@ def create_async_endpoint(
             request_data: request_model = Depends(),  # type:ignore
         ):
             """Endpoint."""
-            return _wrap_response(
-                await func(request=request, **request_data.kwargs()), response_class
-            )
+            return _wrap_response(await func(request=request, **request_data.kwargs()))
 
     elif issubclass(request_model, BaseModel):
 
@@ -73,9 +69,7 @@ def create_async_endpoint(
             request_data: request_model,  # type:ignore
         ):
             """Endpoint."""
-            return _wrap_response(
-                await func(request_data, request=request), response_class
-            )
+            return _wrap_response(await func(request_data, request=request))
 
     else:
 
@@ -84,9 +78,7 @@ def create_async_endpoint(
             request_data: Dict[str, Any],  # type:ignore
         ):
             """Endpoint."""
-            return _wrap_response(
-                await func(request_data, request=request), response_class
-            )
+            return _wrap_response(await func(request_data, request=request))
 
     return _endpoint
 

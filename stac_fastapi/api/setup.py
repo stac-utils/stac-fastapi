@@ -20,6 +20,9 @@ extra_reqs = {
         "requests",
         "pystac[validation]==1.*",
     ],
+    "benchmark": [
+        "pytest-benchmark",
+    ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
 }
 
