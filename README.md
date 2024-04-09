@@ -36,7 +36,8 @@ packages:
 Backends are hosted in their own repositories:
 
 - [stac-fastapi-pgstac](https://github.com/stac-utils/stac-fastapi-pgstac): Postgres backend implementation with [PgSTAC](https://github.com/stac-utils/pgstac).
-- [stac-fastapi-sqlalchemy](https://github.com/stac-utils/stac-fastapi-sqlalchemy) Postgres backend implementation with [sqlalchemy](https://www.sqlalchemy.org/).
+- [stac-fastapi-sqlalchemy](https://github.com/stac-utils/stac-fastapi-sqlalchemy): Postgres backend implementation with [sqlalchemy](https://www.sqlalchemy.org/).
+- [stac-fastapi-elasticsearch](https://github.com/stac-utils/stac-fastapi-elasticsearch): Backend implementation with [Elasticsearch](https://github.com/elastic/elasticsearch).
 
 `stac-fastapi` was initially developed by [arturo-ai](https://github.com/arturo-ai).
 

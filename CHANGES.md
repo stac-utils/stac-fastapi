@@ -2,7 +2,33 @@
 
 ## [Unreleased]
 
+### Added
+
+* Add benchmark in CI ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
 * Add `/queryables` link to the landing page ([#587](https://github.com/stac-utils/stac-fastapi/pull/587))
+
+### Changed
+
+* Updated the collection update endpoint to match with the collection-transaction extension. ([#630](https://github.com/stac-utils/stac-fastapi/issues/630))
+* Improve bbox and datetime typing ([#490](https://github.com/stac-utils/stac-fastapi/pull/490)
+* Add `items` link to inferred link relations ([#634](https://github.com/stac-utils/stac-fastapi/issues/634))
+* Make sure FastAPI uses Pydantic validation and serialization by not wrapping endpoint output with a Response object ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+
+### Removed
+
+* Deprecate `response_class` option in `stac_fastapi.api.routes.create_async_endpoint` method ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+
+## [2.4.9] - 2023-11-17
+
+### Added
+
+* Add CQL2-json to filter conformance class ([#611](https://github.com/stac-utils/stac-fastapi/issues/611))
+* Add Elasticsearch backend ([#616](https://github.com/stac-utils/stac-fastapi/pull/616))
+
+### Changed
+
+* Forward `x-forwarded-host` ([#586](https://github.com/stac-utils/stac-fastapi/pull/586))
+* Add `method` parameter to Bulk Transactions extension in order to support upserting bulk data ([#614](https://github.com/stac-utils/stac-fastapi/pull/614))
 
 ## [2.4.8] - 2023-06-07
 
@@ -277,7 +303,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.8..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.9..main>
+[2.4.9]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.8..2.4.9>
 [2.4.8]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.7..2.4.8>
 [2.4.7]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.6..2.4.7>
 [2.4.6]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.5..2.4.6>

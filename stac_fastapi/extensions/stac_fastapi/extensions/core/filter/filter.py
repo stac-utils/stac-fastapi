@@ -57,7 +57,7 @@ class FilterExtension(ApiExtension):
         GET /queryables
         GET /collections/{collection_id}/queryables
 
-    https://github.com/radiantearth/stac-api-spec/blob/master/fragments/filter/README.md
+    https://github.com/stac-api-extensions/filter/blob/main/README.md
 
     Attributes:
         client: Queryables endpoint logic
@@ -76,6 +76,7 @@ class FilterExtension(ApiExtension):
             FilterConformanceClasses.FEATURES_FILTER,
             FilterConformanceClasses.ITEM_SEARCH_FILTER,
             FilterConformanceClasses.BASIC_CQL2,
+            FilterConformanceClasses.CQL2_JSON,
             FilterConformanceClasses.CQL2_TEXT,
         ]
     )
