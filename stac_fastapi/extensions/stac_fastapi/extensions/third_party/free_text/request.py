@@ -18,4 +18,4 @@ class FreeTextExtensionGetRequest(APIRequest):
 class FreeTextExtensionPostRequest(BaseModel):
     """Free-text Extension POST request model."""
 
-    q: Optional[Dict[str, Dict[str, Any]]]
+    q: Optional[str] = attr.ib(default=None)
