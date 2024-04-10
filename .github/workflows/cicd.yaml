@@ -26,7 +26,7 @@ jobs:
       - name: Lint code
         if: ${{ matrix.python-version == 3.8 }}
         run: |
-          python -m python -m pip install pre-commit
+          python -m pip install pre-commit
           pre-commit run --all-files
 
       - name: Install types
