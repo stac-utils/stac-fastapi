@@ -373,8 +373,10 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         if self.extension_is_enabled("FilterExtension"):
             landing_page["links"].append(
                 {
-                    "rel": Relations.queryables.value,
-                    "type": MimeTypes.jsonschema,
+                    # TODO: replace this with Relations.queryables.value,
+                    "rel": "http://www.opengis.net/def/rel/ogc/1.0/queryables",
+                    # TODO: replace this with MimeTypes.jsonschema,
+                    "type": "application/schema+json",
                     "title": "Queryables",
                     "href": urljoin(base_url, "queryables"),
                     "method": "GET",
@@ -583,8 +585,10 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         if self.extension_is_enabled("FilterExtension"):
             landing_page["links"].append(
                 {
-                    "rel": Relations.queryables.value,
-                    "type": MimeTypes.jsonschema,
+                    # TODO: replace this with Relations.queryables.value,
+                    "rel": "http://www.opengis.net/def/rel/ogc/1.0/queryables",
+                    # TODO: replace this with MimeTypes.jsonschema,
+                    "type": "application/schema+json",
                     "title": "Queryables",
                     "href": urljoin(base_url, "queryables"),
                     "method": "GET",
