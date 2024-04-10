@@ -5,6 +5,7 @@
 ### Added
 
 * Add benchmark in CI ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+* Add Free-text Extension to third party extensions
 
 ### Changed
 

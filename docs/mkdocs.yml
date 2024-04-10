@@ -60,6 +60,7 @@ nav:
               - version: api/stac_fastapi/extensions/version.md
           - third_party:
               - bulk_transactions: api/stac_fastapi/extensions/third_party/bulk_transactions.md
+              - free_text: api/stac_fastapi/extensions/third_party/free_text.md
               - index: api/stac_fastapi/extensions/third_party/index.md
       - stac_fastapi.types:
           - module: api/stac_fastapi/types/index.md
