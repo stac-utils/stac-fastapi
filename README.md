@@ -41,6 +41,18 @@ Backends are hosted in their own repositories:
 
 `stac-fastapi` was initially developed by [arturo-ai](https://github.com/arturo-ai).
 
+
+## Response Model Validation
+
+A common question when using this package is how request and response types are validated?
+
+This package uses [`stack-pydantic`](https://github.com/stac-utils/stac-pydantic) to validate and document STAC objects. However, by default, validation of response types is turned off and the API will simply forward responses without validating them against the Pydantic model first. This decision was made with the assumption that responses usually come from a (typed) database and can be considered save. Extra validation would only increase latency, in particular for large payloads.
+
+To turn on response validation, set `ENABLE_RESPONSE_MODELS` to `True`. Either as environment variable or directly in the `ApiSettings`.
+
+With the introduction of Pydantic 2, the extra [time it takes to validate models became negatable](https://github.com/stac-utils/stac-fastapi/pull/625#issuecomment-2045824578). While `ENABLE_RESPONSE_MODELS` still defaults to `False` there should be no penalty for users to turn on this feature but users discretion is advised.
+
+
 ## Installation
 
 ```bash
