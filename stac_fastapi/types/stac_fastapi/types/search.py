@@ -12,6 +12,7 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import attr
 from geojson_pydantic.geometries import (
+    GeometryCollection,
     LineString,
     MultiLineString,
     MultiPoint,
@@ -127,7 +128,15 @@ class BaseSearchPostRequest(BaseModel):
     ids: Optional[List[str]]
     bbox: Optional[BBox]
     intersects: Optional[
-        Union[Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon]
+        Union[
+            Point,
+            MultiPoint,
+            LineString,
+            MultiLineString,
+            Polygon,
+            MultiPolygon,
+            GeometryCollection,
+        ]
     ]
     datetime: Optional[DateTimeType]
     limit: Optional[Limit] = Field(default=10)
