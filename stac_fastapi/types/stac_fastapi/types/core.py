@@ -369,6 +369,18 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
             extension_schemas=[],
         )
 
+        # Add Queryables link
+        if self.extension_is_enabled("FilterExtension"):
+            landing_page["links"].append(
+                {
+                    "rel": Relations.queryables.value,
+                    "type": MimeTypes.jsonschema,
+                    "title": "Queryables",
+                    "href": urljoin(base_url, "queryables"),
+                    "method": "GET",
+                }
+            )
+
         # Add Collections links
         collections = self.all_collections(request=kwargs["request"])
         for collection in collections["collections"]:
@@ -566,6 +578,20 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             conformance_classes=self.conformance_classes(),
             extension_schemas=[],
         )
+
+        # Add Queryables link
+        if self.extension_is_enabled("FilterExtension"):
+            landing_page["links"].append(
+                {
+                    "rel": Relations.queryables.value,
+                    "type": MimeTypes.jsonschema,
+                    "title": "Queryables",
+                    "href": urljoin(base_url, "queryables"),
+                    "method": "GET",
+                }
+            )
+
+        # Add Collections links
         collections = await self.all_collections(request=kwargs["request"])
         for collection in collections["collections"]:
             landing_page["links"].append(

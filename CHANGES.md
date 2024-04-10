@@ -5,6 +5,7 @@
 ### Added
 
 * Add benchmark in CI ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+* Add `/queryables` link to the landing page ([#587](https://github.com/stac-utils/stac-fastapi/pull/587))
 
 ### Changed
 
