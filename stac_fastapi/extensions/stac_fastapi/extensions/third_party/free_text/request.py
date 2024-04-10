@@ -1,6 +1,6 @@
 """Request model for the Free-text extension."""
 
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import attr
 from pydantic import BaseModel
