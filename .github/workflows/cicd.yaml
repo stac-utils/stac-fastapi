@@ -10,32 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     timeout-minutes: 20
-
-    services:
-      db_service:
-        image: ghcr.io/stac-utils/pgstac:v0.7.1
-        env:
-          POSTGRES_USER: username
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: postgis
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          PGUSER: username
-          PGPASSWORD: password
-          PGDATABASE: postgis
-          ALLOW_IP_RANGE: 0.0.0.0/0
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 10s
-          --health-retries 10
-          --log-driver none
-        ports:
-          # Maps tcp port 5432 on service container to the host
-          - 5432:5432
 
     steps:
       - name: Check out repository code
@@ -50,23 +26,23 @@ jobs:
       - name: Lint code
         if: ${{ matrix.python-version == 3.8 }}
         run: |
-          python -m pip install pre-commit
+          python -m python -m pip install pre-commit
           pre-commit run --all-files
 
       - name: Install types
         run: |
-          pip install ./stac_fastapi/types[dev]
+          python -m pip install ./stac_fastapi/types[dev]
 
       - name: Install core api
         run: |
-          pip install ./stac_fastapi/api[dev]
+          python -m pip install ./stac_fastapi/api[dev]
 
       - name: Install Extensions
         run: |
-          pip install ./stac_fastapi/extensions[dev]
+          python -m pip install ./stac_fastapi/extensions[dev]
 
       - name: Test
-        run: pytest -svvv
+        run: python -m pytest -svvv
         env:
           ENVIRONMENT: testing
 
@@ -93,13 +69,13 @@ jobs:
         run: |
           python -m pip install ./stac_fastapi/types[dev]
 
-      - name: Install extensions
-        run: |
-          python -m pip install ./stac_fastapi/extensions
-
       - name: Install core api
         run: |
           python -m pip install ./stac_fastapi/api[dev,benchmark]
+
+      - name: Install extensions
+        run: |
+          python -m pip install ./stac_fastapi/extensions
 
       - name: Run Benchmark
         run: python -m pytest stac_fastapi/api/tests/benchmarks.py --benchmark-only --benchmark-columns 'min, max, mean, median' --benchmark-json output.json
