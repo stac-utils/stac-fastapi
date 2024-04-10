@@ -1,16 +1,17 @@
 """Base clients."""
 
+
 import abc
-from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
 from fastapi import Request
+from geojson_pydantic.geometries import Geometry
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api.version import STAC_API_VERSION
 from stac_pydantic.links import Relations
-from stac_pydantic.shared import MimeTypes
+from stac_pydantic.shared import BBox, MimeTypes
 from starlette.responses import Response
 
 from stac_fastapi.types import stac
@@ -18,6 +19,7 @@ from stac_fastapi.types.config import Settings
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
+from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import BaseSearchPostRequest
 
 NumType = Union[float, int]
@@ -103,18 +105,18 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def update_collection(
-        self, collection: Collection, **kwargs
+        self, collection_id: str, collection: Collection, **kwargs
     ) -> Optional[Union[Collection, Response]]:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections`. It is expected that this item already
-        exists.  The update should do a diff against the saved collection and
+        Called with `PUT /collections/{collection_id}`. It is expected that this item
+        already exists.  The update should do a diff against the saved collection and
         perform any necessary updates.  Partial updates are not supported by the
         transactions extension.
 
         Args:
-            collection: the collection (must be complete)
-            collection_id: the id of the collection from the resource path
+            collection_id: id of the existing collection to be updated
+            collection: the updated collection (must be complete)
 
         Returns:
             The updated collection.
@@ -216,17 +218,18 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def update_collection(
-        self, collection: Collection, **kwargs
+        self, collection_id: str, collection: Collection, **kwargs
     ) -> Optional[Union[Collection, Response]]:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections`. It is expected that this item already
-        exists.  The update should do a diff against the saved collection and
+        Called with `PUT /collections/{collection_id}`. It is expected that this item
+        already exists.  The update should do a diff against the saved collection and
         perform any necessary updates.  Partial updates are not supported by the
         transactions extension.
 
         Args:
-            collection: the collection (must be complete)
+            collection_id: id of the existing collection to be updated
+            collection: the updated collection (must be complete)
 
         Returns:
             The updated collection.
@@ -445,9 +448,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         self,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
-        bbox: Optional[List[NumType]] = None,
-        intersects: Optional[str] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: Optional[BBox] = None,
+        intersects: Optional[Geometry] = None,
+        datetime: Optional[DateTimeType] = None,
         limit: Optional[int] = 10,
         **kwargs,
     ) -> stac.ItemCollection:
@@ -504,8 +507,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     def item_collection(
         self,
         collection_id: str,
-        bbox: Optional[List[NumType]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: Optional[BBox] = None,
+        datetime: Optional[DateTimeType] = None,
         limit: int = 10,
         token: str = None,
         **kwargs,
@@ -590,9 +593,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": Relations.service_desc.value,
                 "type": MimeTypes.openapi.value,
                 "title": "OpenAPI service description",
-                "href": urljoin(
-                    str(request.base_url), request.app.openapi_url.lstrip("/")
-                ),
+                "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
             }
         )
 
@@ -602,7 +603,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": Relations.service_doc.value,
                 "type": MimeTypes.html.value,
                 "title": "OpenAPI service documentation",
-                "href": urljoin(str(request.base_url), request.app.docs_url.lstrip("/")),
+                "href": urljoin(base_url, request.app.docs_url.lstrip("/")),
             }
         )
 
@@ -639,9 +640,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         self,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
-        bbox: Optional[List[NumType]] = None,
-        intersects: Optional[str] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: Optional[BBox] = None,
+        intersects: Optional[Geometry] = None,
+        datetime: Optional[DateTimeType] = None,
         limit: Optional[int] = 10,
         **kwargs,
     ) -> stac.ItemCollection:
@@ -698,8 +699,8 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     async def item_collection(
         self,
         collection_id: str,
-        bbox: Optional[List[NumType]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: Optional[BBox] = None,
+        datetime: Optional[DateTimeType] = None,
         limit: int = 10,
         token: str = None,
         **kwargs,

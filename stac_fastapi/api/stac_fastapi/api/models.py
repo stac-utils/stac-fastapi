@@ -6,13 +6,15 @@ from typing import List, Optional, Type, Union
 import attr
 from fastapi import Path
 from pydantic import BaseModel, create_model
+from stac_pydantic.shared import BBox
 
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import (
     APIRequest,
     BaseSearchGetRequest,
     BaseSearchPostRequest,
-    str2list,
+    str2bbox,
 )
 
 
@@ -103,8 +105,8 @@ class ItemCollectionUri(CollectionUri):
     """Get item collection."""
 
     limit: int = attr.ib(default=10)
-    bbox: Optional[str] = attr.ib(default=None, converter=str2list)
-    datetime: Optional[str] = attr.ib(default=None)
+    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
+    datetime: Optional[DateTimeType] = attr.ib(default=None)
 
 
 class POSTTokenPagination(BaseModel):

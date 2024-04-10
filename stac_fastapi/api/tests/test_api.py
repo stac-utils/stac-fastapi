@@ -61,7 +61,11 @@ class TestRouteDependencies:
     def test_build_api_with_route_dependencies(self, collection, item):
         routes = [
             {"path": "/collections", "method": "POST", "payload": collection},
-            {"path": "/collections", "method": "PUT", "payload": collection},
+            {
+                "path": "/collections/{collectionId}",
+                "method": "PUT",
+                "payload": collection,
+            },
             {"path": "/collections/{collectionId}", "method": "DELETE", "payload": ""},
             {
                 "path": "/collections/{collectionId}/items",
@@ -86,7 +90,11 @@ class TestRouteDependencies:
     def test_add_route_dependencies_after_building_api(self, collection, item):
         routes = [
             {"path": "/collections", "method": "POST", "payload": collection},
-            {"path": "/collections", "method": "PUT", "payload": collection},
+            {
+                "path": "/collections/{collectionId}",
+                "method": "PUT",
+                "payload": collection,
+            },
             {"path": "/collections/{collectionId}", "method": "DELETE", "payload": ""},
             {
                 "path": "/collections/{collectionId}/items",

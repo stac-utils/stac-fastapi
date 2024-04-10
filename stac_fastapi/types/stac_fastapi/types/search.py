@@ -3,13 +3,16 @@
 """
 
 import abc
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import attr
 from pydantic import PositiveInt
 from pydantic.functional_validators import AfterValidator
 from stac_pydantic.api import Search
+from stac_pydantic.shared import BBox
 from typing_extensions import Annotated
+
+from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
 
 
 def crop(v: PositiveInt) -> PositiveInt:
@@ -26,6 +29,16 @@ def str2list(x: str) -> Optional[List]:
         return x.split(",")
 
 
+def str2bbox(x: str) -> Optional[BBox]:
+    """Convert string to BBox based on , delimiter."""
+    if x:
+        t = tuple(float(v) for v in str2list(x))
+        assert len(t) == 4
+        return t
+
+
+# Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
+NumType = Union[float, int]
 Limit = Annotated[PositiveInt, AfterValidator(crop)]
 
 
@@ -45,9 +58,9 @@ class BaseSearchGetRequest(APIRequest):
 
     collections: Optional[str] = attr.ib(default=None, converter=str2list)
     ids: Optional[str] = attr.ib(default=None, converter=str2list)
-    bbox: Optional[str] = attr.ib(default=None, converter=str2list)
-    intersects: Optional[str] = attr.ib(default=None)
-    datetime: Optional[str] = attr.ib(default=None)
+    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
+    intersects: Optional[str] = attr.ib(default=None, converter=str2list)
+    datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
     limit: Optional[int] = attr.ib(default=10)
 
 
