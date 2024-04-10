@@ -12,6 +12,7 @@
 * Improve bbox and datetime typing ([#490](https://github.com/stac-utils/stac-fastapi/pull/490)
 * Add `items` link to inferred link relations ([#634](https://github.com/stac-utils/stac-fastapi/issues/634))
 * Make sure FastAPI uses Pydantic validation and serialization by not wrapping endpoint output with a Response object ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+* Allow `GeometryCollections` for `intersects` parameter in POST search queries ([#548](https://github.com/stac-utils/stac-fastapi/pull/548))
 
 ### Removed
 
