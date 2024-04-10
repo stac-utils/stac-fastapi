@@ -11,8 +11,8 @@ COPY . /opt/src
 WORKDIR /opt/src
 
 RUN python -m pip install \
-    stac_fastapi/api \
     stac_fastapi/types \
+    stac_fastapi/api \
     stac_fastapi/extensions
 
 CMD ["pdocs", \
