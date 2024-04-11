@@ -31,3 +31,12 @@ from stac_fastapi.extensions.core.context import ContextExtension
 ```
 
 and then edit the `api = StacApi(...` call to add `ContextExtension()` to the list given as the `extensions` parameter.
+
+## Set API title, description and version
+
+For the landing page, you can set the API title, description and version using environment variables.
+
+- `STAC_FASTAPI_VERSION` (string) is the version number of your API instance (this is not the STAC version).
+- `STAC FASTAPI_TITLE` (string) should be a self-explanatory title for your API.
+- `STAC FASTAPI_DESCRIPTION` (string) should be a good description for your API. It can contain CommonMark.
+- `STAC_FASTAPI_LANDING_ID` (string) is a unique identifier for your Landing page.
