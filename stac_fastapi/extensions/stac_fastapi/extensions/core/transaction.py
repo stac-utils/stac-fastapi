@@ -1,4 +1,5 @@
 """Transaction extension."""
+
 from typing import List, Optional, Type, Union
 
 import attr
@@ -117,10 +118,10 @@ class TransactionExtension(ApiExtension):
         )
 
     def register_update_collection(self):
-        """Register update collection endpoint (PUT /collections)."""
+        """Register update collection endpoint (PUT /collections/{collection_id})."""
         self.router.add_api_route(
             name="Update Collection",
-            path="/collections",
+            path="/collections/{collection_id}",
             response_model=Collection if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
