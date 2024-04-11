@@ -258,7 +258,7 @@ class LandingPageMixin(abc.ABC):
     """Create a STAC landing page (GET /)."""
 
     stac_version: str = attr.ib(default=STAC_VERSION)
-    landing_page_id: str = attr.ib(default=api_settings.stac_fastapi_id)
+    landing_page_id: str = attr.ib(default=api_settings.stac_fastapi_landing_id)
     title: str = attr.ib(default=api_settings.stac_fastapi_title)
     description: str = attr.ib(default=api_settings.stac_fastapi_description)
 
