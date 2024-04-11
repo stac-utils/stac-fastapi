@@ -1,5 +1,5 @@
 """Fastapi app creation."""
-import os
+
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import attr
@@ -84,11 +84,21 @@ class StacApi:
         converter=update_openapi,
     )
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
-    title: str = attr.ib(default=os.getenv("STAC_FASTAPI_TITLE", "stac-fastapi"))
-    api_version: str = attr.ib(default=os.getenv("STAC_FASTAPI_VERSION", "0.1"))
+    title: str = attr.ib(
+        default=attr.Factory(
+            lambda self: self.settings.stac_fastapi_title, takes_self=True
+        )
+    )
+    api_version: str = attr.ib(
+        default=attr.Factory(
+            lambda self: self.settings.stac_fastapi_version, takes_self=True
+        )
+    )
     stac_version: str = attr.ib(default=STAC_VERSION)
     description: str = attr.ib(
-        default=os.getenv("STAC_FASTAPI_DESCRIPTION", "stac-fastapi")
+        default=attr.Factory(
+            lambda self: self.settings.stac_fastapi_description, takes_self=True
+        )
     )
     search_get_request_model: Type[BaseSearchGetRequest] = attr.ib(
         default=BaseSearchGetRequest
