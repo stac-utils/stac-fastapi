@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.5.0] - 2024-04-12
+
 ### Added
 
 * Add benchmark in CI ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
