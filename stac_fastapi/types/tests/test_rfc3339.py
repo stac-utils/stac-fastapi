@@ -103,3 +103,10 @@ def test_now_functions() -> None:
     assert now1.tzinfo == timezone.utc
 
     rfc3339_str_to_datetime(now_to_rfc3339_str())
+
+
+def test_str_to_interval_with_none():
+    """Test that str_to_interval returns None when provided with None."""
+    assert (
+        str_to_interval(None) is None
+    ), "str_to_interval should return None when input is None"

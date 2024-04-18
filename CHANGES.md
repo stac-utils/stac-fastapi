@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+* BaseSearchGetRequest datetime validator str_to_interval not allowing GET /search requests with datetime = None ([#662](https://github.com/stac-utils/stac-fastapi/pull/662))
+
 ## [2.5.1] - 2024-04-18
 
 ### Fixed
