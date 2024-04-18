@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.5.2] - 2024-04-19
+
 ### Fixed
 
 * BaseSearchGetRequest datetime validator str_to_interval not allowing GET /search requests with datetime = None ([#662](https://github.com/stac-utils/stac-fastapi/pull/662))
@@ -318,7 +320,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.1..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.2..main>
+[2.5.2]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.1..2.5.2>
 [2.5.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.0..2.5.1>
 [2.5.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.9..2.5.0>
 [2.4.9]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.8..2.4.9>
