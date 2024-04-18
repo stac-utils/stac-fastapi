@@ -4,7 +4,7 @@
 
 ### Fixed
 
-* Fixed warnings in ..... ([#660](https://github.com/stac-utils/stac-fastapi/pull/660))
+* Fixed warnings.warn deprecation syntax for response class and the context extension ([#660](https://github.com/stac-utils/stac-fastapi/pull/660))
 
 ## [2.5.0] - 2024-04-12
 
