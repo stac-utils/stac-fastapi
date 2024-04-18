@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.5.1] - 2024-04-18
+
+### Fixed
+
+* Fixed calls to `.warn()` from typos (`.warm()` and `.warns()`)
+
 ## [2.5.0] - 2024-04-12
 
 ### Added
