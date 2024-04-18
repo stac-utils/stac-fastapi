@@ -45,9 +45,7 @@ def rfc3339_str_to_datetime(s: str) -> datetime:
     return iso8601.parse_date(s)
 
 
-def str_to_interval(
-    interval: Optional[str]
-) -> Optional[DateTimeType]:
+def str_to_interval(interval: Optional[str]) -> Optional[DateTimeType]:
     """Extract a tuple of datetimes from an interval string.
 
     Interval strings are defined by
@@ -56,18 +54,19 @@ def str_to_interval(
     or end (but not both) to be open-ended with '..' or ''.
 
     Args:
-        interval (str or None): The interval string to convert to a tuple of datetime.datetime 
-        objects, or None if no datetime is specified.
+        interval (str or None): The interval string to convert to a tuple of
+        datetime.datetime objects, or None if no datetime is specified.
 
     Returns:
-        Optional[DateTimeType]: A tuple of datetime.datetime objects or None if input is None.
+        Optional[DateTimeType]: A tuple of datetime.datetime objects or None if
+        input is None.
 
     Raises:
         ValueError: If the string is not a valid interval string and not None.
     """
     if interval is None:
         return None
-    
+
     if not interval:
         raise ValueError("Empty interval string is invalid.")
 
