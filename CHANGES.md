@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.5.1] - 2024-04-18
+
 ### Fixed
 
 * Fixed warnings.warn deprecation syntax for response class and the context extension ([#660](https://github.com/stac-utils/stac-fastapi/pull/660))
@@ -312,7 +314,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.1..main>
+[2.5.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.0..2.5.1>
 [2.5.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.9..2.5.0>
 [2.4.9]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.8..2.4.9>
 [2.4.8]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.7..2.4.8>
