@@ -28,7 +28,7 @@ class ContextExtension(ApiExtension):
 
     def __attrs_post_init__(self):
         """init."""
-        warnings.warm(
+        warnings.warn(
             "The ContextExtension is deprecated and will be removed in 3.0.",
             DeprecationWarning,
             stacklevel=1,
