@@ -109,10 +109,10 @@ class BaseTransactionsClient(abc.ABC):
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections/{collection_id}`. It is expected that this item
-        already exists.  The update should do a diff against the saved collection and
-        perform any necessary updates.  Partial updates are not supported by the
-        transactions extension.
+        Called with `PUT /collections/{collection_id}`. It is expected that this
+        collection already exists.  The update should do a diff against the saved
+        collection and perform any necessary updates.  Partial updates are not
+        supported by the transactions extension.
 
         Args:
             collection_id: id of the existing collection to be updated
