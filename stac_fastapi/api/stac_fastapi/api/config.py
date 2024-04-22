@@ -23,3 +23,4 @@ class AddOns(enum.Enum):
     """Enumeration of available third party add ons."""
 
     bulk_transaction = "bulk-transaction"
+    collection_search = "collection-search"
