@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+* Apply datetime converter in ItemCollection endpoint model ([#667](https://github.com/stac-utils/stac-fastapi/pull/667))
+
 ## [2.5.2] - 2024-04-19
 
 ### Fixed
