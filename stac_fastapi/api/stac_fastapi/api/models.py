@@ -16,6 +16,7 @@ from stac_fastapi.types.search import (
     BaseSearchGetRequest,
     BaseSearchPostRequest,
     str2bbox,
+    str_to_interval,
 )
 
 
@@ -127,7 +128,7 @@ class ItemCollectionUri(CollectionUri):
 
     limit: int = attr.ib(default=10)
     bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
-    datetime: Optional[DateTimeType] = attr.ib(default=None)
+    datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
 
 
 class POSTTokenPagination(BaseModel):
