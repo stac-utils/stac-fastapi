@@ -8,7 +8,7 @@
 
 ## [2.5.3] - 2024-04-23
 
-### Fixed 
+### Fixed
 
 * Remove the str2list converter from intersection queries via BaseSearchGetRequest ([#668](https://github.com/stac-utils/stac-fastapi/pull/668))
 * Apply datetime converter in ItemCollection endpoint model ([#667](https://github.com/stac-utils/stac-fastapi/pull/667))
