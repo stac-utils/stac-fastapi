@@ -6,6 +6,13 @@
 
 * Fix missing payload for the PUT `collection/{collection_id}` endpoint ([#665](https://github.com/stac-utils/stac-fastapi/issues/665))
 
+## [2.5.3] - 2024-04-23
+
+### Fixed 
+
+* Remove the str2list converter from intersection queries via BaseSearchGetRequest ([#668](https://github.com/stac-utils/stac-fastapi/pull/668))
+* Apply datetime converter in ItemCollection endpoint model ([#667](https://github.com/stac-utils/stac-fastapi/pull/667))
+
 ## [2.5.2] - 2024-04-19
 
 ### Fixed
@@ -324,7 +331,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.2..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.3..main>
+[2.5.3]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.2..2.5.3>
 [2.5.2]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.1..2.5.2>
 [2.5.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.0..2.5.1>
 [2.5.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.9..2.5.0>
