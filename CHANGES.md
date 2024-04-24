@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+* Return 400 for datetime errors ([#670](https://github.com/stac-utils/stac-fastapi/pull/670))
+
 ## [2.5.3] - 2024-04-23
 
 ### Fixed 
