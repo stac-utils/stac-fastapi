@@ -5,6 +5,7 @@
 ### Fixed
 
 * Fix missing payload for the PUT `collection/{collection_id}` endpoint ([#665](https://github.com/stac-utils/stac-fastapi/issues/665))
+* Return 400 for datetime errors ([#670](https://github.com/stac-utils/stac-fastapi/pull/670))
 
 ## [2.5.3] - 2024-04-23
 

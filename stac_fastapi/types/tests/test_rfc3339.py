@@ -1,6 +1,7 @@
 from datetime import timezone
 
 import pytest
+from fastapi import HTTPException
 
 from stac_fastapi.types.rfc3339 import (
     now_in_utc,
@@ -86,8 +87,11 @@ def test_parse_valid_str_to_datetime(test_input):
 
 @pytest.mark.parametrize("test_input", invalid_intervals)
 def test_parse_invalid_interval_to_datetime(test_input):
-    with pytest.raises(ValueError):
+    with pytest.raises(HTTPException) as exc_info:
         str_to_interval(test_input)
+    assert (
+        exc_info.value.status_code == 400
+    ), "Should return a 400 status code for invalid intervals"
 
 
 @pytest.mark.parametrize("test_input", valid_intervals)
