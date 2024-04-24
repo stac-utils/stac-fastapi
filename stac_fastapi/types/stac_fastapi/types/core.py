@@ -15,7 +15,7 @@ from stac_pydantic.shared import BBox, MimeTypes
 from starlette.responses import Response
 
 from stac_fastapi.types import stac
-from stac_fastapi.types.config import Settings
+from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
@@ -24,6 +24,8 @@ from stac_fastapi.types.search import BaseSearchPostRequest
 
 NumType = Union[float, int]
 StacType = Dict[str, Any]
+
+api_settings = ApiSettings()
 
 
 @attr.s  # type:ignore
@@ -109,10 +111,10 @@ class BaseTransactionsClient(abc.ABC):
     ) -> Optional[Union[Collection, Response]]:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections/{collection_id}`. It is expected that this item
-        already exists.  The update should do a diff against the saved collection and
-        perform any necessary updates.  Partial updates are not supported by the
-        transactions extension.
+        Called with `PUT /collections/{collection_id}`. It is expected that this
+        collection already exists.  The update should do a diff against the saved
+        collection and perform any necessary updates.  Partial updates are not
+        supported by the transactions extension.
 
         Args:
             collection_id: id of the existing collection to be updated
@@ -258,9 +260,9 @@ class LandingPageMixin(abc.ABC):
     """Create a STAC landing page (GET /)."""
 
     stac_version: str = attr.ib(default=STAC_API_VERSION)
-    landing_page_id: str = attr.ib(default="stac-fastapi")
-    title: str = attr.ib(default="stac-fastapi")
-    description: str = attr.ib(default="stac-fastapi")
+    landing_page_id: str = attr.ib(default=api_settings.stac_fastapi_landing_id)
+    title: str = attr.ib(default=api_settings.stac_fastapi_title)
+    description: str = attr.ib(default=api_settings.stac_fastapi_description)
 
     def _landing_page(
         self,
@@ -315,7 +317,7 @@ class LandingPageMixin(abc.ABC):
                     "rel": Relations.service_desc.value,
                     "type": MimeTypes.geojson.value,
                     "title": "Service Description",
-                    "href": Settings.get().openapi_url,
+                    "href": api_settings.openapi_url,
                 },
             ],
             stac_extensions=extension_schemas,
@@ -379,6 +381,20 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
             conformance_classes=self.conformance_classes(),
             extension_schemas=[],
         )
+
+        # Add Queryables link
+        if self.extension_is_enabled("FilterExtension"):
+            landing_page["links"].append(
+                {
+                    # TODO: replace this with Relations.queryables.value,
+                    "rel": "http://www.opengis.net/def/rel/ogc/1.0/queryables",
+                    # TODO: replace this with MimeTypes.jsonschema,
+                    "type": "application/schema+json",
+                    "title": "Queryables",
+                    "href": urljoin(base_url, "queryables"),
+                    "method": "GET",
+                }
+            )
 
         # Add Collections links
         collections = self.all_collections(request=kwargs["request"])
@@ -573,6 +589,20 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             conformance_classes=self.conformance_classes(),
             extension_schemas=[],
         )
+
+        # Add Queryables link
+        if self.extension_is_enabled("FilterExtension"):
+            landing_page["links"].append(
+                {
+                    # TODO: replace this with Relations.queryables.value,
+                    "rel": "http://www.opengis.net/def/rel/ogc/1.0/queryables",
+                    # TODO: replace this with MimeTypes.jsonschema,
+                    "type": "application/schema+json",
+                    "title": "Queryables",
+                    "href": urljoin(base_url, "queryables"),
+                    "method": "GET",
+                }
+            )
 
         # Add Collections links
         collections = await self.all_collections(request=kwargs["request"])

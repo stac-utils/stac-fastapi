@@ -2,9 +2,40 @@
 
 ## [Unreleased]
 
+## [2.5.4] - 2024-04-24
+
+### Fixed
+
+* Fix missing payload for the PUT `collection/{collection_id}` endpoint ([#665](https://github.com/stac-utils/stac-fastapi/issues/665))
+* Return 400 for datetime errors ([#670](https://github.com/stac-utils/stac-fastapi/pull/670))
+
+## [2.5.3] - 2024-04-23
+
+### Fixed
+
+* Remove the str2list converter from intersection queries via BaseSearchGetRequest ([#668](https://github.com/stac-utils/stac-fastapi/pull/668))
+* Apply datetime converter in ItemCollection endpoint model ([#667](https://github.com/stac-utils/stac-fastapi/pull/667))
+
+## [2.5.2] - 2024-04-19
+
+### Fixed
+
+* BaseSearchGetRequest datetime validator str_to_interval not allowing GET /search requests with datetime = None ([#662](https://github.com/stac-utils/stac-fastapi/pull/662))
+
+## [2.5.1] - 2024-04-18
+
+### Fixed
+
+* Fixed warnings.warn deprecation syntax for response class and the context extension ([#660](https://github.com/stac-utils/stac-fastapi/pull/660))
+
+## [2.5.0] - 2024-04-12
+
 ### Added
 
 * Add benchmark in CI ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+* Add `/queryables` link to the landing page ([#587](https://github.com/stac-utils/stac-fastapi/pull/587))
+- `id`, `title`, `description` and `api_version` fields can be customized via env variables
+* Add `DeprecationWarning` for the `ContextExtension`
 
 <!--
 # TODO update this after we release 2.5.0
@@ -315,7 +346,12 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.9..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.4..main>
+[2.5.4]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.3..2.5.4>
+[2.5.3]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.2..2.5.3>
+[2.5.2]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.1..2.5.2>
+[2.5.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.0..2.5.1>
+[2.5.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.9..2.5.0>
 [2.4.9]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.8..2.4.9>
 [2.4.8]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.7..2.4.8>
 [2.4.7]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.6..2.4.7>

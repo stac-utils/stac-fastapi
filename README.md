@@ -57,12 +57,12 @@ With the introduction of Pydantic 2, the extra [time it takes to validate models
 
 ```bash
 # Install from PyPI
-pip install stac-fastapi.api stac-fastapi.types stac-fastapi.extensions
+python -m pip install stac-fastapi.types stac-fastapi.api stac-fastapi.extensions
 
 # Install a backend of your choice
-pip install stac-fastapi.sqlalchemy
+python -m pip install stac-fastapi.sqlalchemy
 # or
-pip install stac-fastapi.pgstac
+python -m pip install stac-fastapi.pgstac
 ```
 
 Other backends may be available from other sources, search [PyPI](https://pypi.org/) for more.
@@ -72,14 +72,14 @@ Other backends may be available from other sources, search [PyPI](https://pypi.o
 Install the packages in editable mode:
 
 ```shell
-pip install -e \
-  'stac_fastapi/api[dev]' \
+python -m pip install -e \
   'stac_fastapi/types[dev]' \
+  'stac_fastapi/api[dev]' \
   'stac_fastapi/extensions[dev]'
 ```
 
 To run the tests:
 
 ```shell
-pytest
+python -m pytest
 ```

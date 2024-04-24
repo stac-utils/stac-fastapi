@@ -10,6 +10,7 @@ from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.models import CollectionUri, ItemUri
 from stac_fastapi.api.routes import create_async_endpoint
+from stac_fastapi.types import stac
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
@@ -27,6 +28,13 @@ class PutItem(ItemUri):
     """Update Item."""
 
     item: Item = attr.ib(default=Body(None))
+
+
+@attr.s
+class PutCollection(CollectionUri):
+    """Update Collection."""
+
+    collection: stac.Collection = attr.ib(default=Body(None))
 
 
 @attr.s
@@ -165,7 +173,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_async_endpoint(self.client.update_collection, Collection),
+            endpoint=create_async_endpoint(self.client.update_collection, PutCollection),
         )
 
     def register_delete_collection(self):

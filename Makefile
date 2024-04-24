@@ -4,10 +4,10 @@ image:
 
 .PHONY: install
 install:
-	pip install wheel && \
-	pip install -e ./stac_fastapi/types[dev] && \
-	pip install -e ./stac_fastapi/api[dev] && \
-	pip install -e ./stac_fastapi/extensions[dev]
+	python -m pip install wheel && \
+	python -m pip install -e ./stac_fastapi/types[dev] && \
+	python -m pip install -e ./stac_fastapi/api[dev] && \
+	python -m pip install -e ./stac_fastapi/extensions[dev]
 
 .PHONY: docs-image
 docs-image:
@@ -21,4 +21,4 @@ docs: docs-image
 
 .PHONY: test
 test: image
-	pytest .
+	python -m pytest .
