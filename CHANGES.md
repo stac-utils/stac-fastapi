@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.5.4] - 2024-04-24
+
 ### Fixed
 
 * Fix missing payload for the PUT `collection/{collection_id}` endpoint ([#665](https://github.com/stac-utils/stac-fastapi/issues/665))
@@ -332,7 +334,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.3..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.4..main>
+[2.5.4]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.3..2.5.4>
 [2.5.3]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.2..2.5.3>
 [2.5.2]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.1..2.5.2>
 [2.5.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.0..2.5.1>
