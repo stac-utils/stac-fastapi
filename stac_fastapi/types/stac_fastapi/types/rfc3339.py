@@ -73,10 +73,13 @@ def validate_interval_format(values: list) -> None:
         values (list): A list of strings split by '/' from the interval string.
 
     Raises:
-        ValueError: If the interval string contains more than one forward slash.
+        HTTPException: If the interval string contains more than one forward slash.
     """
     if len(values) > 2:
-        raise ValueError("Interval string contains more than one forward slash.")
+        raise HTTPException(
+            status_code=400,
+            detail="Interval string contains more than one forward slash.",
+        )
 
 
 def str_to_interval(interval: Optional[str]) -> Optional[DateTimeType]:

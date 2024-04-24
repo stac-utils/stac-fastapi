@@ -92,9 +92,6 @@ def test_parse_invalid_interval_to_datetime(test_input):
     assert (
         exc_info.value.status_code == 400
     ), "Should return a 400 status code for invalid intervals"
-    assert "Start datetime cannot be before end datetime." in str(
-        exc_info.value.detail
-    ), "Error message does not match expected output"
 
 
 @pytest.mark.parametrize("test_input", valid_intervals)
