@@ -101,7 +101,7 @@ def str_to_interval(interval: Optional[str]) -> Optional[DateTimeType]:
             if len(values) > 1 and values[1] not in ["..", ""]
             else None
         )
-    except ValueError as e:
+    except (ValueError, iso8601.ParseError) as e:
         raise HTTPException(status_code=400, detail=str(e))
 
     if start is None and end is None:
