@@ -45,7 +45,7 @@ def create_async_endpoint(
     """
 
     if response_class:
-        warnings.warns(
+        warnings.warn(
             "`response_class` option is deprecated, please set the Response class directly in the endpoint.",  # noqa: E501
             DeprecationWarning,
         )
