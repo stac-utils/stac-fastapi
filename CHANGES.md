@@ -4,11 +4,12 @@
 
 ### Fixed
 
+* Fix missing payload for the PUT `collection/{collection_id}` endpoint ([#665](https://github.com/stac-utils/stac-fastapi/issues/665))
 * Return 400 for datetime errors ([#670](https://github.com/stac-utils/stac-fastapi/pull/670))
 
 ## [2.5.3] - 2024-04-23
 
-### Fixed 
+### Fixed
 
 * Remove the str2list converter from intersection queries via BaseSearchGetRequest ([#668](https://github.com/stac-utils/stac-fastapi/pull/668))
 * Apply datetime converter in ItemCollection endpoint model ([#667](https://github.com/stac-utils/stac-fastapi/pull/667))

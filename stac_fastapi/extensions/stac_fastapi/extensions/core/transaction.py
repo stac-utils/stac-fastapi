@@ -32,6 +32,13 @@ class PutItem(ItemUri):
 
 
 @attr.s
+class PutCollection(CollectionUri):
+    """Update Collection."""
+
+    collection: stac_types.Collection = attr.ib(default=Body(None))
+
+
+@attr.s
 class TransactionExtension(ApiExtension):
     """Transaction Extension.
 
@@ -128,7 +135,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["PUT"],
             endpoint=create_async_endpoint(
-                self.client.update_collection, stac_types.Collection
+                self.client.update_collection, PutCollection
             ),
         )
 

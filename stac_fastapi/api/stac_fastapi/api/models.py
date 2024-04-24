@@ -103,14 +103,14 @@ def create_post_request_model(
 
 @attr.s  # type:ignore
 class CollectionUri(APIRequest):
-    """Delete collection."""
+    """Get or delete collection."""
 
     collection_id: str = attr.ib(default=Path(..., description="Collection ID"))
 
 
 @attr.s
 class ItemUri(CollectionUri):
-    """Delete item."""
+    """Get or delete item."""
 
     item_id: str = attr.ib(default=Path(..., description="Item ID"))
 
