@@ -64,24 +64,6 @@ def parse_single_date(date_str: str) -> datetime:
     return rfc3339_str_to_datetime(date_str)
 
 
-def validate_interval_format(values: list) -> None:
-    """
-    Validate the format of the interval string to ensure it contains at most
-    one forward slash.
-
-    Args:
-        values (list): A list of strings split by '/' from the interval string.
-
-    Raises:
-        HTTPException: If the interval string contains more than one forward slash.
-    """
-    if len(values) > 2:
-        raise HTTPException(
-            status_code=400,
-            detail="Interval string contains more than one forward slash.",
-        )
-
-
 def str_to_interval(interval: Optional[str]) -> Optional[DateTimeType]:
     """
     Extract a tuple of datetime objects from an interval string defined by the OGC API.
@@ -106,7 +88,11 @@ def str_to_interval(interval: Optional[str]) -> Optional[DateTimeType]:
         raise HTTPException(status_code=400, detail="Empty interval string is invalid.")
 
     values = interval.split("/")
-    validate_interval_format(values)
+    if len(values) > 2:
+        raise HTTPException(
+            status_code=400,
+            detail="Interval string contains more than one forward slash.",
+        )
 
     try:
         start = parse_single_date(values[0]) if values[0] not in ["..", ""] else None
