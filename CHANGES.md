@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.5.5] - 2024-04-24
+
+### Fixed
+
+* Fix `service-doc` and `service-desc` url in landing page when using router prefix
+
 ## [2.5.4] - 2024-04-24
 
 ### Fixed
