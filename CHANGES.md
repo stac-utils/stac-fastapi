@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.5.5.post1] - 2024-04-25
+
+### Fixed
+
+* Fix `service-doc` and `service-desc` url in landing page when using router prefix for `AsyncBaseCoreClient`
+
 ## [2.5.5] - 2024-04-24
 
 ### Fixed

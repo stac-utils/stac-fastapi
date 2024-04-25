@@ -116,3 +116,61 @@ def TestCoreClient(collection_dict, item_dict):
             )
 
     return CoreClient
+
+
+@pytest.fixture
+def AsyncTestCoreClient(collection_dict, item_dict):
+    class AsyncCoreClient(core.AsyncBaseCoreClient):
+        async def post_search(
+            self, search_request: BaseSearchPostRequest, **kwargs
+        ) -> stac.ItemCollection:
+            return stac.ItemCollection(
+                type="FeatureCollection", features=[stac.Item(**item_dict)]
+            )
+
+        async def get_search(
+            self,
+            collections: Optional[List[str]] = None,
+            ids: Optional[List[str]] = None,
+            bbox: Optional[List[NumType]] = None,
+            intersects: Optional[str] = None,
+            datetime: Optional[Union[str, datetime]] = None,
+            limit: Optional[int] = 10,
+            **kwargs,
+        ) -> stac.ItemCollection:
+            return stac.ItemCollection(
+                type="FeatureCollection", features=[stac.Item(**item_dict)]
+            )
+
+        async def get_item(
+            self, item_id: str, collection_id: str, **kwargs
+        ) -> stac.Item:
+            return stac.Item(**item_dict)
+
+        async def all_collections(self, **kwargs) -> stac.Collections:
+            return stac.Collections(
+                collections=[stac.Collection(**collection_dict)],
+                links=[
+                    {"href": "test", "rel": "root"},
+                    {"href": "test", "rel": "self"},
+                    {"href": "test", "rel": "parent"},
+                ],
+            )
+
+        async def get_collection(self, collection_id: str, **kwargs) -> stac.Collection:
+            return stac.Collection(**collection_dict)
+
+        async def item_collection(
+            self,
+            collection_id: str,
+            bbox: Optional[List[Union[float, int]]] = None,
+            datetime: Optional[Union[str, datetime]] = None,
+            limit: int = 10,
+            token: str = None,
+            **kwargs,
+        ) -> stac.ItemCollection:
+            return stac.ItemCollection(
+                type="FeatureCollection", features=[stac.Item(**item_dict)]
+            )
+
+    return AsyncCoreClient
