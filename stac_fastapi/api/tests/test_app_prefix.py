@@ -51,7 +51,7 @@ def test_api_prefix(TestCoreClient, prefix):
         collections = client.get(f"{prefix}/collections")
         assert collections.status_code == 200, collections.json()
         collection_id = collections.json()["collections"][0]["id"]
-        print(collections.json()["links"])
+
         collection = client.get(f"{prefix}/collections/{collection_id}")
         assert collection.status_code == 200, collection.json()
 
