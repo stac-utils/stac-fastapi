@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1714043216333,
+  "lastUpdate": 1714046789421,
   "repoUrl": "https://github.com/stac-utils/stac-fastapi",
   "entries": {
     "STAC FastAPI Benchmarks": [
@@ -3750,6 +3750,156 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.0015445337956132767",
             "extra": "mean: 2.050495130217668 msec\nrounds: 407"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jonathan.d.healy@gmail.com",
+            "name": "Jonathan Healy",
+            "username": "jonhealy1"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "47704ad9f906fce02c999b4156ae3f08f7570721",
+          "message": "v2.5.5.post1 (#676)\n\n* 2.5.5.post1\r\n\r\n* fix version link",
+          "timestamp": "2024-04-25T20:04:48+08:00",
+          "tree_id": "9eafee04356e5e5a3a8f2da5561da11e6974f421",
+          "url": "https://github.com/stac-utils/stac-fastapi/commit/47704ad9f906fce02c999b4156ae3f08f7570721"
+        },
+        "date": 1714046788812,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "Items With Model validation (1)",
+            "value": 567.5373574216972,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00008570274294958499",
+            "extra": "mean: 1.761998548506068 msec\nrounds: 268"
+          },
+          {
+            "name": "Items With Model validation (10)",
+            "value": 169.35420654282817,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0022111613838416504",
+            "extra": "mean: 5.904783946108293 msec\nrounds: 167"
+          },
+          {
+            "name": "Items With Model validation (50)",
+            "value": 43.48576258131758,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00025960847486716516",
+            "extra": "mean: 22.99603227907107 msec\nrounds: 43"
+          },
+          {
+            "name": "Items With Model validation (100)",
+            "value": 21.05980189692512,
+            "unit": "iter/sec",
+            "range": "stddev: 0.008874905130452065",
+            "extra": "mean: 47.48382747826356 msec\nrounds: 23"
+          },
+          {
+            "name": "Items With Model validation (200)",
+            "value": 11.10417610074266,
+            "unit": "iter/sec",
+            "range": "stddev: 0.007868281317086147",
+            "extra": "mean: 90.05620866667623 msec\nrounds: 12"
+          },
+          {
+            "name": "Items With Model validation (250)",
+            "value": 9.071191577800786,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00784504053286514",
+            "extra": "mean: 110.23910050000723 msec\nrounds: 10"
+          },
+          {
+            "name": "Items With Model validation (1000)",
+            "value": 2.1167813172792505,
+            "unit": "iter/sec",
+            "range": "stddev: 0.011543009530471438",
+            "extra": "mean: 472.4153562000083 msec\nrounds: 5"
+          },
+          {
+            "name": "Items Limit: (1)",
+            "value": 833.7123107618228,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00008651246428357384",
+            "extra": "mean: 1.1994545205722442 msec\nrounds: 559"
+          },
+          {
+            "name": "Items Limit: (10)",
+            "value": 480.6686464042685,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0013431564013422748",
+            "extra": "mean: 2.080435259259547 msec\nrounds: 405"
+          },
+          {
+            "name": "Items Limit: (50)",
+            "value": 176.3373415536073,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00008870612408452591",
+            "extra": "mean: 5.670948598802573 msec\nrounds: 167"
+          },
+          {
+            "name": "Items Limit: (100)",
+            "value": 98.33264986918789,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00015236149357733214",
+            "extra": "mean: 10.169562208791302 msec\nrounds: 91"
+          },
+          {
+            "name": "Items Limit: (200)",
+            "value": 52.65398892205785,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0003865918060018038",
+            "extra": "mean: 18.991913442308626 msec\nrounds: 52"
+          },
+          {
+            "name": "Items Limit: (250)",
+            "value": 40.98133735057624,
+            "unit": "iter/sec",
+            "range": "stddev: 0.003820888465462798",
+            "extra": "mean: 24.40135106976783 msec\nrounds: 43"
+          },
+          {
+            "name": "Items Limit: (1000)",
+            "value": 10.42805185765798,
+            "unit": "iter/sec",
+            "range": "stddev: 0.010055793862666593",
+            "extra": "mean: 95.89518863637377 msec\nrounds: 11"
+          },
+          {
+            "name": "Collection With Model validation",
+            "value": 655.6952909744051,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00007331645787821295",
+            "extra": "mean: 1.5250986453081525 msec\nrounds: 437"
+          },
+          {
+            "name": "Collection",
+            "value": 966.0837946734896,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00007081399473750932",
+            "extra": "mean: 1.0351068980905256 msec\nrounds: 628"
+          },
+          {
+            "name": "Collections With Model validation",
+            "value": 172.36093622707477,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0021692757558846444",
+            "extra": "mean: 5.801778650601912 msec\nrounds: 166"
+          },
+          {
+            "name": "Collections",
+            "value": 490.6813062448629,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00009905441656958051",
+            "extra": "mean: 2.0379826728124297 msec\nrounds: 434"
           }
         ]
       }
