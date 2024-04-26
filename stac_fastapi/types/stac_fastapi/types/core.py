@@ -415,9 +415,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": Relations.service_desc.value,
                 "type": MimeTypes.openapi.value,
                 "title": "OpenAPI service description",
-                "href": urljoin(
-                    str(request.base_url), request.app.openapi_url.lstrip("/")
-                ),
+                "href": str(request.url_for("openapi")),
             }
         )
 
@@ -427,7 +425,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": Relations.service_doc.value,
                 "type": MimeTypes.html.value,
                 "title": "OpenAPI service documentation",
-                "href": urljoin(str(request.base_url), request.app.docs_url.lstrip("/")),
+                "href": str(request.url_for("swagger_ui_html")),
             }
         )
 
@@ -623,7 +621,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": Relations.service_desc.value,
                 "type": MimeTypes.openapi.value,
                 "title": "OpenAPI service description",
-                "href": urljoin(base_url, request.app.openapi_url.lstrip("/")),
+                "href": str(request.url_for("openapi")),
             }
         )
 
@@ -633,7 +631,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 "rel": Relations.service_doc.value,
                 "type": MimeTypes.html.value,
                 "title": "OpenAPI service documentation",
-                "href": urljoin(base_url, request.app.docs_url.lstrip("/")),
+                "href": str(request.url_for("swagger_ui_html")),
             }
         )
 

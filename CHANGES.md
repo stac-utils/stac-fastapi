@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [2.5.5.post1] - 2024-04-25
+
+### Fixed
+
+* Fix `service-doc` and `service-desc` url in landing page when using router prefix for `AsyncBaseCoreClient`. ([#675](https://github.com/stac-utils/stac-fastapi/pull/675))
+
+## [2.5.5] - 2024-04-24
+
+### Fixed
+
+* Fix `service-doc` and `service-desc` url in landing page when using router prefix. ([#673](https://github.com/stac-utils/stac-fastapi/pull/673))
+
 ## [2.5.4] - 2024-04-24
 
 ### Fixed
@@ -346,7 +358,9 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.4..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5.post1..main>
+[2.5.5.post1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5..2.5.5.post1>
+[2.5.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.4..2.5.5>
 [2.5.4]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.3..2.5.4>
 [2.5.3]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.2..2.5.3>
 [2.5.2]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.1..2.5.2>
