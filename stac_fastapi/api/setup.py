@@ -7,7 +7,7 @@ with open("README.md") as f:
 
 install_requires = [
     "brotli_asgi",
-    "stac-fastapi.types==2.4.9",
+    "stac-fastapi.types",
 ]
 
 extra_reqs = {
@@ -54,5 +54,4 @@ setup(
     install_requires=install_requires,
     tests_require=extra_reqs["dev"],
     extras_require=extra_reqs,
-    version="2.4.9",
 )

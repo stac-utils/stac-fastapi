@@ -53,5 +53,4 @@ setup(
     install_requires=install_requires,
     tests_require=extra_reqs["dev"],
     extras_require=extra_reqs,
-    version="2.4.9",
 )
