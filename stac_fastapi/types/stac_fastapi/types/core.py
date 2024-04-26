@@ -313,12 +313,6 @@ class LandingPageMixin(abc.ABC):
                     "href": urljoin(base_url, "search"),
                     "method": "POST",
                 },
-                {
-                    "rel": Relations.service_desc.value,
-                    "type": MimeTypes.geojson.value,
-                    "title": "Service Description",
-                    "href": api_settings.openapi_url,
-                },
             ],
             stac_extensions=extension_schemas,
         )
