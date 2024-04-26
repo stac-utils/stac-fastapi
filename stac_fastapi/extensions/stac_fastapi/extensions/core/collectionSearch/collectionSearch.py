@@ -82,7 +82,7 @@ class CollectionSearchExtension(ApiExtension):
         self.router.add_api_route(
             name="Collection Search",
             path="/collection-search",
-            response_model=Collections,
+            response_model=None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -95,7 +95,7 @@ class CollectionSearchExtension(ApiExtension):
         self.router.add_api_route(
             name="Collection Search",
             path="/collection-search",
-            response_model=Collections,
+            response_model=None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
