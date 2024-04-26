@@ -5,7 +5,7 @@ from typing import List, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
-from starlette.responses import Response
+from starlette.responses import JSONResponse, Response
 from stac_pydantic.api.collections import Collections
 
 from stac_fastapi.api.models import JSONSchemaResponse
@@ -67,8 +67,7 @@ class CollectionSearchExtension(ApiExtension):
         ]
     )
     router: APIRouter = attr.ib(factory=APIRouter)
-    response_class: Type[Response] = attr.ib(default=JSONSchemaResponse)
-    
+    response_class: Type[Response] = attr.ib(default=JSONResponse)    
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
