@@ -2,12 +2,16 @@
 
 ## [Unreleased]
 
+### Added
+
+* Add enhanced middleware configuration to the StacApi class, enabling specific middleware options and dynamic addition post-application initialization. ([#442](https://github.com/stac-utils/stac-fastapi/pull/442))
+* Add Response Model to OpenAPI, even if model validation is turned off ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+
 ## Changes
 
 * Update to pydantic v2 and stac_pydantic v3 ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
 * Removed internal Search and Operator Types in favor of stac_pydantic Types ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
 * Fix response model validation ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
-* Add Response Model to OpenAPI, even if model validation is turned off ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
 * Use status code 201 for Item/Collection creation ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
 * Replace Black with Ruff Format ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
 
