@@ -38,7 +38,7 @@ class BaseTransactionsClient(abc.ABC):
         collection_id: str,
         item: Union[Item, ItemCollection],
         **kwargs,
-    ) -> Optional[Union[Item, Response, None]]:
+    ) -> Optional[Union[stac.Item, Response, None]]:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
@@ -55,7 +55,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def update_item(
         self, collection_id: str, item_id: str, item: Item, **kwargs
-    ) -> Optional[Union[Item, Response]]:
+    ) -> Optional[Union[stac.Item, Response]]:
         """Perform a complete update on an existing item.
 
         Called with `PUT /collections/{collection_id}/items`. It is expected
@@ -75,7 +75,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def delete_item(
         self, item_id: str, collection_id: str, **kwargs
-    ) -> Optional[Union[Item, Response]]:
+    ) -> Optional[Union[stac.Item, Response]]:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collection_id}/items/{item_id}`
@@ -92,7 +92,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def create_collection(
         self, collection: Collection, **kwargs
-    ) -> Optional[Union[Collection, Response]]:
+    ) -> Optional[Union[stac.Collection, Response]]:
         """Create a new collection.
 
         Called with `POST /collections`.
@@ -108,7 +108,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def update_collection(
         self, collection_id: str, collection: Collection, **kwargs
-    ) -> Optional[Union[Collection, Response]]:
+    ) -> Optional[Union[stac.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
         Called with `PUT /collections/{collection_id}`. It is expected that this
@@ -128,7 +128,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def delete_collection(
         self, collection_id: str, **kwargs
-    ) -> Optional[Union[Collection, Response]]:
+    ) -> Optional[Union[stac.Collection, Response]]:
         """Delete a collection.
 
         Called with `DELETE /collections/{collection_id}`
@@ -152,7 +152,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         collection_id: str,
         item: Union[Item, ItemCollection],
         **kwargs,
-    ) -> Optional[Union[Item, Response, None]]:
+    ) -> Optional[Union[stac.Item, Response, None]]:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
@@ -169,7 +169,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def update_item(
         self, collection_id: str, item_id: str, item: Item, **kwargs
-    ) -> Optional[Union[Item, Response]]:
+    ) -> Optional[Union[stac.Item, Response]]:
         """Perform a complete update on an existing item.
 
         Called with `PUT /collections/{collection_id}/items`. It is expected
@@ -188,7 +188,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def delete_item(
         self, item_id: str, collection_id: str, **kwargs
-    ) -> Optional[Union[Item, Response]]:
+    ) -> Optional[Union[stac.Item, Response]]:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collection_id}/items/{item_id}`
@@ -205,7 +205,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def create_collection(
         self, collection: Collection, **kwargs
-    ) -> Optional[Union[Collection, Response]]:
+    ) -> Optional[Union[stac.Collection, Response]]:
         """Create a new collection.
 
         Called with `POST /collections`.
@@ -221,7 +221,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def update_collection(
         self, collection_id: str, collection: Collection, **kwargs
-    ) -> Optional[Union[Collection, Response]]:
+    ) -> Optional[Union[stac.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
         Called with `PUT /collections/{collection_id}`. It is expected that this item
@@ -241,7 +241,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def delete_collection(
         self, collection_id: str, **kwargs
-    ) -> Optional[Union[Collection, Response]]:
+    ) -> Optional[Union[stac.Collection, Response]]:
         """Delete a collection.
 
         Called with `DELETE /collections/{collection_id}`
