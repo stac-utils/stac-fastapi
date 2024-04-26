@@ -1,4 +1,5 @@
 """Application settings."""
+
 import enum
 
 

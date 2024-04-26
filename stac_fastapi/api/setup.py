@@ -6,9 +6,6 @@ with open("README.md") as f:
     desc = f.read()
 
 install_requires = [
-    "attrs",
-    "pydantic[dotenv]<2",
-    "stac_pydantic==2.0.*",
     "brotli_asgi",
     "stac-fastapi.types",
 ]
@@ -22,6 +19,9 @@ extra_reqs = {
         "pre-commit",
         "requests",
         "pystac[validation]==1.*",
+    ],
+    "benchmark": [
+        "pytest-benchmark",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
 }
@@ -38,6 +38,10 @@ setup(
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: MIT License",
     ],
     keywords="STAC FastAPI COG",

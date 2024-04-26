@@ -4,7 +4,7 @@ This is a checklist for releasing a new version of **stac-fastapi**.
 
 1. Determine the next version. We currently do not have published versioning guidelines, but there is some text on the subject here: <https://github.com/radiantearth/stac-spec/discussions/1184>.
 2. Create a release branch named `release/vX.Y.Z`, where `X.Y.Z` is the new version.
-3. Search and replace all instances of the current version number with the new version. As of this writing, there's five different `version.py` files, and one `VERSION` file, in the repo.
+3. Search and replace all instances of the current version number with the new version. As of this writing, there's 3 different `version.py` files, and one `VERSION` file, in the repo.
 4. Update [CHANGES.md](./CHANGES.md) for the new version. Add the appropriate header, and update the links at the bottom of the file.
 5. Audit CHANGES.md for completeness and accuracy. Also, ensure that the changes in this version are appropriate for the version number change (i.e. if you're making breaking changes, you should be increasing the `MAJOR` version number).
 6. (optional) If you have permissions, run `scripts/publish --test` to test your PyPI publish. If successful, the published packages will be available on <http://test.pypy.org>.

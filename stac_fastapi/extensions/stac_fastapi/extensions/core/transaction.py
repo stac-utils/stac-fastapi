@@ -1,14 +1,16 @@
 """Transaction extension."""
+
 from typing import List, Optional, Type, Union
 
 import attr
 from fastapi import APIRouter, Body, FastAPI
-from stac_pydantic import Collection, Item
+from stac_pydantic import Collection, Item, ItemCollection
+from stac_pydantic.shared import MimeTypes
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.models import CollectionUri, ItemUri
 from stac_fastapi.api.routes import create_async_endpoint
-from stac_fastapi.types import stac as stac_types
+from stac_fastapi.types import stac
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
@@ -18,16 +20,21 @@ from stac_fastapi.types.extension import ApiExtension
 class PostItem(CollectionUri):
     """Create Item."""
 
-    item: Union[stac_types.Item, stac_types.ItemCollection] = attr.ib(
-        default=Body(None)
-    )
+    item: Union[Item, ItemCollection] = attr.ib(default=Body(None))
 
 
 @attr.s
 class PutItem(ItemUri):
     """Update Item."""
 
-    item: stac_types.Item = attr.ib(default=Body(None))
+    item: Item = attr.ib(default=Body(None))
+
+
+@attr.s
+class PutCollection(CollectionUri):
+    """Update Collection."""
+
+    collection: stac.Collection = attr.ib(default=Body(None))
 
 
 @attr.s
@@ -65,7 +72,16 @@ class TransactionExtension(ApiExtension):
         self.router.add_api_route(
             name="Create Item",
             path="/collections/{collection_id}/items",
+            status_code=201,
             response_model=Item if self.settings.enable_response_models else None,
+            responses={
+                201: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": Item,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -80,6 +96,14 @@ class TransactionExtension(ApiExtension):
             name="Update Item",
             path="/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": Item,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -94,6 +118,14 @@ class TransactionExtension(ApiExtension):
             name="Delete Item",
             path="/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": Item,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -106,29 +138,42 @@ class TransactionExtension(ApiExtension):
         self.router.add_api_route(
             name="Create Collection",
             path="/collections",
+            status_code=201,
             response_model=Collection if self.settings.enable_response_models else None,
+            responses={
+                201: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": Collection,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=create_async_endpoint(
-                self.client.create_collection, stac_types.Collection
-            ),
+            endpoint=create_async_endpoint(self.client.create_collection, Collection),
         )
 
     def register_update_collection(self):
-        """Register update collection endpoint (PUT /collections)."""
+        """Register update collection endpoint (PUT /collections/{collection_id})."""
         self.router.add_api_route(
             name="Update Collection",
-            path="/collections",
+            path="/collections/{collection_id}",
             response_model=Collection if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": Collection,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_async_endpoint(
-                self.client.update_collection, stac_types.Collection
-            ),
+            endpoint=create_async_endpoint(self.client.update_collection, PutCollection),
         )
 
     def register_delete_collection(self):
@@ -137,13 +182,19 @@ class TransactionExtension(ApiExtension):
             name="Delete Collection",
             path="/collections/{collection_id}",
             response_model=Collection if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": Collection,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=create_async_endpoint(
-                self.client.delete_collection, CollectionUri
-            ),
+            endpoint=create_async_endpoint(self.client.delete_collection, CollectionUri),
         )
 
     def register(self, app: FastAPI) -> None:

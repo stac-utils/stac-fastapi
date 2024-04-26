@@ -1,25 +1,31 @@
 """Base clients."""
+
+
 import abc
-from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
 from fastapi import Request
+from geojson_pydantic.geometries import Geometry
+from stac_pydantic import Collection, Item, ItemCollection
+from stac_pydantic.api.version import STAC_API_VERSION
 from stac_pydantic.links import Relations
-from stac_pydantic.shared import MimeTypes
-from stac_pydantic.version import STAC_VERSION
+from stac_pydantic.shared import BBox, MimeTypes
 from starlette.responses import Response
 
-from stac_fastapi.types import stac as stac_types
+from stac_fastapi.types import stac
+from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
+from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import BaseSearchPostRequest
-from stac_fastapi.types.stac import Conformance
 
 NumType = Union[float, int]
 StacType = Dict[str, Any]
+
+api_settings = ApiSettings()
 
 
 @attr.s  # type:ignore
@@ -30,9 +36,9 @@ class BaseTransactionsClient(abc.ABC):
     def create_item(
         self,
         collection_id: str,
-        item: Union[stac_types.Item, stac_types.ItemCollection],
+        item: Union[Item, ItemCollection],
         **kwargs,
-    ) -> Optional[Union[stac_types.Item, Response, None]]:
+    ) -> Optional[Union[Item, Response, None]]:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
@@ -48,8 +54,8 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def update_item(
-        self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
-    ) -> Optional[Union[stac_types.Item, Response]]:
+        self, collection_id: str, item_id: str, item: Item, **kwargs
+    ) -> Optional[Union[Item, Response]]:
         """Perform a complete update on an existing item.
 
         Called with `PUT /collections/{collection_id}/items`. It is expected
@@ -69,7 +75,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def delete_item(
         self, item_id: str, collection_id: str, **kwargs
-    ) -> Optional[Union[stac_types.Item, Response]]:
+    ) -> Optional[Union[Item, Response]]:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collection_id}/items/{item_id}`
@@ -85,8 +91,8 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def create_collection(
-        self, collection: stac_types.Collection, **kwargs
-    ) -> Optional[Union[stac_types.Collection, Response]]:
+        self, collection: Collection, **kwargs
+    ) -> Optional[Union[Collection, Response]]:
         """Create a new collection.
 
         Called with `POST /collections`.
@@ -101,18 +107,18 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def update_collection(
-        self, collection: stac_types.Collection, **kwargs
-    ) -> Optional[Union[stac_types.Collection, Response]]:
+        self, collection_id: str, collection: Collection, **kwargs
+    ) -> Optional[Union[Collection, Response]]:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections`. It is expected that this item already
-        exists.  The update should do a diff against the saved collection and
-        perform any necessary updates.  Partial updates are not supported by the
-        transactions extension.
+        Called with `PUT /collections/{collection_id}`. It is expected that this
+        collection already exists.  The update should do a diff against the saved
+        collection and perform any necessary updates.  Partial updates are not
+        supported by the transactions extension.
 
         Args:
-            collection: the collection (must be complete)
-            collection_id: the id of the collection from the resource path
+            collection_id: id of the existing collection to be updated
+            collection: the updated collection (must be complete)
 
         Returns:
             The updated collection.
@@ -122,7 +128,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def delete_collection(
         self, collection_id: str, **kwargs
-    ) -> Optional[Union[stac_types.Collection, Response]]:
+    ) -> Optional[Union[Collection, Response]]:
         """Delete a collection.
 
         Called with `DELETE /collections/{collection_id}`
@@ -144,9 +150,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
     async def create_item(
         self,
         collection_id: str,
-        item: Union[stac_types.Item, stac_types.ItemCollection],
+        item: Union[Item, ItemCollection],
         **kwargs,
-    ) -> Optional[Union[stac_types.Item, Response, None]]:
+    ) -> Optional[Union[Item, Response, None]]:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
@@ -162,8 +168,8 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def update_item(
-        self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
-    ) -> Optional[Union[stac_types.Item, Response]]:
+        self, collection_id: str, item_id: str, item: Item, **kwargs
+    ) -> Optional[Union[Item, Response]]:
         """Perform a complete update on an existing item.
 
         Called with `PUT /collections/{collection_id}/items`. It is expected
@@ -182,7 +188,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def delete_item(
         self, item_id: str, collection_id: str, **kwargs
-    ) -> Optional[Union[stac_types.Item, Response]]:
+    ) -> Optional[Union[Item, Response]]:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collection_id}/items/{item_id}`
@@ -198,8 +204,8 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def create_collection(
-        self, collection: stac_types.Collection, **kwargs
-    ) -> Optional[Union[stac_types.Collection, Response]]:
+        self, collection: Collection, **kwargs
+    ) -> Optional[Union[Collection, Response]]:
         """Create a new collection.
 
         Called with `POST /collections`.
@@ -214,17 +220,18 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def update_collection(
-        self, collection: stac_types.Collection, **kwargs
-    ) -> Optional[Union[stac_types.Collection, Response]]:
+        self, collection_id: str, collection: Collection, **kwargs
+    ) -> Optional[Union[Collection, Response]]:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections`. It is expected that this item already
-        exists.  The update should do a diff against the saved collection and
+        Called with `PUT /collections/{collection_id}`. It is expected that this item
+        already exists.  The update should do a diff against the saved collection and
         perform any necessary updates.  Partial updates are not supported by the
         transactions extension.
 
         Args:
-            collection: the collection (must be complete)
+            collection_id: id of the existing collection to be updated
+            collection: the updated collection (must be complete)
 
         Returns:
             The updated collection.
@@ -234,7 +241,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def delete_collection(
         self, collection_id: str, **kwargs
-    ) -> Optional[Union[stac_types.Collection, Response]]:
+    ) -> Optional[Union[Collection, Response]]:
         """Delete a collection.
 
         Called with `DELETE /collections/{collection_id}`
@@ -252,18 +259,18 @@ class AsyncBaseTransactionsClient(abc.ABC):
 class LandingPageMixin(abc.ABC):
     """Create a STAC landing page (GET /)."""
 
-    stac_version: str = attr.ib(default=STAC_VERSION)
-    landing_page_id: str = attr.ib(default="stac-fastapi")
-    title: str = attr.ib(default="stac-fastapi")
-    description: str = attr.ib(default="stac-fastapi")
+    stac_version: str = attr.ib(default=STAC_API_VERSION)
+    landing_page_id: str = attr.ib(default=api_settings.stac_fastapi_landing_id)
+    title: str = attr.ib(default=api_settings.stac_fastapi_title)
+    description: str = attr.ib(default=api_settings.stac_fastapi_description)
 
     def _landing_page(
         self,
         base_url: str,
         conformance_classes: List[str],
         extension_schemas: List[str],
-    ) -> stac_types.LandingPage:
-        landing_page = stac_types.LandingPage(
+    ) -> stac.LandingPage:
+        landing_page = stac.LandingPage(
             type="Catalog",
             id=self.landing_page_id,
             title=self.title,
@@ -273,35 +280,35 @@ class LandingPageMixin(abc.ABC):
             links=[
                 {
                     "rel": Relations.self.value,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.json.value,
                     "href": base_url,
                 },
                 {
                     "rel": Relations.root.value,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.json.value,
                     "href": base_url,
                 },
                 {
-                    "rel": "data",
-                    "type": MimeTypes.json,
+                    "rel": Relations.data.value,
+                    "type": MimeTypes.json.value,
                     "href": urljoin(base_url, "collections"),
                 },
                 {
                     "rel": Relations.conformance.value,
-                    "type": MimeTypes.json,
+                    "type": MimeTypes.json.value,
                     "title": "STAC/OGC conformance classes implemented by this server",
                     "href": urljoin(base_url, "conformance"),
                 },
                 {
                     "rel": Relations.search.value,
-                    "type": MimeTypes.geojson,
+                    "type": MimeTypes.geojson.value,
                     "title": "STAC search",
                     "href": urljoin(base_url, "search"),
                     "method": "GET",
                 },
                 {
                     "rel": Relations.search.value,
-                    "type": MimeTypes.geojson,
+                    "type": MimeTypes.geojson.value,
                     "title": "STAC search",
                     "href": urljoin(base_url, "search"),
                     "method": "POST",
@@ -309,6 +316,7 @@ class LandingPageMixin(abc.ABC):
             ],
             stac_extensions=extension_schemas,
         )
+
         return landing_page
 
 
@@ -351,7 +359,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
         return base_conformance
 
-    def landing_page(self, **kwargs) -> stac_types.LandingPage:
+    def landing_page(self, **kwargs) -> stac.LandingPage:
         """Landing page.
 
         Called with `GET /`.
@@ -361,14 +369,30 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         """
         request: Request = kwargs["request"]
         base_url = get_base_url(request)
+
         landing_page = self._landing_page(
             base_url=base_url,
             conformance_classes=self.conformance_classes(),
             extension_schemas=[],
         )
 
+        # Add Queryables link
+        if self.extension_is_enabled("FilterExtension"):
+            landing_page["links"].append(
+                {
+                    # TODO: replace this with Relations.queryables.value,
+                    "rel": "http://www.opengis.net/def/rel/ogc/1.0/queryables",
+                    # TODO: replace this with MimeTypes.jsonschema,
+                    "type": "application/schema+json",
+                    "title": "Queryables",
+                    "href": urljoin(base_url, "queryables"),
+                    "method": "GET",
+                }
+            )
+
         # Add Collections links
         collections = self.all_collections(request=kwargs["request"])
+
         for collection in collections["collections"]:
             landing_page["links"].append(
                 {
@@ -382,30 +406,26 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         # Add OpenAPI URL
         landing_page["links"].append(
             {
-                "rel": "service-desc",
-                "type": "application/vnd.oai.openapi+json;version=3.0",
+                "rel": Relations.service_desc.value,
+                "type": MimeTypes.openapi.value,
                 "title": "OpenAPI service description",
-                "href": urljoin(
-                    str(request.base_url), request.app.openapi_url.lstrip("/")
-                ),
+                "href": str(request.url_for("openapi")),
             }
         )
 
         # Add human readable service-doc
         landing_page["links"].append(
             {
-                "rel": "service-doc",
-                "type": "text/html",
+                "rel": Relations.service_doc.value,
+                "type": MimeTypes.html.value,
                 "title": "OpenAPI service documentation",
-                "href": urljoin(
-                    str(request.base_url), request.app.docs_url.lstrip("/")
-                ),
+                "href": str(request.url_for("swagger_ui_html")),
             }
         )
 
-        return landing_page
+        return stac.LandingPage(**landing_page)
 
-    def conformance(self, **kwargs) -> stac_types.Conformance:
+    def conformance(self, **kwargs) -> stac.Conformance:
         """Conformance classes.
 
         Called with `GET /conformance`.
@@ -413,12 +433,12 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             Conformance classes which the server conforms to.
         """
-        return Conformance(conformsTo=self.conformance_classes())
+        return stac.Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
     def post_search(
         self, search_request: BaseSearchPostRequest, **kwargs
-    ) -> stac_types.ItemCollection:
+    ) -> stac.ItemCollection:
         """Cross catalog search (POST).
 
         Called with `POST /search`.
@@ -436,16 +456,12 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         self,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
-        bbox: Optional[List[NumType]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: Optional[BBox] = None,
+        intersects: Optional[Geometry] = None,
+        datetime: Optional[DateTimeType] = None,
         limit: Optional[int] = 10,
-        query: Optional[str] = None,
-        token: Optional[str] = None,
-        fields: Optional[List[str]] = None,
-        sortby: Optional[str] = None,
-        intersects: Optional[str] = None,
         **kwargs,
-    ) -> stac_types.ItemCollection:
+    ) -> stac.ItemCollection:
         """Cross catalog search (GET).
 
         Called with `GET /search`.
@@ -456,7 +472,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac_types.Item:
+    def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
         """Get item by id.
 
         Called with `GET /collections/{collection_id}/items/{item_id}`.
@@ -471,7 +487,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def all_collections(self, **kwargs) -> stac_types.Collections:
+    def all_collections(self, **kwargs) -> stac.Collections:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -482,7 +498,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
+    def get_collection(self, collection_id: str, **kwargs) -> stac.Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collection_id}`.
@@ -499,12 +515,12 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     def item_collection(
         self,
         collection_id: str,
-        bbox: Optional[List[NumType]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: Optional[BBox] = None,
+        datetime: Optional[DateTimeType] = None,
         limit: int = 10,
         token: str = None,
         **kwargs,
-    ) -> stac_types.ItemCollection:
+    ) -> stac.ItemCollection:
         """Get all items from a specific collection.
 
         Called with `GET /collections/{collection_id}/items`
@@ -549,7 +565,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         """Check if an api extension is enabled."""
         return any([type(ext).__name__ == extension for ext in self.extensions])
 
-    async def landing_page(self, **kwargs) -> stac_types.LandingPage:
+    async def landing_page(self, **kwargs) -> stac.LandingPage:
         """Landing page.
 
         Called with `GET /`.
@@ -559,12 +575,30 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         """
         request: Request = kwargs["request"]
         base_url = get_base_url(request)
+
         landing_page = self._landing_page(
             base_url=base_url,
             conformance_classes=self.conformance_classes(),
             extension_schemas=[],
         )
+
+        # Add Queryables link
+        if self.extension_is_enabled("FilterExtension"):
+            landing_page["links"].append(
+                {
+                    # TODO: replace this with Relations.queryables.value,
+                    "rel": "http://www.opengis.net/def/rel/ogc/1.0/queryables",
+                    # TODO: replace this with MimeTypes.jsonschema,
+                    "type": "application/schema+json",
+                    "title": "Queryables",
+                    "href": urljoin(base_url, "queryables"),
+                    "method": "GET",
+                }
+            )
+
+        # Add Collections links
         collections = await self.all_collections(request=kwargs["request"])
+
         for collection in collections["collections"]:
             landing_page["links"].append(
                 {
@@ -578,30 +612,26 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         # Add OpenAPI URL
         landing_page["links"].append(
             {
-                "rel": "service-desc",
-                "type": "application/vnd.oai.openapi+json;version=3.0",
+                "rel": Relations.service_desc.value,
+                "type": MimeTypes.openapi.value,
                 "title": "OpenAPI service description",
-                "href": urljoin(
-                    str(request.base_url), request.app.openapi_url.lstrip("/")
-                ),
+                "href": str(request.url_for("openapi")),
             }
         )
 
         # Add human readable service-doc
         landing_page["links"].append(
             {
-                "rel": "service-doc",
-                "type": "text/html",
+                "rel": Relations.service_doc.value,
+                "type": MimeTypes.html.value,
                 "title": "OpenAPI service documentation",
-                "href": urljoin(
-                    str(request.base_url), request.app.docs_url.lstrip("/")
-                ),
+                "href": str(request.url_for("swagger_ui_html")),
             }
         )
 
-        return landing_page
+        return stac.LandingPage(**landing_page)
 
-    async def conformance(self, **kwargs) -> stac_types.Conformance:
+    async def conformance(self, **kwargs) -> stac.Conformance:
         """Conformance classes.
 
         Called with `GET /conformance`.
@@ -609,12 +639,12 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         Returns:
             Conformance classes which the server conforms to.
         """
-        return Conformance(conformsTo=self.conformance_classes())
+        return stac.Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
     async def post_search(
         self, search_request: BaseSearchPostRequest, **kwargs
-    ) -> stac_types.ItemCollection:
+    ) -> stac.ItemCollection:
         """Cross catalog search (POST).
 
         Called with `POST /search`.
@@ -632,16 +662,12 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         self,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
-        bbox: Optional[List[NumType]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: Optional[BBox] = None,
+        intersects: Optional[Geometry] = None,
+        datetime: Optional[DateTimeType] = None,
         limit: Optional[int] = 10,
-        query: Optional[str] = None,
-        token: Optional[str] = None,
-        fields: Optional[List[str]] = None,
-        sortby: Optional[str] = None,
-        intersects: Optional[str] = None,
         **kwargs,
-    ) -> stac_types.ItemCollection:
+    ) -> stac.ItemCollection:
         """Cross catalog search (GET).
 
         Called with `GET /search`.
@@ -652,9 +678,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_item(
-        self, item_id: str, collection_id: str, **kwargs
-    ) -> stac_types.Item:
+    async def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
         """Get item by id.
 
         Called with `GET /collections/{collection_id}/items/{item_id}`.
@@ -669,7 +693,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def all_collections(self, **kwargs) -> stac_types.Collections:
+    async def all_collections(self, **kwargs) -> stac.Collections:
         """Get all available collections.
 
         Called with `GET /collections`.
@@ -680,9 +704,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_collection(
-        self, collection_id: str, **kwargs
-    ) -> stac_types.Collection:
+    async def get_collection(self, collection_id: str, **kwargs) -> stac.Collection:
         """Get collection by id.
 
         Called with `GET /collections/{collection_id}`.
@@ -699,12 +721,12 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     async def item_collection(
         self,
         collection_id: str,
-        bbox: Optional[List[NumType]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: Optional[BBox] = None,
+        datetime: Optional[DateTimeType] = None,
         limit: int = 10,
         token: str = None,
         **kwargs,
-    ) -> stac_types.ItemCollection:
+    ) -> stac.ItemCollection:
         """Get all items from a specific collection.
 
         Called with `GET /collections/{collection_id}/items`

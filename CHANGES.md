@@ -2,9 +2,78 @@
 
 ## [Unreleased]
 
-### Added 
+### Added
 
 * Add enhanced middleware configuration to the StacApi class, enabling specific middleware options and dynamic addition post-application initialization. ([#442](https://github.com/stac-utils/stac-fastapi/pull/442))
+* Add Response Model to OpenAPI, even if model validation is turned off ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+
+## Changes
+
+* Update to pydantic v2 and stac_pydantic v3 ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+* Removed internal Search and Operator Types in favor of stac_pydantic Types ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+* Fix response model validation ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+* Use status code 201 for Item/Collection creation ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+* Replace Black with Ruff Format ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+
+## [2.5.5.post1] - 2024-04-25
+
+### Fixed
+
+* Fix `service-doc` and `service-desc` url in landing page when using router prefix for `AsyncBaseCoreClient`. ([#675](https://github.com/stac-utils/stac-fastapi/pull/675))
+
+## [2.5.5] - 2024-04-24
+
+### Fixed
+
+* Fix `service-doc` and `service-desc` url in landing page when using router prefix. ([#673](https://github.com/stac-utils/stac-fastapi/pull/673))
+
+## [2.5.4] - 2024-04-24
+
+### Fixed
+
+* Fix missing payload for the PUT `collection/{collection_id}` endpoint ([#665](https://github.com/stac-utils/stac-fastapi/issues/665))
+* Return 400 for datetime errors ([#670](https://github.com/stac-utils/stac-fastapi/pull/670))
+
+## [2.5.3] - 2024-04-23
+
+### Fixed
+
+* Remove the str2list converter from intersection queries via BaseSearchGetRequest ([#668](https://github.com/stac-utils/stac-fastapi/pull/668))
+* Apply datetime converter in ItemCollection endpoint model ([#667](https://github.com/stac-utils/stac-fastapi/pull/667))
+
+## [2.5.2] - 2024-04-19
+
+### Fixed
+
+* BaseSearchGetRequest datetime validator str_to_interval not allowing GET /search requests with datetime = None ([#662](https://github.com/stac-utils/stac-fastapi/pull/662))
+
+## [2.5.1] - 2024-04-18
+
+### Fixed
+
+* Fixed warnings.warn deprecation syntax for response class and the context extension ([#660](https://github.com/stac-utils/stac-fastapi/pull/660))
+
+## [2.5.0] - 2024-04-12
+
+### Added
+
+* Add benchmark in CI ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+* Add `/queryables` link to the landing page ([#587](https://github.com/stac-utils/stac-fastapi/pull/587))
+- `id`, `title`, `description` and `api_version` fields can be customized via env variables
+* Add `DeprecationWarning` for the `ContextExtension`
+* Add support for Python 3.12
+
+### Changed
+
+* Updated the collection update endpoint to match with the collection-transaction extension. ([#630](https://github.com/stac-utils/stac-fastapi/issues/630))
+* Improve bbox and datetime typing ([#490](https://github.com/stac-utils/stac-fastapi/pull/490)
+* Add `items` link to inferred link relations ([#634](https://github.com/stac-utils/stac-fastapi/issues/634))
+* Make sure FastAPI uses Pydantic validation and serialization by not wrapping endpoint output with a Response object ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
+* Allow `GeometryCollections` for `intersects` parameter in POST search queries ([#548](https://github.com/stac-utils/stac-fastapi/pull/548))
+
+### Removed
+
+* Deprecate `response_class` option in `stac_fastapi.api.routes.create_async_endpoint` method ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
 
 ## [2.4.9] - 2023-11-17
 
@@ -291,7 +360,14 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.9..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5.post1..main>
+[2.5.5.post1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5..2.5.5.post1>
+[2.5.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.4..2.5.5>
+[2.5.4]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.3..2.5.4>
+[2.5.3]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.2..2.5.3>
+[2.5.2]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.1..2.5.2>
+[2.5.1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.0..2.5.1>
+[2.5.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.9..2.5.0>
 [2.4.9]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.8..2.4.9>
 [2.4.8]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.7..2.4.8>
 [2.4.7]: <https://github.com/stac-utils/stac-fastapi/compare/2.4.6..2.4.7>

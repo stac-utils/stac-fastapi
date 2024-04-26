@@ -1,6 +1,8 @@
 """Route factories."""
+
 import functools
 import inspect
+import warnings
 from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
 
 from fastapi import Depends, params
@@ -8,18 +10,16 @@ from fastapi.dependencies.utils import get_parameterless_sub_dependant
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
+from starlette.responses import Response
 from starlette.routing import BaseRoute, Match
 from starlette.status import HTTP_204_NO_CONTENT
 
 from stac_fastapi.api.models import APIRequest
 
 
-def _wrap_response(resp: Any, response_class: Type[Response]) -> Response:
-    if isinstance(resp, Response):
+def _wrap_response(resp: Any) -> Any:
+    if resp is not None:
         return resp
-    elif resp is not None:
-        return response_class(resp)
     else:  # None is returned as 204 No Content
         return Response(status_code=HTTP_204_NO_CONTENT)
 
@@ -37,12 +37,19 @@ def sync_to_async(func):
 def create_async_endpoint(
     func: Callable,
     request_model: Union[Type[APIRequest], Type[BaseModel], Dict],
-    response_class: Type[Response] = JSONResponse,
+    response_class: Optional[Type[Response]] = None,
 ):
     """Wrap a function in a coroutine which may be used to create a FastAPI endpoint.
 
     Synchronous functions are executed asynchronously using a background thread.
     """
+
+    if response_class:
+        warnings.warn(
+            "`response_class` option is deprecated, please set the Response class directly in the endpoint.",  # noqa: E501
+            DeprecationWarning,
+        )
+
     if not inspect.iscoroutinefunction(func):
         func = sync_to_async(func)
 
@@ -53,9 +60,7 @@ def create_async_endpoint(
             request_data: request_model = Depends(),  # type:ignore
         ):
             """Endpoint."""
-            return _wrap_response(
-                await func(request=request, **request_data.kwargs()), response_class
-            )
+            return _wrap_response(await func(request=request, **request_data.kwargs()))
 
     elif issubclass(request_model, BaseModel):
 
@@ -64,9 +69,7 @@ def create_async_endpoint(
             request_data: request_model,  # type:ignore
         ):
             """Endpoint."""
-            return _wrap_response(
-                await func(request_data, request=request), response_class
-            )
+            return _wrap_response(await func(request_data, request=request))
 
     else:
 
@@ -75,9 +78,7 @@ def create_async_endpoint(
             request_data: Dict[str, Any],  # type:ignore
         ):
             """Endpoint."""
-            return _wrap_response(
-                await func(request_data, request=request), response_class
-            )
+            return _wrap_response(await func(request_data, request=request))
 
     return _endpoint
 

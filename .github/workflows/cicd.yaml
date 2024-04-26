@@ -10,32 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     timeout-minutes: 20
-
-    services:
-      db_service:
-        image: ghcr.io/stac-utils/pgstac:v0.7.1
-        env:
-          POSTGRES_USER: username
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: postgis
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          PGUSER: username
-          PGPASSWORD: password
-          PGDATABASE: postgis
-          ALLOW_IP_RANGE: 0.0.0.0/0
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 10s
-          --health-retries 10
-          --log-driver none
-        ports:
-          # Maps tcp port 5432 on service container to the host
-          - 5432:5432
 
     steps:
       - name: Check out repository code
@@ -55,18 +31,18 @@ jobs:
 
       - name: Install types
         run: |
-          pip install ./stac_fastapi/types[dev]
+          python -m pip install ./stac_fastapi/types[dev]
 
       - name: Install core api
         run: |
-          pip install ./stac_fastapi/api[dev]
+          python -m pip install ./stac_fastapi/api[dev]
 
       - name: Install Extensions
         run: |
-          pip install ./stac_fastapi/extensions[dev]
+          python -m pip install ./stac_fastapi/extensions[dev]
 
       - name: Test
-        run: pytest -svvv
+        run: python -m pytest -svvv
         env:
           ENVIRONMENT: testing
 
@@ -76,3 +52,46 @@ jobs:
       - uses: actions/checkout@v4
       - name: Test generating docs
         run: make docs
+
+  benchmark:
+    needs: [test]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install types
+        run: |
+          python -m pip install ./stac_fastapi/types[dev]
+
+      - name: Install core api
+        run: |
+          python -m pip install ./stac_fastapi/api[dev,benchmark]
+
+      - name: Install extensions
+        run: |
+          python -m pip install ./stac_fastapi/extensions
+
+      - name: Run Benchmark
+        run: python -m pytest stac_fastapi/api/tests/benchmarks.py --benchmark-only --benchmark-columns 'min, max, mean, median' --benchmark-json output.json
+
+      - name: Store and benchmark result
+        if: github.repository == 'stac-utils/stac-fastapi'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: STAC FastAPI Benchmarks
+          tool: 'pytest'
+          output-file-path: output.json
+          alert-threshold: '130%'
+          comment-on-alert: true
+          fail-on-alert: false
+          # GitHub API token to make a commit comment
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-pages-branch: 'gh-benchmarks'
+          # Make a commit only if main
+          auto-push: ${{ github.ref == 'refs/heads/main' }}

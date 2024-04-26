@@ -1,27 +1,29 @@
 """Api request/response models."""
 
 import importlib.util
-from typing import Optional, Type, Union
+from typing import List, Optional, Type, Union
 
 import attr
-from fastapi import Body, Path
+from fastapi import Path
 from pydantic import BaseModel, create_model
-from pydantic.fields import UndefinedType
+from stac_pydantic.shared import BBox
 
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import (
     APIRequest,
     BaseSearchGetRequest,
     BaseSearchPostRequest,
-    str2list,
+    str2bbox,
+    str_to_interval,
 )
 
 
 def create_request_model(
     model_name="SearchGetRequest",
     base_model: Union[Type[BaseModel], APIRequest] = BaseSearchGetRequest,
-    extensions: Optional[ApiExtension] = None,
-    mixins: Optional[Union[BaseModel, APIRequest]] = None,
+    extensions: Optional[List[ApiExtension]] = None,
+    mixins: Optional[Union[List[BaseModel], List[APIRequest]]] = None,
     request_type: Optional[str] = "GET",
 ) -> Union[Type[BaseModel], APIRequest]:
     """Create a pydantic model for validating request bodies."""
@@ -44,40 +46,19 @@ def create_request_model(
     # Handle POST requests
     elif all([issubclass(m, BaseModel) for m in models]):
         for model in models:
-            for k, v in model.__fields__.items():
-                field_info = v.field_info
-                body = Body(
-                    None
-                    if isinstance(field_info.default, UndefinedType)
-                    else field_info.default,
-                    default_factory=field_info.default_factory,
-                    alias=field_info.alias,
-                    alias_priority=field_info.alias_priority,
-                    title=field_info.title,
-                    description=field_info.description,
-                    const=field_info.const,
-                    gt=field_info.gt,
-                    ge=field_info.ge,
-                    lt=field_info.lt,
-                    le=field_info.le,
-                    multiple_of=field_info.multiple_of,
-                    min_items=field_info.min_items,
-                    max_items=field_info.max_items,
-                    min_length=field_info.min_length,
-                    max_length=field_info.max_length,
-                    regex=field_info.regex,
-                    extra=field_info.extra,
-                )
-                fields[k] = (v.outer_type_, body)
+            for k, field_info in model.model_fields.items():
+                fields[k] = (field_info.annotation, field_info)
         return create_model(model_name, **fields, __base__=base_model)
 
     raise TypeError("Mixed Request Model types. Check extension request types.")
 
 
 def create_get_request_model(
-    extensions, base_model: BaseSearchGetRequest = BaseSearchGetRequest
-):
+    extensions: Optional[List[ApiExtension]],
+    base_model: BaseSearchGetRequest = BaseSearchGetRequest,
+) -> APIRequest:
     """Wrap create_request_model to create the GET request model."""
+
     return create_request_model(
         "SearchGetRequest",
         base_model=base_model,
@@ -87,8 +68,9 @@ def create_get_request_model(
 
 
 def create_post_request_model(
-    extensions, base_model: BaseSearchPostRequest = BaseSearchPostRequest
-):
+    extensions: Optional[List[ApiExtension]],
+    base_model: BaseSearchPostRequest = BaseSearchPostRequest,
+) -> Type[BaseModel]:
     """Wrap create_request_model to create the POST request model."""
     return create_request_model(
         "SearchPostRequest",
@@ -100,14 +82,14 @@ def create_post_request_model(
 
 @attr.s  # type:ignore
 class CollectionUri(APIRequest):
-    """Delete collection."""
+    """Get or delete collection."""
 
     collection_id: str = attr.ib(default=Path(..., description="Collection ID"))
 
 
 @attr.s
 class ItemUri(CollectionUri):
-    """Delete item."""
+    """Get or delete item."""
 
     item_id: str = attr.ib(default=Path(..., description="Item ID"))
 
@@ -124,8 +106,8 @@ class ItemCollectionUri(CollectionUri):
     """Get item collection."""
 
     limit: int = attr.ib(default=10)
-    bbox: Optional[str] = attr.ib(default=None, converter=str2list)
-    datetime: Optional[str] = attr.ib(default=None)
+    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
+    datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
 
 
 class POSTTokenPagination(BaseModel):

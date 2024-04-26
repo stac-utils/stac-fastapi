@@ -8,7 +8,6 @@ on:
       # Rebuild website when docs have changed or code has changed
       - "README.md"
       - "docs/**"
-      - "mkdocs.yml"
       - "**.py"
   workflow_dispatch:
 
@@ -21,34 +20,26 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.8
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.11
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install \
-            stac_fastapi/api[docs] \
+          python -m pip install --upgrade pip
+          python -m pip install \
             stac_fastapi/types[docs] \
+            stac_fastapi/api[docs] \
             stac_fastapi/extensions[docs] \
 
       - name: update API docs
         run: |
           pdocs as_markdown \
-            --output_dir docs/api/ \
+            --output_dir docs/src/api/ \
             --exclude_source \
             --overwrite \
             stac_fastapi
-        env:
-          POSTGRES_USER: username
-          POSTGRES_PASS: password
-          POSTGRES_DBNAME: postgis
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_HOST_READER: localhost
-          POSTGRES_HOST_WRITER: localhost
 
       - name: Deploy docs
-        run: mkdocs gh-deploy --force
+        run: mkdocs gh-deploy --force -f docs/mkdocs.yml

@@ -1,4 +1,6 @@
 """Fastapi app creation."""
+
+
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import attr
@@ -6,10 +8,10 @@ from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.params import Depends
-from stac_pydantic import Collection, Item, ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage
+from stac_pydantic import api
 from stac_pydantic.api.collections import Collections
-from stac_pydantic.version import STAC_VERSION
+from stac_pydantic.api.version import STAC_API_VERSION
+from stac_pydantic.shared import MimeTypes
 from starlette.middleware import Middleware
 from starlette.responses import JSONResponse, Response
 
@@ -84,10 +86,22 @@ class StacApi:
         converter=update_openapi,
     )
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
-    title: str = attr.ib(default="stac-fastapi")
-    api_version: str = attr.ib(default="0.1")
-    stac_version: str = attr.ib(default=STAC_VERSION)
-    description: str = attr.ib(default="stac-fastapi")
+    title: str = attr.ib(
+        default=attr.Factory(
+            lambda self: self.settings.stac_fastapi_title, takes_self=True
+        )
+    )
+    api_version: str = attr.ib(
+        default=attr.Factory(
+            lambda self: self.settings.stac_fastapi_version, takes_self=True
+        )
+    )
+    stac_version: str = attr.ib(default=STAC_API_VERSION)
+    description: str = attr.ib(
+        default=attr.Factory(
+            lambda self: self.settings.stac_fastapi_description, takes_self=True
+        )
+    )
     search_get_request_model: Type[BaseSearchGetRequest] = attr.ib(
         default=BaseSearchGetRequest
     )
@@ -130,16 +144,22 @@ class StacApi:
         self.router.add_api_route(
             name="Landing Page",
             path="/",
-            response_model=LandingPage
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                api.LandingPage if self.settings.enable_response_models else None
+            ),
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": api.LandingPage,
+                },
+            },
             response_class=self.response_class,
             response_model_exclude_unset=False,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.landing_page, EmptyRequest, self.response_class
-            ),
+            endpoint=create_async_endpoint(self.client.landing_page, EmptyRequest),
         )
 
     def register_conformance_classes(self):
@@ -151,16 +171,22 @@ class StacApi:
         self.router.add_api_route(
             name="Conformance Classes",
             path="/conformance",
-            response_model=ConformanceClasses
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                api.ConformanceClasses if self.settings.enable_response_models else None
+            ),
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": api.ConformanceClasses,
+                },
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.conformance, EmptyRequest, self.response_class
-            ),
+            endpoint=create_async_endpoint(self.client.conformance, EmptyRequest),
         )
 
     def register_get_item(self):
@@ -172,14 +198,20 @@ class StacApi:
         self.router.add_api_route(
             name="Get Item",
             path="/collections/{collection_id}/items/{item_id}",
-            response_model=Item if self.settings.enable_response_models else None,
+            response_model=api.Item if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": api.Item,
+                },
+            },
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.get_item, ItemUri, GeoJSONResponse
-            ),
+            endpoint=create_async_endpoint(self.client.get_item, ItemUri),
         )
 
     def register_post_search(self):
@@ -192,15 +224,25 @@ class StacApi:
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(ItemCollection if not fields_ext else None)
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                (api.ItemCollection if not fields_ext else None)
+                if self.settings.enable_response_models
+                else None
+            ),
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": api.ItemCollection,
+                },
+            },
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=create_async_endpoint(
-                self.client.post_search, self.search_post_request_model, GeoJSONResponse
+                self.client.post_search, self.search_post_request_model
             ),
         )
 
@@ -214,15 +256,25 @@ class StacApi:
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(ItemCollection if not fields_ext else None)
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                (api.ItemCollection if not fields_ext else None)
+                if self.settings.enable_response_models
+                else None
+            ),
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": api.ItemCollection,
+                },
+            },
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=create_async_endpoint(
-                self.client.get_search, self.search_get_request_model, GeoJSONResponse
+                self.client.get_search, self.search_get_request_model
             ),
         )
 
@@ -235,16 +287,22 @@ class StacApi:
         self.router.add_api_route(
             name="Get Collections",
             path="/collections",
-            response_model=Collections
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                Collections if self.settings.enable_response_models else None
+            ),
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": Collections,
+                },
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.all_collections, EmptyRequest, self.response_class
-            ),
+            endpoint=create_async_endpoint(self.client.all_collections, EmptyRequest),
         )
 
     def register_get_collection(self):
@@ -256,14 +314,22 @@ class StacApi:
         self.router.add_api_route(
             name="Get Collection",
             path="/collections/{collection_id}",
-            response_model=Collection if self.settings.enable_response_models else None,
+            response_model=api.Collection
+            if self.settings.enable_response_models
+            else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": api.Collection,
+                },
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.get_collection, CollectionUri, self.response_class
-            ),
+            endpoint=create_async_endpoint(self.client.get_collection, CollectionUri),
         )
 
     def register_get_item_collection(self):
@@ -285,16 +351,22 @@ class StacApi:
         self.router.add_api_route(
             name="Get ItemCollection",
             path="/collections/{collection_id}/items",
-            response_model=ItemCollection
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                api.ItemCollection if self.settings.enable_response_models else None
+            ),
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": api.ItemCollection,
+                },
+            },
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.item_collection, request_model, GeoJSONResponse
-            ),
+            endpoint=create_async_endpoint(self.client.item_collection, request_model),
         )
 
     def register_core(self):
