@@ -1,4 +1,5 @@
 """stac_api.extensions.core module."""
+
 from .context import ContextExtension
 from .fields import FieldsExtension
 from .filter import FilterExtension

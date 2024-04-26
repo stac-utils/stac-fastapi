@@ -81,6 +81,7 @@ jobs:
         run: python -m pytest stac_fastapi/api/tests/benchmarks.py --benchmark-only --benchmark-columns 'min, max, mean, median' --benchmark-json output.json
 
       - name: Store and benchmark result
+        if: github.repository == 'stac-utils/stac-fastapi'
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: STAC FastAPI Benchmarks

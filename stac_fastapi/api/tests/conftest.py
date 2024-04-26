@@ -31,12 +31,12 @@ def _collection():
 
 @pytest.fixture
 def collection(_collection: Collection):
-    return _collection.json()
+    return _collection.model_dump_json()
 
 
 @pytest.fixture
 def collection_dict(_collection: Collection):
-    return _collection.dict()
+    return _collection.model_dump(mode="json")
 
 
 @pytest.fixture
@@ -54,12 +54,12 @@ def _item():
 
 @pytest.fixture
 def item(_item: Item):
-    return _item.json()
+    return _item.model_dump_json()
 
 
 @pytest.fixture
 def item_dict(_item: Item):
-    return _item.dict()
+    return _item.model_dump(mode="json")
 
 
 @pytest.fixture
@@ -142,9 +142,7 @@ def AsyncTestCoreClient(collection_dict, item_dict):
                 type="FeatureCollection", features=[stac.Item(**item_dict)]
             )
 
-        async def get_item(
-            self, item_id: str, collection_id: str, **kwargs
-        ) -> stac.Item:
+        async def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
             return stac.Item(**item_dict)
 
         async def all_collections(self, **kwargs) -> stac.Collections:

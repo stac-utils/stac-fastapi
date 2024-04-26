@@ -2,13 +2,15 @@ import json
 from typing import Iterator, Union
 
 import pytest
+from stac_pydantic.item import Item
+from stac_pydantic.item_collection import ItemCollection
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import TransactionExtension
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseCoreClient, BaseTransactionsClient
-from stac_fastapi.types.stac import Collection, Item, ItemCollection
+from stac_fastapi.types.stac import Collection
 
 
 class DummyCoreClient(BaseCoreClient):
@@ -34,14 +36,14 @@ class DummyCoreClient(BaseCoreClient):
 class DummyTransactionsClient(BaseTransactionsClient):
     """Dummy client returning parts of the request, rather than proper STAC items."""
 
-    def create_item(self, item: Union[Item, ItemCollection], **kwargs):
-        return {"type": item["type"]}
+    def create_item(self, item: Union[Item, ItemCollection], *args, **kwargs):
+        return {"created": True, "type": item.type}
 
     def update_item(self, collection_id: str, item_id: str, item: Item, **kwargs):
         return {
             "path_collection_id": collection_id,
             "path_item_id": item_id,
-            "type": item["type"],
+            "type": item.type,
         }
 
     def delete_item(self, item_id: str, collection_id: str, **kwargs):
@@ -51,7 +53,7 @@ class DummyTransactionsClient(BaseTransactionsClient):
         }
 
     def create_collection(self, collection: Collection, **kwargs):
-        return {"type": collection["type"]}
+        return {"type": collection.type}
 
     def update_collection(self, collection_id: str, collection: Collection, **kwargs):
         return {"path_collection_id": collection_id, "type": collection["type"]}
@@ -157,7 +159,7 @@ def item() -> Item:
         "id": "test_item",
         "geometry": {"type": "Point", "coordinates": [-105, 40]},
         "bbox": [-105, 40, -105, 40],
-        "properties": {},
+        "properties": {"datetime": "2020-06-13T13:00:00Z"},
         "links": [],
         "assets": {},
         "collection": "test_collection",
@@ -171,10 +173,12 @@ def collection() -> Collection:
         "stac_version": "1.0.0",
         "stac_extensions": [],
         "id": "test_collection",
+        "description": "A test collection",
         "extent": {
             "spatial": {"bbox": [[-180, -90, 180, 90]]},
-            "temporal": {
-                "interval": [["2000-01-01T00:00:00Z", "2024-01-01T00:00:00Z"]]
-            },
+            "temporal": {"interval": [["2000-01-01T00:00:00Z", "2024-01-01T00:00:00Z"]]},
         },
+        "links": [],
+        "assets": {},
+        "license": "proprietary",
     }

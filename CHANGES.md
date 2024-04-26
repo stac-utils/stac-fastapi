@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## Changes
+
+* Update to pydantic v2 and stac_pydantic v3 ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+* Removed internal Search and Operator Types in favor of stac_pydantic Types ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+* Fix response model validation ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+* Add Response Model to OpenAPI, even if model validation is turned off ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+* Use status code 201 for Item/Collection creation ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+* Replace Black with Ruff Format ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+
 ## [2.5.5.post1] - 2024-04-25
 
 ### Fixed
@@ -48,6 +57,7 @@
 * Add `/queryables` link to the landing page ([#587](https://github.com/stac-utils/stac-fastapi/pull/587))
 - `id`, `title`, `description` and `api_version` fields can be customized via env variables
 * Add `DeprecationWarning` for the `ContextExtension`
+* Add support for Python 3.12
 
 ### Changed
 

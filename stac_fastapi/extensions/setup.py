@@ -1,14 +1,12 @@
 """stac_fastapi: extensions module."""
 
+
 from setuptools import find_namespace_packages, setup
 
 with open("README.md") as f:
     desc = f.read()
 
 install_requires = [
-    "attrs",
-    "pydantic[dotenv]<2",
-    "stac_pydantic==2.0.*",
     "stac-fastapi.types",
     "stac-fastapi.api",
 ]
