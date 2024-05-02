@@ -2,6 +2,7 @@ import json
 from typing import Iterator, Union
 
 import pytest
+from stac_pydantic import Collection
 from stac_pydantic.item import Item
 from stac_pydantic.item_collection import ItemCollection
 from starlette.testclient import TestClient
@@ -10,7 +11,6 @@ from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import TransactionExtension
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseCoreClient, BaseTransactionsClient
-from stac_fastapi.types.stac import Collection
 
 
 class DummyCoreClient(BaseCoreClient):
@@ -56,7 +56,7 @@ class DummyTransactionsClient(BaseTransactionsClient):
         return {"type": collection.type}
 
     def update_collection(self, collection_id: str, collection: Collection, **kwargs):
-        return {"path_collection_id": collection_id, "type": collection["type"]}
+        return {"path_collection_id": collection_id, "type": collection.type}
 
     def delete_collection(self, collection_id: str, **kwargs):
         return {"path_collection_id": collection_id}
