@@ -22,3 +22,50 @@ section-order = ["future", "standard-library", "third-party", "first-party", "lo
 
 [tool.ruff.format]
 quote-style = "double"
+
+[tool.bumpversion]
+current_version = "3.0.0a0"
+parse = """(?x)
+    (?P<major>\\d+)\\.
+    (?P<minor>\\d+)\\.
+    (?P<patch>\\d+)
+    (?:
+        (?P<pre_l>a|b|rc)   # pre-release label
+        (?P<pre_n>\\d+)     # pre-release version number
+    )?                      # pre-release section is optional
+    (?:
+        \\.post
+        (?P<post_n>\\d+)    # post-release version number
+    )?                      # post-release section is optional
+"""
+serialize = [
+    "{major}.{minor}.{patch}.post{post_n}",
+    "{major}.{minor}.{patch}{pre_l}{pre_n}",
+    "{major}.{minor}.{patch}",
+]
+
+search = "{current_version}"
+replace = "{new_version}"
+regex = false
+tag = false
+commit = true
+
+[[tool.bumpversion.files]]
+filename = "VERSION"
+search = "{current_version}"
+replace = "{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "stac_fastapi/api/stac_fastapi/api/version.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "stac_fastapi/extensions/stac_fastapi/extensions/version.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "stac_fastapi/types/stac_fastapi/types/version.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
