@@ -14,6 +14,7 @@
 * Fix response model validation ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
 * Use status code 201 for Item/Collection creation ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
 * Replace Black with Ruff Format ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
+* add `response_class` in the route definitions for `FilterExtension`
 
 ## [2.5.5.post1] - 2024-04-25
 
