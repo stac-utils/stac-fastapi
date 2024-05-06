@@ -1,4 +1,4 @@
-"""Filter Extension."""
+"""Aggregation Extension."""
 from enum import Enum
 from typing import List, Union
 

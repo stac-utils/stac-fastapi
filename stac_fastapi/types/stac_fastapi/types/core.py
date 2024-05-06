@@ -376,7 +376,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
             extension_schemas=[],
         )
 
-        # Add Queryables links
+        # Add Queryables link
         if self.extension_is_enabled("FilterExtension"):
             landing_page["links"].append(
                 {
@@ -816,12 +816,12 @@ class BaseFiltersClient(abc.ABC):
 
 @attr.s
 class BaseAggregationClient(abc.ABC):
-    """Defines a pattern for implementing the STAC filter extension."""
+    """Defines a pattern for implementing the STAC aggregation extension."""
 
     def get_aggregations(
         self, collection_id: Optional[str] = None, **kwargs
     ) -> Dict[str, Any]:
-        """Get the queryables available for the given collection_id.
+        """Get the aggregation available for the given collection_id.
 
         If collection_id is None, returns the available aggregations over all
         collections.
@@ -830,14 +830,14 @@ class BaseAggregationClient(abc.ABC):
             "aggregations": [{"name": "total_count", "data_type": "integer"}],
             "links": [
                 {
-                    "rel": "root",
-                    "type": "application/json",
-                    "href": "https://example.org",
-                },
-                {
                     "rel": "self",
                     "type": "application/json",
                     "href": "https://example.org/aggregations",
+                },
+                {
+                    "rel": "root",
+                    "type": "application/json",
+                    "href": "https://example.org",
                 },
             ],
         }
@@ -877,14 +877,14 @@ class AsyncBaseAggregationClient(abc.ABC):
             "aggregations": [{"name": "total_count", "data_type": "integer"}],
             "links": [
                 {
-                    "rel": "root",
-                    "type": "application/json",
-                    "href": "https://example.org/v1",
-                },
-                {
                     "rel": "self",
                     "type": "application/json",
-                    "href": "https://example.org/v1/aggregations",
+                    "href": "https://example.org/aggregations",
+                },
+                {
+                    "rel": "root",
+                    "type": "application/json",
+                    "href": "https://example.org",
                 },
             ],
         }
@@ -899,12 +899,12 @@ class AsyncBaseAggregationClient(abc.ABC):
                 {
                     "rel": "self",
                     "type": "application/json",
-                    "href": "https://earth-search.aws.element84.com/v1/aggregate",
+                    "href": "https://example.org/aggregate",
                 },
                 {
                     "rel": "root",
                     "type": "application/json",
-                    "href": "https://earth-search.aws.element84.com/v1",
+                    "href": "https://example.org",
                 },
             ],
         }

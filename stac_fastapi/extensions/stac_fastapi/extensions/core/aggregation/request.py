@@ -10,7 +10,7 @@ from stac_fastapi.types.search import APIRequest
 
 @attr.s
 class AggregationExtensionGetRequest(APIRequest):
-    """Query Extension GET request model."""
+    """Aggregation Extension GET request model."""
 
     aggregations: Optional[str] = attr.ib(default=None)
     bbox: Optional[str] = attr.ib(default=None)
@@ -21,7 +21,7 @@ class AggregationExtensionGetRequest(APIRequest):
 
 
 class AggregationExtensionPostRequest(BaseModel):
-    """Query Extension POST request model."""
+    """Aggregation Extension POST request model."""
 
     aggregations: Optional[str] = attr.ib(default=None)
     bbox: Optional[str] = attr.ib(default=None)
