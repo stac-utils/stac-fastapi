@@ -97,16 +97,30 @@ class FilterExtension(ApiExtension):
             name="Queryables",
             path="/queryables",
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.get_queryables, EmptyRequest, self.response_class
-            ),
+            responses={
+                200: {
+                    "content": {
+                        "application/schema+json": {},
+                    },
+                    # TODO: add output model in stac-pydantic
+                },
+            },
+            response_class=self.response_class,
+            endpoint=create_async_endpoint(self.client.get_queryables, EmptyRequest),
         )
         self.router.add_api_route(
             name="Collection Queryables",
             path="/collections/{collection_id}/queryables",
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.get_queryables, CollectionUri, self.response_class
-            ),
+            responses={
+                200: {
+                    "content": {
+                        "application/schema+json": {},
+                    },
+                    # TODO: add output model in stac-pydantic
+                },
+            },
+            response_class=self.response_class,
+            endpoint=create_async_endpoint(self.client.get_queryables, CollectionUri),
         )
         app.include_router(self.router, tags=["Filter Extension"])
