@@ -402,7 +402,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                         "method": "GET",
                     },
                     {
-                        "rel": "aggregation",
+                        "rel": "aggregations",
                         "type": "application/json",
                         "title": "Aggregations",
                         "href": urljoin(base_url, "aggregations"),

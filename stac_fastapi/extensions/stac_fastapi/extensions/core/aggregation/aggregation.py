@@ -71,25 +71,25 @@ class AggregationExtension(ApiExtension):
         self.router.add_api_route(
             name="Aggregations",
             path="/aggregations",
-            methods=["GET"],
+            methods=["GET", "POST"],
             endpoint=create_async_endpoint(self.client.get_aggregations, EmptyRequest),
         )
         self.router.add_api_route(
             name="Collection Aggregations",
             path="/collections/{collection_id}/aggregations",
-            methods=["GET"],
+            methods=["GET", "POST"],
             endpoint=create_async_endpoint(self.client.get_aggregations, CollectionUri),
         )
         self.router.add_api_route(
             name="Aggregate",
             path="/aggregate",
-            methods=["GET"],
+            methods=["GET", "POST"],
             endpoint=create_async_endpoint(self.client.aggregate, self.GET),
         )
         self.router.add_api_route(
             name="Collection Aggregate",
             path="/collections/{collection_id}/aggregate",
-            methods=["GET"],
+            methods=["GET", "POST"],
             endpoint=create_async_endpoint(self.client.aggregate, self.GET),
         )
         app.include_router(self.router, tags=["Aggregation Extension"])
