@@ -1,6 +1,6 @@
 """Request model for the Aggregation extension."""
 
-from typing import Any, Dict, Optional, Union, List
+from typing import Optional
 
 import attr
 from pydantic import BaseModel
@@ -12,15 +12,20 @@ from stac_fastapi.types.search import APIRequest
 class AggregationExtensionGetRequest(APIRequest):
     """Query Extension GET request model."""
 
-    aggregations: Optional[Union[str, List[str]]] = attr.ib(default=None)
-    grid_geohex_frequency_precision: Optional[Union[str, int]] = attr.ib(default=None) 
-    # add the others   
+    aggregations: Optional[str] = attr.ib(default=None)
+    bbox: Optional[str] = attr.ib(default=None)
+    intersects: Optional[str] = attr.ib(default=None)
+    ids: Optional[str] = attr.ib(default=None)
+    datetime: Optional[str] = attr.ib(default=None)
+    collections: Optional[str] = attr.ib(default=None)
 
 
-class AggregateExtensionPostRequest(BaseModel):
+class AggregationExtensionPostRequest(BaseModel):
     """Query Extension POST request model."""
 
-    aggregations: Optional[Union[str, List[str]]] = attr.ib(default=None)
-    grid_geohex_frequency_precision: Optional[Union[str, int]] = attr.ib(default=None)    
-    # add the others
-
+    aggregations: Optional[str] = attr.ib(default=None)
+    bbox: Optional[str] = attr.ib(default=None)
+    intersects: Optional[str] = attr.ib(default=None)
+    ids: Optional[str] = attr.ib(default=None)
+    datetime: Optional[str] = attr.ib(default=None)
+    collections: Optional[str] = attr.ib(default=None)
