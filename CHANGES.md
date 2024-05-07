@@ -1,9 +1,10 @@
 # Changelog
 
-## [Unreleased] - TBD
+[Unreleased] - TBD
 
 ## Changed
 
+* switch from `fastapi` to `fastapi-slim` to avoid installing unwanted dependencies
 * replace Enum with `Literal` for `FilterLang`
 
 ## [3.0.0a0] - 2024-05-06
