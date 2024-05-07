@@ -1,5 +1,11 @@
 # Changelog
 
+[Unreleased] - TBD
+
+## Changed
+
+* switch from `fastapi` to `fastapi-slim` to avoid installing unwanted dependencies
+
 ## [3.0.0a0] - 2024-05-06
 
 ### Added
