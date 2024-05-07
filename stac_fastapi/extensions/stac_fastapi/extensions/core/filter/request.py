@@ -1,27 +1,13 @@
 """Filter extension request models."""
 
-from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 
 import attr
 from pydantic import BaseModel, Field
 
 from stac_fastapi.types.search import APIRequest
 
-
-class FilterLang(str, Enum):
-    """Choices for filter-lang value in a POST request.
-
-    Based on
-    https://github.com/stac-api-extensions/filter#queryables
-
-    Note the addition of cql2-json, which is used by the pgstac backend,
-    but is not included in the spec above.
-    """
-
-    cql_json = "cql-json"
-    cql2_json = "cql2-json"
-    cql2_text = "cql2-text"
+FilterLang = Literal["cql-json", "cql2-json", "cql2-text"]
 
 
 @attr.s
