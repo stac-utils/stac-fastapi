@@ -1,5 +1,3 @@
-# Cloned from stac_pydantic.api.collections v2.0
-
 from typing import List
 
 from pydantic import BaseModel

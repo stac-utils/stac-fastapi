@@ -74,7 +74,7 @@ class CollectionLinks(BaseLinks):
 
 @attr.s
 class BaseCatalogLinks:
-    """Create inferred links common to collections and items."""
+    """Create inferred links common to catalogs."""
 
     base_url: str = attr.ib()
     catalog_id: str = attr.ib()
@@ -92,7 +92,7 @@ class CatalogLinks(BaseCatalogLinks):
         return dict(
             rel=Relations.self,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"collections/{self.catalog_id}"),
+            href=urljoin(self.base_url, f"catalogs/{self.catalog_id}"),
         )
 
     def parent(self) -> Dict[str, Any]:

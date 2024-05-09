@@ -228,6 +228,7 @@ class BaseCollectionSearchGetRequest(APIRequest):
     bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
     datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
     limit: Optional[int] = attr.ib(default=10)
+    q: Optional[str] = attr.ib(default=None)
     
     
 class BaseCollectionSearchPostRequest(BaseModel):
@@ -240,6 +241,7 @@ class BaseCollectionSearchPostRequest(BaseModel):
     bbox: Optional[BBox]
     datetime: Optional[DateTimeType]
     limit: Optional[Limit] = Field(default=10)
+    q: Optional[str]
 
     @property
     def start_date(self) -> Optional[datetime]:
@@ -312,3 +314,23 @@ class BaseCollectionSearchPostRequest(BaseModel):
         if self.intersects:
             return self.intersects
         return
+    
+
+@attr.s
+class BaseDiscoverySearchGetRequest(APIRequest):
+    """Base arguments for Collection Search GET Request."""
+
+    q: Optional[str] = attr.ib(default=None)
+    limit: Optional[int] = attr.ib(default=10)
+    
+    
+class BaseDiscoverySearchPostRequest(BaseModel):
+    """Search model.
+
+    Replace base model in STAC-pydantic as it includes additional fields, not in the core
+    model.
+    """
+
+    q: Optional[str]
+    limit: Optional[Limit] = Field(default=10)
+
