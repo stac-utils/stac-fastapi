@@ -1,11 +1,15 @@
 # Changelog
 
-[Unreleased] - TBD
+## [Unreleased] - TBD
 
-## Changed
+### Changed
 
-* switch from `fastapi` to `fastapi-slim` to avoid installing unwanted dependencies
-* replace Enum with `Literal` for `FilterLang`
+* switch from `fastapi` to `fastapi-slim` to avoid installing unwanted dependencies. ([#687](https://github.com/stac-utils/stac-fastapi/pull/687))
+* replace Enum with `Literal` for `FilterLang`. ([#686](https://github.com/stac-utils/stac-fastapi/pull/686))
+
+### Removed
+
+* Pystac as it was just used for a datetime to string function. ([#690](https://github.com/stac-utils/stac-fastapi/pull/690))
 
 ## [3.0.0a0] - 2024-05-06
 

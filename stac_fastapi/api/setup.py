@@ -18,7 +18,6 @@ extra_reqs = {
         "pytest-asyncio",
         "pre-commit",
         "requests",
-        "pystac[validation]==1.*",
     ],
     "benchmark": [
         "pytest-benchmark",
