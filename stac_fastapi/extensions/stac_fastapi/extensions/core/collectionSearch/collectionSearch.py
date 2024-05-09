@@ -26,6 +26,7 @@ class CollectionSearchConformanceClasses(str, Enum):
     CORE = "https://api.stacspec.org/v1.0.0-rc.1/core"
     COLLECTION_SEARCH = "https://api.stacspec.org/v1.0.0-rc.1/collection-search"
     SIMPLE_QUERY = "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query"
+    COLLECTION_SEARCH_FREE_TEXT = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#free-text"
 
 @attr.s
 class CollectionSearchExtension(ApiExtension):
@@ -64,6 +65,7 @@ class CollectionSearchExtension(ApiExtension):
             CollectionSearchConformanceClasses.CORE,
             CollectionSearchConformanceClasses.COLLECTION_SEARCH,
             CollectionSearchConformanceClasses.SIMPLE_QUERY,
+            CollectionSearchConformanceClasses.COLLECTION_SEARCH_FREE_TEXT,
         ]
     )
     router: APIRouter = attr.ib(factory=APIRouter)
