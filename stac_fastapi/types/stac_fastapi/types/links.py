@@ -1,7 +1,7 @@
 """Link helpers."""
 
 from typing import Any, Dict, List
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 import attr
 from stac_pydantic.links import Relations
@@ -10,7 +10,8 @@ from stac_pydantic.shared import MimeTypes
 # These can be inferred from the item/collection so they aren't included in the database
 # Instead they are dynamically generated when querying the database using the
 # classes defined below
-INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root", "items"]
+#INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root", "items"]
+INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "items"]
 
 
 def filter_links(links: List[Dict]) -> List[Dict]:
@@ -22,6 +23,10 @@ def resolve_links(links: list, base_url: str) -> List[Dict]:
     """Convert relative links to absolute links."""
     filtered_links = filter_links(links)
     for link in filtered_links:
+        if "http://" in link["href"] or "https://" in link["href"]:
+            split_url = urlsplit(link["href"])
+            link["href"] = split_url.path
+            #link["href"].replace(split_url.scheme, "").replace(split_url.netloc, "")
         link.update({"href": urljoin(base_url, link["href"])})
     return filtered_links
 
@@ -64,8 +69,41 @@ class CollectionLinks(BaseLinks):
 
     def create_links(self) -> List[Dict[str, Any]]:
         """Return all inferred links."""
-        return [self.self(), self.parent(), self.items(), self.root()]
+        # We use predefined root here to identify the catalog containing this dataset
+        return [self.self(), self.parent(), self.items()]#, self.root()]
 
+@attr.s
+class BaseCatalogLinks:
+    """Create inferred links common to collections and items."""
+
+    base_url: str = attr.ib()
+    catalog_id: str = attr.ib()
+
+    def root(self) -> Dict[str, Any]:
+        """Return the catalog root."""
+        return dict(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
+    
+@attr.s
+class CatalogLinks(BaseCatalogLinks):
+    """Create inferred links specific to catalogs."""
+
+    def self(self) -> Dict[str, Any]:
+        """Create the `self` link."""
+        return dict(
+            rel=Relations.self,
+            type=MimeTypes.json,
+            href=urljoin(self.base_url, f"collections/{self.catalog_id}"),
+        )
+
+    def parent(self) -> Dict[str, Any]:
+        """Create the `parent` link."""
+        return dict(rel=Relations.parent, type=MimeTypes.json, href=self.base_url)
+
+
+    def create_links(self) -> List[Dict[str, Any]]:
+        """Return all inferred links."""
+        # We use predefined root here to identify the catalog containing this dataset
+        return [self.self(), self.parent(), self.root()]
 
 @attr.s
 class ItemLinks(BaseLinks):
