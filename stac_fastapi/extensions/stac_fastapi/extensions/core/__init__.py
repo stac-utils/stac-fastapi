@@ -7,6 +7,7 @@ from .query import QueryExtension
 from .sort import SortExtension
 from .transaction import TransactionExtension
 from .collectionSearch import CollectionSearchExtension
+from .discoverySearch import DiscoverySearchExtension
 
 __all__ = (
     "ContextExtension",
@@ -18,4 +19,5 @@ __all__ = (
     "TokenPaginationExtension",
     "TransactionExtension",
     "CollectionSearchExtension",
+    "DiscoverySearchExtension",
 )
