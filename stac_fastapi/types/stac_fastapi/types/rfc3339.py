@@ -20,7 +20,7 @@ DateTimeType = Union[
 ]
 
 
-# Borrowed from pystac - https://github.com/stac-utils/pystac/blob/main/pystac/utils.py#L370C1-L394C21
+# Borrowed from pystac - https://github.com/stac-utils/pystac/blob/main/pystac/utils.py
 def datetime_to_str(dt: datetime, timespec: str = "auto") -> str:
     """Converts a :class:`datetime.datetime` instance to an ISO8601 string in the
     `RFC 3339, section 5.6
