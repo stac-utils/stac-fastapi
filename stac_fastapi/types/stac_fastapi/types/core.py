@@ -104,6 +104,22 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
+    def create_catalog(
+        self, catalog: stac_types.Catalog, **kwargs
+    ) -> Optional[Union[stac_types.Catalog, Response]]:
+        """Create a new catalog.
+
+        Called with `POST /catalogs`.
+
+        Args:
+            catalog: the catalog
+
+        Returns:
+            The catalog that was created.
+        """
+        ...
+
+    @abc.abstractmethod
     def update_collection(
         self, collection_id: str, collection: stac_types.Collection, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
@@ -501,6 +517,17 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
+    def all_catalogs(self, **kwargs) -> stac_types.Catalogs:
+        """Get all available catalogs.
+
+        Called with `GET /catalogs`.
+
+        Returns:
+            A list of catalogs.
+        """
+        ...
+
+    @abc.abstractmethod
     def get_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
         """Get collection by id.
 
@@ -599,14 +626,26 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             )
 
         # Add Collections links
-        collections = await self.all_collections(request=kwargs["request"])
-        for collection in collections["collections"]:
+        # collections = await self.all_collections(request=kwargs["request"])
+        # for collection in collections["collections"]:
+        #     landing_page["links"].append(
+        #         {
+        #             "rel": Relations.child.value,
+        #             "type": MimeTypes.json.value,
+        #             "title": collection.get("title") or collection.get("id"),
+        #             "href": urljoin(base_url, f"collections/{collection['id']}"),
+        #         }
+        #     )
+
+        # Add Collections links
+        catalogs = await self.all_catalogs(request=kwargs["request"])
+        for catalog in catalogs["collections"]:
             landing_page["links"].append(
                 {
                     "rel": Relations.child.value,
                     "type": MimeTypes.json.value,
-                    "title": collection.get("title") or collection.get("id"),
-                    "href": urljoin(base_url, f"collections/{collection['id']}"),
+                    "title": catalog.get("title") or catalog.get("id"),
+                    "href": urljoin(base_url, f"collections/{catalog['id']}"),
                 }
             )
 
@@ -709,6 +748,18 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             A list of collections.
         """
         ...
+
+    @abc.abstractmethod
+    async def all_catalogs(self, **kwargs) -> stac_types.Catalogs:
+        """Get all available catalogs.
+
+        Called with `GET /catalogs`.
+
+        Returns:
+            A list of catalogs.
+        """
+        ...
+
 
     @abc.abstractmethod
     async def get_collection(

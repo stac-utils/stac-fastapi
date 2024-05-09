@@ -119,6 +119,9 @@ class DummyTransactionsClient(core.BaseTransactionsClient):
 
     def create_collection(self, *args, **kwargs):
         return "dummy response"
+    
+    def create_catalog(self, *args, **kwargs):
+        return "dummy response"
 
     def update_collection(self, *args, **kwargs):
         return "dummy response"

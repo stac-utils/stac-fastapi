@@ -10,6 +10,7 @@ from fastapi.params import Depends
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.collections import Collections
+from stac_fastapi.types.stac import Catalogs
 from stac_pydantic.version import STAC_VERSION
 from starlette.responses import JSONResponse, Response
 
@@ -247,6 +248,25 @@ class StacApi:
             endpoint=create_async_endpoint(self.client.all_collections, EmptyRequest),
         )
 
+    def register_get_catalogs(self):
+        """Register get catalogs endpoint (GET /catalogs).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get Catalogs",
+            path="/catalogs",
+            response_model=Catalogs
+            if self.settings.enable_response_models
+            else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_async_endpoint(self.client.all_catalogs, EmptyRequest),
+        )
+
     def register_get_collection(self):
         """Register get collection endpoint (GET /collection/{collection_id}).
 
@@ -316,6 +336,7 @@ class StacApi:
         self.register_post_search()
         self.register_get_search()
         self.register_get_collections()
+        self.register_get_catalogs()
         self.register_get_collection()
         self.register_get_item_collection()
 

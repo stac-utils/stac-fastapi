@@ -4,7 +4,7 @@ from typing import List, Optional, Type, Union
 
 import attr
 from fastapi import APIRouter, Body, FastAPI
-from stac_pydantic import Collection, Item
+from stac_pydantic import Collection, Item, Catalog
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.models import CollectionUri, ItemUri
@@ -117,6 +117,21 @@ class TransactionExtension(ApiExtension):
             ),
         )
 
+    def register_create_catalog(self):
+        """Register create catalog endpoint (POST /catalogs)."""
+        self.router.add_api_route(
+            name="Create Catalog",
+            path="/catalogs",
+            response_model=Catalog if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["POST"],
+            endpoint=create_async_endpoint(
+                self.client.create_catalog, stac_types.Catalog
+            ),
+        )
+
     def register_update_collection(self):
         """Register update collection endpoint (PUT /collections/{collection_id})."""
         self.router.add_api_route(
@@ -161,6 +176,7 @@ class TransactionExtension(ApiExtension):
         self.register_update_item()
         self.register_delete_item()
         self.register_create_collection()
+        self.register_create_catalog()
         self.register_update_collection()
         self.register_delete_collection()
         app.include_router(self.router, tags=["Transaction Extension"])

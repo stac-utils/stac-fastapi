@@ -12,6 +12,7 @@ from stac_fastapi.types.core import BaseCoreClient, BaseSearchPostRequest, NumTy
 
 collection_links = link_factory.CollectionLinks("/", "test").create_links()
 item_links = link_factory.ItemLinks("/", "test", "test").create_links()
+catalog_links = link_factory.CatalogLinks("/", "test").create_links()
 
 
 collections = [
@@ -68,6 +69,16 @@ class CoreClient(BaseCoreClient):
     def all_collections(self, **kwargs) -> stac_types.Collections:
         return stac_types.Collections(
             collections=collections,
+            links=[
+                {"href": "test", "rel": "root"},
+                {"href": "test", "rel": "self"},
+                {"href": "test", "rel": "parent"},
+            ],
+        )
+    
+    def all_catalogs(self, **kwargs) -> stac_types.Catalogs:
+        return stac_types.Catalogs(
+            catalogs=catalogs,
             links=[
                 {"href": "test", "rel": "root"},
                 {"href": "test", "rel": "self"},

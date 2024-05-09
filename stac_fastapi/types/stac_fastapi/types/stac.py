@@ -90,3 +90,12 @@ class Collections(TypedDict, total=False):
 
     collections: List[Collection]
     links: List[Dict[str, Any]]
+
+class Catalogs(TypedDict, total=False):
+    """All collections endpoint.
+
+    https://github.com/radiantearth/stac-api-spec/tree/master/collections
+    """
+
+    catalogs: List[Catalog]
+    links: List[Dict[str, Any]]
