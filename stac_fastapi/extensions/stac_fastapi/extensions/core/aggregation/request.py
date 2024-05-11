@@ -3,29 +3,22 @@
 from typing import Optional
 
 import attr
-from pydantic import BaseModel
 
-from stac_fastapi.types.search import APIRequest
+from stac_fastapi.extensions.core.filter.request import (
+    FilterExtensionGetRequest,
+    FilterExtensionPostRequest,
+)
+from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 
 
 @attr.s
-class AggregationExtensionGetRequest(APIRequest):
+class AggregationExtensionGetRequest(BaseSearchGetRequest, FilterExtensionGetRequest):
     """Aggregation Extension GET request model."""
 
     aggregations: Optional[str] = attr.ib(default=None)
-    bbox: Optional[str] = attr.ib(default=None)
-    intersects: Optional[str] = attr.ib(default=None)
-    ids: Optional[str] = attr.ib(default=None)
-    datetime: Optional[str] = attr.ib(default=None)
-    collections: Optional[str] = attr.ib(default=None)
 
 
-class AggregationExtensionPostRequest(BaseModel):
+class AggregationExtensionPostRequest(BaseSearchPostRequest, FilterExtensionPostRequest):
     """Aggregation Extension POST request model."""
 
     aggregations: Optional[str] = attr.ib(default=None)
-    bbox: Optional[str] = attr.ib(default=None)
-    intersects: Optional[str] = attr.ib(default=None)
-    ids: Optional[str] = attr.ib(default=None)
-    datetime: Optional[str] = attr.ib(default=None)
-    collections: Optional[str] = attr.ib(default=None)
