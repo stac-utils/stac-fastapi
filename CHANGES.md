@@ -1,10 +1,19 @@
 # Changelog
 
-## [Unreleased]
+## [Unreleased] - TBD
 
 ### Added
 
 * Add base support for the Aggregation extension [#684](https://github.com/stac-utils/stac-fastapi/pull/684)
+
+### Changed
+
+* switch from `fastapi` to `fastapi-slim` to avoid installing unwanted dependencies. ([#687](https://github.com/stac-utils/stac-fastapi/pull/687))
+* replace Enum with `Literal` for `FilterLang`. ([#686](https://github.com/stac-utils/stac-fastapi/pull/686))
+
+### Removed
+
+* Pystac as it was just used for a datetime to string function. ([#690](https://github.com/stac-utils/stac-fastapi/pull/690))
 
 ## [3.0.0a0] - 2024-05-06
 
@@ -13,7 +22,7 @@
 * Add enhanced middleware configuration to the StacApi class, enabling specific middleware options and dynamic addition post-application initialization. ([#442](https://github.com/stac-utils/stac-fastapi/pull/442))
 * Add Response Model to OpenAPI, even if model validation is turned off ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
 
-## Changes
+## Changed
 
 * Update to pydantic v2 and stac_pydantic v3 ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
 * Removed internal Search and Operator Types in favor of stac_pydantic Types ([#625](https://github.com/stac-utils/stac-fastapi/pull/625))
