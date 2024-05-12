@@ -36,12 +36,12 @@ class AggregationExtension(ApiExtension):
     The Aggregation extension adds several endpoints which allow the retrieval of
     available aggregation fields and aggregation buckets based on a seearch query:
         GET /aggregations
-        GET /aggregate
-        GET /collections/{collection_id}/aggregations
-        GET /collections/{collection_id}/aggregate
         POST /aggregations
-        POST /aggregate
+        GET /collections/{collection_id}/aggregations
         POST /collections/{collection_id}/aggregations
+        GET /aggregate
+        POST /aggregate
+        GET /collections/{collection_id}/aggregate
         POST /collections/{collection_id}/aggregate
 
     https://github.com/stac-api-extensions/aggregation/blob/main/README.md
@@ -91,16 +91,16 @@ class AggregationExtension(ApiExtension):
             endpoint=create_async_endpoint(self.client.aggregate, self.GET),
         )
         self.router.add_api_route(
-            name="Collection Aggregate",
-            path="/collections/{collection_id}/aggregate",
-            methods=["GET"],
-            endpoint=create_async_endpoint(self.client.aggregate, self.GET),
-        )
-        self.router.add_api_route(
             name="Aggregate",
             path="/aggregate",
             methods=["POST"],
             endpoint=create_async_endpoint(self.client.aggregate, self.POST),
+        )
+        self.router.add_api_route(
+            name="Collection Aggregate",
+            path="/collections/{collection_id}/aggregate",
+            methods=["GET"],
+            endpoint=create_async_endpoint(self.client.aggregate, self.GET),
         )
         self.router.add_api_route(
             name="Collection Aggregate",

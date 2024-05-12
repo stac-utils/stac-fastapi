@@ -34,6 +34,7 @@ class DummyAggregationsClient(BaseAggregationClient):
 
     def get_aggregations(self, *args, **kwargs):
         return {
+            "type": "AggregationCollection",
             "aggregations": [{"name": "total_count", "data_type": "integer"}],
             "links": [
                 {
@@ -51,6 +52,7 @@ class DummyAggregationsClient(BaseAggregationClient):
 
     def aggregate(self, *args, **kwargs):
         return {
+            "type": "AggregationCollection",
             "aggregations": [],
             "links": [
                 {
