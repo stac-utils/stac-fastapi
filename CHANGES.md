@@ -2,6 +2,10 @@
 
 ## [Unreleased] - TBD
 
+### Added
+
+* Add base support for the Aggregation extension [#684](https://github.com/stac-utils/stac-fastapi/pull/684)
+
 ### Changed
 
 * switch from `fastapi` to `fastapi-slim` to avoid installing unwanted dependencies. ([#687](https://github.com/stac-utils/stac-fastapi/pull/687))

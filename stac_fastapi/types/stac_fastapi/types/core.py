@@ -390,6 +390,33 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 }
             )
 
+        # Add Aggregation links
+        if self.extension_is_enabled("AggregationExtension"):
+            landing_page["links"].extend(
+                [
+                    {
+                        "rel": "aggregate",
+                        "type": "application/json",
+                        "title": "Aggregate",
+                        "href": urljoin(base_url, "aggregate"),
+                        "method": "GET",
+                    },
+                    {
+                        "rel": "aggregate",
+                        "type": "application/json",
+                        "title": "Aggregate",
+                        "href": urljoin(base_url, "aggregate"),
+                        "method": "POST",
+                    },
+                    {
+                        "rel": "aggregations",
+                        "type": "application/json",
+                        "title": "Aggregations",
+                        "href": urljoin(base_url, "aggregations"),
+                    },
+                ]
+            )
+
         # Add Collections links
         collections = self.all_collections(request=kwargs["request"])
 
@@ -791,4 +818,100 @@ class BaseFiltersClient(abc.ABC):
             "title": "Queryables for Example STAC API",
             "description": "Queryable names for the example STAC API Item Search filter.",
             "properties": {},
+        }
+
+
+@attr.s
+class BaseAggregationClient(abc.ABC):
+    """Defines a pattern for implementing the STAC aggregation extension."""
+
+    def get_aggregations(
+        self, collection_id: Optional[str] = None, **kwargs
+    ) -> Dict[str, Any]:
+        """Get the aggregation available for the given collection_id.
+
+        If collection_id is None, returns the available aggregations over all
+        collections.
+        """
+        return {
+            "aggregations": [{"name": "total_count", "data_type": "integer"}],
+            "links": [
+                {
+                    "rel": "self",
+                    "type": "application/json",
+                    "href": "https://example.org/aggregations",
+                },
+                {
+                    "rel": "root",
+                    "type": "application/json",
+                    "href": "https://example.org",
+                },
+            ],
+        }
+
+    def aggregate(self, collection_id: Optional[str] = None, **kwargs) -> Dict[str, Any]:
+        """Return an AggregationCollection based on search params"""
+        return {
+            "aggregations": [],
+            "links": [
+                {
+                    "rel": "self",
+                    "type": "application/json",
+                    "href": "https://example.org/aggregate",
+                },
+                {
+                    "rel": "root",
+                    "type": "application/json",
+                    "href": "https://example.org",
+                },
+            ],
+        }
+
+
+@attr.s
+class AsyncBaseAggregationClient(abc.ABC):
+    """Defines a pattern for implementing the STAC aggregation extension."""
+
+    async def get_aggregations(
+        self, collection_id: Optional[str] = None, **kwargs
+    ) -> Dict[str, Any]:
+        """Get the aggregations available for the given collection_id.
+
+        If collection_id is None, returns the available aggregations over all
+        collections.
+        """
+        return {
+            "aggregations": [{"name": "total_count", "data_type": "integer"}],
+            "links": [
+                {
+                    "rel": "self",
+                    "type": "application/json",
+                    "href": "https://example.org/aggregations",
+                },
+                {
+                    "rel": "root",
+                    "type": "application/json",
+                    "href": "https://example.org",
+                },
+            ],
+        }
+
+    async def aggregate(
+        self, collection_id: Optional[str] = None, **kwargs
+    ) -> Dict[str, Any]:
+        """Return an AggregationCollection based on search params"""
+        return {
+            "aggregations": [],
+            "links": [
+                {
+                    "rel": "self",
+                    "type": "application/json",
+                    "href": "https://example.org/aggregate",
+                },
+                {
+                    "rel": "root",
+                    "type": "application/json",
+                    "href": "https://example.org",
+                },
+            ],
         }
