@@ -11,6 +11,10 @@
 
 * Pystac as it was just used for a datetime to string function. ([#690](https://github.com/stac-utils/stac-fastapi/pull/690))
 
+### Fixed
+
+* Make `str_to_interval` not return a tuple for single-value input (fixing `datetime` argument as passed to `get_search`).
+
 ## [3.0.0a0] - 2024-05-06
 
 ### Added
