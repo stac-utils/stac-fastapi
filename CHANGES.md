@@ -13,7 +13,7 @@
 
 ### Fixed
 
-* Make `str_to_interval` not return a tuple for single-value input (fixing `datetime` argument as passed to `get_search`).
+* Make `str_to_interval` not return a tuple for single-value input (fixing `datetime` argument as passed to `get_search`). ([#692](https://github.com/stac-utils/stac-fastapi/pull/692))
 
 ## [3.0.0a0] - 2024-05-06
 
