@@ -49,17 +49,20 @@ class TransactionExtension(ApiExtension):
         PUT /collections/{collection_id}/items
         DELETE /collections/{collection_id}/items
 
-    https://github.com/radiantearth/stac-api-spec/blob/master/ogcapi-features/extensions/transaction/README.md
+    https://github.com/stac-api-extensions/transaction
+    https://github.com/stac-api-extensions/collection-transaction
 
     Attributes:
         client: CRUD application logic
+
     """
 
     client: Union[AsyncBaseTransactionsClient, BaseTransactionsClient] = attr.ib()
     settings: ApiSettings = attr.ib()
     conformance_classes: List[str] = attr.ib(
         factory=lambda: [
-            "https://api.stacspec.org/v1.0.0-rc.3/ogcapi-features/extensions/transaction",
+            "https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction",
+            "https://api.stacspec.org/v1.0.0/collections/extensions/transaction",
         ]
     )
     schema_href: Optional[str] = attr.ib(default=None)
@@ -132,6 +135,11 @@ class TransactionExtension(ApiExtension):
             endpoint=create_async_endpoint(self.client.delete_item, ItemUri),
         )
 
+    def register_patch_item(self):
+        """Register patch item endpoint (PATCH
+        /collections/{collection_id}/items/{item_id})."""
+        raise NotImplementedError
+
     def register_create_collection(self):
         """Register create collection endpoint (POST /collections)."""
         self.router.add_api_route(
@@ -195,6 +203,10 @@ class TransactionExtension(ApiExtension):
             methods=["DELETE"],
             endpoint=create_async_endpoint(self.client.delete_collection, CollectionUri),
         )
+
+    def register_patch_collection(self):
+        """Register patch collection endpoint (PATCH /collections/{collection_id})."""
+        raise NotImplementedError
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
