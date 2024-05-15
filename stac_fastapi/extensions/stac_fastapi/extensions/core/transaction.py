@@ -127,7 +127,7 @@ class TransactionExtension(ApiExtension):
         """Register create collection endpoint (POST /catalogs/{catalog_id}/collections)."""
         self.router.add_api_route(
             name="Create Collection",
-            path="/catalogs/{catalog_id}/collections/",
+            path="/catalogs/{catalog_id}/collections",
             response_model=Collection if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
