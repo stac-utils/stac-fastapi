@@ -1,4 +1,5 @@
 """Bulk transactions extension."""
+
 import abc
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
@@ -46,6 +47,7 @@ class BaseBulkTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def bulk_item_insert(
         self,
+        catalog_id: str,
         items: Items,
         chunk_size: Optional[int] = None,
         **kwargs,
@@ -69,6 +71,7 @@ class AsyncBaseBulkTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def bulk_item_insert(
         self,
+        catalog_id: str,
         items: Items,
         **kwargs,
     ) -> str:
@@ -109,9 +112,9 @@ class BulkTransactionExtension(ApiExtension):
         }
     """
 
-    client: Union[
-        AsyncBaseBulkTransactionsClient, BaseBulkTransactionsClient
-    ] = attr.ib()
+    client: Union[AsyncBaseBulkTransactionsClient, BaseBulkTransactionsClient] = (
+        attr.ib()
+    )
     conformance_classes: List[str] = attr.ib(default=list())
     schema_href: Optional[str] = attr.ib(default=None)
 

@@ -11,6 +11,9 @@ from stac_fastapi.types.search import APIRequest, Limit, str2bbox
 
 from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
 
+from ..filter.request import FilterLang
+
+
 @attr.s
 class CollectionSearchExtensionGetRequest(APIRequest):
     """Collection Search extension GET request model."""
@@ -19,6 +22,7 @@ class CollectionSearchExtensionGetRequest(APIRequest):
     datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
     limit: Optional[int] = attr.ib(default=10)
     q: Optional[str] = attr.ib(default=None)
+
 
 class CollectionSearchExtensionPostRequest(BaseModel):
     """Collection Search extension POST request model."""

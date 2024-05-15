@@ -12,15 +12,22 @@ from stac_fastapi.api.models import JSONSchemaResponse
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.core import AsyncDiscoverySearchClient, DiscoverySearchClient
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.search import BaseDiscoverySearchGetRequest, BaseDiscoverySearchPostRequest
+from stac_fastapi.types.search import (
+    BaseDiscoverySearchGetRequest,
+    BaseDiscoverySearchPostRequest,
+)
 
-from .request import DiscoverySearchExtensionGetRequest, DiscoverySearchExtensionPostRequest
+from .request import (
+    DiscoverySearchExtensionGetRequest,
+    DiscoverySearchExtensionPostRequest,
+)
+
 
 @attr.s
 class DiscoverySearchExtension(ApiExtension):
     """DiscoverySearch Extension.
 
-    The collection search extension adds two endpoints which allow searching of 
+    The collection search extension adds two endpoints which allow searching of
     collections via GET and POST:
         GET /discovery-search
         POST /discovery-search
@@ -33,7 +40,7 @@ class DiscoverySearchExtension(ApiExtension):
         client: Collection Search endpoint logic
         conformance_classes: Conformance classes provided by the extension
     """
-    
+
     GET = DiscoverySearchExtensionGetRequest
     POST = DiscoverySearchExtensionPostRequest
 
@@ -43,16 +50,14 @@ class DiscoverySearchExtension(ApiExtension):
     discovery_search_post_request_model: Type[BaseDiscoverySearchPostRequest] = attr.ib(
         default=BaseDiscoverySearchPostRequest
     )
-    
+
     client: Union[AsyncDiscoverySearchClient, DiscoverySearchClient] = attr.ib(
         factory=DiscoverySearchClient
     )
-    
-    conformance_classes: List[str] = attr.ib(
-        default=[]
-    )
+
+    conformance_classes: List[str] = attr.ib(default=[])
     router: APIRouter = attr.ib(factory=APIRouter)
-    response_class: Type[Response] = attr.ib(default=JSONResponse)    
+    response_class: Type[Response] = attr.ib(default=JSONResponse)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -73,7 +78,8 @@ class DiscoverySearchExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=create_async_endpoint(
-                self.client.get_discovery_search, self.discovery_search_get_request_model
+                self.client.get_discovery_search,
+                self.discovery_search_get_request_model,
             ),
         )
 
@@ -86,7 +92,8 @@ class DiscoverySearchExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=create_async_endpoint(
-                self.client.post_discovery_search, self.discovery_search_post_request_model
+                self.client.post_discovery_search,
+                self.discovery_search_post_request_model,
             ),
         )
 

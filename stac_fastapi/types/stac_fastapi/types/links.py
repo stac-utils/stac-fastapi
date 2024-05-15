@@ -10,8 +10,9 @@ from stac_pydantic.shared import MimeTypes
 # These can be inferred from the item/collection so they aren't included in the database
 # Instead they are dynamically generated when querying the database using the
 # classes defined below
-#INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root", "items"]
-INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "items"]
+INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root", "items"]
+# Attempt to maintain "root" links to later determine relationships to catalogues
+#INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "items"]
 
 
 def filter_links(links: List[Dict]) -> List[Dict]:
@@ -26,7 +27,7 @@ def resolve_links(links: list, base_url: str) -> List[Dict]:
         if "http://" in link["href"] or "https://" in link["href"]:
             split_url = urlsplit(link["href"])
             link["href"] = split_url.path
-            #link["href"].replace(split_url.scheme, "").replace(split_url.netloc, "")
+            # link["href"].replace(split_url.scheme, "").replace(split_url.netloc, "")
         link.update({"href": urljoin(base_url, link["href"])})
     return filtered_links
 
@@ -70,7 +71,13 @@ class CollectionLinks(BaseLinks):
     def create_links(self) -> List[Dict[str, Any]]:
         """Return all inferred links."""
         # We use predefined root here to identify the catalog containing this dataset
-        return [self.self(), self.parent(), self.items()]#, self.root()]
+        return [
+            self.self(),
+            self.parent(),
+            self.items(),
+            self.root(),
+        ]  # get rid of root here to remove generated value
+
 
 @attr.s
 class BaseCatalogLinks:
@@ -82,7 +89,8 @@ class BaseCatalogLinks:
     def root(self) -> Dict[str, Any]:
         """Return the catalog root."""
         return dict(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
-    
+
+
 @attr.s
 class CatalogLinks(BaseCatalogLinks):
     """Create inferred links specific to catalogs."""
@@ -99,11 +107,12 @@ class CatalogLinks(BaseCatalogLinks):
         """Create the `parent` link."""
         return dict(rel=Relations.parent, type=MimeTypes.json, href=self.base_url)
 
-
     def create_links(self) -> List[Dict[str, Any]]:
         """Return all inferred links."""
         # We use predefined root here to identify the catalog containing this dataset
+        # No items for catalogues
         return [self.self(), self.parent(), self.root()]
+
 
 @attr.s
 class ItemLinks(BaseLinks):

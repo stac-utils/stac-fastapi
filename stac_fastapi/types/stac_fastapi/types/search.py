@@ -106,6 +106,7 @@ class BaseSearchGetRequest(APIRequest):
     """Base arguments for GET Request."""
 
     collections: Optional[str] = attr.ib(default=None, converter=str2list)
+    catalogs: Optional[str] = attr.ib(default=None, converter=str2list)
     ids: Optional[str] = attr.ib(default=None, converter=str2list)
     bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
     intersects: Optional[str] = attr.ib(default=None, converter=str2list)
@@ -125,6 +126,7 @@ class BaseSearchPostRequest(BaseModel):
     """
 
     collections: Optional[List[str]]
+    catalogs: Optional[List[str]]
     ids: Optional[List[str]]
     bbox: Optional[BBox]
     intersects: Optional[
@@ -219,7 +221,7 @@ class BaseSearchPostRequest(BaseModel):
         if self.intersects:
             return self.intersects
         return
-    
+
 
 @attr.s
 class BaseCollectionSearchGetRequest(APIRequest):
@@ -229,8 +231,8 @@ class BaseCollectionSearchGetRequest(APIRequest):
     datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
     limit: Optional[int] = attr.ib(default=10)
     q: Optional[str] = attr.ib(default=None)
-    
-    
+
+
 class BaseCollectionSearchPostRequest(BaseModel):
     """Search model.
 
@@ -314,7 +316,7 @@ class BaseCollectionSearchPostRequest(BaseModel):
         if self.intersects:
             return self.intersects
         return
-    
+
 
 @attr.s
 class BaseDiscoverySearchGetRequest(APIRequest):
@@ -322,8 +324,8 @@ class BaseDiscoverySearchGetRequest(APIRequest):
 
     q: Optional[str] = attr.ib(default=None)
     limit: Optional[int] = attr.ib(default=10)
-    
-    
+
+
 class BaseDiscoverySearchPostRequest(BaseModel):
     """Search model.
 
@@ -333,4 +335,3 @@ class BaseDiscoverySearchPostRequest(BaseModel):
 
     q: Optional[str]
     limit: Optional[Limit] = Field(default=10)
-

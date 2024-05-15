@@ -14,11 +14,14 @@ from stac_fastapi.types.stac import Item, ItemCollection
 class DummyCoreClient(BaseCoreClient):
     def all_collections(self, *args, **kwargs):
         raise NotImplementedError
-    
+
     def all_catalogs(self, *args, **kwargs):
         raise NotImplementedError
 
     def get_collection(self, *args, **kwargs):
+        raise NotImplementedError
+    
+    def get_catalog_collections(self, *args, **kwargs):
         raise NotImplementedError
 
     def get_item(self, *args, **kwargs):
@@ -48,14 +51,20 @@ class DummyTransactionsClient(BaseTransactionsClient):
 
     def create_collection(self, *args, **kwargs):
         raise NotImplementedError
-    
-    def create_catalog(self, *args, **kwargs):
-        raise NotImplementedError
 
     def update_collection(self, *args, **kwargs):
         raise NotImplementedError
 
     def delete_collection(self, *args, **kwargs):
+        raise NotImplementedError
+    
+    def create_catalog(self, *args, **kwargs):
+        raise NotImplementedError
+    
+    def update_catalog(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def delete_catalog(self, *args, **kwargs):
         raise NotImplementedError
 
 

@@ -86,23 +86,17 @@ class TestRouteDependencies:
 
 
 class DummyCoreClient(core.BaseCoreClient):
-    def all_collections(self, *args, **kwargs):
-        ...
+    def all_collections(self, *args, **kwargs): ...
 
-    def get_collection(self, *args, **kwargs):
-        ...
+    def get_collection(self, *args, **kwargs): ...
 
-    def get_item(self, *args, **kwargs):
-        ...
+    def get_item(self, *args, **kwargs): ...
 
-    def get_search(self, *args, **kwargs):
-        ...
+    def get_search(self, *args, **kwargs): ...
 
-    def post_search(self, *args, **kwargs):
-        ...
+    def post_search(self, *args, **kwargs): ...
 
-    def item_collection(self, *args, **kwargs):
-        ...
+    def item_collection(self, *args, **kwargs): ...
 
 
 class DummyTransactionsClient(core.BaseTransactionsClient):
@@ -119,14 +113,20 @@ class DummyTransactionsClient(core.BaseTransactionsClient):
 
     def create_collection(self, *args, **kwargs):
         return "dummy response"
-    
-    def create_catalog(self, *args, **kwargs):
-        return "dummy response"
 
     def update_collection(self, *args, **kwargs):
         return "dummy response"
 
     def delete_collection(self, *args, **kwargs):
+        return "dummy response"
+    
+    def create_catalog(self, *args, **kwargs):
+        return "dummy response"
+    
+    def update_catalog(self, *args, **kwargs):
+        return "dummy response"
+
+    def delete_catalog(self, *args, **kwargs):
         return "dummy response"
 
 

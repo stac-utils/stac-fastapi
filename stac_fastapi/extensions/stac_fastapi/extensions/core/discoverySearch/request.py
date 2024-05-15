@@ -13,12 +13,14 @@ from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
 
 from ..filter.request import FilterLang
 
+
 @attr.s
 class DiscoverySearchExtensionGetRequest(APIRequest):
     """Discovery Search extension GET request model."""
 
     q: Optional[str] = attr.ib(default=None)
     limit: Optional[int] = attr.ib(default=10)
+
 
 class DiscoverySearchExtensionPostRequest(BaseModel):
     """Discovery Search extension POST request model."""

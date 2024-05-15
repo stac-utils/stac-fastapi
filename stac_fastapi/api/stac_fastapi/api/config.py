@@ -1,4 +1,5 @@
 """Application settings."""
+
 import enum
 
 
@@ -24,4 +25,3 @@ class AddOns(enum.Enum):
     """Enumeration of available third party add ons."""
 
     bulk_transaction = "bulk-transaction"
-    
