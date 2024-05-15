@@ -10,7 +10,7 @@ from pydantic.fields import UndefinedType
 from stac_pydantic.shared import BBox
 
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.rfc3339 import DateTimeType
+from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
 from stac_fastapi.types.search import (
     APIRequest,
     BaseSearchGetRequest,
@@ -49,9 +49,11 @@ def create_request_model(
             for k, v in model.__fields__.items():
                 field_info = v.field_info
                 body = Body(
-                    None
-                    if isinstance(field_info.default, UndefinedType)
-                    else field_info.default,
+                    (
+                        None
+                        if isinstance(field_info.default, UndefinedType)
+                        else field_info.default
+                    ),
                     default_factory=field_info.default_factory,
                     alias=field_info.alias,
                     alias_priority=field_info.alias_priority,
@@ -101,11 +103,16 @@ def create_post_request_model(
 
 
 @attr.s  # type:ignore
-class CollectionUri(APIRequest):
+class CatalogUri(APIRequest):
+    """Delete catalog."""
+
+    catalog_id: str = attr.ib(default=Path(..., description="Catalog ID"))
+
+@attr.s  # type:ignore
+class CollectionUri(CatalogUri):
     """Delete collection."""
 
     collection_id: str = attr.ib(default=Path(..., description="Collection ID"))
-
 
 @attr.s
 class ItemUri(CollectionUri):
@@ -127,7 +134,7 @@ class ItemCollectionUri(CollectionUri):
 
     limit: int = attr.ib(default=10)
     bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
-    datetime: Optional[DateTimeType] = attr.ib(default=None)
+    datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
 
 
 class POSTTokenPagination(BaseModel):
