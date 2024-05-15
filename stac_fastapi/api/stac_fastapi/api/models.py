@@ -108,11 +108,13 @@ class CatalogUri(APIRequest):
 
     catalog_id: str = attr.ib(default=Path(..., description="Catalog ID"))
 
+
 @attr.s  # type:ignore
 class CollectionUri(CatalogUri):
     """Delete collection."""
 
     collection_id: str = attr.ib(default=Path(..., description="Collection ID"))
+
 
 @attr.s
 class ItemUri(CollectionUri):

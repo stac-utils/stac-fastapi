@@ -7,22 +7,21 @@ from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.params import Depends
-from stac_pydantic import Collection, Item, ItemCollection, Catalog
+from stac_pydantic import Catalog, Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.collections import Collections
-from stac_fastapi.types.stac import Catalogs
 from stac_pydantic.version import STAC_VERSION
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.middleware import CORSMiddleware, ProxyHeaderMiddleware
 from stac_fastapi.api.models import (
+    CatalogUri,
     CollectionUri,
     EmptyRequest,
     GeoJSONResponse,
     ItemCollectionUri,
     ItemUri,
-    CatalogUri,
     create_request_model,
 )
 from stac_fastapi.api.openapi import update_openapi
@@ -34,6 +33,7 @@ from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
+from stac_fastapi.types.stac import Catalogs
 
 
 @attr.s
@@ -286,11 +286,14 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(self.client.get_catalog_collections, CatalogUri),
+            endpoint=create_async_endpoint(
+                self.client.get_catalog_collections, CatalogUri
+            ),
         )
 
     def register_get_collection(self):
-        """Register get collection endpoint (GET /catalogues/{catalog_id}/collection/{collection_id}).
+        """Register get collection endpoint
+        (GET /catalogues/{catalog_id}/collection/{collection_id}).
 
         Returns:
             None

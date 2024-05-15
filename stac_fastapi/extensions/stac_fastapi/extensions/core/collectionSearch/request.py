@@ -1,17 +1,13 @@
 """Collection Search extension request models."""
 
-from enum import Enum
-from typing import Any, Dict, Optional, List
+from typing import Optional
 
 import attr
 from pydantic import BaseModel, Field
 from stac_pydantic.shared import BBox
 
-from stac_fastapi.types.search import APIRequest, Limit, str2bbox
-
 from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
-
-from ..filter.request import FilterLang
+from stac_fastapi.types.search import APIRequest, Limit, str2bbox
 
 
 @attr.s

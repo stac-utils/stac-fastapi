@@ -63,7 +63,9 @@ class CoreClient(BaseCoreClient):
     ) -> stac_types.ItemCollection:
         raise NotImplementedError
 
-    def get_item(self, item_id: str, collection_id: str, catalog_id: str, **kwargs) -> stac_types.Item:
+    def get_item(
+        self, item_id: str, collection_id: str, catalog_id: str, **kwargs
+    ) -> stac_types.Item:
         raise NotImplementedError
 
     def all_collections(self, **kwargs) -> stac_types.Collections:
@@ -86,12 +88,14 @@ class CoreClient(BaseCoreClient):
             ],
         )
 
-    def get_collection(self, catalog_id: str, collection_id: str, **kwargs) -> stac_types.Collection:
+    def get_collection(
+        self, catalog_id: str, collection_id: str, **kwargs
+    ) -> stac_types.Collection:
         return collections[0]
-    
+
     def get_catalog_collection(self, catalog_id: str, **kwargs) -> stac_types.Catalogs:
         return collections[0]
-    
+
     def get_catalog(self, catalog_id: str, **kwargs) -> stac_types.Catalog:
         return catalogs[0]
 

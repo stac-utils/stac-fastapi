@@ -18,10 +18,9 @@ from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import (
-    BaseSearchPostRequest,
     BaseCollectionSearchPostRequest,
     BaseDiscoverySearchPostRequest,
-    BaseDiscoverySearchPostRequest,
+    BaseSearchPostRequest,
 )
 from stac_fastapi.types.stac import Conformance
 
@@ -57,7 +56,12 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def update_item(
-        self, catalog_id: str, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
+        self,
+        catalog_id: str,
+        collection_id: str,
+        item_id: str,
+        item: stac_types.Item,
+        **kwargs,
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
@@ -187,7 +191,12 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def update_item(
-        self, catalog_id: str, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
+        self,
+        catalog_id: str,
+        collection_id: str,
+        item_id: str,
+        item: stac_types.Item,
+        **kwargs,
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
@@ -239,7 +248,11 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def update_collection(
-        self, catalog_id: str, collection_id: str, collection: stac_types.Collection, **kwargs
+        self,
+        catalog_id: str,
+        collection_id: str,
+        collection: stac_types.Collection,
+        **kwargs,
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
@@ -496,7 +509,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_item(self, item_id: str, collection_id: str, catalog_id: str, **kwargs) -> stac_types.Item:
+    def get_item(
+        self, item_id: str, collection_id: str, catalog_id: str, **kwargs
+    ) -> stac_types.Item:
         """Get item by id.
 
         Called with `GET /collections/{collection_id}/items/{item_id}`.
@@ -533,7 +548,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_collection(self, catalog_id: str, collection_id: str, **kwargs) -> stac_types.Collection:
+    def get_collection(
+        self, catalog_id: str, collection_id: str, **kwargs
+    ) -> stac_types.Collection:
         """Get collection by id.
 
         Called with `GET /catalogs/{catalog_id}/collections/{collection_id}`.
@@ -561,7 +578,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_catalog_collections(self, catalog_id: str, **kwargs) -> stac_types.Collections:
+    def get_catalog_collections(
+        self, catalog_id: str, **kwargs
+    ) -> stac_types.Collections:
         """Get collections by catalog id.
 
         Called with `GET /catalogs/{catalog_id}/collections`.
@@ -810,9 +829,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_catalog(
-        self, catalog_id: str, **kwargs
-    ) -> stac_types.Catalog:
+    async def get_catalog(self, catalog_id: str, **kwargs) -> stac_types.Catalog:
         """Get catalog by id.
 
         Called with `GET /catalogs/{catalog_id}`.

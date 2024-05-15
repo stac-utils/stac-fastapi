@@ -4,10 +4,10 @@ from typing import List, Optional, Type, Union
 
 import attr
 from fastapi import APIRouter, Body, FastAPI
-from stac_pydantic import Collection, Item, Catalog
+from stac_pydantic import Catalog, Collection, Item
 from starlette.responses import JSONResponse, Response
 
-from stac_fastapi.api.models import CollectionUri, ItemUri, CatalogUri
+from stac_fastapi.api.models import CatalogUri, CollectionUri, ItemUri
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import ApiSettings
@@ -23,29 +23,26 @@ class PostItem(CollectionUri):
         default=Body(None)
     )
 
+
 @attr.s
 class PostCatalog(CatalogUri):
     """Create Item."""
 
-    catalog: Union[stac_types.Catalog] = attr.ib(
-        default=Body(None)
-    )
+    catalog: Union[stac_types.Catalog] = attr.ib(default=Body(None))
+
 
 @attr.s
 class PutCollection(CollectionUri):
     """Update Collection."""
 
-    collection: Union[stac_types.Collection] = attr.ib(
-        default=Body(None)
-    )
+    collection: Union[stac_types.Collection] = attr.ib(default=Body(None))
+
 
 @attr.s
 class PostCollection(CatalogUri):
     """Create Collection."""
 
-    collection: Union[stac_types.Collection] = attr.ib(
-        default=Body(None)
-    )
+    collection: Union[stac_types.Collection] = attr.ib(default=Body(None))
 
 
 @attr.s
@@ -196,9 +193,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_async_endpoint(
-                self.client.update_catalog, PostCatalog
-            ),
+            endpoint=create_async_endpoint(self.client.update_catalog, PostCatalog),
         )
 
     def register_delete_catalog(self):
@@ -211,9 +206,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=create_async_endpoint(
-                self.client.delete_catalog, CatalogUri
-            ),
+            endpoint=create_async_endpoint(self.client.delete_catalog, CatalogUri),
         )
 
     def register(self, app: FastAPI) -> None:

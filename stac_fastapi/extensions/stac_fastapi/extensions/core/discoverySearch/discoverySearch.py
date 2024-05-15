@@ -1,14 +1,11 @@
 # encoding: utf-8
 """Collection Search Extension."""
-from enum import Enum
 from typing import List, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
 from starlette.responses import JSONResponse, Response
-from stac_pydantic.api.collections import Collections
 
-from stac_fastapi.api.models import JSONSchemaResponse
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.core import AsyncDiscoverySearchClient, DiscoverySearchClient
 from stac_fastapi.types.extension import ApiExtension

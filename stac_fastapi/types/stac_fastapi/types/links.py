@@ -12,7 +12,7 @@ from stac_pydantic.shared import MimeTypes
 # classes defined below
 INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root", "items"]
 # Attempt to maintain "root" links to later determine relationships to catalogues
-#INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "items"]
+# INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "items"]
 
 
 def filter_links(links: List[Dict]) -> List[Dict]:

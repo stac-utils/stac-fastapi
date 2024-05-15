@@ -119,10 +119,10 @@ class DummyTransactionsClient(core.BaseTransactionsClient):
 
     def delete_collection(self, *args, **kwargs):
         return "dummy response"
-    
+
     def create_catalog(self, *args, **kwargs):
         return "dummy response"
-    
+
     def update_catalog(self, *args, **kwargs):
         return "dummy response"
 

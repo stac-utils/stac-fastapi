@@ -1,7 +1,6 @@
 from typing import List
 
 from pydantic import BaseModel
-
 from stac_pydantic import Catalog
 from stac_pydantic.api.links import Link
 
