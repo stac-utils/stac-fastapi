@@ -105,7 +105,10 @@ class Catalogs(TypedDict, total=False):
 
 
 class CatalogsAndCollections(TypedDict, total=False):
-    """All catalogues and collections endpoint."""
+    """All catalogues and collections endpoint.
+
+    https://github.com/radiantearth/stac-api-spec/tree/master/collections
+    """
 
     catalogs_and_collections: List[Union[Catalog, Collection]]
     links: List[Dict[str, Any]]
