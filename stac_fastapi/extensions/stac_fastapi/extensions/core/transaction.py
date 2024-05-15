@@ -39,7 +39,7 @@ class PutCollection(CollectionUri):
 
 
 @attr.s
-class PostCollection(CatalogUri):
+class PostNewCollection(CatalogUri):
     """Create Collection."""
 
     collection: Union[stac_types.Collection] = attr.ib(default=Body(None))
@@ -134,7 +134,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=create_async_endpoint(
-                self.client.create_collection, PostCollection
+                self.client.create_collection, PostNewCollection
             ),
         )
 
