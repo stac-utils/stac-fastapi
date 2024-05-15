@@ -271,7 +271,7 @@ class StacApi:
         )
 
     def register_get_catalog_collections(self):
-        """Register get catalogs endpoint (GET /catalogs).
+        """Register get catalogs collections endpoint (GET /catalogs/{catalog_id}/collections).
 
         Returns:
             None
@@ -292,15 +292,14 @@ class StacApi:
         )
 
     def register_get_collection(self):
-        """Register get collection endpoint
-        (GET /catalogues/{catalog_id}/collection/{collection_id}).
+        """Register get collection endpoint (GET /catalogs/{catalog_id}/collection/{collection_id}).
 
         Returns:
             None
         """
         self.router.add_api_route(
             name="Get Collection",
-            path="/catalogues/{catalog_id}/collections/{collection_id}",
+            path="/catalogs/{catalog_id}/collections/{collection_id}",
             response_model=Collection if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
