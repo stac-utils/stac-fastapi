@@ -1,4 +1,5 @@
 """STAC types."""
+
 import sys
 from typing import Any, Dict, List, Literal, Optional, Union
 
@@ -56,6 +57,7 @@ class Collection(Catalog, total=False):
     extent: Dict[str, Any]
     summaries: Dict[str, Any]
     assets: Dict[str, Any]
+    # links: List[Dict[str, Any]]
 
 
 class Item(TypedDict, total=False):
@@ -89,4 +91,24 @@ class Collections(TypedDict, total=False):
     """
 
     collections: List[Collection]
+    links: List[Dict[str, Any]]
+
+
+class Catalogs(TypedDict, total=False):
+    """All collections endpoint.
+
+    https://github.com/radiantearth/stac-api-spec/tree/master/collections
+    """
+
+    catalogs: List[Catalog]
+    links: List[Dict[str, Any]]
+
+
+class CatalogsAndCollections(TypedDict, total=False):
+    """All catalogues and collections endpoint.
+
+    https://github.com/radiantearth/stac-api-spec/tree/master/collections
+    """
+
+    catalogs_and_collections: List[Union[Catalog, Collection]]
     links: List[Dict[str, Any]]

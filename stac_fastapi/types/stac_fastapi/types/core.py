@@ -17,7 +17,11 @@ from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.rfc3339 import DateTimeType
-from stac_fastapi.types.search import BaseSearchPostRequest, BaseCollectionSearchPostRequest
+from stac_fastapi.types.search import (
+    BaseCollectionSearchPostRequest,
+    BaseDiscoverySearchPostRequest,
+    BaseSearchPostRequest,
+)
 from stac_fastapi.types.stac import Conformance
 
 NumType = Union[float, int]
@@ -52,7 +56,12 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def update_item(
-        self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
+        self,
+        catalog_id: str,
+        collection_id: str,
+        item_id: str,
+        item: stac_types.Item,
+        **kwargs,
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
@@ -72,7 +81,7 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def delete_item(
-        self, item_id: str, collection_id: str, **kwargs
+        self, item_id: str, collection_id: str, catalog_id: str, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Delete an item from a collection.
 
@@ -89,7 +98,7 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def create_collection(
-        self, collection: stac_types.Collection, **kwargs
+        self, catalog_id: str, collection: stac_types.Collection, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Create a new collection.
 
@@ -100,6 +109,22 @@ class BaseTransactionsClient(abc.ABC):
 
         Returns:
             The collection that was created.
+        """
+        ...
+
+    @abc.abstractmethod
+    def create_catalog(
+        self, catalog: stac_types.Catalog, **kwargs
+    ) -> Optional[Union[stac_types.Catalog, Response]]:
+        """Create a new catalog.
+
+        Called with `POST /catalogs`.
+
+        Args:
+            catalog: the catalog
+
+        Returns:
+            The catalog that was created.
         """
         ...
 
@@ -125,7 +150,7 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def delete_collection(
-        self, collection_id: str, **kwargs
+        self, catalog_id: str, collection_id: str, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Delete a collection.
 
@@ -166,7 +191,12 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def update_item(
-        self, collection_id: str, item_id: str, item: stac_types.Item, **kwargs
+        self,
+        catalog_id: str,
+        collection_id: str,
+        item_id: str,
+        item: stac_types.Item,
+        **kwargs,
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Perform a complete update on an existing item.
 
@@ -185,7 +215,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def delete_item(
-        self, item_id: str, collection_id: str, **kwargs
+        self, item_id: str, collection_id: str, catalog_id: str, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Delete an item from a collection.
 
@@ -218,11 +248,15 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def update_collection(
-        self, collection_id: str, collection: stac_types.Collection, **kwargs
+        self,
+        catalog_id: str,
+        collection_id: str,
+        collection: stac_types.Collection,
+        **kwargs,
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Perform a complete update on an existing collection.
 
-        Called with `PUT /collections/{collection_id}`. It is expected that this item
+        Called with `PUT /catalogs/{catalog_id}/collections/{collection_id}`. It is expected that this item
         already exists.  The update should do a diff against the saved collection and
         perform any necessary updates.  Partial updates are not supported by the
         transactions extension.
@@ -238,11 +272,11 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def delete_collection(
-        self, collection_id: str, **kwargs
+        self, catalog_id: str, collection_id: str, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Delete a collection.
 
-        Called with `DELETE /collections/{collection_id}`
+        Called with `DELETE /catalogs/{catalog_id}/collections/{collection_id}`
 
         Args:
             collection_id: id of the collection.
@@ -475,7 +509,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac_types.Item:
+    def get_item(
+        self, item_id: str, collection_id: str, catalog_id: str, **kwargs
+    ) -> stac_types.Item:
         """Get item by id.
 
         Called with `GET /collections/{collection_id}/items/{item_id}`.
@@ -501,16 +537,59 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_collection(self, collection_id: str, **kwargs) -> stac_types.Collection:
+    def all_catalogs(self, **kwargs) -> stac_types.Catalogs:
+        """Get all available catalogs.
+
+        Called with `GET /catalogs`.
+
+        Returns:
+            A list of catalogs.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_collection(
+        self, catalog_id: str, collection_id: str, **kwargs
+    ) -> stac_types.Collection:
         """Get collection by id.
 
-        Called with `GET /collections/{collection_id}`.
+        Called with `GET /catalogs/{catalog_id}/collections/{collection_id}`.
 
         Args:
             collection_id: Id of the collection.
 
         Returns:
             Collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_catalog(self, catalog_id: str, **kwargs) -> stac_types.Catalog:
+        """Get catalog by id.
+
+        Called with `GET /catalogs/{catalog_id}`.
+
+        Args:
+            catalog_id: Id of the catalog.
+
+        Returns:
+            Catalog.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_catalog_collections(
+        self, catalog_id: str, **kwargs
+    ) -> stac_types.Collections:
+        """Get collections by catalog id.
+
+        Called with `GET /catalogs/{catalog_id}/collections`.
+
+        Args:
+            catalog_id: Id of the catalog.
+
+        Returns:
+            Collections.
         """
         ...
 
@@ -599,14 +678,26 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             )
 
         # Add Collections links
-        collections = await self.all_collections(request=kwargs["request"])
-        for collection in collections["collections"]:
+        # collections = await self.all_collections(request=kwargs["request"])
+        # for collection in collections["collections"]:
+        #     landing_page["links"].append(
+        #         {
+        #             "rel": Relations.child.value,
+        #             "type": MimeTypes.json.value,
+        #             "title": collection.get("title") or collection.get("id"),
+        #             "href": urljoin(base_url, f"collections/{collection['id']}"),
+        #         }
+        #     )
+
+        # Add Collections links
+        catalogs = await self.all_catalogs(request=kwargs["request"])
+        for catalog in catalogs["collections"]:
             landing_page["links"].append(
                 {
                     "rel": Relations.child.value,
                     "type": MimeTypes.json.value,
-                    "title": collection.get("title") or collection.get("id"),
-                    "href": urljoin(base_url, f"collections/{collection['id']}"),
+                    "title": catalog.get("title") or catalog.get("id"),
+                    "href": urljoin(base_url, f"collections/{catalog['id']}"),
                 }
             )
 
@@ -684,11 +775,11 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     async def get_item(
-        self, item_id: str, collection_id: str, **kwargs
+        self, item_id: str, collection_id: str, catalog_id: str, **kwargs
     ) -> stac_types.Item:
         """Get item by id.
 
-        Called with `GET /collections/{collection_id}/items/{item_id}`.
+        Called with `GET /catalogs/{catalog_id}/collections/{collection_id}/items/{item_id}`.
 
         Args:
             item_id: Id of the item.
@@ -711,18 +802,43 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
+    async def all_catalogs(self, **kwargs) -> stac_types.Catalogs:
+        """Get all available catalogs.
+
+        Called with `GET /catalogs`.
+
+        Returns:
+            A list of catalogs.
+        """
+        ...
+
+    @abc.abstractmethod
     async def get_collection(
         self, collection_id: str, **kwargs
     ) -> stac_types.Collection:
         """Get collection by id.
 
-        Called with `GET /collections/{collection_id}`.
+        Called with `GET /catalogs/{catalog_id}/collections/{collection_id}`.
 
         Args:
             collection_id: Id of the collection.
 
         Returns:
             Collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_catalog(self, catalog_id: str, **kwargs) -> stac_types.Catalog:
+        """Get catalog by id.
+
+        Called with `GET /catalogs/{catalog_id}`.
+
+        Args:
+            catalog_id: Id of the catalog.
+
+        Returns:
+            Catalog.
         """
         ...
 
@@ -738,7 +854,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     ) -> stac_types.ItemCollection:
         """Get all items from a specific collection.
 
-        Called with `GET /collections/{collection_id}/items`
+        Called with `GET /catalogs/{catalog_id}/collections/{collection_id}/items`
 
         Args:
             collection_id: id of the collection.
@@ -801,10 +917,13 @@ class BaseFiltersClient(abc.ABC):
             "description": "Queryable names for the example STAC API Item Search filter.",
             "properties": {},
         }
-    
+
+
 @attr.s
 class AsyncCollectionSearchClient(abc.ABC):
     """Defines a pattern for implementing the STAC Collection Search extension."""
+
+    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
     @abc.abstractmethod
     async def post_collection_search(
@@ -828,6 +947,7 @@ class AsyncCollectionSearchClient(abc.ABC):
         bbox: Optional[BBox] = None,
         datetime: Optional[DateTimeType] = None,
         limit: Optional[int] = 10,
+        q: Optional[str] = None,
         **kwargs,
     ) -> stac_types.Collections:
         """Cross catalog search (GET) of collections.
@@ -865,6 +985,83 @@ class CollectionSearchClient(abc.ABC):
         self,
         bbox: Optional[BBox] = None,
         datetime: Optional[DateTimeType] = None,
+        limit: Optional[int] = 10,
+        q: Optional[str] = None,
+        **kwargs,
+    ) -> stac_types.Collections:
+        """Cross catalog search (GET) of collections.
+
+        Called with `GET /collection-search`.
+
+        Returns:
+            A tuple of (collections, next pagination token if any).
+        """
+        ...
+
+
+@attr.s
+class AsyncDiscoverySearchClient(abc.ABC):
+    """Defines a pattern for implementing the STAC Collection Search extension."""
+
+    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
+
+    @abc.abstractmethod
+    async def post_discovery_search(
+        self, search_request: BaseDiscoverySearchPostRequest, **kwargs
+    ) -> stac_types.ItemCollection:
+        """Cross catalog search (POST) of collections.
+
+        Called with `POST /collection-search`.
+
+        Args:
+            search_request: search request parameters.
+
+        Returns:
+            A tuple of (collections, next pagination token if any).
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_discovery_search(
+        self,
+        q: Optional[str] = None,
+        limit: Optional[int] = 10,
+        **kwargs,
+    ) -> stac_types.Collections:
+        """Cross catalog search (GET) of collections.
+
+        Called with `GET /collection-search`.
+
+        Returns:
+            A tuple of (collections, next pagination token if any).
+        """
+        ...
+
+
+@attr.s
+class DiscoverySearchClient(abc.ABC):
+    """Defines a pattern for implementing the STAC Collection Search extension."""
+
+    @abc.abstractmethod
+    def post_discovery_search(
+        self, search_request: BaseDiscoverySearchPostRequest, **kwargs
+    ) -> stac_types.Collections:
+        """Cross catalog search (POST) of collections.
+
+        Called with `POST /collection-search`.
+
+        Args:
+            search_request: search request parameters.
+
+        Returns:
+            A tuple of (collections, next pagination token if any).
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_discovery_search(
+        self,
+        q: Optional[str] = None,
         limit: Optional[int] = 10,
         **kwargs,
     ) -> stac_types.Collections:

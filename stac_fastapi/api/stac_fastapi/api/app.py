@@ -7,7 +7,7 @@ from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.params import Depends
-from stac_pydantic import Collection, Item, ItemCollection
+from stac_pydantic import Catalog, Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.version import STAC_VERSION
@@ -16,6 +16,7 @@ from starlette.responses import JSONResponse, Response
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.middleware import CORSMiddleware, ProxyHeaderMiddleware
 from stac_fastapi.api.models import (
+    CatalogUri,
     CollectionUri,
     EmptyRequest,
     GeoJSONResponse,
@@ -32,6 +33,7 @@ from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
+from stac_fastapi.types.stac import Catalogs
 
 
 @attr.s
@@ -138,9 +140,9 @@ class StacApi:
         self.router.add_api_route(
             name="Landing Page",
             path="/",
-            response_model=LandingPage
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                LandingPage if self.settings.enable_response_models else None
+            ),
             response_class=self.response_class,
             response_model_exclude_unset=False,
             response_model_exclude_none=True,
@@ -157,9 +159,9 @@ class StacApi:
         self.router.add_api_route(
             name="Conformance Classes",
             path="/conformance",
-            response_model=ConformanceClasses
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                ConformanceClasses if self.settings.enable_response_models else None
+            ),
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -175,7 +177,7 @@ class StacApi:
         """
         self.router.add_api_route(
             name="Get Item",
-            path="/collections/{collection_id}/items/{item_id}",
+            path="/catalogs/{catalog_id}collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
@@ -194,9 +196,11 @@ class StacApi:
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(ItemCollection if not fields_ext else None)
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                (ItemCollection if not fields_ext else None)
+                if self.settings.enable_response_models
+                else None
+            ),
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -216,9 +220,11 @@ class StacApi:
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(ItemCollection if not fields_ext else None)
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                (ItemCollection if not fields_ext else None)
+                if self.settings.enable_response_models
+                else None
+            ),
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -237,9 +243,9 @@ class StacApi:
         self.router.add_api_route(
             name="Get Collections",
             path="/collections",
-            response_model=Collections
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                Collections if self.settings.enable_response_models else None
+            ),
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -247,21 +253,76 @@ class StacApi:
             endpoint=create_async_endpoint(self.client.all_collections, EmptyRequest),
         )
 
+    def register_get_catalogs(self):
+        """Register get catalogs endpoint (GET /catalogs).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get Catalogs",
+            path="/catalogs",
+            response_model=Catalogs if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_async_endpoint(self.client.all_catalogs, EmptyRequest),
+        )
+
+    def register_get_catalog_collections(self):
+        """Register get catalogs collections endpoint (GET /catalogs/{catalog_id}/collections).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get CatalogCollections",
+            path="/catalogs/{catalog_id}/collections",
+            response_model=(
+                Collections if self.settings.enable_response_models else None
+            ),
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_async_endpoint(
+                self.client.get_catalog_collections, CatalogUri
+            ),
+        )
+
     def register_get_collection(self):
-        """Register get collection endpoint (GET /collection/{collection_id}).
+        """Register get collection endpoint (GET /catalogs/{catalog_id}/collection/{collection_id}).
 
         Returns:
             None
         """
         self.router.add_api_route(
             name="Get Collection",
-            path="/collections/{collection_id}",
+            path="/catalogs/{catalog_id}/collections/{collection_id}",
             response_model=Collection if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=create_async_endpoint(self.client.get_collection, CollectionUri),
+        )
+
+    def register_get_catalog(self):
+        """Register get catalog endpoint (GET /catalogs/{catalog_id}).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Get Catalog",
+            path="/catalogs/{catalog_id}",
+            response_model=Catalog if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_async_endpoint(self.client.get_catalog, CatalogUri),
         )
 
     def register_get_item_collection(self):
@@ -282,10 +343,10 @@ class StacApi:
         )
         self.router.add_api_route(
             name="Get ItemCollection",
-            path="/collections/{collection_id}/items",
-            response_model=ItemCollection
-            if self.settings.enable_response_models
-            else None,
+            path="/catalogs/{catalog_id}/collections/{collection_id}/items",
+            response_model=(
+                ItemCollection if self.settings.enable_response_models else None
+            ),
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -316,8 +377,11 @@ class StacApi:
         self.register_post_search()
         self.register_get_search()
         self.register_get_collections()
+        self.register_get_catalogs()
         self.register_get_collection()
+        self.register_get_catalog()
         self.register_get_item_collection()
+        self.register_get_catalog_collections()
 
     def customize_openapi(self) -> Optional[Dict[str, Any]]:
         """Customize openapi schema."""

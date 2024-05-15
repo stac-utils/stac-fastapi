@@ -1,4 +1,5 @@
 """Application settings."""
+
 import enum
 
 
@@ -17,10 +18,10 @@ class ApiExtensions(enum.Enum):
     query = "query"
     sort = "sort"
     transaction = "transaction"
+    collection_search = "collection-search"
 
 
 class AddOns(enum.Enum):
     """Enumeration of available third party add ons."""
 
     bulk_transaction = "bulk-transaction"
-    collection_search = "collection-search"

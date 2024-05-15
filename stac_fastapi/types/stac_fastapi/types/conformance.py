@@ -1,4 +1,5 @@
 """Conformance Classes."""
+
 from enum import Enum
 
 
