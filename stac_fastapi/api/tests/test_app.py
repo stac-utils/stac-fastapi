@@ -110,7 +110,8 @@ def test_client_openapi(TestCoreClient):
         assert component in test_app.app.openapi_schema["components"]["schemas"]
 
 
-def test_filter_extension(TestCoreClient, item_dict):
+@pytest.mark.parametrize("validate", [True, False])
+def test_filter_extension(validate, TestCoreClient, item_dict):
     """Test if Filter Parameters are passed correctly."""
 
     class FilterClient(TestCoreClient):
@@ -159,13 +160,15 @@ def test_filter_extension(TestCoreClient, item_dict):
     post_request_model = create_post_request_model([FilterExtension()])
 
     test_app = app.StacApi(
-        settings=ApiSettings(),
+        settings=ApiSettings(enable_response_models=validate),
         client=FilterClient(post_request_model=post_request_model),
         search_get_request_model=create_get_request_model([FilterExtension()]),
         search_post_request_model=post_request_model,
+        extensions=[FilterExtension()],
     )
 
     with TestClient(test_app.app) as client:
+        landing = client.get("/")
         get_search = client.get(
             "/search",
             params={
@@ -184,5 +187,6 @@ def test_filter_extension(TestCoreClient, item_dict):
             },
         )
 
+    assert landing.status_code == 200, landing.text
     assert get_search.status_code == 200, get_search.text
     assert post_search.status_code == 200, post_search.text
