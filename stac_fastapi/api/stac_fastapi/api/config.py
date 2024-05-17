@@ -18,6 +18,7 @@ class ApiExtensions(enum.Enum):
     query = "query"
     sort = "sort"
     transaction = "transaction"
+    collection_search = "collection-search"
 
 
 class AddOns(enum.Enum):

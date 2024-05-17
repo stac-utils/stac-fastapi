@@ -20,7 +20,7 @@ from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.rfc3339 import DateTimeType
-from stac_fastapi.types.search import BaseSearchPostRequest
+from stac_fastapi.types.search import BaseSearchPostRequest, BaseCollectionSearchPostRequest
 
 NumType = Union[float, int]
 StacType = Dict[str, Any]
@@ -792,3 +792,78 @@ class BaseFiltersClient(abc.ABC):
             "description": "Queryable names for the example STAC API Item Search filter.",
             "properties": {},
         }
+
+@attr.s
+class AsyncCollectionSearchClient(abc.ABC):
+    """Defines a pattern for implementing the STAC Collection Search extension."""
+
+    @abc.abstractmethod
+    async def post_collection_search(
+        self, search_request: BaseCollectionSearchPostRequest, **kwargs
+    ) -> stac.ItemCollection:
+        """Cross catalog search (POST) of collections.
+
+        Called with `POST /collection-search`.
+
+        Args:
+            search_request: search request parameters.
+
+        Returns:
+            A tuple of (collections, next pagination token if any).
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_collection_search(
+        self,
+        bbox: Optional[BBox] = None,
+        datetime: Optional[DateTimeType] = None,
+        limit: Optional[int] = 10,
+        **kwargs,
+    ) -> stac.Collections:
+        """Cross catalog search (GET) of collections.
+
+        Called with `GET /collection-search`.
+
+        Returns:
+            A tuple of (collections, next pagination token if any).
+        """
+        ...
+
+
+@attr.s
+class CollectionSearchClient(abc.ABC):
+    """Defines a pattern for implementing the STAC Collection Search extension."""
+
+    @abc.abstractmethod
+    def post_collection_search(
+        self, search_request: BaseCollectionSearchPostRequest, **kwargs
+    ) -> stac.Collections:
+        """Cross catalog search (POST) of collections.
+
+        Called with `POST /collection-search`.
+
+        Args:
+            search_request: search request parameters.
+
+        Returns:
+            A tuple of (collections, next pagination token if any).
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_collection_search(
+        self,
+        bbox: Optional[BBox] = None,
+        datetime: Optional[DateTimeType] = None,
+        limit: Optional[int] = 10,
+        **kwargs,
+    ) -> stac.Collections:
+        """Cross catalog search (GET) of collections.
+
+        Called with `GET /collection-search`.
+
+        Returns:
+            A tuple of (collections, next pagination token if any).
+        """
+        ...

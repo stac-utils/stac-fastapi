@@ -68,3 +68,18 @@ class BaseSearchPostRequest(Search):
     """Base arguments for POST Request."""
 
     limit: Optional[Limit] = 10
+
+
+@attr.s
+class BaseCollectionSearchGetRequest(APIRequest):
+    """Base arguments for Collection Search GET Request."""
+
+    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
+    datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
+    limit: Optional[int] = attr.ib(default=10)
+    
+    
+class BaseCollectionSearchPostRequest(Search):
+    """Base arguments for Collection Search POST Request."""
+
+    limit: Optional[Limit] = 10
