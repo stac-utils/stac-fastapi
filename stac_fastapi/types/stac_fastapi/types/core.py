@@ -386,7 +386,6 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                     "type": "application/schema+json",
                     "title": "Queryables",
                     "href": urljoin(base_url, "queryables"),
-                    "method": "GET",
                 }
             )
 
