@@ -5,15 +5,27 @@ from typing import List, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
-from starlette.responses import Response, JSONResponse
 from stac_pydantic.api.collections import Collections
+from starlette.responses import Response
 
+from stac_fastapi.api.models import JSONSchemaResponse
 from stac_fastapi.api.routes import create_async_endpoint
-from stac_fastapi.types.core import AsyncCollectionSearchClient, CollectionSearchClient
+from stac_fastapi.types.config import ApiSettings
+from stac_fastapi.types.core import (
+    AsyncBaseCollectionSearchClient,
+    BaseCollectionSearchClient,
+)
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.search import BaseCollectionSearchGetRequest, BaseCollectionSearchPostRequest
+from stac_fastapi.types.search import (
+    BaseCollectionSearchGetRequest,
+    BaseCollectionSearchPostRequest,
+)
 
-from .request import CollectionSearchExtensionGetRequest, CollectionSearchExtensionPostRequest
+from .request import (
+    CollectionSearchExtensionGetRequest,
+    CollectionSearchExtensionPostRequest,
+)
+
 
 class CollectionSearchConformanceClasses(str, Enum):
     """Conformance classes for the Collection Search extension.
@@ -26,12 +38,13 @@ class CollectionSearchConformanceClasses(str, Enum):
     COLLECTION_SEARCH = "https://api.stacspec.org/v1.0.0-rc.1/collection-search"
     SIMPLE_QUERY = "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query"
 
+
 @attr.s
 class CollectionSearchExtension(ApiExtension):
     """CollectionSearch Extension.
 
-    The collection search extension adds two endpoints which allow searching of 
-    collections via GET and POST, to avoid conflict with /collections endpoints 
+    The collection search extension adds two endpoints which allow searching of
+    collections via GET and POST, to avoid conflict with /collections endpoints
     those used here are:
         GET /collection-search
         POST /collection-search
@@ -44,9 +57,14 @@ class CollectionSearchExtension(ApiExtension):
         client: Collection Search endpoint logic
         conformance_classes: Conformance classes provided by the extension
     """
-    
+
     GET = CollectionSearchExtensionGetRequest
     POST = CollectionSearchExtensionPostRequest
+
+    client: Union[AsyncBaseCollectionSearchClient, BaseCollectionSearchClient] = attr.ib(
+        factory=BaseCollectionSearchClient
+    )
+    settings: ApiSettings = attr.ib(default=ApiSettings())
 
     collection_search_get_request_model: Type[BaseCollectionSearchGetRequest] = attr.ib(
         default=BaseCollectionSearchGetRequest
@@ -54,11 +72,7 @@ class CollectionSearchExtension(ApiExtension):
     collection_search_post_request_model: Type[BaseCollectionSearchPostRequest] = attr.ib(
         default=BaseCollectionSearchPostRequest
     )
-    
-    client: Union[AsyncCollectionSearchClient, CollectionSearchClient] = attr.ib(
-        factory=CollectionSearchClient
-    )
-    
+
     conformance_classes: List[str] = attr.ib(
         default=[
             CollectionSearchConformanceClasses.CORE,
@@ -67,8 +81,7 @@ class CollectionSearchExtension(ApiExtension):
         ]
     )
     router: APIRouter = attr.ib(factory=APIRouter)
-    response_class: Type[Response] = attr.ib(default=JSONResponse)
-    
+    response_class: Type[Response] = attr.ib(default=JSONSchemaResponse)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -83,26 +96,28 @@ class CollectionSearchExtension(ApiExtension):
         self.router.add_api_route(
             name="Collection Search",
             path="/collection-search",
-            response_model=None,
+            response_model=Collections if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=create_async_endpoint(
-                self.client.get_collection_search, self.collection_search_get_request_model
+                self.client.get_collection_search,
+                self.collection_search_get_request_model,
             ),
         )
 
         self.router.add_api_route(
             name="Collection Search",
             path="/collection-search",
-            response_model=None,
+            response_model=Collections if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=create_async_endpoint(
-                self.client.post_collection_search, self.collection_search_post_request_model
+                self.client.post_collection_search,
+                self.collection_search_post_request_model,
             ),
         )
 
