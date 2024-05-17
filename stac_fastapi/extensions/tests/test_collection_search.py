@@ -1,12 +1,19 @@
 from typing import Iterator
 
 import pytest
+from stac_pydantic.api.collections import Collections
+from stac_pydantic.shared import BBox
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import CollectionSearchExtension
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseCollectionSearchClient, BaseCoreClient
+from stac_fastapi.types.rfc3339 import DateTimeType
+from stac_fastapi.types.search import (
+    BaseCollectionSearchGetRequest,
+    BaseCollectionSearchPostRequest,
+)
 from stac_fastapi.types.stac import Item, ItemCollection
 
 
@@ -31,13 +38,36 @@ class DummyCoreClient(BaseCoreClient):
 
 
 class DummyCollectionSearchClient(BaseCollectionSearchClient):
-    """Defines a pattern for implementing the STAC transaction extension."""
+    """Defines a pattern for implementing the STAC collection search extension."""
 
-    def get_collection_search(self, *args, **kwargs):
-        return NotImplementedError
+    def get_collection_search(
+        self,
+        request: BaseCollectionSearchGetRequest,
+        bbox: BBox,
+        datetime: DateTimeType,
+        limit: int,
+    ):
+        return Collections()
 
-    def post_collection_search(self, *args, **kwargs):
-        return NotImplementedError
+    def post_collection_search(
+        self, request: BaseCollectionSearchPostRequest, *args, **kwargs
+    ):
+        return Collections()
+
+
+def test_get_collection_search(client: TestClient) -> None:
+    get_search = client.get("/collection-search", params={"limit": 10})
+    assert get_search.status_code == 200, get_search.text
+    Collections(**get_search.json())
+
+
+def test_post_collection_search(client: TestClient) -> None:
+    post_search = client.post(
+        "/collection-search",
+        json={"limit": 10},
+    )
+    assert post_search.status_code == 200, post_search.text
+    Collections(**post_search.json())
 
 
 @pytest.fixture
