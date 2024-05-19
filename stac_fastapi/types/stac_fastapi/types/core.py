@@ -15,6 +15,7 @@ from stac_pydantic.shared import BBox, MimeTypes
 from starlette.responses import Response
 
 from stac_fastapi.types import stac
+from stac_fastapi.types.aggregation import Aggregation, AggregationCollection
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
@@ -823,95 +824,110 @@ class BaseFiltersClient(abc.ABC):
 
 @attr.s
 class BaseAggregationClient(abc.ABC):
-    """Defines a pattern for implementing the STAC aggregation extension."""
+    """Defines a pattern for implementing the STAC filter extension."""
 
     def get_aggregations(
         self, collection_id: Optional[str] = None, **kwargs
-    ) -> Dict[str, Any]:
-        """Get the aggregation available for the given collection_id.
-
-        If collection_id is None, returns the available aggregations over all
-        collections.
-        """
-        return {
-            "aggregations": [{"name": "total_count", "data_type": "integer"}],
-            "links": [
-                {
-                    "rel": "self",
-                    "type": "application/json",
-                    "href": "https://example.org/aggregations",
-                },
-                {
-                    "rel": "root",
-                    "type": "application/json",
-                    "href": "https://example.org",
-                },
-            ],
-        }
-
-    def aggregate(self, collection_id: Optional[str] = None, **kwargs) -> Dict[str, Any]:
-        """Return an AggregationCollection based on search params"""
-        return {
-            "aggregations": [],
-            "links": [
-                {
-                    "rel": "self",
-                    "type": "application/json",
-                    "href": "https://example.org/aggregate",
-                },
-                {
-                    "rel": "root",
-                    "type": "application/json",
-                    "href": "https://example.org",
-                },
-            ],
-        }
-
-
-@attr.s
-class AsyncBaseAggregationClient(abc.ABC):
-    """Defines a pattern for implementing the STAC aggregation extension."""
-
-    async def get_aggregations(
-        self, collection_id: Optional[str] = None, **kwargs
-    ) -> Dict[str, Any]:
+    ) -> AggregationCollection:
         """Get the aggregations available for the given collection_id.
 
         If collection_id is None, returns the available aggregations over all
         collections.
         """
-        return {
-            "aggregations": [{"name": "total_count", "data_type": "integer"}],
-            "links": [
+        return AggregationCollection(
+            type="AggregationCollection",
+            aggregations=[Aggregation(name="total_count", data_type="integer")],
+            links=[
+                {
+                    "rel": "root",
+                    "type": "application/json",
+                    "href": "https://example.org/",
+                },
                 {
                     "rel": "self",
                     "type": "application/json",
                     "href": "https://example.org/aggregations",
                 },
+            ],
+        )
+
+    def aggregate(
+        self, collection_id: Optional[str] = None, **kwargs
+    ) -> AggregationCollection:
+        """Return the aggregation buckets for a given search result"""
+        return AggregationCollection(
+            type="AggregationCollection",
+            aggregations=[],
+            links=[
                 {
                     "rel": "root",
                     "type": "application/json",
-                    "href": "https://example.org",
+                    "href": "https://example.org/",
                 },
-            ],
-        }
-
-    async def aggregate(
-        self, collection_id: Optional[str] = None, **kwargs
-    ) -> Dict[str, Any]:
-        """Return an AggregationCollection based on search params"""
-        return {
-            "aggregations": [],
-            "links": [
                 {
                     "rel": "self",
                     "type": "application/json",
-                    "href": "https://example.org/aggregate",
+                    "href": "https://example.org/aggregations",
                 },
+            ],
+        )
+
+
+@attr.s
+class AsyncBaseAggregationClient(abc.ABC):
+    """Defines an async pattern for implementing the STAC aggregation extension."""
+
+    async def get_aggregations(
+        self, collection_id: Optional[str] = None, **kwargs
+    ) -> AggregationCollection:
+        """Get the aggregations available for the given collection_id.
+
+        If collection_id is None, returns the available aggregations over all
+        collections.
+        """
+        return AggregationCollection(
+            type="AggregationCollection",
+            aggregations=[Aggregation(name="total_count", data_type="integer")],
+            links=[
                 {
                     "rel": "root",
                     "type": "application/json",
-                    "href": "https://example.org",
+                    "href": "https://example.org/",
+                },
+                {
+                    "rel": "self",
+                    "type": "application/json",
+                    "href": "https://example.org/aggregations",
                 },
             ],
-        }
+        )
+
+    async def aggregate(
+        self,
+        collection_id: Optional[str] = None,
+        aggregations: Optional[Union[str, List[str]]] = None,
+        collections: Optional[List[str]] = None,
+        ids: Optional[List[str]] = None,
+        bbox: Optional[BBox] = None,
+        intersects: Optional[Geometry] = None,
+        datetime: Optional[DateTimeType] = None,
+        limit: Optional[int] = 10,
+        **kwargs,
+    ) -> AggregationCollection:
+        """Return the aggregation buckets for a given search result"""
+        return AggregationCollection(
+            type="AggregationCollection",
+            aggregations=[],
+            links=[
+                {
+                    "rel": "root",
+                    "type": "application/json",
+                    "href": "https://example.org/",
+                },
+                {
+                    "rel": "self",
+                    "type": "application/json",
+                    "href": "https://example.org/aggregations",
+                },
+            ],
+        )
