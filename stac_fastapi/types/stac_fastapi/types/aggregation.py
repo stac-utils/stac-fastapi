@@ -40,6 +40,6 @@ class Aggregation(TypedDict, total=False):
 class AggregationCollection(TypedDict, total=False):
     """STAC Item Aggregation Collection."""
 
-    type: Literal["FeatureCollection"]
+    type: Literal["AggregationCollection"]
     aggregations: List[Aggregation]
     links: List[Dict[str, Any]]
