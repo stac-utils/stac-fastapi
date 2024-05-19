@@ -400,14 +400,6 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                         "type": "application/json",
                         "title": "Aggregate",
                         "href": urljoin(base_url, "aggregate"),
-                        "method": "GET",
-                    },
-                    {
-                        "rel": "aggregate",
-                        "type": "application/json",
-                        "title": "Aggregate",
-                        "href": urljoin(base_url, "aggregate"),
-                        "method": "POST",
                     },
                     {
                         "rel": "aggregations",
@@ -622,6 +614,25 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                     "href": urljoin(base_url, "queryables"),
                     "method": "GET",
                 }
+            )
+
+        # Add Aggregation links
+        if self.extension_is_enabled("AggregationExtension"):
+            landing_page["links"].extend(
+                [
+                    {
+                        "rel": "aggregate",
+                        "type": "application/json",
+                        "title": "Aggregate",
+                        "href": urljoin(base_url, "aggregate"),
+                    },
+                    {
+                        "rel": "aggregations",
+                        "type": "application/json",
+                        "title": "Aggregations",
+                        "href": urljoin(base_url, "aggregations"),
+                    },
+                ]
             )
 
         # Add Collections links

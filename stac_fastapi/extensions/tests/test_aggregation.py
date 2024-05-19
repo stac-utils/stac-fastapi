@@ -5,6 +5,7 @@ from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import AggregationExtension
+from stac_fastapi.types.aggregation import Aggregation, AggregationCollection
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseAggregationClient, BaseCoreClient
 
@@ -35,12 +36,19 @@ def test_get_aggregations(client: TestClient) -> None:
     assert response.json()["aggregations"] == [
         {"name": "total_count", "data_type": "integer"}
     ]
+    assert AggregationCollection(
+        type="AggregationCollection",
+        aggregations=[Aggregation(**response.json()["aggregations"][0])],
+    )
 
 
 def test_get_aggregate(client: TestClient) -> None:
     response = client.get("/aggregate")
     assert response.is_success, response.text
     assert response.json()["aggregations"] == []
+    assert AggregationCollection(
+        type="AggregationCollection", aggregations=response.json()["aggregations"]
+    )
 
 
 def test_post_aggregations(client: TestClient) -> None:
@@ -49,12 +57,19 @@ def test_post_aggregations(client: TestClient) -> None:
     assert response.json()["aggregations"] == [
         {"name": "total_count", "data_type": "integer"}
     ]
+    assert AggregationCollection(
+        type="AggregationCollection",
+        aggregations=[Aggregation(**response.json()["aggregations"][0])],
+    )
 
 
 def test_post_aggregate(client: TestClient) -> None:
-    response = client.post("/aggregate")
+    response = client.post("/aggregate", content="{}")
     assert response.is_success, response.text
     assert response.json()["aggregations"] == []
+    assert AggregationCollection(
+        type="AggregationCollection", aggregations=response.json()["aggregations"]
+    )
 
 
 @pytest.fixture

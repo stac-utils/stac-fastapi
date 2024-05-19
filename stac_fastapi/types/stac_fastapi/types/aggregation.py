@@ -2,7 +2,9 @@
 
 import sys
 from typing import Any, Dict, List, Literal, Optional, Union
+
 from pydantic import Field
+
 from stac_fastapi.types.rfc3339 import DateTimeType
 
 # Avoids a Pydantic error:
@@ -23,6 +25,7 @@ class Bucket(TypedDict, total=False):
     frequency: Optional[Dict] = None
     _from: Optional[Union[int, float]] = Field(alias="filter-crs", default=None)
     to: Optional[Optional[Union[int, float]]] = None
+
 
 class Aggregation(TypedDict, total=False):
     """A STAC aggregation."""
