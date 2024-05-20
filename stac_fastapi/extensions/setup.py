@@ -1,6 +1,5 @@
 """stac_fastapi: extensions module."""
 
-
 from setuptools import find_namespace_packages, setup
 
 with open("README.md") as f:

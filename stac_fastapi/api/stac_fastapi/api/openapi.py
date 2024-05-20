@@ -81,6 +81,14 @@ def config_openapi(app: FastAPI, settings: ApiSettings):
                 "application/json"
             ]["schema"] = {"$ref": "#/components/schemas/ItemCollection"}
 
+        if settings.api_extension_is_enabled(ApiExtensions.collection_search):
+            openapi_schema["paths"]["/collections"]["get"]["responses"]["200"]["content"][
+                "application/json"
+            ]["schema"] = {"$ref": "#/components/schemas/Collections"}
+            openapi_schema["paths"]["/collections"]["post"]["responses"]["200"][
+                "content"
+            ]["application/json"]["schema"] = {"$ref": "#/components/schemas/Collections"}
+
         app.openapi_schema = openapi_schema
         return app.openapi_schema
 

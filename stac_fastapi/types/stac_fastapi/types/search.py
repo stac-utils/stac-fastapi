@@ -6,7 +6,7 @@ import abc
 from typing import Dict, List, Optional, Union
 
 import attr
-from pydantic import PositiveInt
+from pydantic import BaseModel, PositiveInt
 from pydantic.functional_validators import AfterValidator
 from stac_pydantic.api import Search
 from stac_pydantic.shared import BBox
@@ -67,4 +67,25 @@ class BaseSearchGetRequest(APIRequest):
 class BaseSearchPostRequest(Search):
     """Base arguments for POST Request."""
 
+    limit: Optional[Limit] = 10
+
+
+@attr.s
+class BaseCollectionSearchGetRequest(APIRequest):
+    """Base arguments for Collection Search GET Request."""
+
+    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
+    datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
+    limit: Optional[int] = attr.ib(default=10)
+
+
+class BaseCollectionSearchPostRequest(BaseModel):
+    """Search model.
+
+    Replace base model in STAC-pydantic as it includes additional fields, not in the core
+    model.
+    """
+
+    bbox: Optional[BBox]
+    datetime: Optional[DateTimeType]
     limit: Optional[Limit] = 10

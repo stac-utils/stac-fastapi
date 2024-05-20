@@ -80,6 +80,31 @@ def create_post_request_model(
     )
 
 
+def create_get_collections_request_model(
+    extensions, base_model: BaseSearchGetRequest = BaseSearchGetRequest
+):
+    """Wrap create_request_model to create the GET request model."""
+    return create_request_model(
+        "CollectionsGetRequest",
+        base_model=base_model,
+        extensions=extensions,
+        request_type="GET",
+    )
+
+
+def create_post_collections_request_model(
+    extensions, base_model: BaseSearchPostRequest = BaseSearchPostRequest
+):
+    """Wrap create_request_model to create the POST request model."""
+
+    return create_request_model(
+        "CollectionsPostRequest",
+        base_model=base_model,
+        extensions=extensions,
+        request_type="POST",
+    )
+
+
 @attr.s  # type:ignore
 class CollectionUri(APIRequest):
     """Get or delete collection."""
