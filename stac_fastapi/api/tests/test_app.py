@@ -14,7 +14,7 @@ from stac_fastapi.api.models import (
     create_post_collections_request_model,
     create_post_request_model,
 )
-from stac_fastapi.extensions.core.collectionSearch.collectionSearch import (
+from stac_fastapi.extensions.core.collection_search.collection_search import (
     CollectionSearchExtension,
 )
 from stac_fastapi.extensions.core.filter.filter import FilterExtension
