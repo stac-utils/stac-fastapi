@@ -91,6 +91,7 @@ class CollectionSearchExtension(ApiExtension):
         Returns:
             None
         """
+        self.router.prefix = app.state.router_prefix
         self.router.add_api_route(
             name="Post Collections",
             path="/collections",
@@ -105,3 +106,4 @@ class CollectionSearchExtension(ApiExtension):
                 self.client.post_all_collections, self.collections_post_request_model
             ),
         )
+        app.include_router(self.router)

@@ -1,6 +1,5 @@
 """Fastapi app creation."""
 
-
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import attr
@@ -319,32 +318,6 @@ class StacApi:
             ),
         )
 
-    # def register_post_collections(self):
-    #     """Register get collections endpoint (GET /collections).
-
-    #     Returns:
-    #         None
-    #     """
-    #     collection_search_ext = self.get_extension(CollectionSearchExtension)
-    #     print("POST")
-    #     print(self.collections_post_request_model)
-    #     if not collection_search_ext:
-    #         return
-    #     self.router.add_api_route(
-    #         name="Post Collections",
-    #         path="/collections",
-    #         response_model=(
-    #             (Collections if not collection_search_ext else None)
-    #             if self.settings.enable_response_models
-    #             else None
-    #         ),
-    #         response_class=self.response_class,
-    #         response_model_exclude_unset=True,
-    #         response_model_exclude_none=True,
-    #         methods=["POST"],
-    #         endpoint=create_async_endpoint(self.client.post_all_collections, self.collections_post_request_model),
-    #     )
-
     def register_get_collection(self):
         """Register get collection endpoint (GET /collection/{collection_id}).
 
@@ -354,9 +327,9 @@ class StacApi:
         self.router.add_api_route(
             name="Get Collection",
             path="/collections/{collection_id}",
-            response_model=api.Collection
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                api.Collection if self.settings.enable_response_models else None
+            ),
             responses={
                 200: {
                     "content": {

@@ -251,5 +251,4 @@ def test_collection_search_extension(TestCoreClient, collection_dict):
         )
 
     assert get_collections.status_code == 200, get_collections.text
-    print(get_collections.json())
     api.collections.Collections(**get_collections.json())
