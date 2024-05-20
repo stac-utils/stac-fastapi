@@ -405,7 +405,6 @@ class StacApi:
         self.register_post_search()
         self.register_get_search()
         self.register_get_collections()
-        # self.register_post_collections()
         self.register_get_collection()
         self.register_get_item_collection()
 
