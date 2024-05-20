@@ -8,6 +8,7 @@ from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.params import Depends
+from pydantic import BaseModel
 from stac_pydantic import api
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.api.version import STAC_API_VERSION
@@ -29,11 +30,20 @@ from stac_fastapi.api.openapi import update_openapi
 from stac_fastapi.api.routes import Scope, add_route_dependencies, create_async_endpoint
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
-from stac_fastapi.extensions.core import FieldsExtension, TokenPaginationExtension
+from stac_fastapi.extensions.core import (
+    CollectionSearchExtension,
+    FieldsExtension,
+    TokenPaginationExtension,
+)
 from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
+from stac_fastapi.types.search import (
+    BaseCollectionSearchGetRequest,
+    BaseCollectionSearchPostRequest,
+    BaseSearchGetRequest,
+    BaseSearchPostRequest,
+)
 
 
 @attr.s
@@ -120,6 +130,13 @@ class StacApi:
         )
     )
     route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
+
+    collections_get_request_model: Type[BaseCollectionSearchGetRequest] = attr.ib(
+        default=EmptyRequest
+    )
+    collections_post_request_model: Type[BaseCollectionSearchPostRequest] = attr.ib(
+        default=BaseModel
+    )
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -284,26 +301,49 @@ class StacApi:
         Returns:
             None
         """
+        collection_search_ext = self.get_extension(CollectionSearchExtension)
         self.router.add_api_route(
             name="Get Collections",
             path="/collections",
             response_model=(
-                Collections if self.settings.enable_response_models else None
+                (Collections if not collection_search_ext else None)
+                if self.settings.enable_response_models
+                else None
             ),
-            responses={
-                200: {
-                    "content": {
-                        MimeTypes.json.value: {},
-                    },
-                    "model": Collections,
-                },
-            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(self.client.all_collections, EmptyRequest),
+            endpoint=create_async_endpoint(
+                self.client.all_collections, self.collections_get_request_model
+            ),
         )
+
+    # def register_post_collections(self):
+    #     """Register get collections endpoint (GET /collections).
+
+    #     Returns:
+    #         None
+    #     """
+    #     collection_search_ext = self.get_extension(CollectionSearchExtension)
+    #     print("POST")
+    #     print(self.collections_post_request_model)
+    #     if not collection_search_ext:
+    #         return
+    #     self.router.add_api_route(
+    #         name="Post Collections",
+    #         path="/collections",
+    #         response_model=(
+    #             (Collections if not collection_search_ext else None)
+    #             if self.settings.enable_response_models
+    #             else None
+    #         ),
+    #         response_class=self.response_class,
+    #         response_model_exclude_unset=True,
+    #         response_model_exclude_none=True,
+    #         methods=["POST"],
+    #         endpoint=create_async_endpoint(self.client.post_all_collections, self.collections_post_request_model),
+    #     )
 
     def register_get_collection(self):
         """Register get collection endpoint (GET /collection/{collection_id}).
@@ -392,6 +432,7 @@ class StacApi:
         self.register_post_search()
         self.register_get_search()
         self.register_get_collections()
+        # self.register_post_collections()
         self.register_get_collection()
         self.register_get_item_collection()
 

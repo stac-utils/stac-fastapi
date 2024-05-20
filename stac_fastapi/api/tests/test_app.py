@@ -1,18 +1,30 @@
-from datetime import datetime
+from datetime import datetime as datetimetype
 from typing import List, Optional, Union
 
 import pytest
 from fastapi.testclient import TestClient
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from stac_pydantic import api
 
 from stac_fastapi.api import app
-from stac_fastapi.api.models import create_get_request_model, create_post_request_model
+from stac_fastapi.api.models import (
+    EmptyRequest,
+    create_get_collections_request_model,
+    create_get_request_model,
+    create_post_collections_request_model,
+    create_post_request_model,
+)
+from stac_fastapi.extensions.core.collectionSearch.collectionSearch import (
+    CollectionSearchExtension,
+)
 from stac_fastapi.extensions.core.filter.filter import FilterExtension
 from stac_fastapi.types import stac
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import NumType
-from stac_fastapi.types.search import BaseSearchPostRequest
+from stac_fastapi.types.rfc3339 import str_to_interval
+from stac_fastapi.types.search import (
+    BaseSearchPostRequest,
+)
 
 
 def test_client_response_type(TestCoreClient):
@@ -132,7 +144,7 @@ def test_filter_extension(TestCoreClient, item_dict):
             ids: Optional[List[str]] = None,
             bbox: Optional[List[NumType]] = None,
             intersects: Optional[str] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[Union[str, datetimetype]] = None,
             limit: Optional[int] = 10,
             filter: Optional[str] = None,
             filter_crs: Optional[str] = None,
@@ -186,3 +198,58 @@ def test_filter_extension(TestCoreClient, item_dict):
 
     assert get_search.status_code == 200, get_search.text
     assert post_search.status_code == 200, post_search.text
+
+
+def test_collection_search_extension(TestCoreClient, collection_dict):
+    """Test if Collection Search Parameters are passed correctly."""
+
+    class CollectionSearchClient(TestCoreClient):
+        def all_collections(
+            self,
+            bbox: Optional[List[NumType]] = None,
+            datetime: Optional[Union[str, datetimetype]] = None,
+            limit: Optional[int] = 10,
+            **kwargs,
+        ) -> stac.Collections:
+            # Check if all collection search parameters are passed correctly
+
+            assert bbox == (-180, -90, 180, 90)
+            assert datetime == str_to_interval("2024-01-01T00:00:00Z")
+            assert limit == 10
+
+            return stac.Collections(
+                collections=[stac.Collection(**collection_dict)],
+                links=[
+                    {"href": "test", "rel": "root"},
+                    {"href": "test", "rel": "self"},
+                    {"href": "test", "rel": "parent"},
+                ],
+            )
+
+    collections_post_request_model = create_post_collections_request_model(
+        [CollectionSearchExtension()], BaseModel
+    )
+    collections_get_request_model = create_get_collections_request_model(
+        [CollectionSearchExtension()], EmptyRequest
+    )
+
+    test_app = app.StacApi(
+        settings=ApiSettings(),
+        client=CollectionSearchClient(),
+        collections_get_request_model=collections_get_request_model,
+        collections_post_request_model=collections_post_request_model,
+    )
+
+    with TestClient(test_app.app) as client:
+        get_collections = client.get(
+            "/collections",
+            params={
+                "bbox": "-180,-90,180,90",
+                "datetime": "2024-01-01T00:00:00Z",
+                "limit": 10,
+            },
+        )
+
+    assert get_collections.status_code == 200, get_collections.text
+    print(get_collections.json())
+    api.collections.Collections(**get_collections.json())
