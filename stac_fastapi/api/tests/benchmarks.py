@@ -26,7 +26,7 @@ collections = [
             "spatial": {"bbox": [[-180, -90, 180, 90]]},
             "temporal": {"interval": [["2000-01-01T00:00:00Z", None]]},
         },
-        links=collection_links.dict(exclude_none=True),
+        links=collection_links.model_dump(exclude_none=True),
     )
     for n in range(0, 10)
 ]
@@ -38,7 +38,7 @@ items = [
         geometry={"type": "Point", "coordinates": [0, 0]},
         bbox=[-180, -90, 180, 90],
         properties={"datetime": "2000-01-01T00:00:00Z"},
-        links=item_links.dict(exclude_none=True),
+        links=item_links.model_dump(exclude_none=True),
         assets={},
     )
     for n in range(0, 1000)
