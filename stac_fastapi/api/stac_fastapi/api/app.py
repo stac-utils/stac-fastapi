@@ -172,14 +172,14 @@ class StacApi:
             name="Conformance Classes",
             path="/conformance",
             response_model=(
-                api.ConformanceClasses if self.settings.enable_response_models else None
+                api.Conformance if self.settings.enable_response_models else None
             ),
             responses={
                 200: {
                     "content": {
                         MimeTypes.json.value: {},
                     },
-                    "model": api.ConformanceClasses,
+                    "model": api.Conformance,
                 },
             },
             response_class=self.response_class,
