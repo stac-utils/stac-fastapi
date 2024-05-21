@@ -67,7 +67,7 @@ class CollectionLinks(BaseLinks):
     def parent(self) -> Dict[str, Any]:
         """Create the `parent` link."""
         return dict(
-            rel=Relations.root,
+            rel=Relations.parent,
             type=MimeTypes.json,
             href=urljoin(self.base_url, f"catalogs/{self.catalog_id}"),
         )
