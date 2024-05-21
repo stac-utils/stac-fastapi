@@ -17,6 +17,7 @@ item_links = link_factory.ItemLinks("/", "test", "test").create_links()
 collections = [
     stac_types.Collection(
         id=f"test_collection_{n}",
+        type="Collection",
         title="Test Collection",
         description="A test collection",
         keywords=["test"],
