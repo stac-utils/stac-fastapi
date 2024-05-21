@@ -9,7 +9,7 @@ install_requires = [
     "fastapi-slim",
     "attrs>=23.2.0",
     "pydantic-settings>=2",
-    "stac_pydantic>=3",
+    "stac_pydantic~=3.1",
     "iso8601>=1.0.2,<2.2.0",
 ]
 
