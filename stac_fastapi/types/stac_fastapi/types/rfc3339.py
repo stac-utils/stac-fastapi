@@ -123,6 +123,9 @@ def str_to_interval(interval: Optional[str]) -> Optional[DateTimeType]:
             detail="Interval string contains more than one forward slash.",
         )
 
+    if len(values) == 1:
+        values = [values[0], values[0]]
+
     try:
         start = parse_single_date(values[0]) if values[0] not in ["..", ""] else None
         if len(values) == 1:
