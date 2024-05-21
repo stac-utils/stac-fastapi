@@ -177,7 +177,7 @@ class StacApi:
         """
         self.router.add_api_route(
             name="Get Item",
-            path="/catalogs/{catalog_id}collections/{collection_id}/items/{item_id}",
+            path="/catalogs/{catalog_id}/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
