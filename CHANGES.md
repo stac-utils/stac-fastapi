@@ -7,11 +7,14 @@
 * Switch from `fastapi` to `fastapi-slim` to avoid installing unwanted dependencies. ([#687](https://github.com/stac-utils/stac-fastapi/pull/687))
 * Replace Enum with `Literal` for `FilterLang`. ([#686](https://github.com/stac-utils/stac-fastapi/pull/686))
 * Update stac-pydantic requirement to `~3.1` ([#697](https://github.com/stac-utils/stac-fastapi/pull/697))
-* Fix datetime interval for GET Search when passing a single value ([#697](https://github.com/stac-utils/stac-fastapi/pull/697))
 
 ### Removed
 
 * Pystac as it was just used for a datetime to string function. ([#690](https://github.com/stac-utils/stac-fastapi/pull/690))
+
+### Fixed
+
+* Make `str_to_interval` not return a tuple for single-value input (fixing `datetime` argument as passed to `get_search`). ([#692](https://github.com/stac-utils/stac-fastapi/pull/692))
 
 ## [3.0.0a0] - 2024-05-06
 

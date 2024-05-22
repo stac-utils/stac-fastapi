@@ -94,16 +94,17 @@ def parse_single_date(date_str: str) -> datetime:
 
 def str_to_interval(interval: Optional[str]) -> Optional[DateTimeType]:
     """
-    Extract a tuple of datetime objects from an interval string defined by the OGC API.
-    The interval can either be a single datetime or a range with start and end datetime.
+    Extract a single datetime object or a tuple of datetime objects from an
+    interval string defined by the OGC API. The interval can either be a
+    single datetime or a range with start and end datetime.
 
     Args:
         interval (Optional[str]): The interval string to convert to datetime objects,
         or None if no datetime is specified.
 
     Returns:
-        Optional[DateTimeType]: A tuple of datetime.datetime objects or
-        None if input is None.
+        Optional[DateTimeType]: A single datetime.datetime object, a tuple of
+        datetime.datetime objects, or None if input is None.
 
     Raises:
         HTTPException: If the string is not valid for various reasons such as being empty,
@@ -122,11 +123,11 @@ def str_to_interval(interval: Optional[str]) -> Optional[DateTimeType]:
             detail="Interval string contains more than one forward slash.",
         )
 
-    if len(values) == 1:
-        values = [values[0], values[0]]
-
     try:
         start = parse_single_date(values[0]) if values[0] not in ["..", ""] else None
+        if len(values) == 1:
+            return start
+
         end = (
             parse_single_date(values[1])
             if len(values) > 1 and values[1] not in ["..", ""]
