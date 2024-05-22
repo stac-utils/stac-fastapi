@@ -2,6 +2,8 @@
 
 ## [Unreleased] - TBD
 
+## [3.0.0a1] - 2024-05-22
+
 ### Changed
 
 * Switch from `fastapi` to `fastapi-slim` to avoid installing unwanted dependencies. ([#687](https://github.com/stac-utils/stac-fastapi/pull/687))
@@ -377,7 +379,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a1..main>
+[3.0.0a1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a0..3.0.0a1>
 [3.0.0a0]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5.post1..3.0.0a0>
 [2.5.5.post1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5..2.5.5.post1>
 [2.5.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.4..2.5.5>
