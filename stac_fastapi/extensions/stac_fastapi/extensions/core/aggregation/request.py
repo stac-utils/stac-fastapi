@@ -1,6 +1,6 @@
 """Request model for the Aggregation extension."""
 
-from typing import Optional
+from typing import Optional, Union, List
 
 import attr
 
@@ -21,4 +21,4 @@ class AggregationExtensionGetRequest(BaseSearchGetRequest, FilterExtensionGetReq
 class AggregationExtensionPostRequest(BaseSearchPostRequest, FilterExtensionPostRequest):
     """Aggregation Extension POST request model."""
 
-    aggregations: Optional[str] = attr.ib(default=None)
+    aggregations: Optional[Union[str, List[str]]] = attr.ib(default=None)
