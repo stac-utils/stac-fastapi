@@ -42,7 +42,11 @@ class BaseLinks:
 
     def root(self) -> Dict[str, Any]:
         """Return the catalog root."""
-        return dict(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
+        return dict(
+            rel=Relations.root,
+            type=MimeTypes.json,
+            href=urljoin(self.base_url, f"catalogs/{self.catalog_id}"),
+        )
 
 
 @attr.s
@@ -62,7 +66,11 @@ class CollectionLinks(BaseLinks):
 
     def parent(self) -> Dict[str, Any]:
         """Create the `parent` link."""
-        return dict(rel=Relations.parent, type=MimeTypes.json, href=self.base_url)
+        return dict(
+            rel=Relations.parent,
+            type=MimeTypes.json,
+            href=urljoin(self.base_url, f"catalogs/{self.catalog_id}"),
+        )
 
     def items(self) -> Dict[str, Any]:
         """Create the `items` link."""
@@ -83,7 +91,7 @@ class CollectionLinks(BaseLinks):
             self.parent(),
             self.items(),
             self.root(),
-        ]  # get rid of root here to remove generated value
+        ]
 
 
 @attr.s
