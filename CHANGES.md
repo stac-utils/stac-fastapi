@@ -2,6 +2,12 @@
 
 ## [Unreleased] - TBD
 
+## [3.0.0a2] - 2024-05-31
+
+### Fixed
+
+* Fix missing default (`None`) for optional `query` attribute in `QueryExtensionPostRequest` model ([#701](https://github.com/stac-utils/stac-fastapi/pull/701))
+
 ## [3.0.0a1] - 2024-05-22
 
 ### Changed
