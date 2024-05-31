@@ -18,4 +18,4 @@ class QueryExtensionGetRequest(APIRequest):
 class QueryExtensionPostRequest(BaseModel):
     """Query Extension POST request model."""
 
-    query: Optional[Dict[str, Dict[str, Any]]]
+    query: Optional[Dict[str, Dict[str, Any]]] = None
