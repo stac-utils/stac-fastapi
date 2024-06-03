@@ -2,18 +2,27 @@
 
 ## [Unreleased] - TBD
 
-### Added
+## [3.0.0a2] - 2024-05-31
 
-* Add base support for the Aggregation extension [#684](https://github.com/stac-utils/stac-fastapi/pull/684)
+### Fixed
+
+* Fix missing default (`None`) for optional `query` attribute in `QueryExtensionPostRequest` model ([#701](https://github.com/stac-utils/stac-fastapi/pull/701))
+
+## [3.0.0a1] - 2024-05-22
 
 ### Changed
 
-* switch from `fastapi` to `fastapi-slim` to avoid installing unwanted dependencies. ([#687](https://github.com/stac-utils/stac-fastapi/pull/687))
-* replace Enum with `Literal` for `FilterLang`. ([#686](https://github.com/stac-utils/stac-fastapi/pull/686))
+* Switch from `fastapi` to `fastapi-slim` to avoid installing unwanted dependencies. ([#687](https://github.com/stac-utils/stac-fastapi/pull/687))
+* Replace Enum with `Literal` for `FilterLang`. ([#686](https://github.com/stac-utils/stac-fastapi/pull/686))
+* Update stac-pydantic requirement to `~3.1` ([#697](https://github.com/stac-utils/stac-fastapi/pull/697))
 
 ### Removed
 
 * Pystac as it was just used for a datetime to string function. ([#690](https://github.com/stac-utils/stac-fastapi/pull/690))
+
+### Fixed
+
+* Make `str_to_interval` not return a tuple for single-value input (fixing `datetime` argument as passed to `get_search`). ([#692](https://github.com/stac-utils/stac-fastapi/pull/692))
 
 ## [3.0.0a0] - 2024-05-06
 
@@ -376,7 +385,9 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a2..main>
+[3.0.0a2]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a1..3.0.0a2>
+[3.0.0a1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a0..3.0.0a1>
 [3.0.0a0]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5.post1..3.0.0a0>
 [2.5.5.post1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5..2.5.5.post1>
 [2.5.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.4..2.5.5>

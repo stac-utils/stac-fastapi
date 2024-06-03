@@ -16,6 +16,7 @@ item_links = link_factory.ItemLinks("/", "test", "test").create_links()
 @pytest.fixture
 def _collection():
     return Collection(
+        type="Collection",
         id="test_collection",
         title="Test Collection",
         description="A test collection",
