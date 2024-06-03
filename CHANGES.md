@@ -2,6 +2,10 @@
 
 ## [Unreleased] - TBD
 
+### Added
+
+* Add base support for the Aggregation extension [#684](https://github.com/stac-utils/stac-fastapi/pull/684)
+
 ## [3.0.0a2] - 2024-05-31
 
 ### Fixed

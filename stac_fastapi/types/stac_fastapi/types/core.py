@@ -830,7 +830,7 @@ class BaseFiltersClient(abc.ABC):
 
 @attr.s
 class BaseAggregationClient(abc.ABC):
-    """Defines a pattern for implementing the STAC filter extension."""
+    """Defines a pattern for implementing the STAC aggregation extension."""
 
     def get_aggregations(
         self, collection_id: Optional[str] = None, **kwargs
