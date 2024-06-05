@@ -8,7 +8,7 @@ from starlette.testclient import TestClient
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import ApiSettings
-from stac_fastapi.types.core import BaseCoreClient, BaseSearchPostRequest, NumType
+from stac_fastapi.types.core import BaseCoreClient, BaseSearchPostRequest, NumType, BaseCatalogSearchPostRequest
 
 collection_links = link_factory.CollectionLinks("/", "test").create_links()
 item_links = link_factory.ItemLinks("/", "test", "test").create_links()
@@ -46,13 +46,32 @@ items = [
 
 
 class CoreClient(BaseCoreClient):
+    def post_global_search(
+        self, catalog_id: str, search_request: BaseSearchPostRequest, **kwargs
+    ) -> stac_types.ItemCollection:
+        raise NotImplementedError
+
+    def get_global_search(
+        self,
+        catalogs: Optional[List[str]] = None,
+        collections: Optional[List[str]] = None,
+        ids: Optional[List[str]] = None,
+        bbox: Optional[List[NumType]] = None,
+        intersects: Optional[str] = None,
+        datetime: Optional[Union[str, datetime]] = None,
+        limit: Optional[int] = 10,
+        **kwargs,
+    ) -> stac_types.ItemCollection:
+        raise NotImplementedError
+    
     def post_search(
-        self, search_request: BaseSearchPostRequest, **kwargs
+        self, catalog_id: str, search_request: BaseCatalogSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         raise NotImplementedError
 
     def get_search(
         self,
+        catalogs: Optional[List[str]] = None,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[List[NumType]] = None,

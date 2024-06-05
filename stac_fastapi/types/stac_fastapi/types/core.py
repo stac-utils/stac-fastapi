@@ -21,6 +21,7 @@ from stac_fastapi.types.search import (
     BaseCollectionSearchPostRequest,
     BaseDiscoverySearchPostRequest,
     BaseSearchPostRequest,
+    BaseCatalogSearchPostRequest
 )
 from stac_fastapi.types.stac import Conformance
 
@@ -469,7 +470,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         return Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
-    def post_search(
+    def post_global_search(
         self, search_request: BaseSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         """Cross catalog search (POST).
@@ -485,8 +486,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_search(
+    def get_global_search(
         self,
+        catalogs: Optional[List[str]] = None,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[BBox] = None,
@@ -502,6 +504,47 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         """Cross catalog search (GET).
 
         Called with `GET /search`.
+
+        Returns:
+            ItemCollection containing items which match the search criteria.
+        """
+        ...
+
+    @abc.abstractmethod
+    def post_search(
+        self, catalog_id: str, search_request: BaseCatalogSearchPostRequest, **kwargs
+    ) -> stac_types.ItemCollection:
+        """Single catalog item search (POST).
+
+        Called with `POST /catalogs/{catalog_id}/search`.
+
+        Args:
+            search_request: search request parameters.
+
+        Returns:
+            ItemCollection containing items which match the search criteria.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_search(
+        self,
+        catalog_id: str,
+        collections: Optional[List[str]] = None,
+        ids: Optional[List[str]] = None,
+        bbox: Optional[BBox] = None,
+        datetime: Optional[DateTimeType] = None,
+        limit: Optional[int] = 10,
+        query: Optional[str] = None,
+        token: Optional[str] = None,
+        fields: Optional[List[str]] = None,
+        sortby: Optional[str] = None,
+        intersects: Optional[str] = None,
+        **kwargs,
+    ) -> stac_types.ItemCollection:
+        """Single catalog item search (GET).
+
+        Called with `GET /catalogs/{catalog_id}/search`.
 
         Returns:
             ItemCollection containing items which match the search criteria.
@@ -734,7 +777,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         return Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
-    async def post_search(
+    async def post_global_search(
         self, search_request: BaseSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         """Cross catalog search (POST).
@@ -750,8 +793,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_search(
+    async def get_global_search(
         self,
+        catalogs: Optional[List[str]] = None,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[BBox] = None,
@@ -767,6 +811,47 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         """Cross catalog search (GET).
 
         Called with `GET /search`.
+
+        Returns:
+            ItemCollection containing items which match the search criteria.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_search(
+        self,
+        catalog_id: str,
+        collections: Optional[List[str]] = None,
+        ids: Optional[List[str]] = None,
+        bbox: Optional[BBox] = None,
+        datetime: Optional[DateTimeType] = None,
+        limit: Optional[int] = 10,
+        query: Optional[str] = None,
+        token: Optional[str] = None,
+        fields: Optional[List[str]] = None,
+        sortby: Optional[str] = None,
+        intersects: Optional[str] = None,
+        **kwargs,
+    ) -> stac_types.ItemCollection:
+        """Single catalog item search (GET).
+
+        Called with `GET /catalogs/{catalog_id}/search`.
+
+        Returns:
+            ItemCollection containing items which match the search criteria.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def post_search(
+        self, catalog_id: str, search_request: BaseCatalogSearchPostRequest, **kwargs
+    ) -> stac_types.ItemCollection:
+        """Single catalog item search (POST).
+
+        Called with `POST /catalogs/{catalog_id}/search`.
+
+        Args:
+            search_request: search request parameters.
 
         Returns:
             ItemCollection containing items which match the search criteria.
@@ -920,84 +1005,33 @@ class BaseFiltersClient(abc.ABC):
 
 
 @attr.s
-class AsyncCollectionSearchClient(abc.ABC):
+class AsyncBaseCollectionSearchClient(abc.ABC):
     """Defines a pattern for implementing the STAC Collection Search extension."""
 
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-
-    @abc.abstractmethod
-    async def post_collection_search(
+    async def post_all_collections(
         self, search_request: BaseCollectionSearchPostRequest, **kwargs
-    ) -> stac_types.ItemCollection:
-        """Cross catalog search (POST) of collections.
-
-        Called with `POST /collection-search`.
-
-        Args:
-            search_request: search request parameters.
-
-        Returns:
-            A tuple of (collections, next pagination token if any).
-        """
-        ...
-
-    @abc.abstractmethod
-    async def get_collection_search(
-        self,
-        bbox: Optional[BBox] = None,
-        datetime: Optional[DateTimeType] = None,
-        limit: Optional[int] = 10,
-        q: Optional[str] = None,
-        **kwargs,
     ) -> stac_types.Collections:
-        """Cross catalog search (GET) of collections.
-
-        Called with `GET /collection-search`.
-
+        """Get all available collections.
+        Called with `GET /collections`.
         Returns:
-            A tuple of (collections, next pagination token if any).
+            A list of collections.
         """
-        ...
+        return stac_types.Collections(collections=[])
 
 
 @attr.s
-class CollectionSearchClient(abc.ABC):
+class BaseCollectionSearchClient(abc.ABC):
     """Defines a pattern for implementing the STAC Collection Search extension."""
 
-    @abc.abstractmethod
-    def post_collection_search(
+    async def post_all_collections(
         self, search_request: BaseCollectionSearchPostRequest, **kwargs
     ) -> stac_types.Collections:
-        """Cross catalog search (POST) of collections.
-
-        Called with `POST /collection-search`.
-
-        Args:
-            search_request: search request parameters.
-
+        """Get all available collections.
+        Called with `GET /collections`.
         Returns:
-            A tuple of (collections, next pagination token if any).
+            A list of collections.
         """
-        ...
-
-    @abc.abstractmethod
-    def get_collection_search(
-        self,
-        bbox: Optional[BBox] = None,
-        datetime: Optional[DateTimeType] = None,
-        limit: Optional[int] = 10,
-        q: Optional[str] = None,
-        **kwargs,
-    ) -> stac_types.Collections:
-        """Cross catalog search (GET) of collections.
-
-        Called with `GET /collection-search`.
-
-        Returns:
-            A tuple of (collections, next pagination token if any).
-        """
-        ...
-
+        return stac_types.Collections(collections=[])
 
 @attr.s
 class AsyncDiscoverySearchClient(abc.ABC):
@@ -1008,7 +1042,7 @@ class AsyncDiscoverySearchClient(abc.ABC):
     @abc.abstractmethod
     async def post_discovery_search(
         self, search_request: BaseDiscoverySearchPostRequest, **kwargs
-    ) -> stac_types.ItemCollection:
+    ) -> stac_types.Collections:
         """Cross catalog search (POST) of collections.
 
         Called with `POST /collection-search`.

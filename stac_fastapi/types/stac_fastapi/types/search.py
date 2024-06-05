@@ -8,7 +8,9 @@ import operator
 from datetime import datetime
 from enum import auto
 from types import DynamicClassAttribute
+from fastapi import Path
 from typing import Any, Callable, Dict, Generator, List, Optional, Union
+from stac_pydantic.api import Search
 
 import attr
 from geojson_pydantic.geometries import (
@@ -105,8 +107,8 @@ class APIRequest(abc.ABC):
 class BaseSearchGetRequest(APIRequest):
     """Base arguments for GET Request."""
 
-    collections: Optional[str] = attr.ib(default=None, converter=str2list)
     catalogs: Optional[str] = attr.ib(default=None, converter=str2list)
+    collections: Optional[str] = attr.ib(default=None, converter=str2list)
     ids: Optional[str] = attr.ib(default=None, converter=str2list)
     bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
     intersects: Optional[str] = attr.ib(default=None, converter=str2list)
@@ -114,7 +116,20 @@ class BaseSearchGetRequest(APIRequest):
     limit: Optional[int] = attr.ib(default=10)
 
 
-class BaseSearchPostRequest(BaseModel):
+@attr.s
+class BaseCatalogSearchGetRequest(APIRequest):
+    """Base arguments for GET Request for searching items in a specific catalog."""
+
+    catalog_id: str = attr.ib(default=Path(..., description="Catalog ID"))
+    collections: Optional[str] = attr.ib(default=None, converter=str2list)
+    ids: Optional[str] = attr.ib(default=None, converter=str2list)
+    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
+    intersects: Optional[str] = attr.ib(default=None, converter=str2list)
+    datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
+    limit: Optional[int] = attr.ib(default=10)
+
+
+class BaseSearchPostRequest(Search):
     """Search model.
 
     Replace base model in STAC-pydantic as it includes additional fields, not in the core
@@ -124,9 +139,9 @@ class BaseSearchPostRequest(BaseModel):
     PR to fix this:
     https://github.com/stac-utils/stac-pydantic/pull/100
     """
-
-    collections: Optional[List[str]]
+    
     catalogs: Optional[List[str]]
+    collections: Optional[List[str]]
     ids: Optional[List[str]]
     bbox: Optional[BBox]
     intersects: Optional[
@@ -223,6 +238,34 @@ class BaseSearchPostRequest(BaseModel):
         return
 
 
+class BaseCatalogSearchPostRequest(Search):
+    """Search model for searching items in a specific catalog (same as BaseSearchPostRequest excluding catalogs)."""
+
+    collections: Optional[List[str]] = None
+    ids: Optional[List[str]] = None
+    bbox: Optional[BBox] = None
+    intersects: Optional[
+        Union[
+            Point,
+            MultiPoint,
+            LineString,
+            MultiLineString,
+            Polygon,
+            MultiPolygon,
+            GeometryCollection,
+        ]
+    ] = None
+    datetime: Optional[DateTimeType] = None
+    limit: Optional[Limit] = 10
+    
+
+@attr.s
+class CatalogSearchPostRequest(APIRequest):
+    """Search model for searching items in a specific catalog."""
+    catalog_id: str = attr.ib(default=Path(..., description="Catalog ID"))
+    search_request: BaseCatalogSearchPostRequest = attr.ib(default=None)
+
+
 @attr.s
 class BaseCollectionSearchGetRequest(APIRequest):
     """Base arguments for Collection Search GET Request."""
@@ -235,87 +278,14 @@ class BaseCollectionSearchGetRequest(APIRequest):
 
 class BaseCollectionSearchPostRequest(BaseModel):
     """Search model.
-
     Replace base model in STAC-pydantic as it includes additional fields, not in the core
     model.
     """
 
     bbox: Optional[BBox]
     datetime: Optional[DateTimeType]
-    limit: Optional[Limit] = Field(default=10)
+    limit: Optional[Limit] = 10
     q: Optional[str]
-
-    @property
-    def start_date(self) -> Optional[datetime]:
-        """Extract the start date from the datetime string."""
-        return self.datetime[0] if self.datetime else None
-
-    @property
-    def end_date(self) -> Optional[datetime]:
-        """Extract the end date from the datetime string."""
-        return self.datetime[1] if self.datetime else None
-
-    @validator("bbox", pre=True)
-    def validate_bbox(cls, v: Union[str, BBox]) -> BBox:
-        """Check order of supplied bbox coordinates."""
-        if v:
-            if type(v) == str:
-                v = str2bbox(v)
-            # Validate order
-            if len(v) == 4:
-                xmin, ymin, xmax, ymax = v
-            else:
-                xmin, ymin, min_elev, xmax, ymax, max_elev = v
-                if max_elev < min_elev:
-                    raise ValueError(
-                        "Maximum elevation must greater than minimum elevation"
-                    )
-
-            if xmax < xmin:
-                raise ValueError(
-                    "Maximum longitude must be greater than minimum longitude"
-                )
-
-            if ymax < ymin:
-                raise ValueError(
-                    "Maximum longitude must be greater than minimum longitude"
-                )
-
-            # Validate against WGS84
-            if xmin < -180 or ymin < -90 or xmax > 180 or ymax > 90:
-                raise ValueError("Bounding box must be within (-180, -90, 180, 90)")
-        return v
-
-    @validator("datetime", pre=True)
-    def validate_datetime(cls, v: Union[str, DateTimeType]) -> DateTimeType:
-        """Parse datetime."""
-        if type(v) == str:
-            v = str_to_interval(v)
-        return v
-
-    @property
-    def spatial_filter(self) -> Optional[_GeometryBase]:
-        """Return a geojson-pydantic object representing the spatial filter for the search
-        request.
-
-        Check for both because the ``bbox`` and ``intersects`` parameters are
-        mutually exclusive.
-        """
-        if self.bbox:
-            return Polygon(
-                coordinates=[
-                    [
-                        [self.bbox[0], self.bbox[3]],
-                        [self.bbox[2], self.bbox[3]],
-                        [self.bbox[2], self.bbox[1]],
-                        [self.bbox[0], self.bbox[1]],
-                        [self.bbox[0], self.bbox[3]],
-                    ]
-                ]
-            )
-        if self.intersects:
-            return self.intersects
-        return
 
 
 @attr.s
