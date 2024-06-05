@@ -17,7 +17,7 @@ class CollectionSearchExtensionGetRequest(APIRequest):
     bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
     datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
     limit: Optional[int] = attr.ib(default=10)
-    q: Optional[str] = attr.ib(default=None)
+    # q: Optional[str] = attr.ib(default=None)
 
 
 class CollectionSearchExtensionPostRequest(BaseModel):
@@ -26,4 +26,4 @@ class CollectionSearchExtensionPostRequest(BaseModel):
     bbox: Optional[BBox]
     datetime: Optional[DateTimeType]
     limit: Optional[Limit] = Field(default=10)
-    q: Optional[str]
+    # q: Optional[str]
