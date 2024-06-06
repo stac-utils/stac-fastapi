@@ -8,12 +8,26 @@ from starlette.testclient import TestClient
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import ApiSettings
-from stac_fastapi.types.core import BaseCoreClient, BaseSearchPostRequest, NumType, BaseCatalogSearchPostRequest
+from stac_fastapi.types.core import (
+    BaseCoreClient,
+    BaseSearchPostRequest,
+    NumType,
+    BaseCatalogSearchPostRequest,
+)
 
 collection_links = link_factory.CollectionLinks("/", "test").create_links()
 item_links = link_factory.ItemLinks("/", "test", "test").create_links()
 catalog_links = link_factory.CatalogLinks("/", "test").create_links()
 
+catalogs = [
+    stac_types.Catalog(
+        id=f"test_catalog_{n}",
+        title="Test Catalog",
+        description="A test catalog",
+        links=catalog_links.dict(exclude_none=True),
+    )
+    for n in range(0, 10)
+]
 
 collections = [
     stac_types.Collection(
@@ -63,7 +77,7 @@ class CoreClient(BaseCoreClient):
         **kwargs,
     ) -> stac_types.ItemCollection:
         raise NotImplementedError
-    
+
     def post_search(
         self, catalog_id: str, search_request: BaseCatalogSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
