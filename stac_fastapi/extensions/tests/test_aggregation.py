@@ -5,9 +5,13 @@ from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import AggregationExtension
-from stac_fastapi.types.aggregation import Aggregation, AggregationCollection
+from stac_fastapi.extensions.core.aggregation.client import BaseAggregationClient
+from stac_fastapi.extensions.core.aggregation.types import (
+    Aggregation,
+    AggregationCollection,
+)
 from stac_fastapi.types.config import ApiSettings
-from stac_fastapi.types.core import BaseAggregationClient, BaseCoreClient
+from stac_fastapi.types.core import BaseCoreClient
 
 
 class DummyCoreClient(BaseCoreClient):
