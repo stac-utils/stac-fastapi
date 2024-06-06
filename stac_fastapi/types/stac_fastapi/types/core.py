@@ -1037,8 +1037,6 @@ class BaseCollectionSearchClient(abc.ABC):
 class AsyncDiscoverySearchClient(abc.ABC):
     """Defines a pattern for implementing the STAC Collection Search extension."""
 
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-
     @abc.abstractmethod
     async def post_discovery_search(
         self, search_request: BaseDiscoverySearchPostRequest, **kwargs
