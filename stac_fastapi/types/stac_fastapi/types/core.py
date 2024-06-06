@@ -1,7 +1,8 @@
 """Base clients."""
 
-
 import abc
+import importlib
+import warnings
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
@@ -22,6 +23,16 @@ from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import BaseSearchPostRequest
+
+__all__ = [
+    "NumType",
+    "StacType",
+    "BaseTransactionsClient",
+    "AsyncBaseTransactionsClient",
+    "LandingPageMixin",
+    "BaseCoreClient",
+    "AsyncBaseCoreClient",
+]
 
 NumType = Union[float, int]
 StacType = Dict[str, Any]
@@ -776,43 +787,20 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
 
-@attr.s
-class AsyncBaseFiltersClient(abc.ABC):
-    """Defines a pattern for implementing the STAC filter extension."""
-
-    async def get_queryables(
-        self, collection_id: Optional[str] = None, **kwargs
-    ) -> Dict[str, Any]:
-        """Get the queryables available for the given collection_id.
-
-        If collection_id is None, returns the intersection of all queryables over all
-        collections.
-
-        This base implementation returns a blank queryable schema. This is not allowed
-        under OGC CQL but it is allowed by the STAC API Filter Extension
-        https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
-        """
-        return {
-            "$schema": "https://json-schema.org/draft/2019-09/schema",
-            "$id": "https://example.org/queryables",
-            "type": "object",
-            "title": "Queryables for Example STAC API",
-            "description": "Queryable names for the example STAC API Item Search filter.",
-            "properties": {},
-        }
+# TODO: remove for 3.0.0 final release
+def __getattr__(name: str) -> Any:
+    if name in ["AsyncBaseFiltersClient", "BaseFiltersClient"]:
+        warnings.warn(
+            f"""importing {name} from `stac_fastapi.types.core` is deprecated,
+            please import it from `stac_fastapi.extensions.core.filter.client`.""",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        clients = importlib.import_module("stac_fastapi.extensions.core.filter.client")
+        return getattr(clients, name)
 
 
-@attr.s
-class BaseFiltersClient(abc.ABC):
-    """Defines a pattern for implementing the STAC filter extension."""
-
-    def get_queryables(
-        self, collection_id: Optional[str] = None, **kwargs
-    ) -> Dict[str, Any]:
-        """Get the queryables available for the given collection_id.
-
-        If collection_id is None, returns the intersection of all queryables over all
-        collections.
+    raise AttributeError(f"module {__name__} has no attribute {name}")
 
         This base implementation returns a blank queryable schema. This is not allowed
         under OGC CQL but it is allowed by the STAC API Filter Extension

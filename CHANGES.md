@@ -6,6 +6,10 @@
 
 * Add base support for the Aggregation extension [#684](https://github.com/stac-utils/stac-fastapi/pull/684)
 
+### Changed
+
+* moved `AsyncBaseFiltersClient` and `BaseFiltersClient` classes in `stac_fastapi.extensions.core.filter.client` submodule ([#704](https://github.com/stac-utils/stac-fastapi/pull/704))
+
 ## [3.0.0a2] - 2024-05-31
 
 ### Fixed
