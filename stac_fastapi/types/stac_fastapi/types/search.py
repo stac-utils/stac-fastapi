@@ -8,24 +8,18 @@ import operator
 from datetime import datetime
 from enum import auto
 from types import DynamicClassAttribute
-from fastapi import Path
 from typing import Any, Callable, Dict, Generator, List, Optional, Union
-from stac_pydantic.api import Search
 
 import attr
-from geojson_pydantic.geometries import (
-    GeometryCollection,
-    LineString,
-    MultiLineString,
-    MultiPoint,
-    MultiPolygon,
-    Point,
-    Polygon,
-    _GeometryBase,
-)
+from fastapi import Path
+from geojson_pydantic.geometries import (GeometryCollection, LineString,
+                                         MultiLineString, MultiPoint,
+                                         MultiPolygon, Point, Polygon,
+                                         _GeometryBase)
 from pydantic import BaseModel, ConstrainedInt, Field, validator
 from pydantic.errors import NumberNotGtError
 from pydantic.validators import int_validator
+from stac_pydantic.api import Search
 from stac_pydantic.shared import BBox
 from stac_pydantic.utils import AutoValueEnum
 
@@ -139,7 +133,7 @@ class BaseSearchPostRequest(Search):
     PR to fix this:
     https://github.com/stac-utils/stac-pydantic/pull/100
     """
-    
+
     catalogs: Optional[List[str]]
     collections: Optional[List[str]]
     ids: Optional[List[str]]
@@ -336,11 +330,12 @@ class BaseCatalogSearchPostRequest(Search):
         if self.intersects:
             return self.intersects
         return
-    
+
 
 @attr.s
 class CatalogSearchPostRequest(APIRequest):
     """Search model for searching items in a specific catalog."""
+
     catalog_id: str = attr.ib(default=Path(..., description="Catalog ID"))
     search_request: BaseCatalogSearchPostRequest = attr.ib(default=None)
 

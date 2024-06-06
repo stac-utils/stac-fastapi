@@ -8,12 +8,9 @@ from starlette.testclient import TestClient
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import ApiSettings
-from stac_fastapi.types.core import (
-    BaseCoreClient,
-    BaseSearchPostRequest,
-    NumType,
-    BaseCatalogSearchPostRequest,
-)
+from stac_fastapi.types.core import (BaseCatalogSearchPostRequest,
+                                     BaseCoreClient, BaseSearchPostRequest,
+                                     NumType)
 
 collection_links = link_factory.CollectionLinks("/", "test").create_links()
 item_links = link_factory.ItemLinks("/", "test", "test").create_links()

@@ -1,7 +1,7 @@
 """Api request/response models."""
 
 import importlib.util
-from typing import Optional, Type, Union, List
+from typing import Optional, Type, Union
 
 import attr
 from fastapi import Body, Path
@@ -11,20 +11,10 @@ from stac_pydantic.shared import BBox
 
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
-from stac_fastapi.types.search import (
-    APIRequest,
-    BaseSearchGetRequest,
-    BaseSearchPostRequest,
-    str2bbox,
-    str2list,
-    BaseCatalogSearchPostRequest,
-)
-from pydantic import BaseModel
-from stac_pydantic.shared import BBox
-
-
-
-from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
+from stac_fastapi.types.search import (APIRequest,
+                                       BaseCatalogSearchPostRequest,
+                                       BaseSearchGetRequest,
+                                       BaseSearchPostRequest, str2bbox)
 
 
 def create_request_model(
@@ -84,6 +74,7 @@ def create_request_model(
         return create_model(model_name, **fields, __base__=base_model)
 
     raise TypeError("Mixed Request Model types. Check extension request types.")
+
 
 def create_mixed_request_model(
     model_name="SearchGetRequest",
@@ -149,6 +140,7 @@ def create_mixed_request_model(
     # Else return the temp_model with all search query extensions only
     return temp_model
 
+
 def create_get_request_model(
     extensions, base_model: BaseSearchGetRequest = BaseSearchGetRequest
 ):
@@ -172,6 +164,7 @@ def create_post_request_model(
         request_type="POST",
     )
 
+
 def create_get_catalog_request_model(
     extensions, base_model: BaseSearchGetRequest = BaseSearchGetRequest
 ):
@@ -182,6 +175,7 @@ def create_get_catalog_request_model(
         extensions=extensions,
         request_type="GET",
     )
+
 
 def create_post_catalog_full_request_model(
     extensions, base_model: BaseCatalogSearchPostRequest = BaseCatalogSearchPostRequest
@@ -195,10 +189,10 @@ def create_post_catalog_full_request_model(
         full=True,
     )
 
+
 def create_post_catalog_request_model(
     extensions, base_model: BaseCatalogSearchPostRequest = BaseCatalogSearchPostRequest
 ):
-    
     """Wrap create_request_model to create the POST request model."""
     return create_mixed_request_model(
         "CatalogSearchPostRequest",

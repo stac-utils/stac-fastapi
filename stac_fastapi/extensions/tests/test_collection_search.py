@@ -14,10 +14,7 @@ from stac_fastapi.types import stac
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseCollectionSearchClient, BaseCoreClient
 from stac_fastapi.types.rfc3339 import parse_single_date
-from stac_fastapi.types.search import (
-    BaseCollectionSearchPostRequest,
-    str2bbox,
-)
+from stac_fastapi.types.search import BaseCollectionSearchPostRequest, str2bbox
 from stac_fastapi.types.stac import Item, ItemCollection
 
 
@@ -36,7 +33,7 @@ class DummyCoreClient(BaseCoreClient):
 
     def post_global_search(self, *args, **kwargs):
         raise NotImplementedError
-    
+
     def get_search(self, *args, **kwargs):
         raise NotImplementedError
 
@@ -111,7 +108,9 @@ def client(
         settings=settings,
         client=core_client,
         extensions=[
-            CollectionSearchExtension(client=collection_search_client, settings=settings),
+            CollectionSearchExtension(
+                client=collection_search_client, settings=settings
+            ),
         ],
         collections_post_request_model=collections_post_request_model,
     )

@@ -17,12 +17,10 @@ from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.rfc3339 import DateTimeType
-from stac_fastapi.types.search import (
-    BaseCollectionSearchPostRequest,
-    BaseDiscoverySearchPostRequest,
-    BaseSearchPostRequest,
-    BaseCatalogSearchPostRequest
-)
+from stac_fastapi.types.search import (BaseCatalogSearchPostRequest,
+                                       BaseCollectionSearchPostRequest,
+                                       BaseDiscoverySearchPostRequest,
+                                       BaseSearchPostRequest)
 from stac_fastapi.types.stac import Conformance
 
 NumType = Union[float, int]
@@ -1032,6 +1030,7 @@ class BaseCollectionSearchClient(abc.ABC):
             A list of collections.
         """
         return stac_types.Collections(collections=[])
+
 
 @attr.s
 class AsyncDiscoverySearchClient(abc.ABC):

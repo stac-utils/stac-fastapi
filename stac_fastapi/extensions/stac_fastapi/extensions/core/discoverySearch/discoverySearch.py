@@ -7,17 +7,14 @@ from fastapi import APIRouter, FastAPI
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.routes import create_async_endpoint
-from stac_fastapi.types.core import AsyncDiscoverySearchClient, DiscoverySearchClient
+from stac_fastapi.types.core import (AsyncDiscoverySearchClient,
+                                     DiscoverySearchClient)
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.search import (
-    BaseDiscoverySearchGetRequest,
-    BaseDiscoverySearchPostRequest,
-)
+from stac_fastapi.types.search import (BaseDiscoverySearchGetRequest,
+                                       BaseDiscoverySearchPostRequest)
 
-from .request import (
-    DiscoverySearchExtensionGetRequest,
-    DiscoverySearchExtensionPostRequest,
-)
+from .request import (DiscoverySearchExtensionGetRequest,
+                      DiscoverySearchExtensionPostRequest)
 
 
 @attr.s

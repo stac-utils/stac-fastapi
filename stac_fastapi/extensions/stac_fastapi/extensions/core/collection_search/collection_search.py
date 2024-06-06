@@ -10,19 +10,13 @@ from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.config import ApiSettings
-from stac_fastapi.types.core import (
-    AsyncBaseCollectionSearchClient,
-    BaseCollectionSearchClient,
-)
+from stac_fastapi.types.core import (AsyncBaseCollectionSearchClient,
+                                     BaseCollectionSearchClient)
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.search import (
-    BaseCollectionSearchPostRequest,
-)
+from stac_fastapi.types.search import BaseCollectionSearchPostRequest
 
-from .request import (
-    CollectionSearchExtensionGetRequest,
-    CollectionSearchExtensionPostRequest,
-)
+from .request import (CollectionSearchExtensionGetRequest,
+                      CollectionSearchExtensionPostRequest)
 
 
 class CollectionSearchConformanceClasses(str, Enum):
@@ -67,8 +61,8 @@ class CollectionSearchExtension(ApiExtension):
         default=BaseCollectionSearchPostRequest
     )
 
-    client: Union[AsyncBaseCollectionSearchClient, BaseCollectionSearchClient] = attr.ib(
-        factory=BaseCollectionSearchClient
+    client: Union[AsyncBaseCollectionSearchClient, BaseCollectionSearchClient] = (
+        attr.ib(factory=BaseCollectionSearchClient)
     )
 
     conformance_classes: List[str] = attr.ib(
