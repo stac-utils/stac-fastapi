@@ -257,6 +257,85 @@ class BaseCatalogSearchPostRequest(Search):
     ] = None
     datetime: Optional[DateTimeType] = None
     limit: Optional[Limit] = 10
+
+    @property
+    def start_date(self) -> Optional[datetime]:
+        """Extract the start date from the datetime string."""
+        return self.datetime[0] if self.datetime else None
+
+    @property
+    def end_date(self) -> Optional[datetime]:
+        """Extract the end date from the datetime string."""
+        return self.datetime[1] if self.datetime else None
+
+    @validator("intersects")
+    def validate_spatial(cls, v, values):
+        """Check bbox and intersects are not both supplied."""
+        if v and values["bbox"]:
+            raise ValueError("intersects and bbox parameters are mutually exclusive")
+        return v
+
+    @validator("bbox", pre=True)
+    def validate_bbox(cls, v: Union[str, BBox]) -> BBox:
+        """Check order of supplied bbox coordinates."""
+        if v:
+            if type(v) == str:
+                v = str2bbox(v)
+            # Validate order
+            if len(v) == 4:
+                xmin, ymin, xmax, ymax = v
+            else:
+                xmin, ymin, min_elev, xmax, ymax, max_elev = v
+                if max_elev < min_elev:
+                    raise ValueError(
+                        "Maximum elevation must greater than minimum elevation"
+                    )
+
+            if xmax < xmin:
+                raise ValueError(
+                    "Maximum longitude must be greater than minimum longitude"
+                )
+
+            if ymax < ymin:
+                raise ValueError(
+                    "Maximum longitude must be greater than minimum longitude"
+                )
+
+            # Validate against WGS84
+            if xmin < -180 or ymin < -90 or xmax > 180 or ymax > 90:
+                raise ValueError("Bounding box must be within (-180, -90, 180, 90)")
+        return v
+
+    @validator("datetime", pre=True)
+    def validate_datetime(cls, v: Union[str, DateTimeType]) -> DateTimeType:
+        """Parse datetime."""
+        if type(v) == str:
+            v = str_to_interval(v)
+        return v
+
+    @property
+    def spatial_filter(self) -> Optional[_GeometryBase]:
+        """Return a geojson-pydantic object representing the spatial filter for the search
+        request.
+
+        Check for both because the ``bbox`` and ``intersects`` parameters are
+        mutually exclusive.
+        """
+        if self.bbox:
+            return Polygon(
+                coordinates=[
+                    [
+                        [self.bbox[0], self.bbox[3]],
+                        [self.bbox[2], self.bbox[3]],
+                        [self.bbox[2], self.bbox[1]],
+                        [self.bbox[0], self.bbox[1]],
+                        [self.bbox[0], self.bbox[3]],
+                    ]
+                ]
+            )
+        if self.intersects:
+            return self.intersects
+        return
     
 
 @attr.s
