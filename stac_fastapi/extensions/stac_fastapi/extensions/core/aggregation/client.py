@@ -1,12 +1,16 @@
 """Aggregation extensions clients."""
 
 import abc
-import attr
-from .types import Bucket, Aggregation, AggregationCollection
 from typing import List, Optional, Union
-from stac_pydantic.shared import BBox
+
+import attr
 from geojson_pydantic.geometries import Geometry
+from stac_pydantic.shared import BBox
+
 from stac_fastapi.types.rfc3339 import DateTimeType
+
+from .types import Aggregation, AggregationCollection
+
 
 @attr.s
 class BaseAggregationClient(abc.ABC):
