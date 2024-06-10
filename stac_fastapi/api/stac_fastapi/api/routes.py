@@ -1,5 +1,6 @@
 """Route factories."""
 
+import copy
 import functools
 import inspect
 import warnings
@@ -100,28 +101,39 @@ def add_route_dependencies(
     Allows a developer to add dependencies to a route after the route has been
     defined.
 
+    "*" can be used for path or method to match all allowed routes.
+
     Returns:
         None
     """
     for scope in scopes:
+        _scope = copy.deepcopy(scope)
         for route in routes:
-            match, _ = route.matches({"type": "http", **scope})
+
+            if scope["path"] == "*":
+                _scope["path"] = route.path
+
+            if scope["method"] == "*":
+                _scope["method"] = list(route.methods)[0]
+
+            match, _ = route.matches({"type": "http", **_scope})
             if match != Match.FULL:
                 continue
 
-            # Mimicking how APIRoute handles dependencies:
-            # https://github.com/tiangolo/fastapi/blob/1760da0efa55585c19835d81afa8ca386036c325/fastapi/routing.py#L408-L412
-            for depends in dependencies[::-1]:
-                route.dependant.dependencies.insert(
-                    0,
-                    get_parameterless_sub_dependant(
-                        depends=depends, path=route.path_format
-                    ),
-                )
+            if hasattr(route, "dependant"):
+                # Mimicking how APIRoute handles dependencies:
+                # https://github.com/tiangolo/fastapi/blob/1760da0efa55585c19835d81afa8ca386036c325/fastapi/routing.py#L408-L412
+                for depends in dependencies[::-1]:
+                    route.dependant.dependencies.insert(
+                        0,
+                        get_parameterless_sub_dependant(
+                            depends=depends, path=route.path_format
+                        ),
+                    )
 
-            # Register dependencies directly on route so that they aren't ignored if
-            # the routes are later associated with an app (e.g.
-            # app.include_router(router))
-            # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/applications.py#L337-L360
-            # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/routing.py#L677-L678
-            route.dependencies.extend(dependencies)
+                # Register dependencies directly on route so that they aren't ignored if
+                # the routes are later associated with an app (e.g.
+                # app.include_router(router))
+                # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/applications.py#L337-L360
+                # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/routing.py#L677-L678
+                route.dependencies.extend(dependencies)

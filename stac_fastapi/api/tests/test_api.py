@@ -49,6 +49,24 @@ class TestRouteDependencies:
                 ), "Authenticated requests should be accepted"
                 assert response.json() == "dummy response"
 
+    @staticmethod
+    def _assert_dependency_not_applied(api, routes):
+        with TestClient(api.app) as client:
+            for route in routes:
+                path = route["path"].format(
+                    collectionId="test_collection", itemId="test_item"
+                )
+                response = client.request(
+                    method=route["method"].lower(),
+                    url=path,
+                    content=route["payload"],
+                    headers={"content-type": "application/json"},
+                )
+                assert (
+                    200 <= response.status_code < 300
+                ), "Authenticated requests should be accepted"
+                assert response.json() == "dummy response"
+
     def test_openapi_content_type(self):
         api = self._build_api()
         with TestClient(api.app) as client:
@@ -116,25 +134,273 @@ class TestRouteDependencies:
         api.add_route_dependencies(scopes=routes, dependencies=[Depends(must_be_bob)])
         self._assert_dependency_applied(api, routes)
 
+    def test_build_api_with_default_route_dependencies(self, collection, item):
+        routes = [{"path": "*", "method": "*"}]
+        test_routes = [
+            {"path": "/collections", "method": "POST", "payload": collection},
+            {
+                "path": "/collections/{collectionId}",
+                "method": "PUT",
+                "payload": collection,
+            },
+            {"path": "/collections/{collectionId}", "method": "DELETE", "payload": ""},
+            {
+                "path": "/collections/{collectionId}/items",
+                "method": "POST",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "PUT",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "DELETE",
+                "payload": "",
+            },
+        ]
+        dependencies = [Depends(must_be_bob)]
+        api = self._build_api(route_dependencies=[(routes, dependencies)])
+        self._assert_dependency_applied(api, test_routes)
+
+    def test_build_api_with_default_path_route_dependencies(self, collection, item):
+        routes = [{"path": "*", "method": "POST"}]
+        test_routes = [
+            {
+                "path": "/collections",
+                "method": "POST",
+                "payload": collection,
+            },
+            {
+                "path": "/collections/{collectionId}/items",
+                "method": "POST",
+                "payload": item,
+            },
+        ]
+        test_not_routes = [
+            {
+                "path": "/collections/{collectionId}",
+                "method": "PUT",
+                "payload": collection,
+            },
+            {
+                "path": "/collections/{collectionId}",
+                "method": "DELETE",
+                "payload": "",
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "PUT",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "DELETE",
+                "payload": "",
+            },
+        ]
+        dependencies = [Depends(must_be_bob)]
+        api = self._build_api(route_dependencies=[(routes, dependencies)])
+        self._assert_dependency_applied(api, test_routes)
+        self._assert_dependency_not_applied(api, test_not_routes)
+
+    def test_build_api_with_default_method_route_dependencies(self, collection, item):
+        routes = [
+            {
+                "path": "/collections/{collectionId}",
+                "method": "*",
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "*",
+            },
+        ]
+        test_routes = [
+            {
+                "path": "/collections/{collectionId}",
+                "method": "PUT",
+                "payload": collection,
+            },
+            {
+                "path": "/collections/{collectionId}",
+                "method": "DELETE",
+                "payload": "",
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "PUT",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "DELETE",
+                "payload": "",
+            },
+        ]
+        test_not_routes = [
+            {
+                "path": "/collections",
+                "method": "POST",
+                "payload": collection,
+            },
+            {
+                "path": "/collections/{collectionId}/items",
+                "method": "POST",
+                "payload": item,
+            },
+        ]
+        dependencies = [Depends(must_be_bob)]
+        api = self._build_api(route_dependencies=[(routes, dependencies)])
+        self._assert_dependency_applied(api, test_routes)
+        self._assert_dependency_not_applied(api, test_not_routes)
+
+    def test_add_default_route_dependencies_after_building_api(self, collection, item):
+        routes = [{"path": "*", "method": "*"}]
+        test_routes = [
+            {
+                "path": "/collections",
+                "method": "POST",
+                "payload": collection,
+            },
+            {
+                "path": "/collections/{collectionId}",
+                "method": "PUT",
+                "payload": collection,
+            },
+            {
+                "path": "/collections/{collectionId}",
+                "method": "DELETE",
+                "payload": "",
+            },
+            {
+                "path": "/collections/{collectionId}/items",
+                "method": "POST",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "PUT",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "DELETE",
+                "payload": "",
+            },
+        ]
+        api = self._build_api()
+        api.add_route_dependencies(scopes=routes, dependencies=[Depends(must_be_bob)])
+        self._assert_dependency_applied(api, test_routes)
+
+    def test_add_default_path_route_dependencies_after_building_api(
+        self, collection, item
+    ):
+        routes = [{"path": "*", "method": "POST"}]
+        test_routes = [
+            {
+                "path": "/collections",
+                "method": "POST",
+                "payload": collection,
+            },
+            {
+                "path": "/collections/{collectionId}/items",
+                "method": "POST",
+                "payload": item,
+            },
+        ]
+        test_not_routes = [
+            {
+                "path": "/collections/{collectionId}",
+                "method": "PUT",
+                "payload": collection,
+            },
+            {
+                "path": "/collections/{collectionId}",
+                "method": "DELETE",
+                "payload": "",
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "PUT",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "DELETE",
+                "payload": "",
+            },
+        ]
+        api = self._build_api()
+        api.add_route_dependencies(scopes=routes, dependencies=[Depends(must_be_bob)])
+        self._assert_dependency_applied(api, test_routes)
+        self._assert_dependency_not_applied(api, test_not_routes)
+
+    def test_add_default_method_route_dependencies_after_building_api(
+        self, collection, item
+    ):
+        routes = [
+            {
+                "path": "/collections/{collectionId}",
+                "method": "*",
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "*",
+            },
+        ]
+        test_routes = [
+            {
+                "path": "/collections/{collectionId}",
+                "method": "PUT",
+                "payload": collection,
+            },
+            {
+                "path": "/collections/{collectionId}",
+                "method": "DELETE",
+                "payload": "",
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "PUT",
+                "payload": item,
+            },
+            {
+                "path": "/collections/{collectionId}/items/{itemId}",
+                "method": "DELETE",
+                "payload": "",
+            },
+        ]
+        test_not_routes = [
+            {
+                "path": "/collections",
+                "method": "POST",
+                "payload": collection,
+            },
+            {
+                "path": "/collections/{collectionId}/items",
+                "method": "POST",
+                "payload": item,
+            },
+        ]
+        api = self._build_api()
+        api.add_route_dependencies(scopes=routes, dependencies=[Depends(must_be_bob)])
+        self._assert_dependency_applied(api, test_routes)
+        self._assert_dependency_not_applied(api, test_not_routes)
+
 
 class DummyCoreClient(core.BaseCoreClient):
-    def all_collections(self, *args, **kwargs):
-        ...
+    def all_collections(self, *args, **kwargs): ...
 
-    def get_collection(self, *args, **kwargs):
-        ...
+    def get_collection(self, *args, **kwargs): ...
 
-    def get_item(self, *args, **kwargs):
-        ...
+    def get_item(self, *args, **kwargs): ...
 
-    def get_search(self, *args, **kwargs):
-        ...
+    def get_search(self, *args, **kwargs): ...
 
-    def post_search(self, *args, **kwargs):
-        ...
+    def post_search(self, *args, **kwargs): ...
 
-    def item_collection(self, *args, **kwargs):
-        ...
+    def item_collection(self, *args, **kwargs): ...
 
 
 class DummyTransactionsClient(core.BaseTransactionsClient):

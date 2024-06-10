@@ -4,6 +4,7 @@
 
 ### Changed
 
+* Added option for default route dependencies `*` can be used for `path` or `method` to match all allowed route.
 * moved `AsyncBaseFiltersClient` and `BaseFiltersClient` classes in `stac_fastapi.extensions.core.filter.client` submodule ([#704](https://github.com/stac-utils/stac-fastapi/pull/704))
 
 ## [3.0.0a2] - 2024-05-31
