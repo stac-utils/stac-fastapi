@@ -109,7 +109,6 @@ def add_route_dependencies(
     for scope in scopes:
         _scope = copy.deepcopy(scope)
         for route in routes:
-
             if scope["path"] == "*":
                 _scope["path"] = route.path
 
