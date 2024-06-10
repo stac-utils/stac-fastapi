@@ -1,5 +1,5 @@
 """Filter extension module."""
 
-from .collectionSearch import CollectionSearchExtension
+from .collection_search import CollectionSearchExtension
 
 __all__ = ["CollectionSearchExtension"]

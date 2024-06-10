@@ -7,6 +7,7 @@ from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.params import Depends
+from pydantic import BaseModel
 from stac_pydantic import Catalog, Collection, Item, ItemCollection
 from stac_pydantic.api import ConformanceClasses, LandingPage
 from stac_pydantic.api.collections import Collections
@@ -28,11 +29,24 @@ from stac_fastapi.api.openapi import update_openapi
 from stac_fastapi.api.routes import Scope, add_route_dependencies, create_async_endpoint
 
 # TODO: make this module not depend on `stac_fastapi.extensions`
-from stac_fastapi.extensions.core import FieldsExtension, TokenPaginationExtension
+from stac_fastapi.extensions.core import (
+    CollectionSearchExtension,
+    FieldsExtension,
+    TokenPaginationExtension,
+)
 from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
+from stac_fastapi.types.search import (
+    BaseCatalogSearchGetRequest,
+)  # only includes search query fields not catalog id
+from stac_fastapi.types.search import (
+    BaseCollectionSearchGetRequest,
+    BaseCollectionSearchPostRequest,
+    BaseSearchGetRequest,
+    BaseSearchPostRequest,
+    CatalogSearchPostRequest,
+)
 from stac_fastapi.types.stac import Catalogs
 
 
@@ -108,6 +122,15 @@ class StacApi:
     search_post_request_model: Type[BaseSearchPostRequest] = attr.ib(
         default=BaseSearchPostRequest
     )
+    # Used to enable the /catalogs/{catalog_id}/search endpoint, required by pystac client
+    search_catalog_get_request_model: Type[BaseCatalogSearchGetRequest] = attr.ib(
+        default=BaseCatalogSearchGetRequest
+    )
+    # This includes all search_request options, including extensions and
+    # catalog_id path attribute
+    search_catalog_post_request_model: Type[CatalogSearchPostRequest] = attr.ib(
+        default=CatalogSearchPostRequest
+    )
     pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
     middlewares: List = attr.ib(
@@ -116,6 +139,14 @@ class StacApi:
         )
     )
     route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
+    # Used to enable the /collections search extension (GET)
+    collections_get_request_model: Type[BaseCollectionSearchGetRequest] = attr.ib(
+        default=EmptyRequest
+    )
+    # Used to enable the /collections search extension (POST)
+    collections_post_request_model: Type[BaseCollectionSearchPostRequest] = attr.ib(
+        default=BaseModel
+    )
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -186,8 +217,8 @@ class StacApi:
             endpoint=create_async_endpoint(self.client.get_item, ItemUri),
         )
 
-    def register_post_search(self):
-        """Register search endpoint (POST /search).
+    def register_post_global_search(self):
+        """Register search endpoint for items across catalogs (POST /search).
 
         Returns:
             None
@@ -206,12 +237,12 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=create_async_endpoint(
-                self.client.post_search, self.search_post_request_model
+                self.client.post_global_search, self.search_post_request_model
             ),
         )
 
-    def register_get_search(self):
-        """Register search endpoint (GET /search).
+    def register_get_global_search(self):
+        """Register search endpoint for items across catalogs (GET /search).
 
         Returns:
             None
@@ -230,7 +261,59 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=create_async_endpoint(
-                self.client.get_search, self.search_get_request_model
+                self.client.get_global_search, self.search_get_request_model
+            ),
+        )
+
+    # Introduced to ensure integration with pystac client which requires per-catalogue
+    # item searching
+    def register_post_search(self):
+        """Register search endpoint for items in a specific catalog (POST /catalogs/{catalog_id}/search).
+
+        Returns:
+            None
+        """
+        fields_ext = self.get_extension(FieldsExtension)
+        self.router.add_api_route(
+            name="Catalog Item Search",
+            path="/catalogs/{catalog_id}/search",
+            response_model=(
+                (ItemCollection if not fields_ext else None)
+                if self.settings.enable_response_models
+                else None
+            ),
+            response_class=GeoJSONResponse,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["POST"],
+            endpoint=create_async_endpoint(
+                self.client.post_search, self.search_catalog_post_request_model
+            ),
+        )
+
+    # Introduced to ensure integration with pystac client which requires per-catalogue
+    # item searching
+    def register_get_search(self):
+        """Register search endpoint for items in a specific catalog (GET /catalogs/{catalog_id}/search).
+
+        Returns:
+            None
+        """
+        fields_ext = self.get_extension(FieldsExtension)
+        self.router.add_api_route(
+            name="Catalog Item Search",
+            path="/catalogs/{catalog_id}/search",
+            response_model=(
+                (ItemCollection if not fields_ext else None)
+                if self.settings.enable_response_models
+                else None
+            ),
+            response_class=GeoJSONResponse,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_async_endpoint(
+                self.client.get_search, self.search_catalog_get_request_model
             ),
         )
 
@@ -240,17 +323,22 @@ class StacApi:
         Returns:
             None
         """
+        collection_search_ext = self.get_extension(CollectionSearchExtension)
         self.router.add_api_route(
             name="Get Collections",
             path="/collections",
             response_model=(
-                Collections if self.settings.enable_response_models else None
+                (Collections if not collection_search_ext else None)
+                if self.settings.enable_response_models
+                else None
             ),
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(self.client.all_collections, EmptyRequest),
+            endpoint=create_async_endpoint(
+                self.client.all_collections, self.collections_get_request_model
+            ),
         )
 
     def register_get_catalogs(self):
@@ -300,7 +388,9 @@ class StacApi:
         self.router.add_api_route(
             name="Get Collection",
             path="/catalogs/{catalog_id}/collections/{collection_id}",
-            response_model=Collection if self.settings.enable_response_models else None,
+            response_model=(
+                Collection if self.settings.enable_response_models else None
+            ),
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -374,6 +464,8 @@ class StacApi:
         self.register_landing_page()
         self.register_conformance_classes()
         self.register_get_item()
+        self.register_post_global_search()
+        self.register_get_global_search()
         self.register_post_search()
         self.register_get_search()
         self.register_get_collections()

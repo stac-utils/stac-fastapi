@@ -8,12 +8,26 @@ from starlette.testclient import TestClient
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import ApiSettings
-from stac_fastapi.types.core import BaseCoreClient, BaseSearchPostRequest, NumType
+from stac_fastapi.types.core import (
+    BaseCatalogSearchPostRequest,
+    BaseCoreClient,
+    BaseSearchPostRequest,
+    NumType,
+)
 
 collection_links = link_factory.CollectionLinks("/", "test").create_links()
 item_links = link_factory.ItemLinks("/", "test", "test").create_links()
 catalog_links = link_factory.CatalogLinks("/", "test").create_links()
 
+catalogs = [
+    stac_types.Catalog(
+        id=f"test_catalog_{n}",
+        title="Test Catalog",
+        description="A test catalog",
+        links=catalog_links.dict(exclude_none=True),
+    )
+    for n in range(0, 10)
+]
 
 collections = [
     stac_types.Collection(
@@ -46,13 +60,32 @@ items = [
 
 
 class CoreClient(BaseCoreClient):
+    def post_global_search(
+        self, catalog_id: str, search_request: BaseSearchPostRequest, **kwargs
+    ) -> stac_types.ItemCollection:
+        raise NotImplementedError
+
+    def get_global_search(
+        self,
+        catalogs: Optional[List[str]] = None,
+        collections: Optional[List[str]] = None,
+        ids: Optional[List[str]] = None,
+        bbox: Optional[List[NumType]] = None,
+        intersects: Optional[str] = None,
+        datetime: Optional[Union[str, datetime]] = None,
+        limit: Optional[int] = 10,
+        **kwargs,
+    ) -> stac_types.ItemCollection:
+        raise NotImplementedError
+
     def post_search(
-        self, search_request: BaseSearchPostRequest, **kwargs
+        self, catalog_id: str, search_request: BaseCatalogSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         raise NotImplementedError
 
     def get_search(
         self,
+        catalogs: Optional[List[str]] = None,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[List[NumType]] = None,

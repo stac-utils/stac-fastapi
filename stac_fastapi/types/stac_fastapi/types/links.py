@@ -10,9 +10,16 @@ from stac_pydantic.shared import MimeTypes
 # These can be inferred from the item/collection so they aren't included in the database
 # Instead they are dynamically generated when querying the database using the
 # classes defined below
-INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "root", "items"]
-# Attempt to maintain "root" links to later determine relationships to catalogues
-# INFERRED_LINK_RELS = ["self", "item", "parent", "collection", "items"]
+INFERRED_LINK_RELS = [
+    "self",
+    "item",
+    "parent",
+    "collection",
+    "root",
+    "items",
+    "data",
+    "child",
+]
 
 
 def filter_links(links: List[Dict]) -> List[Dict]:

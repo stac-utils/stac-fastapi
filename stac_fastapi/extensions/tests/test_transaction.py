@@ -27,10 +27,16 @@ class DummyCoreClient(BaseCoreClient):
     def get_item(self, *args, **kwargs):
         raise NotImplementedError
 
-    def get_search(self, *args, **kwargs):
+    def get_global_search(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def post_global_search(self, *args, **kwargs):
         raise NotImplementedError
 
     def post_search(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def get_search(self, *args, **kwargs):
         raise NotImplementedError
 
     def item_collection(self, *args, **kwargs):
