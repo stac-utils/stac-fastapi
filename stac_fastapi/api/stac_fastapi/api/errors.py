@@ -9,9 +9,13 @@ from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from stac_fastapi.types.errors import (ConflictError, DatabaseError,
-                                       ForeignKeyError, InvalidQueryParameter,
-                                       NotFoundError)
+from stac_fastapi.types.errors import (
+    ConflictError,
+    DatabaseError,
+    ForeignKeyError,
+    InvalidQueryParameter,
+    NotFoundError,
+)
 
 logger = logging.getLogger(__name__)
 

@@ -12,10 +12,16 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 import attr
 from fastapi import Path
-from geojson_pydantic.geometries import (GeometryCollection, LineString,
-                                         MultiLineString, MultiPoint,
-                                         MultiPolygon, Point, Polygon,
-                                         _GeometryBase)
+from geojson_pydantic.geometries import (
+    GeometryCollection,
+    LineString,
+    MultiLineString,
+    MultiPoint,
+    MultiPolygon,
+    Point,
+    Polygon,
+    _GeometryBase,
+)
 from pydantic import BaseModel, ConstrainedInt, Field, validator
 from pydantic.errors import NumberNotGtError
 from pydantic.validators import int_validator

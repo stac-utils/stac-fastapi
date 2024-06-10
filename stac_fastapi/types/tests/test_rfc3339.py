@@ -2,9 +2,12 @@ from datetime import timezone
 
 import pytest
 
-from stac_fastapi.types.rfc3339 import (now_in_utc, now_to_rfc3339_str,
-                                        rfc3339_str_to_datetime,
-                                        str_to_interval)
+from stac_fastapi.types.rfc3339 import (
+    now_in_utc,
+    now_to_rfc3339_str,
+    rfc3339_str_to_datetime,
+    str_to_interval,
+)
 
 invalid_datetimes = [
     "1985-04-12",  # date only

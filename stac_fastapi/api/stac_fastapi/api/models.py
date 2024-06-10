@@ -11,10 +11,13 @@ from stac_pydantic.shared import BBox
 
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
-from stac_fastapi.types.search import (APIRequest,
-                                       BaseCatalogSearchPostRequest,
-                                       BaseSearchGetRequest,
-                                       BaseSearchPostRequest, str2bbox)
+from stac_fastapi.types.search import (
+    APIRequest,
+    BaseCatalogSearchPostRequest,
+    BaseSearchGetRequest,
+    BaseSearchPostRequest,
+    str2bbox,
+)
 
 
 def create_request_model(

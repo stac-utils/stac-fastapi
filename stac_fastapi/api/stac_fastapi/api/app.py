@@ -14,29 +14,39 @@ from stac_pydantic.api.collections import Collections
 from stac_pydantic.version import STAC_VERSION
 from starlette.responses import JSONResponse, Response
 
-from stac_fastapi.api.errors import (DEFAULT_STATUS_CODES,
-                                     add_exception_handlers)
+from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.middleware import CORSMiddleware, ProxyHeaderMiddleware
-from stac_fastapi.api.models import (CatalogUri, CollectionUri, EmptyRequest,
-                                     GeoJSONResponse, ItemCollectionUri,
-                                     ItemUri, create_request_model)
+from stac_fastapi.api.models import (
+    CatalogUri,
+    CollectionUri,
+    EmptyRequest,
+    GeoJSONResponse,
+    ItemCollectionUri,
+    ItemUri,
+    create_request_model,
+)
 from stac_fastapi.api.openapi import update_openapi
-from stac_fastapi.api.routes import (Scope, add_route_dependencies,
-                                     create_async_endpoint)
+from stac_fastapi.api.routes import Scope, add_route_dependencies, create_async_endpoint
+
 # TODO: make this module not depend on `stac_fastapi.extensions`
-from stac_fastapi.extensions.core import (CollectionSearchExtension,
-                                          FieldsExtension,
-                                          TokenPaginationExtension)
+from stac_fastapi.extensions.core import (
+    CollectionSearchExtension,
+    FieldsExtension,
+    TokenPaginationExtension,
+)
 from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.search import \
-    BaseCatalogSearchGetRequest  # only includes search query fields not catalog id
-from stac_fastapi.types.search import (BaseCollectionSearchGetRequest,
-                                       BaseCollectionSearchPostRequest,
-                                       BaseSearchGetRequest,
-                                       BaseSearchPostRequest,
-                                       CatalogSearchPostRequest)
+from stac_fastapi.types.search import (
+    BaseCatalogSearchGetRequest,
+)  # only includes search query fields not catalog id
+from stac_fastapi.types.search import (
+    BaseCollectionSearchGetRequest,
+    BaseCollectionSearchPostRequest,
+    BaseSearchGetRequest,
+    BaseSearchPostRequest,
+    CatalogSearchPostRequest,
+)
 from stac_fastapi.types.stac import Catalogs
 
 
@@ -116,7 +126,7 @@ class StacApi:
     search_catalog_get_request_model: Type[BaseCatalogSearchGetRequest] = attr.ib(
         default=BaseCatalogSearchGetRequest
     )
-    # This includes all search_request options, including extensions and 
+    # This includes all search_request options, including extensions and
     # catalog_id path attribute
     search_catalog_post_request_model: Type[CatalogSearchPostRequest] = attr.ib(
         default=CatalogSearchPostRequest
@@ -255,7 +265,7 @@ class StacApi:
             ),
         )
 
-    # Introduced to ensure integration with pystac client which requires per-catalogue 
+    # Introduced to ensure integration with pystac client which requires per-catalogue
     # item searching
     def register_post_search(self):
         """Register search endpoint for items in a specific catalog (POST /catalogs/{catalog_id}/search).
@@ -281,7 +291,7 @@ class StacApi:
             ),
         )
 
-    # Introduced to ensure integration with pystac client which requires per-catalogue 
+    # Introduced to ensure integration with pystac client which requires per-catalogue
     # item searching
     def register_get_search(self):
         """Register search endpoint for items in a specific catalog (GET /catalogs/{catalog_id}/search).
