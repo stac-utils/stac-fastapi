@@ -2,6 +2,10 @@
 
 ## [Unreleased] - TBD
 
+### Added
+
+* Add base support for the Aggregation extension [#684](https://github.com/stac-utils/stac-fastapi/pull/684)
+
 ### Changed
 
 * Added option for default route dependencies `*` can be used for `path` or `method` to match all allowed route. ([#705](https://github.com/stac-utils/stac-fastapi/pull/705))
