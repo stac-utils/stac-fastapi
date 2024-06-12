@@ -61,13 +61,13 @@ items = [
 
 class CoreClient(BaseCoreClient):
     def post_global_search(
-        self, catalog_id: str, search_request: BaseSearchPostRequest, **kwargs
+        self, catalog_path: str, search_request: BaseSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         raise NotImplementedError
 
     def get_global_search(
         self,
-        catalogs: Optional[List[str]] = None,
+        catalog_paths: Optional[List[str]] = None,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[List[NumType]] = None,
@@ -79,13 +79,13 @@ class CoreClient(BaseCoreClient):
         raise NotImplementedError
 
     def post_search(
-        self, catalog_id: str, search_request: BaseCatalogSearchPostRequest, **kwargs
+        self, catalog_path: str, search_request: BaseCatalogSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         raise NotImplementedError
 
     def get_search(
         self,
-        catalogs: Optional[List[str]] = None,
+        catalog_paths: Optional[List[str]] = None,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[List[NumType]] = None,
@@ -97,7 +97,7 @@ class CoreClient(BaseCoreClient):
         raise NotImplementedError
 
     def get_item(
-        self, item_id: str, collection_id: str, catalog_id: str, **kwargs
+        self, item_id: str, collection_id: str, catalog_path: str, **kwargs
     ) -> stac_types.Item:
         raise NotImplementedError
 
@@ -111,7 +111,9 @@ class CoreClient(BaseCoreClient):
             ],
         )
 
-    def all_catalogs(self, **kwargs) -> stac_types.Catalogs:
+    def all_catalogs(
+        self, catalog_path: Optional[str] = None, **kwargs
+    ) -> stac_types.Catalogs:
         return stac_types.Catalogs(
             catalogs=catalogs,
             links=[
@@ -121,15 +123,27 @@ class CoreClient(BaseCoreClient):
             ],
         )
 
+    # def all_nested_catalogs(self, **kwargs) -> stac_types.Catalogs:
+    #     return stac_types.Catalogs(
+    #         catalogs=catalogs,
+    #         links=[
+    #             {"href": "test", "rel": "root"},
+    #             {"href": "test", "rel": "self"},
+    #             {"href": "test", "rel": "parent"},
+    #         ],
+    #     )
+
     def get_collection(
-        self, catalog_id: str, collection_id: str, **kwargs
+        self, catalog_path: str, collection_id: str, **kwargs
     ) -> stac_types.Collection:
         return collections[0]
 
-    def get_catalog_collection(self, catalog_id: str, **kwargs) -> stac_types.Catalogs:
+    def get_catalog_collection(
+        self, catalog_path: str, **kwargs
+    ) -> stac_types.Catalogs:
         return collections[0]
 
-    def get_catalog(self, catalog_id: str, **kwargs) -> stac_types.Catalog:
+    def get_catalog(self, catalog_path: str, **kwargs) -> stac_types.Catalog:
         return catalogs[0]
 
     def item_collection(
