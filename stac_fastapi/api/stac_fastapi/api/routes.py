@@ -1,5 +1,6 @@
 """Route factories."""
 
+import copy
 import functools
 import inspect
 import warnings
@@ -100,13 +101,26 @@ def add_route_dependencies(
     Allows a developer to add dependencies to a route after the route has been
     defined.
 
+    "*" can be used for path or method to match all allowed routes.
+
     Returns:
         None
     """
     for scope in scopes:
+        _scope = copy.deepcopy(scope)
         for route in routes:
-            match, _ = route.matches({"type": "http", **scope})
+            if scope["path"] == "*":
+                _scope["path"] = route.path
+
+            if scope["method"] == "*":
+                _scope["method"] = list(route.methods)[0]
+
+            match, _ = route.matches({"type": "http", **_scope})
             if match != Match.FULL:
+                continue
+
+            # Ignore paths without dependants, e.g. /api, /api.html, /docs/oauth2-redirect
+            if not hasattr(route, "dependant"):
                 continue
 
             # Mimicking how APIRoute handles dependencies:
