@@ -119,7 +119,9 @@ def add_route_dependencies(
             if match != Match.FULL:
                 continue
 
-            if hasattr(route, "dependant"):
+            # Ignore paths without dependants, e.g. /api, /api.html, /docs/oauth2-redirect
+            if not hasattr(route, "dependant"):
+                continue
                 # Mimicking how APIRoute handles dependencies:
                 # https://github.com/tiangolo/fastapi/blob/1760da0efa55585c19835d81afa8ca386036c325/fastapi/routing.py#L408-L412
                 for depends in dependencies[::-1]:
