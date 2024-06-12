@@ -47,7 +47,7 @@ class BaseBulkTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def bulk_item_insert(
         self,
-        catalog_id: str,
+        catalog_path: str,
         items: Items,
         chunk_size: Optional[int] = None,
         **kwargs,
@@ -71,7 +71,7 @@ class AsyncBaseBulkTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def bulk_item_insert(
         self,
-        catalog_id: str,
+        catalog_path: str,
         items: Items,
         **kwargs,
     ) -> str:
@@ -132,7 +132,7 @@ class BulkTransactionExtension(ApiExtension):
         router = APIRouter(prefix=app.state.router_prefix)
         router.add_api_route(
             name="Bulk Create Item",
-            path="/collections/{collection_id}/bulk_items",
+            path="/catalogs/{catalog_path:path}/collections/{collection_id}/bulk_items",
             response_model=str,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
