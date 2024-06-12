@@ -608,7 +608,6 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         """
         ...
 
-
     @abc.abstractmethod
     def get_collection(
         self, catalog_path: str, collection_id: str, **kwargs
@@ -917,7 +916,6 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             A list of catalogs.
         """
         ...
-s
 
     @abc.abstractmethod
     async def get_collection(

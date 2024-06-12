@@ -123,16 +123,6 @@ class CoreClient(BaseCoreClient):
             ],
         )
 
-    # def all_nested_catalogs(self, **kwargs) -> stac_types.Catalogs:
-    #     return stac_types.Catalogs(
-    #         catalogs=catalogs,
-    #         links=[
-    #             {"href": "test", "rel": "root"},
-    #             {"href": "test", "rel": "self"},
-    #             {"href": "test", "rel": "parent"},
-    #         ],
-    #     )
-
     def get_collection(
         self, catalog_path: str, collection_id: str, **kwargs
     ) -> stac_types.Collection:
