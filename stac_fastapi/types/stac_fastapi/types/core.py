@@ -608,16 +608,6 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         """
         ...
 
-    # @abc.abstractmethod
-    # def all_nested_catalogs(self, **kwargs) -> stac_types.Catalogs:
-    #     """Get all available catalogs.
-
-    #     Called with `GET /catalogs`.
-
-    #     Returns:
-    #         A list of catalogs.
-    #     """
-    #     ...
 
     @abc.abstractmethod
     def get_collection(
@@ -927,17 +917,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             A list of catalogs.
         """
         ...
-
-    # @abc.abstractmethod
-    # async def all_nested_catalogs(self, **kwargs) -> stac_types.Catalogs:
-    #     """Get all available catalogs.
-
-    #     Called with `GET {catalog_path}/catalogs`.
-
-    #     Returns:
-    #         A list of catalogs.
-    #     """
-    #     ...
+s
 
     @abc.abstractmethod
     async def get_collection(
