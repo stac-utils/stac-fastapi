@@ -458,10 +458,6 @@ class StacApi:
         self.client.title = self.title
         self.client.description = self.description
 
-        fields_ext = self.get_extension(FieldsExtension)
-        if fields_ext:
-            self.settings.default_includes = fields_ext.default_includes
-
         Settings.set(self.settings)
         self.app.state.settings = self.settings
 
