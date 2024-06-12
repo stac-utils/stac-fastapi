@@ -43,7 +43,7 @@ def resolve_links(links: list, base_url: str) -> List[Dict]:
 class BaseLinks:
     """Create inferred links common to collections and items."""
 
-    catalog_id: str = attr.ib()
+    catalog_path: str = attr.ib()  # a string of catalogs separated by "/"
     collection_id: str = attr.ib()
     base_url: str = attr.ib()
 
@@ -52,7 +52,7 @@ class BaseLinks:
         return dict(
             rel=Relations.root,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"catalogs/{self.catalog_id}"),
+            href=urljoin(self.base_url, f"catalogs/{self.catalog_path}"),
         )
 
 
@@ -67,7 +67,7 @@ class CollectionLinks(BaseLinks):
             type=MimeTypes.json,
             href=urljoin(
                 self.base_url,
-                f"catalogs/{self.catalog_id}/collections/{self.collection_id}",
+                f"catalogs/{self.catalog_path}/collections/{self.collection_id}",
             ),
         )
 
@@ -76,7 +76,7 @@ class CollectionLinks(BaseLinks):
         return dict(
             rel=Relations.parent,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"catalogs/{self.catalog_id}"),
+            href=urljoin(self.base_url, f"catalogs/{self.catalog_path}"),
         )
 
     def items(self) -> Dict[str, Any]:
@@ -86,7 +86,7 @@ class CollectionLinks(BaseLinks):
             type=MimeTypes.geojson,
             href=urljoin(
                 self.base_url,
-                f"catalogs/{self.catalog_id}/collections/{self.collection_id}/items",
+                f"catalogs/{self.catalog_path}/collections/{self.collection_id}/items",
             ),
         )
 
@@ -106,7 +106,7 @@ class BaseCatalogLinks:
     """Create inferred links common to catalogs."""
 
     base_url: str = attr.ib()
-    catalog_id: str = attr.ib()
+    catalog_path: str = attr.ib()
 
     def root(self) -> Dict[str, Any]:
         """Return the catalog root."""
@@ -122,12 +122,18 @@ class CatalogLinks(BaseCatalogLinks):
         return dict(
             rel=Relations.self,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"catalogs/{self.catalog_id}"),
+            href=urljoin(self.base_url, f"catalogs/{self.catalog_path}"),
         )
 
     def parent(self) -> Dict[str, Any]:
         """Create the `parent` link."""
-        return dict(rel=Relations.parent, type=MimeTypes.json, href=self.base_url)
+        catalog_path_list = self.catalog_path.split("/")
+        if len(catalog_path_list) == 1:
+            temp_catalog_path = ""
+        else:
+            temp_catalog_path = "/".join(catalog_path_list[:-1])
+        href = urljoin(self.base_url, f"/catalogs/{temp_catalog_path}")
+        return dict(rel=Relations.parent, type=MimeTypes.json, href=href)
 
     def create_links(self) -> List[Dict[str, Any]]:
         """Return all inferred links."""
@@ -149,7 +155,7 @@ class ItemLinks(BaseLinks):
             type=MimeTypes.geojson,
             href=urljoin(
                 self.base_url,
-                f"catalogs/{self.catalog_id}/collections/{self.collection_id}/items/{self.item_id}",
+                f"catalogs/{self.catalog_path}/collections/{self.collection_id}/items/{self.item_id}",
             ),
         )
 
@@ -160,7 +166,7 @@ class ItemLinks(BaseLinks):
             type=MimeTypes.json,
             href=urljoin(
                 self.base_url,
-                f"catalogs/{self.catalog_id}/collections/{self.collection_id}",
+                f"catalogs/{self.catalog_path}/collections/{self.collection_id}",
             ),
         )
 
@@ -171,7 +177,7 @@ class ItemLinks(BaseLinks):
             type=MimeTypes.json,
             href=urljoin(
                 self.base_url,
-                f"catalogs/{self.catalog_id}/collections/{self.collection_id}",
+                f"catalogs/{self.catalog_path}/collections/{self.collection_id}",
             ),
         )
 

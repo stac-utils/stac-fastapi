@@ -58,7 +58,7 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def update_item(
         self,
-        catalog_id: str,
+        catalog_path: str,
         collection_id: str,
         item_id: str,
         item: stac_types.Item,
@@ -82,7 +82,7 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def delete_item(
-        self, item_id: str, collection_id: str, catalog_id: str, **kwargs
+        self, item_id: str, collection_id: str, catalog_path: str, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Delete an item from a collection.
 
@@ -99,7 +99,7 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def create_collection(
-        self, catalog_id: str, collection: stac_types.Collection, **kwargs
+        self, catalog_path: str, collection: stac_types.Collection, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Create a new collection.
 
@@ -115,11 +115,27 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def create_catalog(
-        self, catalog: stac_types.Catalog, **kwargs
+        self, catalog: stac_types.Catalog, catalog_path: Optional[str], **kwargs
     ) -> Optional[Union[stac_types.Catalog, Response]]:
         """Create a new catalog.
 
         Called with `POST /catalogs`.
+
+        Args:
+            catalog: the catalog
+
+        Returns:
+            The catalog that was created.
+        """
+        ...
+
+    @abc.abstractmethod
+    def create_super_catalog(
+        self, catalog: stac_types.Catalog, **kwargs
+    ) -> Optional[Union[stac_types.Catalog, Response]]:
+        """Create a new catalog.
+
+        Called with `POST /`.
 
         Args:
             catalog: the catalog
@@ -151,7 +167,7 @@ class BaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     def delete_collection(
-        self, catalog_id: str, collection_id: str, **kwargs
+        self, catalog_path: str, collection_id: str, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Delete a collection.
 
@@ -193,7 +209,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def update_item(
         self,
-        catalog_id: str,
+        catalog_path: str,
         collection_id: str,
         item_id: str,
         item: stac_types.Item,
@@ -216,7 +232,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def delete_item(
-        self, item_id: str, collection_id: str, catalog_id: str, **kwargs
+        self, item_id: str, collection_id: str, catalog_path: str, **kwargs
     ) -> Optional[Union[stac_types.Item, Response]]:
         """Delete an item from a collection.
 
@@ -250,7 +266,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     async def update_collection(
         self,
-        catalog_id: str,
+        catalog_path: str,
         collection_id: str,
         collection: stac_types.Collection,
         **kwargs,
@@ -273,7 +289,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     @abc.abstractmethod
     async def delete_collection(
-        self, catalog_id: str, collection_id: str, **kwargs
+        self, catalog_path: str, collection_id: str, **kwargs
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Delete a collection.
 
@@ -488,7 +504,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     @abc.abstractmethod
     def get_global_search(
         self,
-        catalogs: Optional[List[str]] = None,
+        catalog_paths: Optional[List[str]] = None,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[BBox] = None,
@@ -512,7 +528,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     def post_search(
-        self, catalog_id: str, search_request: BaseCatalogSearchPostRequest, **kwargs
+        self, catalog_path: str, search_request: BaseCatalogSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         """Single catalog item search (POST).
 
@@ -529,7 +545,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     @abc.abstractmethod
     def get_search(
         self,
-        catalog_id: str,
+        catalog_path: str,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[BBox] = None,
@@ -553,7 +569,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     def get_item(
-        self, item_id: str, collection_id: str, catalog_id: str, **kwargs
+        self, item_id: str, collection_id: str, catalog_path: str, **kwargs
     ) -> stac_types.Item:
         """Get item by id.
 
@@ -580,7 +596,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def all_catalogs(self, **kwargs) -> stac_types.Catalogs:
+    def all_catalogs(
+        self, catalog_path: Optional[str] = None, **kwargs
+    ) -> stac_types.Catalogs:
         """Get all available catalogs.
 
         Called with `GET /catalogs`.
@@ -592,7 +610,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     def get_collection(
-        self, catalog_id: str, collection_id: str, **kwargs
+        self, catalog_path: str, collection_id: str, **kwargs
     ) -> stac_types.Collection:
         """Get collection by id.
 
@@ -607,7 +625,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_catalog(self, catalog_id: str, **kwargs) -> stac_types.Catalog:
+    def get_catalog(self, catalog_path: str, **kwargs) -> stac_types.Catalog:
         """Get catalog by id.
 
         Called with `GET /catalogs/{catalog_id}`.
@@ -622,7 +640,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     def get_catalog_collections(
-        self, catalog_id: str, **kwargs
+        self, catalog_path: str, **kwargs
     ) -> stac_types.Collections:
         """Get collections by catalog id.
 
@@ -795,7 +813,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     @abc.abstractmethod
     async def get_global_search(
         self,
-        catalogs: Optional[List[str]] = None,
+        catalog_paths: Optional[List[str]] = None,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[BBox] = None,
@@ -820,7 +838,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     @abc.abstractmethod
     async def get_search(
         self,
-        catalog_id: str,
+        catalog_path: str,
         collections: Optional[List[str]] = None,
         ids: Optional[List[str]] = None,
         bbox: Optional[BBox] = None,
@@ -844,7 +862,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     async def post_search(
-        self, catalog_id: str, search_request: BaseCatalogSearchPostRequest, **kwargs
+        self, catalog_path: str, search_request: BaseCatalogSearchPostRequest, **kwargs
     ) -> stac_types.ItemCollection:
         """Single catalog item search (POST).
 
@@ -860,7 +878,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
 
     @abc.abstractmethod
     async def get_item(
-        self, item_id: str, collection_id: str, catalog_id: str, **kwargs
+        self, item_id: str, collection_id: str, catalog_path: str, **kwargs
     ) -> stac_types.Item:
         """Get item by id.
 
@@ -887,7 +905,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def all_catalogs(self, **kwargs) -> stac_types.Catalogs:
+    async def all_catalogs(
+        self, catalog_path: Optional[str] = None, **kwargs
+    ) -> stac_types.Catalogs:
         """Get all available catalogs.
 
         Called with `GET /catalogs`.
@@ -914,7 +934,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_catalog(self, catalog_id: str, **kwargs) -> stac_types.Catalog:
+    async def get_catalog(self, catalog_path: str, **kwargs) -> stac_types.Catalog:
         """Get catalog by id.
 
         Called with `GET /catalogs/{catalog_id}`.

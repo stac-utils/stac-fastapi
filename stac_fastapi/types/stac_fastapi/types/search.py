@@ -107,7 +107,7 @@ class APIRequest(abc.ABC):
 class BaseSearchGetRequest(APIRequest):
     """Base arguments for GET Request."""
 
-    catalogs: Optional[str] = attr.ib(default=None, converter=str2list)
+    catalog_paths: Optional[str] = attr.ib(default=None, converter=str2list)
     collections: Optional[str] = attr.ib(default=None, converter=str2list)
     ids: Optional[str] = attr.ib(default=None, converter=str2list)
     bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
@@ -120,7 +120,7 @@ class BaseSearchGetRequest(APIRequest):
 class BaseCatalogSearchGetRequest(APIRequest):
     """Base arguments for GET Request for searching items in a specific catalog."""
 
-    catalog_id: str = attr.ib(default=Path(..., description="Catalog ID"))
+    catalog_path: str = attr.ib(default=Path(..., description="Catalog Path"))
     collections: Optional[str] = attr.ib(default=None, converter=str2list)
     ids: Optional[str] = attr.ib(default=None, converter=str2list)
     bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
@@ -140,7 +140,7 @@ class BaseSearchPostRequest(Search):
     https://github.com/stac-utils/stac-pydantic/pull/100
     """
 
-    catalogs: Optional[List[str]]
+    catalog_paths: Optional[List[str]]
     collections: Optional[List[str]]
     ids: Optional[List[str]]
     bbox: Optional[BBox]
@@ -342,7 +342,7 @@ class BaseCatalogSearchPostRequest(Search):
 class CatalogSearchPostRequest(APIRequest):
     """Search model for searching items in a specific catalog."""
 
-    catalog_id: str = attr.ib(default=Path(..., description="Catalog ID"))
+    catalog_path: str = attr.ib(default=Path(..., description="Catalog Path"))
     search_request: BaseCatalogSearchPostRequest = attr.ib(default=None)
 
 

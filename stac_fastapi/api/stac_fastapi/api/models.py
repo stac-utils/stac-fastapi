@@ -134,7 +134,7 @@ def create_mixed_request_model(
     # Create new class containing all search query extensions along with catalog_id path attribute
     @attr.s
     class CatalogSearchPostRequestNew(APIRequest):
-        catalog_id: str = attr.ib(default=Path(..., description="Catalog ID"))
+        catalog_path: str = attr.ib(default=Path(..., description="Catalog Path"))
         search_request: temp_model = attr.ib(default=None)
 
     # If full is True, return the new class with all search query extensions and catalog_id path attribute
@@ -235,7 +235,11 @@ def create_post_collections_request_model(
 class CatalogUri(APIRequest):
     """Delete catalog."""
 
-    catalog_id: str = attr.ib(default=Path(..., description="Catalog ID"))
+    catalog_path: str = attr.ib(
+        default=Path(
+            ..., description="Path to selected Catalog", example="cat1/cat2/cat3"
+        )
+    )
 
 
 @attr.s  # type:ignore
