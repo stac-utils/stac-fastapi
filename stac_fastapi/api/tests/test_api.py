@@ -2,7 +2,10 @@ from fastapi import Depends, HTTPException, security, status
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.extensions.core import TokenPaginationExtension, TransactionExtension
+from stac_fastapi.extensions.core import (
+    TokenPaginationExtension,
+    TransactionExtension,
+)
 from stac_fastapi.types import config, core
 
 

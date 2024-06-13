@@ -1,6 +1,6 @@
 """stac_fastapi.types.config module."""
 
-from typing import Optional, Set
+from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -18,10 +18,6 @@ class ApiSettings(BaseSettings):
             set of fields which are usually in `item.properties` but are indexed
             as distinct columns in the database.
     """
-
-    # TODO: Remove `default_includes` attribute so we can use
-    # `pydantic.BaseSettings` instead
-    default_includes: Optional[Set[str]] = None
 
     stac_fastapi_title: str = "stac-fastapi"
     stac_fastapi_description: str = "stac-fastapi"

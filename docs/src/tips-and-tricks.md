@@ -45,3 +45,55 @@ For the landing page, you can set the API title, description and version using e
 - `STAC FASTAPI_TITLE` (string) should be a self-explanatory title for your API.
 - `STAC FASTAPI_DESCRIPTION` (string) should be a good description for your API. It can contain CommonMark.
 - `STAC_FASTAPI_LANDING_ID` (string) is a unique identifier for your Landing page.
+
+
+## Default `includes` in Fields extension (POST request)
+
+The [**Fields** API extension](https://github.com/stac-api-extensions/fields) enables to filter in/out STAC Items keys (e.g `geometry`). The default behavior is to not filter out anything, but this can be overridden by providing a custom `FieldsExtensionPostRequest` class:
+
+```python
+from typing import Optional, Set
+
+import attr
+from stac_fastapi.extensions import FieldsExtension as FieldsExtensionBase
+from stac_fastapi.extensions.core.fields import requests
+from pydantic import BaseModel, Field
+
+
+class PostFieldsExtension(requests.PostFieldsExtension):
+    include: Optional[Set[str]] = Field(
+        default_factory=lambda: {
+            "id",
+            "type",
+            "stac_version",
+            "geometry",
+            "bbox",
+            "links",
+            "assets",
+            "properties.datetime",
+            "collection",
+        }
+    )
+    exclude: Optional[Set[str]] = set()
+
+
+class FieldsExtensionPostRequest(BaseModel):
+    """Additional fields and schema for the POST request."""
+
+    fields: Optional[PostFieldsExtension] = Field(PostFieldsExtension())
+
+
+class FieldsExtension(FieldsExtensionBase):
+    """Override the POST model"""
+
+    POST = FieldsExtensionPostRequest
+
+
+from stac_fastapi.api.app import StacApi
+
+stac = StacApi(
+    extensions=[
+        FieldsExtension()
+    ]
+)
+```
