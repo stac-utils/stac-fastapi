@@ -24,7 +24,7 @@ section-order = ["future", "standard-library", "third-party", "first-party", "lo
 quote-style = "double"
 
 [tool.bumpversion]
-current_version = "3.0.0a2"
+current_version = "3.0.0a3"
 parse = """(?x)
     (?P<major>\\d+)\\.
     (?P<minor>\\d+)\\.
