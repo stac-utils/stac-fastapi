@@ -489,7 +489,6 @@ class StacApi:
         self.register_get_all_catalogs()
         self.register_get_collection()
         self.register_get_catalog()
-        self.register_get_item_collection()
         self.register_get_collections()
 
     def customize_openapi(self) -> Optional[Dict[str, Any]]:
