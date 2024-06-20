@@ -1032,6 +1032,22 @@ class AsyncBaseCollectionSearchClient(abc.ABC):
         self, search_request: BaseCollectionSearchPostRequest, **kwargs
     ) -> stac_types.Collections:
         """Get all available collections.
+        Called with `POST /collections`.
+        Returns:
+            A list of collections.
+        """
+        return stac_types.Collections(collections=[])
+
+    async def get_all_collections(
+        self,
+        request: Request,
+        bbox: Optional[List[NumType]] = None,
+        datetime: Optional[Union[str, DateTimeType]] = None,
+        limit: Optional[int] = 10,
+        q: Optional[List[str]] = None,
+        **kwargs,
+    ) -> stac_types.Collections:
+        """Get all available collections.
         Called with `GET /collections`.
         Returns:
             A list of collections.
@@ -1043,8 +1059,24 @@ class AsyncBaseCollectionSearchClient(abc.ABC):
 class BaseCollectionSearchClient(abc.ABC):
     """Defines a pattern for implementing the STAC Collection Search extension."""
 
-    async def post_all_collections(
+    def post_all_collections(
         self, search_request: BaseCollectionSearchPostRequest, **kwargs
+    ) -> stac_types.Collections:
+        """Get all available collections.
+        Called with `GET /collections`.
+        Returns:
+            A list of collections.
+        """
+        return stac_types.Collections(collections=[])
+
+    def get_all_collections(
+        self,
+        request: Request,
+        bbox: Optional[List[NumType]] = None,
+        datetime: Optional[Union[str, DateTimeType]] = None,
+        limit: Optional[int] = 10,
+        q: Optional[List[str]] = None,
+        **kwargs,
     ) -> stac_types.Collections:
         """Get all available collections.
         Called with `GET /collections`.
@@ -1077,7 +1109,7 @@ class AsyncDiscoverySearchClient(abc.ABC):
     @abc.abstractmethod
     async def get_discovery_search(
         self,
-        q: Optional[str] = None,
+        q: Optional[List[str]] = None,
         limit: Optional[int] = 10,
         **kwargs,
     ) -> stac_types.Collections:
@@ -1114,7 +1146,7 @@ class DiscoverySearchClient(abc.ABC):
     @abc.abstractmethod
     def get_discovery_search(
         self,
-        q: Optional[str] = None,
+        q: Optional[List[str]] = None,
         limit: Optional[int] = 10,
         **kwargs,
     ) -> stac_types.Collections:

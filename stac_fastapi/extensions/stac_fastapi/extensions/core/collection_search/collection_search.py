@@ -15,7 +15,10 @@ from stac_fastapi.types.core import (
     BaseCollectionSearchClient,
 )
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.search import BaseCollectionSearchPostRequest
+from stac_fastapi.types.search import (
+    BaseCollectionSearchGetRequest,
+    BaseCollectionSearchPostRequest,
+)
 
 from .request import (
     CollectionSearchExtensionGetRequest,
@@ -64,6 +67,9 @@ class CollectionSearchExtension(ApiExtension):
     collections_post_request_model: Type[BaseCollectionSearchPostRequest] = attr.ib(
         default=BaseCollectionSearchPostRequest
     )
+    collections_get_request_model: Type[BaseCollectionSearchGetRequest] = attr.ib(
+        default=BaseCollectionSearchGetRequest
+    )
 
     client: Union[AsyncBaseCollectionSearchClient, BaseCollectionSearchClient] = (
         attr.ib(factory=BaseCollectionSearchClient)
@@ -104,4 +110,20 @@ class CollectionSearchExtension(ApiExtension):
                 self.client.post_all_collections, self.collections_post_request_model
             ),
         )
+
+        self.router.add_api_route(
+            name="Get Collections",
+            path="/collections",
+            response_model=(
+                Collections if self.settings.enable_response_models else None
+            ),
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_async_endpoint(
+                self.client.get_all_collections, self.collections_get_request_model
+            ),
+        )
+
         app.include_router(self.router)

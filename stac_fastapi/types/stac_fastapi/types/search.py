@@ -353,7 +353,7 @@ class BaseCollectionSearchGetRequest(APIRequest):
     bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
     datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
     limit: Optional[int] = attr.ib(default=10)
-    q: Optional[str] = attr.ib(default=None)
+    q: Optional[List[str]] = attr.ib(default=None, converter=str2list)
 
 
 class BaseCollectionSearchPostRequest(BaseModel):
@@ -365,14 +365,52 @@ class BaseCollectionSearchPostRequest(BaseModel):
     bbox: Optional[BBox]
     datetime: Optional[DateTimeType]
     limit: Optional[Limit] = 10
-    q: Optional[str]
+    q: Optional[List[str]]
+
+    @validator("bbox", pre=True)
+    def validate_bbox(cls, v: Union[str, BBox]) -> BBox:
+        """Check order of supplied bbox coordinates."""
+        if v:
+            if type(v) == str:
+                v = str2bbox(v)
+            # Validate order
+            if len(v) == 4:
+                xmin, ymin, xmax, ymax = v
+            else:
+                xmin, ymin, min_elev, xmax, ymax, max_elev = v
+                if max_elev < min_elev:
+                    raise ValueError(
+                        "Maximum elevation must greater than minimum elevation"
+                    )
+
+            if xmax < xmin:
+                raise ValueError(
+                    "Maximum longitude must be greater than minimum longitude"
+                )
+
+            if ymax < ymin:
+                raise ValueError(
+                    "Maximum longitude must be greater than minimum longitude"
+                )
+
+            # Validate against WGS84
+            if xmin < -180 or ymin < -90 or xmax > 180 or ymax > 90:
+                raise ValueError("Bounding box must be within (-180, -90, 180, 90)")
+        return v
+
+    @validator("datetime", pre=True)
+    def validate_datetime(cls, v: Union[str, DateTimeType]) -> DateTimeType:
+        """Parse datetime."""
+        if type(v) == str:
+            v = str_to_interval(v)
+        return v
 
 
 @attr.s
 class BaseDiscoverySearchGetRequest(APIRequest):
     """Base arguments for Collection Search GET Request."""
 
-    q: Optional[str] = attr.ib(default=None)
+    q: Optional[List[str]] = attr.ib(default=None, converter=str2list)
     limit: Optional[int] = attr.ib(default=10)
 
 
@@ -383,5 +421,5 @@ class BaseDiscoverySearchPostRequest(BaseModel):
     model.
     """
 
-    q: Optional[str]
+    q: Optional[List[str]]
     limit: Optional[Limit] = Field(default=10)

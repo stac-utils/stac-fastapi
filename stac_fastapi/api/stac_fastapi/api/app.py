@@ -137,14 +137,6 @@ class StacApi:
         )
     )
     route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
-    # Used to enable the /collections search extension (GET)
-    collections_get_request_model: Type[BaseCollectionSearchGetRequest] = attr.ib(
-        default=EmptyRequest
-    )
-    # Used to enable the /collections search extension (POST)
-    collections_post_request_model: Type[BaseCollectionSearchPostRequest] = attr.ib(
-        default=BaseModel
-    )
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -322,22 +314,23 @@ class StacApi:
             None
         """
         collection_search_ext = self.get_extension(CollectionSearchExtension)
-        self.router.add_api_route(
-            name="Get Collections",
-            path="/collections",
-            response_model=(
-                (Collections if not collection_search_ext else None)
-                if self.settings.enable_response_models
-                else None
-            ),
-            response_class=self.response_class,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
-            methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.all_collections, self.collections_get_request_model
-            ),
-        )
+        if not collection_search_ext:
+            self.router.add_api_route(
+                name="Get Collections",
+                path="/collections",
+                response_model=(
+                    (Collections if not collection_search_ext else None)
+                    if self.settings.enable_response_models
+                    else None
+                ),
+                response_class=self.response_class,
+                response_model_exclude_unset=True,
+                response_model_exclude_none=True,
+                methods=["GET"],
+                endpoint=create_async_endpoint(
+                    self.client.all_collections, EmptyRequest
+                ),
+            )
 
     def register_get_catalogs(self):
         """Register get catalogs endpoint (GET /catalogs).
