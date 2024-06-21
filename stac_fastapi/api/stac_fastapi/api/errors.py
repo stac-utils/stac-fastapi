@@ -4,7 +4,7 @@ import logging
 from typing import Callable, Dict, Type, TypedDict
 
 from fastapi import FastAPI
-from fastapi.exceptions import RequestValidationError
+from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -27,6 +27,7 @@ DEFAULT_STATUS_CODES = {
     DatabaseError: status.HTTP_424_FAILED_DEPENDENCY,
     Exception: status.HTTP_500_INTERNAL_SERVER_ERROR,
     InvalidQueryParameter: status.HTTP_400_BAD_REQUEST,
+    ResponseValidationError: status.HTTP_500_INTERNAL_SERVER_ERROR,
 }
 
 

@@ -1,4 +1,5 @@
 """Application settings."""
+
 import enum
 
 
@@ -17,6 +18,7 @@ class ApiExtensions(enum.Enum):
     query = "query"
     sort = "sort"
     transaction = "transaction"
+    aggregation = "aggregation"
 
 
 class AddOns(enum.Enum):

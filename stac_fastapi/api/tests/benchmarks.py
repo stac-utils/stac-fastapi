@@ -17,6 +17,7 @@ item_links = link_factory.ItemLinks("/", "test", "test").create_links()
 collections = [
     stac_types.Collection(
         id=f"test_collection_{n}",
+        type="Collection",
         title="Test Collection",
         description="A test collection",
         keywords=["test"],
@@ -25,7 +26,7 @@ collections = [
             "spatial": {"bbox": [[-180, -90, 180, 90]]},
             "temporal": {"interval": [["2000-01-01T00:00:00Z", None]]},
         },
-        links=collection_links.dict(exclude_none=True),
+        links=collection_links.model_dump(exclude_none=True),
     )
     for n in range(0, 10)
 ]
@@ -37,7 +38,7 @@ items = [
         geometry={"type": "Point", "coordinates": [0, 0]},
         bbox=[-180, -90, 180, 90],
         properties={"datetime": "2000-01-01T00:00:00Z"},
-        links=item_links.dict(exclude_none=True),
+        links=item_links.model_dump(exclude_none=True),
         assets={},
     )
     for n in range(0, 1000)
@@ -160,9 +161,7 @@ def test_benchmark_collection(
 
     benchmark.group = "Collection With Model validation" if validate else "Collection"
     benchmark.name = "Collection With Model validation" if validate else "Collection"
-    benchmark.fullname = (
-        "Collection With Model validation" if validate else "Collection"
-    )
+    benchmark.fullname = "Collection With Model validation" if validate else "Collection"
 
     response = benchmark(f)
     assert response.status_code == 200

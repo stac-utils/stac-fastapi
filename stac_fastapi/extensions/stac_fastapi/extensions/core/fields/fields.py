@@ -1,5 +1,6 @@
 """Fields extension."""
-from typing import List, Optional, Set
+
+from typing import List, Optional
 
 import attr
 from fastapi import FastAPI
@@ -33,19 +34,6 @@ class FieldsExtension(ApiExtension):
 
     conformance_classes: List[str] = attr.ib(
         factory=lambda: ["https://api.stacspec.org/v1.0.0/item-search#fields"]
-    )
-    default_includes: Set[str] = attr.ib(
-        factory=lambda: {
-            "id",
-            "type",
-            "stac_version",
-            "geometry",
-            "bbox",
-            "links",
-            "assets",
-            "properties.datetime",
-            "collection",
-        }
     )
     schema_href: Optional[str] = attr.ib(default=None)
 

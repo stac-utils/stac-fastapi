@@ -1,14 +1,17 @@
-"""fastapi app creation."""
-from typing import Dict, List, Optional, Tuple, Type, Union
+"""Fastapi app creation."""
+
+
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import attr
 from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.params import Depends
-from stac_pydantic import Collection, Item, ItemCollection
-from stac_pydantic.api import ConformanceClasses, LandingPage
+from stac_pydantic import api
 from stac_pydantic.api.collections import Collections
-from stac_pydantic.version import STAC_VERSION
+from stac_pydantic.api.version import STAC_API_VERSION
+from stac_pydantic.shared import MimeTypes
+from starlette.middleware import Middleware
 from starlette.responses import JSONResponse, Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
@@ -101,7 +104,22 @@ class StacApi:
         converter=update_openapi,
     )
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
-    stac_version: str = attr.ib(default=STAC_VERSION)
+    title: str = attr.ib(
+        default=attr.Factory(
+            lambda self: self.settings.stac_fastapi_title, takes_self=True
+        )
+    )
+    api_version: str = attr.ib(
+        default=attr.Factory(
+            lambda self: self.settings.stac_fastapi_version, takes_self=True
+        )
+    )
+    stac_version: str = attr.ib(default=STAC_API_VERSION)
+    description: str = attr.ib(
+        default=attr.Factory(
+            lambda self: self.settings.stac_fastapi_description, takes_self=True
+        )
+    )
     search_get_request_model: Type[BaseSearchGetRequest] = attr.ib(
         default=BaseSearchGetRequest
     )
@@ -110,9 +128,13 @@ class StacApi:
     )
     pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
-    middlewares: List = attr.ib(
+    middlewares: List[Middleware] = attr.ib(
         default=attr.Factory(
-            lambda: [BrotliMiddleware, CORSMiddleware, ProxyHeaderMiddleware]
+            lambda: [
+                Middleware(BrotliMiddleware),
+                Middleware(CORSMiddleware),
+                Middleware(ProxyHeaderMiddleware),
+            ]
         )
     )
     route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
@@ -140,9 +162,17 @@ class StacApi:
         self.router.add_api_route(
             name="Landing Page",
             path="/",
-            response_model=LandingPage
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                api.LandingPage if self.settings.enable_response_models else None
+            ),
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": api.LandingPage,
+                },
+            },
             response_class=self.response_class,
             response_model_exclude_unset=False,
             response_model_exclude_none=True,
@@ -159,9 +189,17 @@ class StacApi:
         self.router.add_api_route(
             name="Conformance Classes",
             path="/conformance",
-            response_model=ConformanceClasses
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                api.Conformance if self.settings.enable_response_models else None
+            ),
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": api.Conformance,
+                },
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -178,7 +216,15 @@ class StacApi:
         self.router.add_api_route(
             name="Get Item",
             path="/collections/{collection_id}/items/{item_id}",
-            response_model=Item if self.settings.enable_response_models else None,
+            response_model=api.Item if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": api.Item,
+                },
+            },
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -196,9 +242,19 @@ class StacApi:
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(ItemCollection if not fields_ext else None)
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                (api.ItemCollection if not fields_ext else None)
+                if self.settings.enable_response_models
+                else None
+            ),
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": api.ItemCollection,
+                },
+            },
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -218,9 +274,19 @@ class StacApi:
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(ItemCollection if not fields_ext else None)
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                (api.ItemCollection if not fields_ext else None)
+                if self.settings.enable_response_models
+                else None
+            ),
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": api.ItemCollection,
+                },
+            },
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -239,9 +305,17 @@ class StacApi:
         self.router.add_api_route(
             name="Get Collections",
             path="/collections",
-            response_model=Collections
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                Collections if self.settings.enable_response_models else None
+            ),
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": Collections,
+                },
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -258,7 +332,17 @@ class StacApi:
         self.router.add_api_route(
             name="Get Collection",
             path="/collections/{collection_id}",
-            response_model=Collection if self.settings.enable_response_models else None,
+            response_model=api.Collection
+            if self.settings.enable_response_models
+            else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": api.Collection,
+                },
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -285,9 +369,17 @@ class StacApi:
         self.router.add_api_route(
             name="Get ItemCollection",
             path="/collections/{collection_id}/items",
-            response_model=ItemCollection
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                api.ItemCollection if self.settings.enable_response_models else None
+            ),
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": api.ItemCollection,
+                },
+            },
             response_class=GeoJSONResponse,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -349,6 +441,11 @@ class StacApi:
         """
         return add_route_dependencies(self.app.router.routes, scopes, dependencies)
 
+    def add_middleware(self, middleware: Middleware):
+        """Add a middleware class to the application."""
+        self.app.user_middleware.insert(0, middleware)
+        self.app.middleware_stack = self.app.build_middleware_stack()
+
     def __attrs_post_init__(self):
         """Post-init hook.
 
@@ -362,10 +459,6 @@ class StacApi:
         self.client.stac_version = self.stac_version
         self.client.title = self.title
         self.client.description = self.description
-
-        fields_ext = self.get_extension(FieldsExtension)
-        if fields_ext:
-            self.settings.default_includes = fields_ext.default_includes
 
         Settings.set(self.settings)
         self.app.state.settings = self.settings
@@ -390,7 +483,7 @@ class StacApi:
 
         # add middlewares
         for middleware in self.middlewares:
-            self.app.add_middleware(middleware)
+            self.add_middleware(middleware)
 
         # customize route dependencies
         for scopes, dependencies in self.route_dependencies:

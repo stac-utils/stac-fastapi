@@ -1,4 +1,6 @@
 """Context extension."""
+
+import warnings
 from typing import List, Optional
 
 import attr
@@ -23,6 +25,14 @@ class ContextExtension(ApiExtension):
     schema_href: Optional[str] = attr.ib(
         default="https://raw.githubusercontent.com/stac-api-extensions/context/v1.0.0-rc.2/json-schema/schema.json"
     )
+
+    def __attrs_post_init__(self):
+        """init."""
+        warnings.warn(
+            "The ContextExtension is deprecated and will be removed in 3.0.",
+            DeprecationWarning,
+            stacklevel=1,
+        )
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
