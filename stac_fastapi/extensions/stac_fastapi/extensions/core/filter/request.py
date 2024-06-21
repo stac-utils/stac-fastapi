@@ -24,4 +24,4 @@ class FilterExtensionPostRequest(BaseModel):
 
     filter: Optional[Dict[str, Any]] = None
     filter_crs: Optional[str] = Field(alias="filter-crs", default=None)
-    filter_lang: Optional[FilterLang] = Field(alias="filter-lang", default="cql-json")
+    filter_lang: Optional[FilterLang] = Field(alias="filter-lang", default="cql2-json")

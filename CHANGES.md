@@ -2,6 +2,10 @@
 
 ## [Unreleased] - TBD
 
+### Fixed
+
+* Updated default filter language in filter extension's POST search request model to match the extension's documentation [#711](https://github.com/stac-utils/stac-fastapi/issues/711)
+
 ## [3.0.0a3] - 2024-06-13
 
 ### Added
