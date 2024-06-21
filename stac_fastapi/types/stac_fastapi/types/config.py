@@ -1,8 +1,9 @@
 """stac_fastapi.types.config module."""
 
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import AnyHttpUrl
+from pydantic_settings import AnyHttpUrl, BaseSettings, SettingsConfigDict
 
 
 class ApiSettings(BaseSettings):
@@ -31,6 +32,15 @@ class ApiSettings(BaseSettings):
 
     openapi_url: str = "/api"
     docs_url: str = "/api.html"
+      
+    api_title: str = "stac-fastapi"
+    api_description: str = "stac-fastapi"
+    api_version: str = "0.1"
+    api_servers: List[Dict[str, Any]] = []
+    api_terms_of_service: Optional[AnyHttpUrl] = None
+    api_contact: Optional[Dict[str, Any]] = None
+    api_license_info: Optional[Dict[str, Any]] = None
+    api_tags: List[Dict[str, Any]] = []
 
     model_config = SettingsConfigDict(env_file=".env", extra="allow")
 
