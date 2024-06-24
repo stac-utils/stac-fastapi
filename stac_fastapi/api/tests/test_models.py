@@ -1,6 +1,8 @@
 import json
 
 import pytest
+from fastapi import Depends, FastAPI
+from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from stac_fastapi.api.models import create_get_request_model, create_post_request_model
@@ -26,13 +28,33 @@ def test_create_get_request_model():
         datetime="2020-01-01T00:00:00Z",
         limit=10,
         filter="test==test",
-        # FIXME: https://github.com/stac-utils/stac-fastapi/issues/638
-        # hyphen aliases are not properly working
-        # **{"filter-crs": "epsg:4326", "filter-lang": "cql2-text"},
+        filter_crs="epsg:4326",
+        filter_lang="cql2-text",
     )
 
     assert model.collections == ["test1", "test2"]
-    # assert model.filter_crs == "epsg:4326"
+    assert model.filter_crs == "epsg:4326"
+
+    app = FastAPI()
+
+    @app.get("/test")
+    def route(model=Depends(request_model)):
+        return model
+
+    with TestClient(app) as client:
+        resp = client.get(
+            "/test",
+            params={
+                "collections": "test1,test2",
+                "filter-crs": "epsg:4326",
+                "filter-lang": "cql2-text",
+            },
+        )
+        assert resp.status_code == 200
+        response_dict = resp.json()
+        assert response_dict["collections"] == ["test1", "test2"]
+        assert response_dict["filter_crs"] == "epsg:4326"
+        assert response_dict["filter_lang"] == "cql2-text"
 
 
 @pytest.mark.parametrize(

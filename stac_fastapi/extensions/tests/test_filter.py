@@ -107,3 +107,13 @@ def test_search_filter_get(client: TestClient):
     )
     assert not response_dict["filter_crs"]
     assert response_dict["filter_lang"] == "cql2-json"
+
+    response = client.get(
+        "/search",
+        params={
+            "collections": "collection1,collection2",
+        },
+    )
+    assert response.is_success, response.json()
+    response_dict = response.json()
+    assert response_dict["collections"] == ["collection1", "collection2"]
