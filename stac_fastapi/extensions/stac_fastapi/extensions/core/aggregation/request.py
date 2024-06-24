@@ -1,10 +1,14 @@
 """Request model for the Aggregation extension."""
 
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import attr
 
-from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest, str2list
+from stac_fastapi.types.search import (
+    BaseSearchGetRequest,
+    BaseSearchPostRequest,
+    str2list,
+)
 
 
 @attr.s
