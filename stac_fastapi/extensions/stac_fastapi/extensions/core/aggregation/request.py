@@ -1,24 +1,24 @@
 """Request model for the Aggregation extension."""
 
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import attr
 
-from stac_fastapi.extensions.core.filter.request import (
-    FilterExtensionGetRequest,
-    FilterExtensionPostRequest,
+from stac_fastapi.types.search import (
+    BaseSearchGetRequest,
+    BaseSearchPostRequest,
+    str2list,
 )
-from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 
 
 @attr.s
-class AggregationExtensionGetRequest(BaseSearchGetRequest, FilterExtensionGetRequest):
+class AggregationExtensionGetRequest(BaseSearchGetRequest):
     """Aggregation Extension GET request model."""
 
-    aggregations: Optional[str] = attr.ib(default=None)
+    aggregations: Optional[str] = attr.ib(default=None, converter=str2list)
 
 
-class AggregationExtensionPostRequest(BaseSearchPostRequest, FilterExtensionPostRequest):
+class AggregationExtensionPostRequest(BaseSearchPostRequest):
     """Aggregation Extension POST request model."""
 
-    aggregations: Optional[Union[str, List[str]]] = attr.ib(default=None)
+    aggregations: Optional[List[str]] = attr.ib(default=None)
