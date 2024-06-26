@@ -2,13 +2,23 @@
 
 ## [Unreleased] - TBD
 
+### Added
+
+* Add attributes to `stac_fastapi.api.app.StacApi` to enable customization of request model for:
+  - `/collections`: **collections_get_request_model**, default to `EmptyRequest`
+  - `/collections/{collection_id}`: **collection_get_request_model**, default to `CollectionUri`
+  - `/collections/{collection_id}/items`: **items_get_request_model**, default to `ItemCollectionUri`
+  - `/collections/{collection_id}/items/{item_id}`: **item_get_request_model**, default to `ItemUri`
+
 ### Fixed
 
 * Updated default filter language in filter extension's POST search request model to match the extension's documentation [#711](https://github.com/stac-utils/stac-fastapi/issues/711)
 
 ### Removed
 
-* Removed the Filter Extension depenency from `AggregationExtensionPostRequest` and `AggregationExtensionGetRequest` [#716](https://github.com/stac-utils/stac-fastapi/pull/716)
+* Removed the Filter Extension dependency from `AggregationExtensionPostRequest` and `AggregationExtensionGetRequest` [#716](https://github.com/stac-utils/stac-fastapi/pull/716)
+* `pagination_extension` attribute in `stac_fastapi.api.app.StacApi`
+* remove use of `pagination_extension` in `register_get_item_collection` function (User now need to construct the request model and pass it using `items_get_request_model` attribute)
 
 ## [3.0.0a3] - 2024-06-13
 
