@@ -9,6 +9,7 @@
 ### Removed
 
 * Removed the Filter Extension depenency from `AggregationExtensionPostRequest` and `AggregationExtensionGetRequest` [#716](https://github.com/stac-utils/stac-fastapi/pull/716)
+* Removed `add_middleware` method in `StacApi` object and let starlette handle the middleware stack creation [721](https://github.com/stac-utils/stac-fastapi/pull/721)
 
 ## [3.0.0a3] - 2024-06-13
 
