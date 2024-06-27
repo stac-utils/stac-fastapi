@@ -2,6 +2,8 @@
 
 ## [Unreleased] - TBD
 
+## [3.0.0a4] - 2024-06-27
+
 ### Fixed
 
 * Updated default filter language in filter extension's POST search request model to match the extension's documentation [#711](https://github.com/stac-utils/stac-fastapi/issues/711)
@@ -407,7 +409,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a3..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a4..main>
+[3.0.0a4]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a3..3.0.0a4>
 [3.0.0a3]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a2..3.0.0a3>
 [3.0.0a2]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a1..3.0.0a2>
 [3.0.0a1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a0..3.0.0a1>
