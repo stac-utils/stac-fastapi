@@ -2,6 +2,10 @@
 
 ## [Unreleased] - TBD
 
+### Changed
+
+* moved `GETPagination`, `POSTPagination`, `GETTokenPagination` and `POSTTokenPagination` to `stac_fastapi.extensions.core.pagination.request` submodule [#717](https://github.com/stac-utils/stac-fastapi/pull/717)
+
 ## [3.0.0a4] - 2024-06-27
 
 ### Fixed
@@ -11,7 +15,6 @@
 ### Removed
 
 * Removed the Filter Extension depenency from `AggregationExtensionPostRequest` and `AggregationExtensionGetRequest` [#716](https://github.com/stac-utils/stac-fastapi/pull/716)
-* move `GETPagination`, `POSTPagination`, `GETTokenPagination` and `POSTTokenPagination` to `stac_fastapi.extensions.core.pagination.request` submodule [#717](https://github.com/stac-utils/stac-fastapi/pull/717)
 * Removed `add_middleware` method in `StacApi` object and let starlette handle the middleware stack creation [721](https://github.com/stac-utils/stac-fastapi/pull/721)
 
 ## [3.0.0a3] - 2024-06-13
