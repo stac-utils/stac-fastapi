@@ -18,6 +18,7 @@
 
 ### Changed
 
+* Replaced `@attrs` with python `@dataclass` for `APIRequest` (model for GET request) class type [#714](https://github.com/stac-utils/stac-fastapi/pull/714)
 * Moved `GETPagination`, `POSTPagination`, `GETTokenPagination` and `POSTTokenPagination` to `stac_fastapi.extensions.core.pagination.request` submodule [#717](https://github.com/stac-utils/stac-fastapi/pull/717)
 
 ## [3.0.0a4] - 2024-06-27

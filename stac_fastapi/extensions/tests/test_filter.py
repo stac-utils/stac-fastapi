@@ -21,7 +21,8 @@ class DummyCoreClient(BaseCoreClient):
         raise NotImplementedError
 
     def get_search(self, *args, **kwargs):
-        raise NotImplementedError
+        _ = kwargs.pop("request", None)
+        return kwargs
 
     def post_search(self, *args, **kwargs):
         return args[0].model_dump()
@@ -73,3 +74,46 @@ def test_search_filter_post_filter_lang_non_default(client: TestClient):
     assert response.is_success, response.json()
     response_dict = response.json()
     assert response_dict["filter_lang"] == filter_lang_value
+
+
+def test_search_filter_get(client: TestClient):
+    """Test search GET endpoint with filter ext."""
+    response = client.get(
+        "/search",
+        params={
+            "filter": "id='item_id' AND collection='collection_id'",
+        },
+    )
+    assert response.is_success, response.json()
+    response_dict = response.json()
+    assert not response_dict["collections"]
+    assert response_dict["filter"] == "id='item_id' AND collection='collection_id'"
+    assert not response_dict["filter_crs"]
+    assert response_dict["filter_lang"] == "cql2-text"
+
+    response = client.get(
+        "/search",
+        params={
+            "filter": {"op": "=", "args": [{"property": "id"}, "test-item"]},
+            "filter-lang": "cql2-json",
+        },
+    )
+    assert response.is_success, response.json()
+    response_dict = response.json()
+    assert not response_dict["collections"]
+    assert (
+        response_dict["filter"]
+        == "{'op': '=', 'args': [{'property': 'id'}, 'test-item']}"
+    )
+    assert not response_dict["filter_crs"]
+    assert response_dict["filter_lang"] == "cql2-json"
+
+    response = client.get(
+        "/search",
+        params={
+            "collections": "collection1,collection2",
+        },
+    )
+    assert response.is_success, response.json()
+    response_dict = response.json()
+    assert response_dict["collections"] == ["collection1", "collection2"]

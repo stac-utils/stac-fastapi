@@ -1,12 +1,13 @@
 """Api request/response models."""
 
 import importlib.util
+from dataclasses import dataclass, make_dataclass
 from typing import List, Optional, Type, Union
 
-import attr
-from fastapi import Path
+from fastapi import Path, Query
 from pydantic import BaseModel, create_model
 from stac_pydantic.shared import BBox
+from typing_extensions import Annotated
 
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.rfc3339 import DateTimeType
@@ -37,11 +38,11 @@ def create_request_model(
 
     mixins = mixins or []
 
-    models = [base_model] + extension_models + mixins
+    models = extension_models + mixins + [base_model]
 
     # Handle GET requests
     if all([issubclass(m, APIRequest) for m in models]):
-        return attr.make_class(model_name, attrs={}, bases=tuple(models))
+        return make_dataclass(model_name, [], bases=tuple(models))
 
     # Handle POST requests
     elif all([issubclass(m, BaseModel) for m in models]):
@@ -80,34 +81,43 @@ def create_post_request_model(
     )
 
 
-@attr.s  # type:ignore
+@dataclass
 class CollectionUri(APIRequest):
     """Get or delete collection."""
 
-    collection_id: str = attr.ib(default=Path(..., description="Collection ID"))
+    collection_id: Annotated[str, Path(description="Collection ID")]
 
 
-@attr.s
-class ItemUri(CollectionUri):
+@dataclass
+class ItemUri(APIRequest):
     """Get or delete item."""
 
-    item_id: str = attr.ib(default=Path(..., description="Item ID"))
+    collection_id: Annotated[str, Path(description="Collection ID")]
+    item_id: Annotated[str, Path(description="Item ID")]
 
 
-@attr.s
+@dataclass
 class EmptyRequest(APIRequest):
     """Empty request."""
 
     ...
 
 
-@attr.s
-class ItemCollectionUri(CollectionUri):
+@dataclass
+class ItemCollectionUri(APIRequest):
     """Get item collection."""
 
-    limit: int = attr.ib(default=10)
-    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
-    datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
+    collection_id: Annotated[str, Path(description="Collection ID")]
+    limit: Annotated[int, Query()] = 10
+    bbox: Annotated[Optional[BBox], Query()] = None
+    datetime: Annotated[Optional[DateTimeType], Query()] = None
+
+    def __post_init__(self):
+        """convert attributes."""
+        if self.bbox:
+            self.bbox = str2bbox(self.bbox)  # type: ignore
+        if self.datetime:
+            self.datetime = str_to_interval(self.datetime)  # type: ignore
 
 
 # Test for ORJSON and use it rather than stdlib JSON where supported

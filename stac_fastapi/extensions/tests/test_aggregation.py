@@ -1,11 +1,15 @@
 from typing import Iterator
 
 import pytest
+from fastapi import Depends, FastAPI
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import AggregationExtension
 from stac_fastapi.extensions.core.aggregation.client import BaseAggregationClient
+from stac_fastapi.extensions.core.aggregation.request import (
+    AggregationExtensionGetRequest,
+)
 from stac_fastapi.extensions.core.aggregation.types import (
     Aggregation,
     AggregationCollection,
@@ -100,3 +104,31 @@ def core_client() -> DummyCoreClient:
 @pytest.fixture
 def aggregations_client() -> BaseAggregationClient:
     return BaseAggregationClient()
+
+
+def test_agg_get_query():
+    """test AggregationExtensionGetRequest model."""
+    app = FastAPI()
+
+    @app.get("/test")
+    def test(query=Depends(AggregationExtensionGetRequest)):
+        return query
+
+    with TestClient(app) as client:
+        response = client.get("/test")
+        assert response.is_success
+        params = response.json()
+        assert not params["collections"]
+        assert not params["aggregations"]
+
+        response = client.get(
+            "/test",
+            params={
+                "collections": "collection1,collection2",
+                "aggregations": "prop1,prop2",
+            },
+        )
+        assert response.is_success
+        params = response.json()
+        assert params["collections"] == ["collection1", "collection2"]
+        assert params["aggregations"] == ["prop1", "prop2"]

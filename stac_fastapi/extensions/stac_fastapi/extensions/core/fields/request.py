@@ -1,10 +1,12 @@
 """Request models for the fields extension."""
 
 import warnings
+from dataclasses import dataclass
 from typing import Dict, Optional, Set
 
-import attr
+from fastapi import Query
 from pydantic import BaseModel, Field
+from typing_extensions import Annotated
 
 from stac_fastapi.types.search import APIRequest, str2list
 
@@ -68,11 +70,16 @@ class PostFieldsExtension(BaseModel):
         }
 
 
-@attr.s
+@dataclass
 class FieldsExtensionGetRequest(APIRequest):
     """Additional fields for the GET request."""
 
-    fields: Optional[str] = attr.ib(default=None, converter=str2list)
+    fields: Annotated[Optional[str], Query()] = None
+
+    def __post_init__(self):
+        """convert attributes."""
+        if self.fields:
+            self.fields = str2list(self.fields)  # type: ignore
 
 
 class FieldsExtensionPostRequest(BaseModel):

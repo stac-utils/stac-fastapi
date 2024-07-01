@@ -1,5 +1,6 @@
 """Transaction extension."""
 
+from dataclasses import dataclass
 from typing import List, Optional, Type, Union
 
 import attr
@@ -7,6 +8,7 @@ from fastapi import APIRouter, Body, FastAPI
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.shared import MimeTypes
 from starlette.responses import JSONResponse, Response
+from typing_extensions import Annotated
 
 from stac_fastapi.api.models import CollectionUri, ItemUri
 from stac_fastapi.api.routes import create_async_endpoint
@@ -15,25 +17,25 @@ from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransaction
 from stac_fastapi.types.extension import ApiExtension
 
 
-@attr.s
+@dataclass
 class PostItem(CollectionUri):
     """Create Item."""
 
-    item: Union[Item, ItemCollection] = attr.ib(default=Body(None))
+    item: Annotated[Union[Item, ItemCollection], Body()] = None
 
 
-@attr.s
+@dataclass
 class PutItem(ItemUri):
     """Update Item."""
 
-    item: Item = attr.ib(default=Body(None))
+    item: Annotated[Item, Body()] = None
 
 
-@attr.s
+@dataclass
 class PutCollection(CollectionUri):
     """Update Collection."""
 
-    collection: Collection = attr.ib(default=Body(None))
+    collection: Annotated[Collection, Body()] = None
 
 
 @attr.s

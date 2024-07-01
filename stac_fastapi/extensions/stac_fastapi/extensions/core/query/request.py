@@ -1,18 +1,20 @@
 """Request model for the Query extension."""
 
+from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-import attr
+from fastapi import Query
 from pydantic import BaseModel
+from typing_extensions import Annotated
 
 from stac_fastapi.types.search import APIRequest
 
 
-@attr.s
+@dataclass
 class QueryExtensionGetRequest(APIRequest):
     """Query Extension GET request model."""
 
-    query: Optional[str] = attr.ib(default=None)
+    query: Annotated[Optional[str], Query()] = None
 
 
 class QueryExtensionPostRequest(BaseModel):

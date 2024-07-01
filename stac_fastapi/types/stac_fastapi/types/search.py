@@ -3,9 +3,10 @@
 """
 
 import abc
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
-import attr
+from fastapi import Query
 from pydantic import PositiveInt
 from pydantic.functional_validators import AfterValidator
 from stac_pydantic.api import Search
@@ -42,7 +43,7 @@ NumType = Union[float, int]
 Limit = Annotated[PositiveInt, AfterValidator(crop)]
 
 
-@attr.s  # type:ignore
+@dataclass
 class APIRequest(abc.ABC):
     """Generic API Request base class."""
 
@@ -52,16 +53,27 @@ class APIRequest(abc.ABC):
         return self.__dict__
 
 
-@attr.s
+@dataclass
 class BaseSearchGetRequest(APIRequest):
     """Base arguments for GET Request."""
 
-    collections: Optional[str] = attr.ib(default=None, converter=str2list)
-    ids: Optional[str] = attr.ib(default=None, converter=str2list)
-    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
-    intersects: Optional[str] = attr.ib(default=None)
-    datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
-    limit: Optional[int] = attr.ib(default=10)
+    collections: Annotated[Optional[str], Query()] = None
+    ids: Annotated[Optional[str], Query()] = None
+    bbox: Annotated[Optional[BBox], Query()] = None
+    intersects: Annotated[Optional[str], Query()] = None
+    datetime: Annotated[Optional[DateTimeType], Query()] = None
+    limit: Annotated[Optional[int], Query()] = 10
+
+    def __post_init__(self):
+        """convert attributes."""
+        if self.collections:
+            self.collections = str2list(self.collections)  # type: ignore
+        if self.ids:
+            self.ids = str2list(self.ids)  # type: ignore
+        if self.bbox:
+            self.bbox = str2bbox(self.bbox)  # type: ignore
+        if self.datetime:
+            self.datetime = str_to_interval(self.datetime)  # type: ignore
 
 
 class BaseSearchPostRequest(Search):
