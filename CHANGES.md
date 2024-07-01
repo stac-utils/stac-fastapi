@@ -2,9 +2,34 @@
 
 ## [Unreleased] - TBD
 
+### Added
+
+* Add attributes to `stac_fastapi.api.app.StacApi` to enable customization of request model for:
+  - `/collections`: **collections_get_request_model**, default to `EmptyRequest`
+  - `/collections/{collection_id}`: **collection_get_request_model**, default to `CollectionUri`
+  - `/collections/{collection_id}/items`: **items_get_request_model**, default to `ItemCollectionUri`
+  - `/collections/{collection_id}/items/{item_id}`: **item_get_request_model**, default to `ItemUri`
+
+### Removed
+
+* Removed the Filter Extension dependency from `AggregationExtensionPostRequest` and `AggregationExtensionGetRequest` [#716](https://github.com/stac-utils/stac-fastapi/pull/716)
+* Removed `pagination_extension` attribute in `stac_fastapi.api.app.StacApi`
+* Removed use of `pagination_extension` in `register_get_item_collection` function (User now need to construct the request model and pass it using `items_get_request_model` attribute)
+
+### Changed
+
+* Moved `GETPagination`, `POSTPagination`, `GETTokenPagination` and `POSTTokenPagination` to `stac_fastapi.extensions.core.pagination.request` submodule [#717](https://github.com/stac-utils/stac-fastapi/pull/717)
+
+## [3.0.0a4] - 2024-06-27
+
 ### Fixed
 
 * Updated default filter language in filter extension's POST search request model to match the extension's documentation [#711](https://github.com/stac-utils/stac-fastapi/issues/711)
+
+### Removed
+
+* Removed the Filter Extension depenency from `AggregationExtensionPostRequest` and `AggregationExtensionGetRequest` [#716](https://github.com/stac-utils/stac-fastapi/pull/716)
+* Removed `add_middleware` method in `StacApi` object and let starlette handle the middleware stack creation [721](https://github.com/stac-utils/stac-fastapi/pull/721)
 
 ## [3.0.0a3] - 2024-06-13
 
@@ -402,7 +427,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a3..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a4..main>
+[3.0.0a4]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a3..3.0.0a4>
 [3.0.0a3]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a2..3.0.0a3>
 [3.0.0a2]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a1..3.0.0a2>
 [3.0.0a1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a0..3.0.0a1>

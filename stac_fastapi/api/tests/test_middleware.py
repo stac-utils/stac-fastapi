@@ -1,6 +1,8 @@
 from unittest import mock
 
 import pytest
+from fastapi import Request
+from fastapi.responses import JSONResponse
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 
@@ -166,3 +168,31 @@ def test_cors_middleware(test_client):
     resp = test_client.get("/_mgmt/ping", headers={"Origin": "http://netloc"})
     assert resp.status_code == 200
     assert resp.headers["access-control-allow-origin"] == "*"
+
+
+def test_middleware_stack():
+    stac_api = StacApi(
+        settings=ApiSettings(), client=mock.create_autospec(BaseCoreClient)
+    )
+
+    def exception_handler(request: Request, exc: Exception) -> JSONResponse:
+        return JSONResponse(
+            status_code=400,
+            content={"customerrordetail": "yoo", "body": "yo"},
+        )
+
+    class CustomException(Exception):
+        "Custom Exception"
+
+        pass
+
+    stac_api.app.add_exception_handler(CustomException, exception_handler)
+
+    @stac_api.app.get("/error")
+    def error_endpoint():
+        raise CustomException("got you!")
+
+    with TestClient(stac_api.app) as client:
+        resp = client.get("/error")
+        assert resp.status_code == 400
+        assert resp.json()["customerrordetail"] == "yoo"

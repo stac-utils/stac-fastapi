@@ -120,32 +120,6 @@ class ItemCollectionUri(APIRequest):
             self.datetime = str_to_interval(self.datetime)  # type: ignore
 
 
-class POSTTokenPagination(BaseModel):
-    """Token pagination model for POST requests."""
-
-    token: Optional[str] = None
-
-
-@dataclass
-class GETTokenPagination(APIRequest):
-    """Token pagination for GET requests."""
-
-    token: Annotated[Optional[str], Query()] = None
-
-
-class POSTPagination(BaseModel):
-    """Page based pagination for POST requests."""
-
-    page: Optional[str] = None
-
-
-@dataclass
-class GETPagination(APIRequest):
-    """Page based pagination for GET requests."""
-
-    page: Annotated[Optional[str], Query()] = None
-
-
 # Test for ORJSON and use it rather than stdlib JSON where supported
 if importlib.util.find_spec("orjson") is not None:
     from fastapi.responses import ORJSONResponse
