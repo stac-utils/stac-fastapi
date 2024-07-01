@@ -2,6 +2,7 @@ from fastapi import Depends, HTTPException, security, status
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
+from stac_fastapi.api.models import ItemCollectionUri, create_request_model
 from stac_fastapi.extensions.core import (
     TokenPaginationExtension,
     TransactionExtension,
@@ -13,6 +14,13 @@ class TestRouteDependencies:
     @staticmethod
     def _build_api(**overrides):
         settings = config.ApiSettings()
+
+        items_get_request_model = create_request_model(
+            "ItemCollectionURI",
+            base_model=ItemCollectionUri,
+            mixins=[TokenPaginationExtension().GET],
+        )
+
         return StacApi(
             **{
                 "settings": settings,
@@ -23,6 +31,7 @@ class TestRouteDependencies:
                     ),
                     TokenPaginationExtension(),
                 ],
+                "items_get_request_model": items_get_request_model,
                 **overrides,
             }
         )

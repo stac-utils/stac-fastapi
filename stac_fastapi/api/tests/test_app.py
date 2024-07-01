@@ -1,13 +1,19 @@
+from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Union
 
 import pytest
+from fastapi import Path, Query
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 from stac_pydantic import api
 
 from stac_fastapi.api import app
-from stac_fastapi.api.models import create_get_request_model, create_post_request_model
+from stac_fastapi.api.models import (
+    APIRequest,
+    create_get_request_model,
+    create_post_request_model,
+)
 from stac_fastapi.extensions.core import FieldsExtension, FilterExtension
 from stac_fastapi.types import stac
 from stac_fastapi.types.config import ApiSettings
@@ -294,3 +300,66 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
     else:
         assert get_search.status_code == 200, get_search.text
         assert post_search.status_code == 200, post_search.text
+
+
+def test_request_model(AsyncTestCoreClient):
+    """Test if request models are passed correctly."""
+
+    @dataclass
+    class CollectionsRequest(APIRequest):
+        user: str = Query(...)
+
+    @dataclass
+    class CollectionRequest(APIRequest):
+        collection_id: str = Path(description="Collection ID")
+        user: str = Query(...)
+
+    @dataclass
+    class ItemsRequest(APIRequest):
+        collection_id: str = Path(description="Collection ID")
+        user: str = Query(...)
+
+    @dataclass
+    class ItemRequest(APIRequest):
+        collection_id: str = Path(description="Collection ID")
+        item_id: str = Path(description="Item ID")
+        user: str = Query(...)
+
+    test_app = app.StacApi(
+        settings=ApiSettings(),
+        client=AsyncTestCoreClient(),
+        collections_get_request_model=CollectionsRequest,
+        collection_get_request_model=CollectionRequest,
+        items_get_request_model=ItemsRequest,
+        item_get_request_model=ItemRequest,
+        extensions=[],
+    )
+
+    with TestClient(test_app.app) as client:
+        resp = client.get("/collections")
+        assert resp.status_code == 400
+
+        resp = client.get("/collections", params={"user": "Luke"})
+        assert resp.status_code == 200
+
+        resp = client.get("/collections/test_collection")
+        assert resp.status_code == 400
+
+        resp = client.get("/collections/test_collection", params={"user": "Leia"})
+        assert resp.status_code == 200
+
+        resp = client.get("/collections/test_collection/items")
+        assert resp.status_code == 400
+
+        resp = client.get(
+            "/collections/test_collection/items", params={"user": "Obi-Wan"}
+        )
+        assert resp.status_code == 200
+
+        resp = client.get("/collections/test_collection/items/test_item")
+        assert resp.status_code == 400
+
+        resp = client.get(
+            "/collections/test_collection/items/test_item", params={"user": "Chewbacca"}
+        )
+        assert resp.status_code == 200
