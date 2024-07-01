@@ -13,8 +13,12 @@
 ### Removed
 
 * Removed the Filter Extension dependency from `AggregationExtensionPostRequest` and `AggregationExtensionGetRequest` [#716](https://github.com/stac-utils/stac-fastapi/pull/716)
-* `pagination_extension` attribute in `stac_fastapi.api.app.StacApi`
-* remove use of `pagination_extension` in `register_get_item_collection` function (User now need to construct the request model and pass it using `items_get_request_model` attribute)
+* Removed `pagination_extension` attribute in `stac_fastapi.api.app.StacApi`
+* Removed use of `pagination_extension` in `register_get_item_collection` function (User now need to construct the request model and pass it using `items_get_request_model` attribute)
+
+### Changed
+
+* Moved `GETPagination`, `POSTPagination`, `GETTokenPagination` and `POSTTokenPagination` to `stac_fastapi.extensions.core.pagination.request` submodule [#717](https://github.com/stac-utils/stac-fastapi/pull/717)
 
 ## [3.0.0a4] - 2024-06-27
 
