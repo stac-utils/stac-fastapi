@@ -1,18 +1,20 @@
 """Pagination extension request models."""
 
+from dataclasses import dataclass
 from typing import Optional
 
-import attr
+from fastapi import Query
 from pydantic import BaseModel
+from typing_extensions import Annotated
 
 from stac_fastapi.types.search import APIRequest
 
 
-@attr.s
+@dataclass
 class GETTokenPagination(APIRequest):
     """Token pagination for GET requests."""
 
-    token: Optional[str] = attr.ib(default=None)
+    token: Annotated[Optional[str], Query()] = None
 
 
 class POSTTokenPagination(BaseModel):
@@ -21,11 +23,11 @@ class POSTTokenPagination(BaseModel):
     token: Optional[str] = None
 
 
-@attr.s
+@dataclass
 class GETPagination(APIRequest):
     """Page based pagination for GET requests."""
 
-    page: Optional[str] = attr.ib(default=None)
+    page: Annotated[Optional[str], Query()] = None
 
 
 class POSTPagination(BaseModel):
