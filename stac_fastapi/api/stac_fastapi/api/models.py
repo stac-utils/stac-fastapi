@@ -1,6 +1,5 @@
 """Api request/response models."""
 
-import importlib.util
 from dataclasses import dataclass, make_dataclass
 from typing import List, Optional, Type, Union
 
@@ -18,6 +17,12 @@ from stac_fastapi.types.search import (
     str2bbox,
     str_to_interval,
 )
+
+try:
+    import orjson  # noqa
+    from fastapi.responses import ORJSONResponse as JSONResponse
+except ImportError:  # pragma: nocover
+    from starlette.responses import JSONResponse
 
 
 def create_request_model(
@@ -120,29 +125,13 @@ class ItemCollectionUri(APIRequest):
             self.datetime = str_to_interval(self.datetime)  # type: ignore
 
 
-# Test for ORJSON and use it rather than stdlib JSON where supported
-if importlib.util.find_spec("orjson") is not None:
-    from fastapi.responses import ORJSONResponse
+class GeoJSONResponse(JSONResponse):
+    """JSON with custom, vendor content-type."""
 
-    class GeoJSONResponse(ORJSONResponse):
-        """JSON with custom, vendor content-type."""
+    media_type = "application/geo+json"
 
-        media_type = "application/geo+json"
 
-    class JSONSchemaResponse(ORJSONResponse):
-        """JSON with custom, vendor content-type."""
+class JSONSchemaResponse(JSONResponse):
+    """JSON with custom, vendor content-type."""
 
-        media_type = "application/schema+json"
-
-else:
-    from starlette.responses import JSONResponse
-
-    class GeoJSONResponse(JSONResponse):
-        """JSON with custom, vendor content-type."""
-
-        media_type = "application/geo+json"
-
-    class JSONSchemaResponse(JSONResponse):
-        """JSON with custom, vendor content-type."""
-
-        media_type = "application/schema+json"
+    media_type = "application/schema+json"

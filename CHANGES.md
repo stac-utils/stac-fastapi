@@ -15,6 +15,7 @@
 * Removed the Filter Extension dependency from `AggregationExtensionPostRequest` and `AggregationExtensionGetRequest` [#716](https://github.com/stac-utils/stac-fastapi/pull/716)
 * Removed `pagination_extension` attribute in `stac_fastapi.api.app.StacApi`
 * Removed use of `pagination_extension` in `register_get_item_collection` function (User now need to construct the request model and pass it using `items_get_request_model` attribute)
+* Removed use of `FieldsExtension` in `stac_fastapi.api.app.StacApi`. If users use `FieldsExtension`, they would have to handle overpassing the model validation step by returning a `JSONResponse` from the `post_search` and `get_search` client methods.
 
 ### Changed
 
