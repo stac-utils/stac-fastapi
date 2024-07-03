@@ -167,9 +167,10 @@ class BaseSearchPostRequest(BaseModel):
                     "Maximum longitude must be greater than minimum longitude"
                 )
 
+            # Comment this code out because we supports geometries in WGS84 and EPSG:25832
             # Validate against WGS84
-            if xmin < -180 or ymin < -90 or xmax > 180 or ymax > 90:
-                raise ValueError("Bounding box must be within (-180, -90, 180, 90)")
+            # if xmin < -180 or ymin < -90 or xmax > 180 or ymax > 90:
+            #     raise ValueError("Bounding box must be within (-180, -90, 180, 90)")
 
         return v
 
