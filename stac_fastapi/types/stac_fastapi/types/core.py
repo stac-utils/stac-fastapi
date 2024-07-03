@@ -12,6 +12,7 @@ from stac_pydantic.version import STAC_VERSION
 from starlette.responses import Response
 
 from stac_fastapi.types import stac as stac_types
+from stac_fastapi.types.errors import NotFoundError
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
