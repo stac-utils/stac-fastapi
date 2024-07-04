@@ -133,6 +133,7 @@ class BaseSearchPostRequest(BaseModel):
     ]
     datetime: Optional[str]
     limit: Optional[Limit] = 10
+    crs: Optional[str] = None
 
     @property
     def start_date(self) -> Optional[datetime]:
