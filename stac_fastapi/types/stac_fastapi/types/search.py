@@ -30,7 +30,8 @@ from geojson_pydantic.geometries import (
     Polygon,
     _GeometryBase,
 )
-from pydantic import BaseModel, ConstrainedInt, validator
+#from pydantic import BaseModel, ConstrainedInt, validator
+from pydantic import BaseModel, ConstrainedInt, Field, validator
 from pydantic.errors import NumberNotGtError
 from pydantic.validators import int_validator
 from stac_pydantic.shared import BBox
@@ -134,6 +135,7 @@ class BaseSearchPostRequest(BaseModel):
     datetime: Optional[str]
     limit: Optional[Limit] = 10
     crs: Optional[str] = None
+    bbox_crs: Optional[str] = None
 
     @property
     def start_date(self) -> Optional[datetime]:

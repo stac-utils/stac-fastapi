@@ -13,14 +13,20 @@ from .request import CrsExtensionGetRequest, CrsExtensionPostRequest
 class CrsExtension(ApiExtension):
     """Crs Extension.
 
-    The Crs extension adds the `crs` parameter to the `/search` endpoint, allowing the
-    caller to specify what crs geometries is returned in.
+    The Crs extension adds the `crs` and `bbox_crs` parameter to the `/search` endpoint, allowing the
+    caller to specify what crs geometries is returned in and what geometries the input bbox is in.
     """
 
     GET = CrsExtensionGetRequest
     POST = CrsExtensionPostRequest
 
     crs: List[str] = attr.ib(
+        factory=lambda: [
+            "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+            "http://www.opengis.net/def/crs/EPSG/0/25832",
+        ]
+    )
+    bbox_crs: List[str] = attr.ib(
         factory=lambda: [
             "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
             "http://www.opengis.net/def/crs/EPSG/0/25832",

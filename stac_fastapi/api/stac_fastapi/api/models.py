@@ -131,7 +131,7 @@ class ItemCollectionUri(CollectionUri):
 
     limit: int = attr.ib(default=10)
     bbox: Optional[str] = attr.ib(default=None, converter=str2list)
-    bbox_crs: Optional[str] = attr.ib(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84")
+    bbox_crs: Optional[str] = attr.ib(default=Query(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84", alias="bbox-crs"))
     datetime: Optional[str] = attr.ib(default=None)
     crs: Optional[str] = attr.ib(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84")
     filter: Optional[str] = attr.ib(default=Query(None, description=descriptions.FILTER))
