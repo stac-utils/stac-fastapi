@@ -11,6 +11,7 @@ from stac_pydantic import api
 from stac_fastapi.api import app
 from stac_fastapi.api.models import (
     APIRequest,
+    JSONResponse,
     create_get_request_model,
     create_post_request_model,
 )
@@ -206,7 +207,14 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
         def post_search(
             self, search_request: BaseSearchPostRequest, **kwargs
         ) -> stac.ItemCollection:
-            return {"not": "a proper stac item"}
+            resp = {"not": "a proper stac item"}
+
+            # if `fields` extension is enabled, then we return a JSONResponse
+            # to avoid Item validation
+            if getattr(search_request, "fields", None):
+                return JSONResponse(content=resp)
+
+            return resp
 
         def get_search(
             self,
@@ -218,7 +226,14 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
             limit: Optional[int] = 10,
             **kwargs,
         ) -> stac.ItemCollection:
-            return {"not": "a proper stac item"}
+            resp = {"not": "a proper stac item"}
+
+            # if `fields` extension is enabled, then we return a JSONResponse
+            # to avoid Item validation
+            if "fields" in kwargs:
+                return JSONResponse(content=resp)
+
+            return resp
 
         def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
             raise NotImplementedError
@@ -240,6 +255,7 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
         ) -> stac.ItemCollection:
             raise NotImplementedError
 
+    # With FieldsExtension
     test_app = app.StacApi(
         settings=ApiSettings(enable_response_models=validate),
         client=BadCoreClient(),
@@ -264,14 +280,18 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
             },
         )
 
+    # With or without validation, /search endpoints will always return 200
+    # because we have the `FieldsExtension` enabled, so the endpoint
+    # will avoid the model validation (by returning JSONResponse)
     assert get_search.status_code == 200, get_search.text
     assert post_search.status_code == 200, post_search.text
 
+    # Without FieldsExtension
     test_app = app.StacApi(
         settings=ApiSettings(enable_response_models=validate),
         client=BadCoreClient(),
-        search_get_request_model=create_get_request_model([FieldsExtension()]),
-        search_post_request_model=create_post_request_model([FieldsExtension()]),
+        search_get_request_model=create_get_request_model([]),
+        search_post_request_model=create_post_request_model([]),
         extensions=[],
     )
 
@@ -290,7 +310,10 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
                 },
             },
         )
+
     if validate:
+        # NOTE: the `fields` options will be ignored by fastAPI because it's
+        # not part of the request model, so the client should not by-pass the validation
         assert get_search.status_code == 500, (
             get_search.json()["code"] == "ResponseValidationError"
         )

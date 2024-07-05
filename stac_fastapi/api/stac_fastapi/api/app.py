@@ -27,9 +27,6 @@ from stac_fastapi.api.models import (
 )
 from stac_fastapi.api.openapi import update_openapi
 from stac_fastapi.api.routes import Scope, add_route_dependencies, create_async_endpoint
-
-# TODO: make this module not depend on `stac_fastapi.extensions`
-from stac_fastapi.extensions.core import FieldsExtension
 from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
@@ -225,15 +222,12 @@ class StacApi:
         Returns:
             None
         """
-        fields_ext = self.get_extension(FieldsExtension)
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(
-                (api.ItemCollection if not fields_ext else None)
-                if self.settings.enable_response_models
-                else None
-            ),
+            response_model=api.ItemCollection
+            if self.settings.enable_response_models
+            else None,
             responses={
                 200: {
                     "content": {
@@ -257,15 +251,12 @@ class StacApi:
         Returns:
             None
         """
-        fields_ext = self.get_extension(FieldsExtension)
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(
-                (api.ItemCollection if not fields_ext else None)
-                if self.settings.enable_response_models
-                else None
-            ),
+            response_model=api.ItemCollection
+            if self.settings.enable_response_models
+            else None,
             responses={
                 200: {
                     "content": {
