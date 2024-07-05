@@ -2,6 +2,8 @@
 
 ## [Unreleased] - TBD
 
+## [3.0.0b1] - 2024-07-05
+
 ### Added
 
 * Add attributes to `stac_fastapi.api.app.StacApi` to enable customization of request model for:
@@ -21,6 +23,7 @@
 
 * Replaced `@attrs` with python `@dataclass` for `APIRequest` (model for GET request) class type [#714](https://github.com/stac-utils/stac-fastapi/pull/714)
 * Moved `GETPagination`, `POSTPagination`, `GETTokenPagination` and `POSTTokenPagination` to `stac_fastapi.extensions.core.pagination.request` submodule [#717](https://github.com/stac-utils/stac-fastapi/pull/717)
+* update FastAPI requirement to `>=0.111.0`
 
 ## [3.0.0a4] - 2024-06-27
 
@@ -429,7 +432,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a4..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b1..main>
+[3.0.0b1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a4..3.0.0b1>
 [3.0.0a4]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a3..3.0.0a4>
 [3.0.0a3]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a2..3.0.0a3>
 [3.0.0a2]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a1..3.0.0a2>
