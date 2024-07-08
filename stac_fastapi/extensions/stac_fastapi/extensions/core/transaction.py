@@ -1,6 +1,5 @@
 """Transaction extension."""
 
-from dataclasses import dataclass
 from typing import List, Optional, Type, Union
 
 import attr
@@ -17,25 +16,25 @@ from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransaction
 from stac_fastapi.types.extension import ApiExtension
 
 
-@dataclass
+@attr.s
 class PostItem(CollectionUri):
     """Create Item."""
 
-    item: Annotated[Union[Item, ItemCollection], Body()] = None
+    item: Annotated[Union[Item, ItemCollection], Body()] = attr.ib(default=None)
 
 
-@dataclass
+@attr.s
 class PutItem(ItemUri):
     """Update Item."""
 
-    item: Annotated[Item, Body()] = None
+    item: Annotated[Item, Body()] = attr.ib(default=None)
 
 
-@dataclass
+@attr.s
 class PutCollection(CollectionUri):
     """Update Collection."""
 
-    collection: Annotated[Collection, Body()] = None
+    collection: Annotated[Collection, Body()] = attr.ib(default=None)
 
 
 @attr.s

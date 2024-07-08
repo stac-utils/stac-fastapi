@@ -2,10 +2,9 @@
 
 """
 
-import abc
-from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
+import attr
 from fastapi import Query
 from pydantic import PositiveInt
 from pydantic.functional_validators import AfterValidator
@@ -43,8 +42,8 @@ NumType = Union[float, int]
 Limit = Annotated[PositiveInt, AfterValidator(crop)]
 
 
-@dataclass
-class APIRequest(abc.ABC):
+@attr.s
+class APIRequest:
     """Generic API Request base class."""
 
     def kwargs(self) -> Dict:
@@ -53,27 +52,20 @@ class APIRequest(abc.ABC):
         return self.__dict__
 
 
-@dataclass
+@attr.s
 class BaseSearchGetRequest(APIRequest):
     """Base arguments for GET Request."""
 
-    collections: Annotated[Optional[str], Query()] = None
-    ids: Annotated[Optional[str], Query()] = None
-    bbox: Annotated[Optional[BBox], Query()] = None
-    intersects: Annotated[Optional[str], Query()] = None
-    datetime: Annotated[Optional[DateTimeType], Query()] = None
-    limit: Annotated[Optional[int], Query()] = 10
-
-    def __post_init__(self):
-        """convert attributes."""
-        if self.collections:
-            self.collections = str2list(self.collections)  # type: ignore
-        if self.ids:
-            self.ids = str2list(self.ids)  # type: ignore
-        if self.bbox:
-            self.bbox = str2bbox(self.bbox)  # type: ignore
-        if self.datetime:
-            self.datetime = str_to_interval(self.datetime)  # type: ignore
+    collections: Annotated[Optional[str], Query()] = attr.ib(
+        default=None, converter=str2list
+    )
+    ids: Annotated[Optional[str], Query()] = attr.ib(default=None, converter=str2list)
+    bbox: Annotated[Optional[BBox], Query()] = attr.ib(default=None, converter=str2bbox)
+    intersects: Annotated[Optional[str], Query()] = attr.ib(default=None)
+    datetime: Annotated[Optional[DateTimeType], Query()] = attr.ib(
+        default=None, converter=str_to_interval
+    )
+    limit: Annotated[Optional[int], Query()] = attr.ib(default=10)
 
 
 class BaseSearchPostRequest(Search):

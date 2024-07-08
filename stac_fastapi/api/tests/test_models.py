@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
@@ -12,8 +12,10 @@ from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostReques
 
 
 def test_create_get_request_model():
-    extensions = [FilterExtension()]
-    request_model = create_get_request_model(extensions, BaseSearchGetRequest)
+    request_model = create_get_request_model(
+        extensions=[FilterExtension()],
+        base_model=BaseSearchGetRequest,
+    )
 
     model = request_model(
         collections="test1,test2",
@@ -34,6 +36,9 @@ def test_create_get_request_model():
 
     assert model.collections == ["test1", "test2"]
     assert model.filter_crs == "epsg:4326"
+
+    with pytest.raises(HTTPException):
+        request_model(datetime="yo")
 
     app = FastAPI()
 
@@ -62,8 +67,10 @@ def test_create_get_request_model():
     [(None, True), ({"test": "test"}, True), ("test==test", False), ([], False)],
 )
 def test_create_post_request_model(filter, passes):
-    extensions = [FilterExtension()]
-    request_model = create_post_request_model(extensions, BaseSearchPostRequest)
+    request_model = create_post_request_model(
+        extensions=[FilterExtension()],
+        base_model=BaseSearchPostRequest,
+    )
 
     if not passes:
         with pytest.raises(ValidationError):
@@ -100,8 +107,10 @@ def test_create_post_request_model(filter, passes):
     ],
 )
 def test_create_post_request_model_nested_fields(sortby, passes):
-    extensions = [SortExtension()]
-    request_model = create_post_request_model(extensions, BaseSearchPostRequest)
+    request_model = create_post_request_model(
+        extensions=[SortExtension()],
+        base_model=BaseSearchPostRequest,
+    )
 
     if not passes:
         with pytest.raises(ValidationError):

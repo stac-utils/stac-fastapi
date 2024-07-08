@@ -2,6 +2,10 @@
 
 ## [Unreleased] - TBD
 
+### Changed
+
+* move back to `@attrs` (instead of dataclass)
+
 ## [3.0.0b1] - 2024-07-05
 
 ### Added

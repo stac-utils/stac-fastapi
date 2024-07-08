@@ -1,8 +1,8 @@
 """Api request/response models."""
 
-from dataclasses import dataclass, make_dataclass
 from typing import List, Optional, Type, Union
 
+import attr
 from fastapi import Path, Query
 from pydantic import BaseModel, create_model
 from stac_pydantic.shared import BBox
@@ -43,11 +43,11 @@ def create_request_model(
 
     mixins = mixins or []
 
-    models = extension_models + mixins + [base_model]
+    models = [base_model] + extension_models + mixins
 
     # Handle GET requests
     if all([issubclass(m, APIRequest) for m in models]):
-        return make_dataclass(model_name, [], bases=tuple(models))
+        return attr.make_class(model_name, attrs={}, bases=tuple(models))
 
     # Handle POST requests
     elif all([issubclass(m, BaseModel) for m in models]):
@@ -86,43 +86,38 @@ def create_post_request_model(
     )
 
 
-@dataclass
+@attr.s
 class CollectionUri(APIRequest):
     """Get or delete collection."""
 
-    collection_id: Annotated[str, Path(description="Collection ID")]
+    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
 
 
-@dataclass
+@attr.s
 class ItemUri(APIRequest):
     """Get or delete item."""
 
-    collection_id: Annotated[str, Path(description="Collection ID")]
-    item_id: Annotated[str, Path(description="Item ID")]
+    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
+    item_id: Annotated[str, Path(description="Item ID")] = attr.ib()
 
 
-@dataclass
+@attr.s
 class EmptyRequest(APIRequest):
     """Empty request."""
 
     ...
 
 
-@dataclass
+@attr.s
 class ItemCollectionUri(APIRequest):
     """Get item collection."""
 
-    collection_id: Annotated[str, Path(description="Collection ID")]
-    limit: Annotated[int, Query()] = 10
-    bbox: Annotated[Optional[BBox], Query()] = None
-    datetime: Annotated[Optional[DateTimeType], Query()] = None
-
-    def __post_init__(self):
-        """convert attributes."""
-        if self.bbox:
-            self.bbox = str2bbox(self.bbox)  # type: ignore
-        if self.datetime:
-            self.datetime = str_to_interval(self.datetime)  # type: ignore
+    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
+    limit: Annotated[int, Query()] = attr.ib(default=10)
+    bbox: Annotated[Optional[BBox], Query()] = attr.ib(default=None, converter=str2bbox)
+    datetime: Annotated[Optional[DateTimeType], Query()] = attr.ib(
+        default=None, converter=str_to_interval
+    )
 
 
 class GeoJSONResponse(JSONResponse):
