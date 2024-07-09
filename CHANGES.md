@@ -2,6 +2,12 @@
 
 ## [Unreleased] - TBD
 
+## [3.0.0b2] - 2024-07-09
+
+### Changed
+
+* move back to `@attrs` (instead of dataclass) for `APIRequest` (model for GET request) class type [#729](https://github.com/stac-utils/stac-fastapi/pull/729)
+
 ## [3.0.0b1] - 2024-07-05
 
 ### Added
@@ -432,7 +438,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b1..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b2..main>
+[3.0.0b2]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b1..3.0.0b2>
 [3.0.0b1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a4..3.0.0b1>
 [3.0.0a4]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a3..3.0.0a4>
 [3.0.0a3]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a2..3.0.0a3>

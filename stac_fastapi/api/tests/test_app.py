@@ -1,12 +1,13 @@
-from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Union
 
+import attr
 import pytest
 from fastapi import Path, Query
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 from stac_pydantic import api
+from typing_extensions import Annotated
 
 from stac_fastapi.api import app
 from stac_fastapi.api.models import (
@@ -328,25 +329,25 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
 def test_request_model(AsyncTestCoreClient):
     """Test if request models are passed correctly."""
 
-    @dataclass
+    @attr.s
     class CollectionsRequest(APIRequest):
-        user: str = Query(...)
+        user: Annotated[str, Query(...)] = attr.ib()
 
-    @dataclass
+    @attr.s
     class CollectionRequest(APIRequest):
-        collection_id: str = Path(description="Collection ID")
-        user: str = Query(...)
+        collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
+        user: Annotated[str, Query(...)] = attr.ib()
 
-    @dataclass
+    @attr.s
     class ItemsRequest(APIRequest):
-        collection_id: str = Path(description="Collection ID")
-        user: str = Query(...)
+        collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
+        user: Annotated[str, Query(...)] = attr.ib()
 
-    @dataclass
+    @attr.s
     class ItemRequest(APIRequest):
-        collection_id: str = Path(description="Collection ID")
-        item_id: str = Path(description="Item ID")
-        user: str = Query(...)
+        collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
+        item_id: Annotated[str, Path(description="Item ID")] = attr.ib()
+        user: Annotated[str, Query(...)] = attr.ib()
 
     test_app = app.StacApi(
         settings=ApiSettings(),

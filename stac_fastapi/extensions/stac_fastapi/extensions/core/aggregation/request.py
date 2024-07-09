@@ -1,8 +1,8 @@
 """Request model for the Aggregation extension."""
 
-from dataclasses import dataclass
 from typing import List, Optional
 
+import attr
 from fastapi import Query
 from pydantic import Field
 from typing_extensions import Annotated
@@ -14,17 +14,13 @@ from stac_fastapi.types.search import (
 )
 
 
-@dataclass
+@attr.s
 class AggregationExtensionGetRequest(BaseSearchGetRequest):
     """Aggregation Extension GET request model."""
 
-    aggregations: Annotated[Optional[str], Query()] = None
-
-    def __post_init__(self):
-        """convert attributes."""
-        super().__post_init__()
-        if self.aggregations:
-            self.aggregations = str2list(self.aggregations)  # type: ignore
+    aggregations: Annotated[Optional[str], Query()] = attr.ib(
+        default=None, converter=str2list
+    )
 
 
 class AggregationExtensionPostRequest(BaseSearchPostRequest):
