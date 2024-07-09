@@ -6,14 +6,13 @@ from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from stac_fastapi.api.models import create_get_request_model, create_post_request_model
-from stac_fastapi.extensions.core.filter.filter import FilterExtension
-from stac_fastapi.extensions.core.sort.sort import SortExtension
+from stac_fastapi.extensions.core import FieldsExtension, FilterExtension, SortExtension
 from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 
 
 def test_create_get_request_model():
     request_model = create_get_request_model(
-        extensions=[FilterExtension()],
+        extensions=[FilterExtension(), FieldsExtension()],
         base_model=BaseSearchGetRequest,
     )
 
@@ -68,7 +67,7 @@ def test_create_get_request_model():
 )
 def test_create_post_request_model(filter, passes):
     request_model = create_post_request_model(
-        extensions=[FilterExtension()],
+        extensions=[FilterExtension(), FieldsExtension()],
         base_model=BaseSearchPostRequest,
     )
 
