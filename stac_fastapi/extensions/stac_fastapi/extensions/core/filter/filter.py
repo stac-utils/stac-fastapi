@@ -28,7 +28,9 @@ class FilterConformanceClasses(str, Enum):
     )
     ITEM_SEARCH_FILTER = "https://api.stacspec.org/v1.0.0-rc.2/item-search#filter"
     CQL2_TEXT = "http://www.opengis.net/spec/cql2/1.0/conf/cql2-text"
+    CQL_JSON = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/cql-json"
     CQL2_JSON = "http://www.opengis.net/spec/cql2/1.0/conf/cql2-json"
+    BASIC_CQL = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/basic-cql"
     BASIC_CQL2 = "http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2"
     BASIC_SPATIAL_OPERATORS = (
         "http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-operators"
@@ -75,9 +77,11 @@ class FilterExtension(ApiExtension):
             FilterConformanceClasses.FILTER,
             FilterConformanceClasses.FEATURES_FILTER,
             FilterConformanceClasses.ITEM_SEARCH_FILTER,
-            FilterConformanceClasses.BASIC_CQL2,
-            FilterConformanceClasses.CQL2_TEXT,
-            FilterConformanceClasses.CQL2_JSON,
+            FilterConformanceClasses.BASIC_CQL,
+            #FilterConformanceClasses.BASIC_CQL2,
+            #FilterConformanceClasses.CQL2_TEXT,
+            FilterConformanceClasses.CQL_JSON,
+            #FilterConformanceClasses.CQL2_JSON,
             FilterConformanceClasses.ADVANCED_COMPARISON_OPERATORS,
             FilterConformanceClasses.BASIC_SPATIAL_OPERATORS,
             FilterConformanceClasses.SPATIAL_OPERATORS,
