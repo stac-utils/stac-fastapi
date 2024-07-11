@@ -104,8 +104,7 @@ class ItemLinks(BaseLinks):
             #    self.base_url,
             #    f"collections/{self.collection_id}/items/{self.item_id}",
             # ),
-            href=urljoin(
-                self.href_builder.base_url,
+            href=self.href_builder.build(
                 f"collections/{self.collection_id}/items/{self.item_id}",
             ),
         )
@@ -116,9 +115,7 @@ class ItemLinks(BaseLinks):
             rel=Relations.parent,
             type=MimeTypes.json,
             # href=urljoin(self.base_url, f"collections/{self.collection_id}"),
-            href=urljoin(
-                self.href_builder.base_url, f"collections/{self.collection_id}"
-            ),
+            href=self.href_builder.build(f"collections/{self.collection_id}"),
         )
 
     def collection(self) -> Dict[str, Any]:
@@ -127,9 +124,7 @@ class ItemLinks(BaseLinks):
             rel=Relations.collection,
             type=MimeTypes.json,
             # href=urljoin(self.base_url, f"collections/{self.collection_id}"),
-            href=urljoin(
-                self.href_builder.base_url, f"collections/{self.collection_id}"
-            ),
+            href=self.href_builder.build(f"collections/{self.collection_id}"),
         )
 
     def create_links(self) -> List[Dict[str, Any]]:
