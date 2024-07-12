@@ -9,6 +9,7 @@ from datetime import datetime
 from enum import auto
 from types import DynamicClassAttribute
 from typing import Any, Callable, Dict, Generator, List, Optional, Union
+from stac_fastapi.api import descriptions
 
 import attr
 # from geojson_pydantic.geometries import (
@@ -20,6 +21,7 @@ import attr
 #     Polygon,
 #     _GeometryBase,
 # )
+from fastapi import Query
 from geojson_pydantic.geometries import (
     GeometryCollection,
     LineString,
@@ -110,9 +112,11 @@ class BaseSearchGetRequest(APIRequest):
     collections: Optional[str] = attr.ib(default=None, converter=str2list)
     ids: Optional[str] = attr.ib(default=None, converter=str2list)
     bbox: Optional[str] = attr.ib(default=None, converter=str2list)
+    bbox_crs: Optional[str] = attr.ib(default=Query(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84", alias="bbox-crs", description=descriptions.BBOX_CRS))
     intersects: Optional[str] = attr.ib(default=None)
     datetime: Optional[str] = attr.ib(default=None)
     limit: Optional[int] = attr.ib(default=10)
+    crs: Optional[str] = attr.ib(default=Query("http://www.opengis.net/def/crs/OGC/1.3/CRS84", description=descriptions.CRS))
 
 
 class BaseSearchPostRequest(BaseModel):
@@ -134,8 +138,7 @@ class BaseSearchPostRequest(BaseModel):
     ]
     datetime: Optional[str]
     limit: Optional[Limit] = 10
-    crs: Optional[str] = None
-    bbox_crs: Optional[str] = None
+    bbox_crs: Optional[str] = Field(alias="bbox-crs")
 
     @property
     def start_date(self) -> Optional[datetime]:
