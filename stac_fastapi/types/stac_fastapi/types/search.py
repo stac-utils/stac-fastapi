@@ -117,6 +117,9 @@ class BaseSearchGetRequest(APIRequest):
     datetime: Optional[str] = attr.ib(default=None)
     limit: Optional[int] = attr.ib(default=10)
     crs: Optional[str] = attr.ib(default=Query("http://www.opengis.net/def/crs/OGC/1.3/CRS84", description=descriptions.CRS))
+    filter: Optional[str] = attr.ib(default=Query(None, description=descriptions.FILTER))
+    filter_lang: Optional[str] = attr.ib(default=Query(default="cql-json", alias="filter-lang", description=descriptions.FILTER_LANG))
+    filter_crs: Optional[str] = attr.ib(default=Query(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84", alias="filter-crs", description=descriptions.FILTER_CRS))
 
 
 class BaseSearchPostRequest(BaseModel):
@@ -133,12 +136,12 @@ class BaseSearchPostRequest(BaseModel):
     collections: Optional[List[str]]
     ids: Optional[List[str]]
     bbox: Optional[BBox]
+    bbox_crs: Optional[str] = Field(alias="bbox-crs")
     intersects: Optional[
         Union[Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon, GeometryCollection]
     ]
     datetime: Optional[str]
     limit: Optional[Limit] = 10
-    bbox_crs: Optional[str] = Field(alias="bbox-crs")
 
     @property
     def start_date(self) -> Optional[datetime]:
