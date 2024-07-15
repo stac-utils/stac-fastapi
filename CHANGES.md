@@ -2,6 +2,8 @@
 
 ## [Unreleased] - TBD
 
+* add more openapi metadata in input models [#734](https://github.com/stac-utils/stac-fastapi/pull/734)
+
 ## [3.0.0b2] - 2024-07-09
 
 ### Changed
