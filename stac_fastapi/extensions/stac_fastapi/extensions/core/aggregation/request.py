@@ -14,16 +14,26 @@ from stac_fastapi.types.search import (
 )
 
 
+def _agg_converter(
+    val: Annotated[
+        Optional[str],
+        Query(description="A list of aggregations to compute and return."),
+    ] = None,
+) -> Optional[List[str]]:
+    return str2list(val)
+
+
 @attr.s
 class AggregationExtensionGetRequest(BaseSearchGetRequest):
     """Aggregation Extension GET request model."""
 
-    aggregations: Annotated[Optional[str], Query()] = attr.ib(
-        default=None, converter=str2list
-    )
+    aggregations: Optional[List[str]] = attr.ib(default=None, converter=_agg_converter)
 
 
 class AggregationExtensionPostRequest(BaseSearchPostRequest):
     """Aggregation Extension POST request model."""
 
-    aggregations: Optional[List[str]] = Field(default=None)
+    aggregations: Optional[List[str]] = Field(
+        default=None,
+        description="A list of aggregations to compute and return.",
+    )

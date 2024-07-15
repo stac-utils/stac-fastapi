@@ -14,8 +14,8 @@ from stac_fastapi.types.search import (
     APIRequest,
     BaseSearchGetRequest,
     BaseSearchPostRequest,
-    str2bbox,
-    str_to_interval,
+    _bbox_converter,
+    _datetime_converter,
 )
 
 try:
@@ -114,9 +114,9 @@ class ItemCollectionUri(APIRequest):
 
     collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
     limit: Annotated[int, Query()] = attr.ib(default=10)
-    bbox: Annotated[Optional[BBox], Query()] = attr.ib(default=None, converter=str2bbox)
-    datetime: Annotated[Optional[DateTimeType], Query()] = attr.ib(
-        default=None, converter=str_to_interval
+    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
+    datetime: Optional[DateTimeType] = attr.ib(
+        default=None, converter=_datetime_converter
     )
 
 
