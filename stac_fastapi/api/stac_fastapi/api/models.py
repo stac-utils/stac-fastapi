@@ -135,9 +135,7 @@ class ItemCollectionUri(CollectionUri):
     datetime: Optional[str] = attr.ib(default=None)
     crs: Optional[str] = attr.ib(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84")
     filter: Optional[str] = attr.ib(default=Query(None, description=descriptions.FILTER))
-    filter_lang: Optional[str] = attr.ib(
-            default=Query(default="cql-json", alias="filter-lang", description=descriptions.FILTER_LANG)
-        )
+    filter_lang: Optional[str] = attr.ib(default=Query(default="cql-json", alias="filter-lang", description=descriptions.FILTER_LANG))
     filter_crs: Optional[str] = attr.ib(default=Query(default="http://www.opengis.net/def/crs/OGC/1.3/CRS84", alias="filter-crs", description=descriptions.FILTER_CRS))
 
 class POSTTokenPagination(BaseModel):
