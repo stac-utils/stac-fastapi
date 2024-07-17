@@ -1,7 +1,7 @@
 """Request models for the fields extension."""
 
 import warnings
-from typing import Dict, Optional, Set
+from typing import Dict, List, Optional, Set
 
 import attr
 from fastapi import Query
@@ -70,14 +70,31 @@ class PostFieldsExtension(BaseModel):
         }
 
 
+def _fields_converter(
+    val: Annotated[
+        Optional[str],
+        Query(
+            description="Include or exclude fields from items body.",
+            json_schema_extra={
+                "example": "properties.datetime",
+            },
+        ),
+    ] = None,
+) -> Optional[List[str]]:
+    return str2list(val)
+
+
 @attr.s
 class FieldsExtensionGetRequest(APIRequest):
     """Additional fields for the GET request."""
 
-    fields: Annotated[Optional[str], Query()] = attr.ib(default=None, converter=str2list)
+    fields: Optional[List[str]] = attr.ib(default=None, converter=_fields_converter)
 
 
 class FieldsExtensionPostRequest(BaseModel):
     """Additional fields and schema for the POST request."""
 
-    fields: Optional[PostFieldsExtension] = Field(PostFieldsExtension())
+    fields: Optional[PostFieldsExtension] = Field(
+        PostFieldsExtension(),
+        description="Include or exclude fields from items body.",
+    )
