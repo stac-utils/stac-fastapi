@@ -32,6 +32,6 @@ class QueryExtensionPostRequest(BaseModel):
         None,
         description="Allows additional filtering based on the properties of Item objects",  # noqa: E501
         json_schema_extra={
-            "example": [{"eo:cloud_cover": {"gte": 95}}],
+            "example": {"eo:cloud_cover": {"gte": 95}},
         },
     )
