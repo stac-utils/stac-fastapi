@@ -36,6 +36,10 @@ nav:
           - core:
               - module: api/stac_fastapi/extensions/core/index.md
               - context: api/stac_fastapi/extensions/core/context.md
+              - free_text:
+                - module: api/stac_fastapi/extensions/core/free_text/index.md
+                - free_text: api/stac_fastapi/extensions/core/free_text/free_text.md
+                - request: api/stac_fastapi/extensions/core/free_text/request.md
               - filter:
                   - module: api/stac_fastapi/extensions/core/filter/index.md
                   - filter: api/stac_fastapi/extensions/core/filter/filter.md
@@ -60,7 +64,6 @@ nav:
               - version: api/stac_fastapi/extensions/version.md
           - third_party:
               - bulk_transactions: api/stac_fastapi/extensions/third_party/bulk_transactions.md
-              - free_text: api/stac_fastapi/extensions/third_party/free_text.md
               - index: api/stac_fastapi/extensions/third_party/index.md
       - stac_fastapi.types:
           - module: api/stac_fastapi/types/index.md
@@ -75,6 +78,8 @@ nav:
           - search: api/stac_fastapi/types/search.md
           - stac: api/stac_fastapi/types/stac.md
           - version: api/stac_fastapi/types/version.md
+  - Migration Guides:
+    - v2.5 -> v3.0: migrations/v3.0.0.md
   - Performance Benchmarks: benchmarks.html
   - Development - Contributing: "contributing.md"
   - Release Notes: "release-notes.md"

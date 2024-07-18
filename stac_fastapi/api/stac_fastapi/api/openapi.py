@@ -1,4 +1,5 @@
 """openapi."""
+
 import warnings
 
 from fastapi import FastAPI
@@ -43,9 +44,7 @@ def update_openapi(app: FastAPI) -> FastAPI:
         # Get the response from the old endpoint function
         response: JSONResponse = await old_endpoint(req)
         # Update the content type header in place
-        response.headers[
-            "content-type"
-        ] = "application/vnd.oai.openapi+json;version=3.0"
+        response.headers["content-type"] = "application/vnd.oai.openapi+json;version=3.0"
         # Return the updated response
         return response
 

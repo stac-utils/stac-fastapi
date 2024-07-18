@@ -4,12 +4,13 @@ from typing import List, Optional, Type, Union
 
 import attr
 from fastapi import APIRouter, Body, FastAPI
-from stac_pydantic import Collection, Item
+from stac_pydantic import Collection, Item, ItemCollection
+from stac_pydantic.shared import MimeTypes
 from starlette.responses import JSONResponse, Response
+from typing_extensions import Annotated
 
 from stac_fastapi.api.models import CollectionUri, ItemUri
 from stac_fastapi.api.routes import create_async_endpoint
-from stac_fastapi.types import stac as stac_types
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
@@ -19,16 +20,21 @@ from stac_fastapi.types.extension import ApiExtension
 class PostItem(CollectionUri):
     """Create Item."""
 
-    item: Union[stac_types.Item, stac_types.ItemCollection] = attr.ib(
-        default=Body(None)
-    )
+    item: Annotated[Union[Item, ItemCollection], Body()] = attr.ib(default=None)
 
 
 @attr.s
 class PutItem(ItemUri):
     """Update Item."""
 
-    item: stac_types.Item = attr.ib(default=Body(None))
+    item: Annotated[Item, Body()] = attr.ib(default=None)
+
+
+@attr.s
+class PutCollection(CollectionUri):
+    """Update Collection."""
+
+    collection: Annotated[Collection, Body()] = attr.ib(default=None)
 
 
 @attr.s
@@ -44,17 +50,20 @@ class TransactionExtension(ApiExtension):
         PUT /collections/{collection_id}/items
         DELETE /collections/{collection_id}/items
 
-    https://github.com/radiantearth/stac-api-spec/blob/master/ogcapi-features/extensions/transaction/README.md
+    https://github.com/stac-api-extensions/transaction
+    https://github.com/stac-api-extensions/collection-transaction
 
     Attributes:
         client: CRUD application logic
+
     """
 
     client: Union[AsyncBaseTransactionsClient, BaseTransactionsClient] = attr.ib()
     settings: ApiSettings = attr.ib()
     conformance_classes: List[str] = attr.ib(
         factory=lambda: [
-            "https://api.stacspec.org/v1.0.0-rc.3/ogcapi-features/extensions/transaction",
+            "https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction",
+            "https://api.stacspec.org/v1.0.0/collections/extensions/transaction",
         ]
     )
     schema_href: Optional[str] = attr.ib(default=None)
@@ -66,7 +75,16 @@ class TransactionExtension(ApiExtension):
         self.router.add_api_route(
             name="Create Item",
             path="/collections/{collection_id}/items",
+            status_code=201,
             response_model=Item if self.settings.enable_response_models else None,
+            responses={
+                201: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": Item,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -81,6 +99,14 @@ class TransactionExtension(ApiExtension):
             name="Update Item",
             path="/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": Item,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -95,6 +121,14 @@ class TransactionExtension(ApiExtension):
             name="Delete Item",
             path="/collections/{collection_id}/items/{item_id}",
             response_model=Item if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": Item,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -102,19 +136,31 @@ class TransactionExtension(ApiExtension):
             endpoint=create_async_endpoint(self.client.delete_item, ItemUri),
         )
 
+    def register_patch_item(self):
+        """Register patch item endpoint (PATCH
+        /collections/{collection_id}/items/{item_id})."""
+        raise NotImplementedError
+
     def register_create_collection(self):
         """Register create collection endpoint (POST /collections)."""
         self.router.add_api_route(
             name="Create Collection",
             path="/collections",
+            status_code=201,
             response_model=Collection if self.settings.enable_response_models else None,
+            responses={
+                201: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": Collection,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=create_async_endpoint(
-                self.client.create_collection, stac_types.Collection
-            ),
+            endpoint=create_async_endpoint(self.client.create_collection, Collection),
         )
 
     def register_update_collection(self):
@@ -123,13 +169,19 @@ class TransactionExtension(ApiExtension):
             name="Update Collection",
             path="/collections/{collection_id}",
             response_model=Collection if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": Collection,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_async_endpoint(
-                self.client.update_collection, stac_types.Collection
-            ),
+            endpoint=create_async_endpoint(self.client.update_collection, PutCollection),
         )
 
     def register_delete_collection(self):
@@ -138,14 +190,24 @@ class TransactionExtension(ApiExtension):
             name="Delete Collection",
             path="/collections/{collection_id}",
             response_model=Collection if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                    "model": Collection,
+                }
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=create_async_endpoint(
-                self.client.delete_collection, CollectionUri
-            ),
+            endpoint=create_async_endpoint(self.client.delete_collection, CollectionUri),
         )
+
+    def register_patch_collection(self):
+        """Register patch collection endpoint (PATCH /collections/{collection_id})."""
+        raise NotImplementedError
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

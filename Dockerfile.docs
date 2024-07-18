@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.11-slim
 
 # build-essential is required to build a wheel for ciso8601
 RUN apt update && apt install -y build-essential
@@ -11,8 +11,8 @@ COPY . /opt/src
 WORKDIR /opt/src
 
 RUN python -m pip install \
-    stac_fastapi/api \
     stac_fastapi/types \
+    stac_fastapi/api \
     stac_fastapi/extensions
 
 CMD ["pdocs", \

@@ -1,6 +1,7 @@
-from datetime import timezone
+from datetime import datetime, timezone
 
 import pytest
+from fastapi import HTTPException
 
 from stac_fastapi.types.rfc3339 import (
     now_in_utc,
@@ -85,14 +86,42 @@ def test_parse_valid_str_to_datetime(test_input):
 
 
 @pytest.mark.parametrize("test_input", invalid_intervals)
-def test_parse_invalid_interval_to_datetime(test_input):
-    with pytest.raises(ValueError):
+def test_str_to_interval_with_invalid_interval(test_input):
+    with pytest.raises(HTTPException) as exc_info:
         str_to_interval(test_input)
+    assert (
+        exc_info.value.status_code == 400
+    ), "str_to_interval should return a 400 status code for invalid interval"
+
+
+@pytest.mark.parametrize("test_input", invalid_datetimes)
+def test_str_to_interval_with_invalid_datetime(test_input):
+    with pytest.raises(HTTPException) as exc_info:
+        str_to_interval(test_input)
+    assert (
+        exc_info.value.status_code == 400
+    ), "str_to_interval should return a 400 status code for invalid datetime"
 
 
 @pytest.mark.parametrize("test_input", valid_intervals)
-def test_parse_valid_interval_to_datetime(test_input):
-    assert str_to_interval(test_input)
+def test_str_to_interval_with_valid_interval(test_input):
+    assert isinstance(
+        str_to_interval(test_input), tuple
+    ), "str_to_interval should return tuple for multi-value input"
+
+
+@pytest.mark.parametrize("test_input", valid_datetimes)
+def test_str_to_interval_with_valid_datetime(test_input):
+    assert isinstance(
+        str_to_interval(test_input), datetime
+    ), "str_to_interval should return single datetime for single-value input"
+
+
+def test_str_to_interval_with_none():
+    """Test that str_to_interval returns None when provided with None."""
+    assert (
+        str_to_interval(None) is None
+    ), "str_to_interval should return None when input is None"
 
 
 def test_now_functions() -> None:

@@ -18,10 +18,11 @@ class ApiExtensions(enum.Enum):
     query = "query"
     sort = "sort"
     transaction = "transaction"
+    aggregation = "aggregation"
+    free_text = "free-text"
 
 
 class AddOns(enum.Enum):
     """Enumeration of available third party add ons."""
 
     bulk_transaction = "bulk-transaction"
-    free_text = "free-text"

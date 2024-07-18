@@ -1,13 +1,12 @@
 """Api request/response models."""
 
-import importlib.util
-from typing import Optional, Type, Union
+from typing import List, Optional, Type, Union
 
 import attr
-from fastapi import Body, Path
+from fastapi import Path, Query
 from pydantic import BaseModel, create_model
-from pydantic.fields import UndefinedType
 from stac_pydantic.shared import BBox
+from typing_extensions import Annotated
 
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.rfc3339 import DateTimeType
@@ -15,15 +14,22 @@ from stac_fastapi.types.search import (
     APIRequest,
     BaseSearchGetRequest,
     BaseSearchPostRequest,
-    str2bbox,
+    _bbox_converter,
+    _datetime_converter,
 )
+
+try:
+    import orjson  # noqa
+    from fastapi.responses import ORJSONResponse as JSONResponse
+except ImportError:  # pragma: nocover
+    from starlette.responses import JSONResponse
 
 
 def create_request_model(
     model_name="SearchGetRequest",
     base_model: Union[Type[BaseModel], APIRequest] = BaseSearchGetRequest,
-    extensions: Optional[ApiExtension] = None,
-    mixins: Optional[Union[BaseModel, APIRequest]] = None,
+    extensions: Optional[List[ApiExtension]] = None,
+    mixins: Optional[Union[List[BaseModel], List[APIRequest]]] = None,
     request_type: Optional[str] = "GET",
 ) -> Union[Type[BaseModel], APIRequest]:
     """Create a pydantic model for validating request bodies."""
@@ -46,40 +52,19 @@ def create_request_model(
     # Handle POST requests
     elif all([issubclass(m, BaseModel) for m in models]):
         for model in models:
-            for k, v in model.__fields__.items():
-                field_info = v.field_info
-                body = Body(
-                    None
-                    if isinstance(field_info.default, UndefinedType)
-                    else field_info.default,
-                    default_factory=field_info.default_factory,
-                    alias=field_info.alias,
-                    alias_priority=field_info.alias_priority,
-                    title=field_info.title,
-                    description=field_info.description,
-                    const=field_info.const,
-                    gt=field_info.gt,
-                    ge=field_info.ge,
-                    lt=field_info.lt,
-                    le=field_info.le,
-                    multiple_of=field_info.multiple_of,
-                    min_items=field_info.min_items,
-                    max_items=field_info.max_items,
-                    min_length=field_info.min_length,
-                    max_length=field_info.max_length,
-                    regex=field_info.regex,
-                    extra=field_info.extra,
-                )
-                fields[k] = (v.outer_type_, body)
+            for k, field_info in model.model_fields.items():
+                fields[k] = (field_info.annotation, field_info)
         return create_model(model_name, **fields, __base__=base_model)
 
     raise TypeError("Mixed Request Model types. Check extension request types.")
 
 
 def create_get_request_model(
-    extensions, base_model: BaseSearchGetRequest = BaseSearchGetRequest
-):
+    extensions: Optional[List[ApiExtension]],
+    base_model: BaseSearchGetRequest = BaseSearchGetRequest,
+) -> APIRequest:
     """Wrap create_request_model to create the GET request model."""
+
     return create_request_model(
         "SearchGetRequest",
         base_model=base_model,
@@ -89,8 +74,9 @@ def create_get_request_model(
 
 
 def create_post_request_model(
-    extensions, base_model: BaseSearchPostRequest = BaseSearchPostRequest
-):
+    extensions: Optional[List[ApiExtension]],
+    base_model: BaseSearchPostRequest = BaseSearchPostRequest,
+) -> Type[BaseModel]:
     """Wrap create_request_model to create the POST request model."""
     return create_request_model(
         "SearchPostRequest",
@@ -100,18 +86,19 @@ def create_post_request_model(
     )
 
 
-@attr.s  # type:ignore
+@attr.s
 class CollectionUri(APIRequest):
-    """Delete collection."""
+    """Get or delete collection."""
 
-    collection_id: str = attr.ib(default=Path(..., description="Collection ID"))
+    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
 
 
 @attr.s
-class ItemUri(CollectionUri):
-    """Delete item."""
+class ItemUri(APIRequest):
+    """Get or delete item."""
 
-    item_id: str = attr.ib(default=Path(..., description="Item ID"))
+    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
+    item_id: Annotated[str, Path(description="Item ID")] = attr.ib()
 
 
 @attr.s
@@ -122,63 +109,24 @@ class EmptyRequest(APIRequest):
 
 
 @attr.s
-class ItemCollectionUri(CollectionUri):
+class ItemCollectionUri(APIRequest):
     """Get item collection."""
 
-    limit: int = attr.ib(default=10)
-    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
-    datetime: Optional[DateTimeType] = attr.ib(default=None)
+    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
+    limit: Annotated[int, Query()] = attr.ib(default=10)
+    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
+    datetime: Optional[DateTimeType] = attr.ib(
+        default=None, converter=_datetime_converter
+    )
 
 
-class POSTTokenPagination(BaseModel):
-    """Token pagination model for POST requests."""
+class GeoJSONResponse(JSONResponse):
+    """JSON with custom, vendor content-type."""
 
-    token: Optional[str] = None
-
-
-@attr.s
-class GETTokenPagination(APIRequest):
-    """Token pagination for GET requests."""
-
-    token: Optional[str] = attr.ib(default=None)
+    media_type = "application/geo+json"
 
 
-class POSTPagination(BaseModel):
-    """Page based pagination for POST requests."""
+class JSONSchemaResponse(JSONResponse):
+    """JSON with custom, vendor content-type."""
 
-    page: Optional[str] = None
-
-
-@attr.s
-class GETPagination(APIRequest):
-    """Page based pagination for GET requests."""
-
-    page: Optional[str] = attr.ib(default=None)
-
-
-# Test for ORJSON and use it rather than stdlib JSON where supported
-if importlib.util.find_spec("orjson") is not None:
-    from fastapi.responses import ORJSONResponse
-
-    class GeoJSONResponse(ORJSONResponse):
-        """JSON with custom, vendor content-type."""
-
-        media_type = "application/geo+json"
-
-    class JSONSchemaResponse(ORJSONResponse):
-        """JSON with custom, vendor content-type."""
-
-        media_type = "application/schema+json"
-
-else:
-    from starlette.responses import JSONResponse
-
-    class GeoJSONResponse(JSONResponse):
-        """JSON with custom, vendor content-type."""
-
-        media_type = "application/geo+json"
-
-    class JSONSchemaResponse(JSONResponse):
-        """JSON with custom, vendor content-type."""
-
-        media_type = "application/schema+json"
+    media_type = "application/schema+json"

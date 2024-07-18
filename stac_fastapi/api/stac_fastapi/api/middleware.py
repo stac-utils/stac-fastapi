@@ -1,4 +1,5 @@
 """Api middleware."""
+
 import re
 import typing
 from http.client import HTTP_PORT, HTTPS_PORT

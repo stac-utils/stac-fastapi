@@ -1,86 +1,34 @@
 """stac_fastapi.types.search module.
 
-# TODO: replace with stac-pydantic
 """
 
-import abc
-import operator
-from datetime import datetime
-from enum import auto
-from types import DynamicClassAttribute
-from typing import Any, Callable, Dict, Generator, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import attr
-from geojson_pydantic.geometries import (
-    GeometryCollection,
-    LineString,
-    MultiLineString,
-    MultiPoint,
-    MultiPolygon,
-    Point,
-    Polygon,
-    _GeometryBase,
-)
-from pydantic import BaseModel, ConstrainedInt, Field, validator
-from pydantic.errors import NumberNotGtError
-from pydantic.validators import int_validator
+from fastapi import Query
+from pydantic import Field, PositiveInt
+from pydantic.functional_validators import AfterValidator
+from stac_pydantic.api import Search
 from stac_pydantic.shared import BBox
-from stac_pydantic.utils import AutoValueEnum
+from typing_extensions import Annotated
 
 from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
 
-# Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
-NumType = Union[float, int]
+
+def crop(v: PositiveInt) -> PositiveInt:
+    """Crop value to 10,000."""
+    limit = 10_000
+    if v > limit:
+        v = limit
+    return v
 
 
-class Limit(ConstrainedInt):
-    """An positive integer that maxes out at 10,000."""
-
-    ge: int = 1
-    le: int = 10_000
-
-    @classmethod
-    def __get_validators__(cls) -> Generator[Callable[..., Any], None, None]:
-        """Yield the relevant validators."""
-        yield int_validator
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, value: int) -> int:
-        """Validate the integer value."""
-        if value < cls.ge:
-            raise NumberNotGtError(limit_value=cls.ge)
-        if value > cls.le:
-            return cls.le
-        return value
-
-
-class Operator(str, AutoValueEnum):
-    """Defines the set of operators supported by the API."""
-
-    eq = auto()
-    ne = auto()
-    lt = auto()
-    lte = auto()
-    gt = auto()
-    gte = auto()
-
-    # TODO: These are defined in the spec but aren't currently implemented by the api
-    # startsWith = auto()
-    # endsWith = auto()
-    # contains = auto()
-    # in = auto()
-
-    @DynamicClassAttribute
-    def operator(self) -> Callable[[Any, Any], bool]:
-        """Return python operator."""
-        return getattr(operator, self._value_)
-
-
-def str2list(x: str) -> Optional[List]:
+def str2list(x: str) -> Optional[List[str]]:
     """Convert string to list base on , delimiter."""
     if x:
         return x.split(",")
+
+    return None
 
 
 def str2bbox(x: str) -> Optional[BBox]:
@@ -90,9 +38,76 @@ def str2bbox(x: str) -> Optional[BBox]:
         assert len(t) == 4
         return t
 
+    return None
 
-@attr.s  # type:ignore
-class APIRequest(abc.ABC):
+
+def _collection_converter(
+    val: Annotated[
+        Optional[str],
+        Query(
+            description="Array of collection Ids to search for items.",
+            json_schema_extra={
+                "example": "collection1,collection2",
+            },
+        ),
+    ] = None,
+) -> Optional[List[str]]:
+    return str2list(val)
+
+
+def _ids_converter(
+    val: Annotated[
+        Optional[str],
+        Query(
+            description="Array of Item ids to return.",
+            json_schema_extra={
+                "example": "item1,item2",
+            },
+        ),
+    ] = None,
+) -> Optional[List[str]]:
+    return str2list(val)
+
+
+def _bbox_converter(
+    val: Annotated[
+        Optional[str],
+        Query(
+            description="Only return items intersecting this bounding box. Mutually exclusive with **intersects**.",  # noqa: E501
+            json_schema_extra={
+                "example": "-175.05,-85.05,175.05,85.05",
+            },
+        ),
+    ] = None,
+) -> Optional[BBox]:
+    return str2bbox(val)
+
+
+def _datetime_converter(
+    val: Annotated[
+        Optional[str],
+        Query(
+            description="""Only return items that have a temporal property that intersects this value.\n
+Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
+            openapi_examples={
+                "datetime": {"value": "2018-02-12T23:20:50Z"},
+                "closed-interval": {"value": "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"},
+                "open-interval-from": {"value": "2018-02-12T00:00:00Z/.."},
+                "open-interval-to": {"value": "../2018-03-18T12:31:12Z"},
+            },
+        ),
+    ] = None,
+):
+    return str_to_interval(val)
+
+
+# Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
+NumType = Union[float, int]
+Limit = Annotated[PositiveInt, AfterValidator(crop)]
+
+
+@attr.s
+class APIRequest:
     """Generic API Request base class."""
 
     def kwargs(self) -> Dict:
@@ -105,118 +120,71 @@ class APIRequest(abc.ABC):
 class BaseSearchGetRequest(APIRequest):
     """Base arguments for GET Request."""
 
-    collections: Optional[str] = attr.ib(default=None, converter=str2list)
-    ids: Optional[str] = attr.ib(default=None, converter=str2list)
-    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
-    intersects: Optional[str] = attr.ib(default=None, converter=str2list)
-    datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
-    limit: Optional[int] = attr.ib(default=10)
+    collections: Optional[List[str]] = attr.ib(
+        default=None, converter=_collection_converter
+    )
+    ids: Optional[List[str]] = attr.ib(default=None, converter=_ids_converter)
+    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
+    intersects: Annotated[
+        Optional[str],
+        Query(
+            description="""Only return items intersecting this GeoJSON Geometry. Mutually exclusive with **bbox**. \n
+*Remember to URL encode the GeoJSON geometry when using GET request*.""",  # noqa: E501
+            openapi_examples={
+                "madrid": {
+                    "value": {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "coordinates": [
+                                [
+                                    [-3.8549260500072933, 40.54923557897152],
+                                    [-3.8549260500072933, 40.29428000041938],
+                                    [-3.516597069715033, 40.29428000041938],
+                                    [-3.516597069715033, 40.54923557897152],
+                                    [-3.8549260500072933, 40.54923557897152],
+                                ]
+                            ],
+                            "type": "Polygon",
+                        },
+                    },
+                },
+                "new-york": {
+                    "value": {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "coordinates": [
+                                [
+                                    [-74.50117532354284, 41.128266394414055],
+                                    [-74.50117532354284, 40.35633909727355],
+                                    [-73.46713183168603, 40.35633909727355],
+                                    [-73.46713183168603, 41.128266394414055],
+                                    [-74.50117532354284, 41.128266394414055],
+                                ]
+                            ],
+                            "type": "Polygon",
+                        },
+                    },
+                },
+            },
+        ),
+    ] = attr.ib(default=None)
+    datetime: Optional[DateTimeType] = attr.ib(
+        default=None, converter=_datetime_converter
+    )
+    limit: Annotated[
+        Optional[int],
+        Query(
+            description="Limits the number of results that are included in each page of the response."  # noqa: E501
+        ),
+    ] = attr.ib(default=10)
 
 
-class BaseSearchPostRequest(BaseModel):
-    """Search model.
+class BaseSearchPostRequest(Search):
+    """Base arguments for POST Request."""
 
-    Replace base model in STAC-pydantic as it includes additional fields, not in the core
-    model.
-    https://github.com/radiantearth/stac-api-spec/tree/master/item-search#query-parameter-table
-
-    PR to fix this:
-    https://github.com/stac-utils/stac-pydantic/pull/100
-    """
-
-    collections: Optional[List[str]]
-    ids: Optional[List[str]]
-    bbox: Optional[BBox]
-    intersects: Optional[
-        Union[
-            Point,
-            MultiPoint,
-            LineString,
-            MultiLineString,
-            Polygon,
-            MultiPolygon,
-            GeometryCollection,
-        ]
-    ]
-    datetime: Optional[DateTimeType]
-    limit: Optional[Limit] = Field(default=10)
-
-    @property
-    def start_date(self) -> Optional[datetime]:
-        """Extract the start date from the datetime string."""
-        return self.datetime[0] if self.datetime else None
-
-    @property
-    def end_date(self) -> Optional[datetime]:
-        """Extract the end date from the datetime string."""
-        return self.datetime[1] if self.datetime else None
-
-    @validator("intersects")
-    def validate_spatial(cls, v, values):
-        """Check bbox and intersects are not both supplied."""
-        if v and values["bbox"]:
-            raise ValueError("intersects and bbox parameters are mutually exclusive")
-        return v
-
-    @validator("bbox", pre=True)
-    def validate_bbox(cls, v: Union[str, BBox]) -> BBox:
-        """Check order of supplied bbox coordinates."""
-        if v:
-            if type(v) == str:
-                v = str2bbox(v)
-            # Validate order
-            if len(v) == 4:
-                xmin, ymin, xmax, ymax = v
-            else:
-                xmin, ymin, min_elev, xmax, ymax, max_elev = v
-                if max_elev < min_elev:
-                    raise ValueError(
-                        "Maximum elevation must greater than minimum elevation"
-                    )
-
-            if xmax < xmin:
-                raise ValueError(
-                    "Maximum longitude must be greater than minimum longitude"
-                )
-
-            if ymax < ymin:
-                raise ValueError(
-                    "Maximum longitude must be greater than minimum longitude"
-                )
-
-            # Validate against WGS84
-            if xmin < -180 or ymin < -90 or xmax > 180 or ymax > 90:
-                raise ValueError("Bounding box must be within (-180, -90, 180, 90)")
-
-        return v
-
-    @validator("datetime", pre=True)
-    def validate_datetime(cls, v: Union[str, DateTimeType]) -> DateTimeType:
-        """Parse datetime."""
-        if type(v) == str:
-            v = str_to_interval(v)
-        return v
-
-    @property
-    def spatial_filter(self) -> Optional[_GeometryBase]:
-        """Return a geojson-pydantic object representing the spatial filter for the search
-        request.
-
-        Check for both because the ``bbox`` and ``intersects`` parameters are
-        mutually exclusive.
-        """
-        if self.bbox:
-            return Polygon(
-                coordinates=[
-                    [
-                        [self.bbox[0], self.bbox[3]],
-                        [self.bbox[2], self.bbox[3]],
-                        [self.bbox[2], self.bbox[1]],
-                        [self.bbox[0], self.bbox[1]],
-                        [self.bbox[0], self.bbox[3]],
-                    ]
-                ]
-            )
-        if self.intersects:
-            return self.intersects
-        return
+    limit: Optional[Limit] = Field(
+        10,
+        description="Limits the number of results that are included in each page of the response.",  # noqa: E501
+    )

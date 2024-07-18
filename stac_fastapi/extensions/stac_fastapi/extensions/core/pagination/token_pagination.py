@@ -5,8 +5,9 @@ from typing import List, Optional
 import attr
 from fastapi import FastAPI
 
-from stac_fastapi.api.models import GETTokenPagination, POSTTokenPagination
 from stac_fastapi.types.extension import ApiExtension
+
+from .request import GETTokenPagination, POSTTokenPagination
 
 
 @attr.s

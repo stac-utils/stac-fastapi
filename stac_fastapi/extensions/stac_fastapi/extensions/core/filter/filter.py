@@ -9,9 +9,9 @@ from starlette.responses import Response
 
 from stac_fastapi.api.models import CollectionUri, EmptyRequest, JSONSchemaResponse
 from stac_fastapi.api.routes import create_async_endpoint
-from stac_fastapi.types.core import AsyncBaseFiltersClient, BaseFiltersClient
 from stac_fastapi.types.extension import ApiExtension
 
+from .client import AsyncBaseFiltersClient, BaseFiltersClient
 from .request import FilterExtensionGetRequest, FilterExtensionPostRequest
 
 
@@ -97,16 +97,30 @@ class FilterExtension(ApiExtension):
             name="Queryables",
             path="/queryables",
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.get_queryables, EmptyRequest, self.response_class
-            ),
+            responses={
+                200: {
+                    "content": {
+                        "application/schema+json": {},
+                    },
+                    # TODO: add output model in stac-pydantic
+                },
+            },
+            response_class=self.response_class,
+            endpoint=create_async_endpoint(self.client.get_queryables, EmptyRequest),
         )
         self.router.add_api_route(
             name="Collection Queryables",
             path="/collections/{collection_id}/queryables",
             methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.get_queryables, CollectionUri, self.response_class
-            ),
+            responses={
+                200: {
+                    "content": {
+                        "application/schema+json": {},
+                    },
+                    # TODO: add output model in stac-pydantic
+                },
+            },
+            response_class=self.response_class,
+            endpoint=create_async_endpoint(self.client.get_queryables, CollectionUri),
         )
         app.include_router(self.router, tags=["Filter Extension"])
