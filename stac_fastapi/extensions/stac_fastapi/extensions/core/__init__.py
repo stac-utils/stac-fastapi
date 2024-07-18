@@ -1,6 +1,7 @@
 """stac_api.extensions.core module."""
 
 from .aggregation import AggregationExtension
+from .collection_search import CollectionSearchExtension
 from .context import ContextExtension
 from .fields import FieldsExtension
 from .filter import FilterExtension
@@ -8,7 +9,6 @@ from .pagination import PaginationExtension, TokenPaginationExtension
 from .query import QueryExtension
 from .sort import SortExtension
 from .transaction import TransactionExtension
-from .collection_search import CollectionSearchExtension
 
 __all__ = (
     "AggregationExtension",

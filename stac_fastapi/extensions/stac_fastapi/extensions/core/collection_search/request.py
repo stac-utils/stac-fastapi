@@ -4,11 +4,11 @@ from typing import Optional
 
 import attr
 from fastapi import Query
+from stac_pydantic.shared import BBox
 from typing_extensions import Annotated
 
-from stac_pydantic.shared import BBox
 from stac_fastapi.types.rfc3339 import DateTimeType
-from stac_fastapi.types.search import APIRequest, _datetime_converter, _bbox_converter
+from stac_fastapi.types.search import APIRequest, _bbox_converter, _datetime_converter
 
 
 @attr.s
@@ -35,4 +35,3 @@ class FreeTextGetRequest(APIRequest):
         Optional[str],
         Query(description="A basic free-text search parameter."),
     ] = attr.ib(default=None)
-
