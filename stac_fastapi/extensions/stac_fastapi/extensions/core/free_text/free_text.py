@@ -8,7 +8,12 @@ from fastapi import FastAPI
 
 from stac_fastapi.types.extension import ApiExtension
 
-from .request import FreeTextExtensionGetRequest, FreeTextExtensionPostRequest
+from .request import (
+    FreeTextAdvancedExtensionGetRequest,
+    FreeTextAdvancedExtensionPostRequest,
+    FreeTextExtensionGetRequest,
+    FreeTextExtensionPostRequest,
+)
 
 
 class FreeTextConformanceClasses(str, Enum):
@@ -19,9 +24,9 @@ class FreeTextConformanceClasses(str, Enum):
     """
 
     # https://github.com/stac-api-extensions/freetext-search?tab=readme-ov-file#basic
-    SEARCH_BASIC = "https://api.stacspec.org/v1.0.0-rc.1/item-search#free-text"
-    COLLECTIONS_BASIC = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#free-text"
-    ITEMS_BASIC = "https://api.stacspec.org/v1.0.0-rc.1/ogcapi-features#free-text"
+    SEARCH = "https://api.stacspec.org/v1.0.0-rc.1/item-search#free-text"
+    COLLECTIONS = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#free-text"
+    ITEMS = "https://api.stacspec.org/v1.0.0-rc.1/ogcapi-features#free-text"
 
     # https://github.com/stac-api-extensions/freetext-search?tab=readme-ov-file#advanced
     SEARCH_ADVANCED = (
@@ -42,14 +47,55 @@ class FreeTextExtension(ApiExtension):
     The Free-text extension adds an additional `q` parameter to `/search` requests which
     allows the caller to perform free-text queries against STAC metadata.
 
-    https://github.com/stac-api-extensions/freetext-search/README.md
+    https://github.com/stac-api-extensions/freetext-search?tab=readme-ov-file#basic
 
     """
 
     GET = FreeTextExtensionGetRequest
     POST = FreeTextExtensionPostRequest
 
-    conformance_classes: List[str] = attr.ib()
+    conformance_classes: List[str] = attr.ib(
+        default=[
+            FreeTextConformanceClasses.SEARCH,
+            FreeTextConformanceClasses.COLLECTIONS,
+            FreeTextConformanceClasses.ITEMS,
+        ]
+    )
+    schema_href: Optional[str] = attr.ib(default=None)
+
+    def register(self, app: FastAPI) -> None:
+        """Register the extension with a FastAPI application.
+
+        Args:
+            app: target FastAPI application.
+
+        Returns:
+            None
+        """
+        pass
+
+
+@attr.s
+class FreeTextAdvancedExtension(ApiExtension):
+    """Free-text Extension.
+
+    The Free-text extension adds an additional `q` parameter to `/search` requests which
+    allows the caller to perform free-text queries against STAC metadata.
+
+    https://github.com/stac-api-extensions/freetext-search?tab=readme-ov-file#advanced
+
+    """
+
+    GET = FreeTextAdvancedExtensionGetRequest
+    POST = FreeTextAdvancedExtensionPostRequest
+
+    conformance_classes: List[str] = attr.ib(
+        default=[
+            FreeTextConformanceClasses.SEARCH_ADVANCED,
+            FreeTextConformanceClasses.COLLECTIONS_ADVANCED,
+            FreeTextConformanceClasses.ITEMS_ADVANCED,
+        ]
+    )
     schema_href: Optional[str] = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
