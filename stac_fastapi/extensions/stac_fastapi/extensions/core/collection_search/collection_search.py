@@ -31,8 +31,9 @@ class ConformanceClasses(str, Enum):
 class CollectionSearchExtension(ApiExtension):
     """Collection-Search Extension.
 
-    The Collection-Search extension adds functionality to the `GET - /collections` endpoint which
-    allows the caller to include or exclude specific from the API response.
+    The Collection-Search extension adds functionality to the `GET - /collections`
+    endpoint which allows the caller to include or exclude specific from the API
+    response.
     Registering this extension with the application has the added effect of
     removing the `ItemCollection` response model from the `/search` endpoint, as
     the Fields extension allows the API to return potentially invalid responses
