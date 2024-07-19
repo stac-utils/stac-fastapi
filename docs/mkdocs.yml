@@ -36,6 +36,10 @@ nav:
           - core:
               - module: api/stac_fastapi/extensions/core/index.md
               - context: api/stac_fastapi/extensions/core/context.md
+              - free_text:
+                - module: api/stac_fastapi/extensions/core/free_text/index.md
+                - free_text: api/stac_fastapi/extensions/core/free_text/free_text.md
+                - request: api/stac_fastapi/extensions/core/free_text/request.md
               - filter:
                   - module: api/stac_fastapi/extensions/core/filter/index.md
                   - filter: api/stac_fastapi/extensions/core/filter/filter.md

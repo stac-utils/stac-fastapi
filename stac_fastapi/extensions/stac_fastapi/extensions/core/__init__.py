@@ -4,6 +4,7 @@ from .aggregation import AggregationExtension
 from .context import ContextExtension
 from .fields import FieldsExtension
 from .filter import FilterExtension
+from .free_text import FreeTextAdvancedExtension, FreeTextExtension
 from .pagination import PaginationExtension, TokenPaginationExtension
 from .query import QueryExtension
 from .sort import SortExtension
@@ -14,6 +15,8 @@ __all__ = (
     "ContextExtension",
     "FieldsExtension",
     "FilterExtension",
+    "FreeTextExtension",
+    "FreeTextAdvancedExtension",
     "PaginationExtension",
     "QueryExtension",
     "SortExtension",
