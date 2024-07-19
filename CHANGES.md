@@ -2,7 +2,13 @@
 
 ## [Unreleased] - TBD
 
+### Changed
+
 * add more openapi metadata in input models [#734](https://github.com/stac-utils/stac-fastapi/pull/734)
+
+### Added
+* Add Free-text Extension ([#655](https://github.com/stac-utils/stac-fastapi/pull/655))
+* Add Collection-Search Extension
 
 ## [3.0.0b2] - 2024-07-09
 

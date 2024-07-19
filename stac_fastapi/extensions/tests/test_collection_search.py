@@ -6,15 +6,13 @@ from starlette.testclient import TestClient
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import create_request_model
 from stac_fastapi.extensions.core import CollectionSearchExtension
-from stac_fastapi.extensions.core.collection_search.collection_search import (
-    ConformanceClasses,
-)
+from stac_fastapi.extensions.core.collection_search import ConformanceClasses
 from stac_fastapi.extensions.core.collection_search.request import (
     CollectionSearchExtensionGetRequest,
-    FreeTextGetRequest,
 )
 from stac_fastapi.extensions.core.fields.request import FieldsExtensionGetRequest
 from stac_fastapi.extensions.core.filter.request import FilterExtensionGetRequest
+from stac_fastapi.extensions.core.free_text.request import FreeTextExtensionGetRequest
 from stac_fastapi.extensions.core.query.request import QueryExtensionGetRequest
 from stac_fastapi.extensions.core.sort.request import SortExtensionGetRequest
 from stac_fastapi.types.config import ApiSettings
@@ -94,7 +92,7 @@ def test_collection_search_extension_models():
         model_name="SearchGetRequest",
         base_model=CollectionSearchExtensionGetRequest,
         mixins=[
-            FreeTextGetRequest,
+            FreeTextExtensionGetRequest,
             FilterExtensionGetRequest,
             QueryExtensionGetRequest,
             SortExtensionGetRequest,
@@ -125,34 +123,19 @@ def test_collection_search_extension_models():
         response = client.get("/conformance")
         assert response.is_success, response.json()
         response_dict = response.json()
-        assert (
-            "https://api.stacspec.org/v1.0.0-rc.1/collection-search"
-            in response_dict["conformsTo"]
-        )
+        conforms = response_dict["conformsTo"]
+        assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search" in conforms
         assert (
             "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query"
-            in response_dict["conformsTo"]
+            in conforms
         )
         assert (
-            "https://api.stacspec.org/v1.0.0-rc.1/collection-search#free-text"
-            in response_dict["conformsTo"]
+            "https://api.stacspec.org/v1.0.0-rc.1/collection-search#free-text" in conforms
         )
-        assert (
-            "https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter"
-            in response_dict["conformsTo"]
-        )
-        assert (
-            "https://api.stacspec.org/v1.0.0-rc.1/collection-search#query"
-            in response_dict["conformsTo"]
-        )
-        assert (
-            "https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort"
-            in response_dict["conformsTo"]
-        )
-        assert (
-            "https://api.stacspec.org/v1.0.0-rc.1/collection-search#fields"
-            in response_dict["conformsTo"]
-        )
+        assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter" in conforms
+        assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#query" in conforms
+        assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort" in conforms
+        assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#fields" in conforms
 
         response = client.get("/collections")
         assert response.is_success, response.json()
@@ -189,7 +172,7 @@ def test_collection_search_extension_models():
             "2020-06-13T14:00:00+00:00",
         ] == response_dict["datetime"]
         assert 100 == response_dict["limit"]
-        assert "EO,Earth Observation" == response_dict["q"]
+        assert ["EO", "Earth Observation"] == response_dict["q"]
         assert "id='item_id' AND collection='collection_id'" == response_dict["filter"]
         assert "filter_crs" in response_dict
         assert "cql2-text" in response_dict["filter_lang"]

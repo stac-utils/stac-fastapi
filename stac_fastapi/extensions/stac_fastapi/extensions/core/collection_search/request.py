@@ -25,13 +25,3 @@ class CollectionSearchExtensionGetRequest(APIRequest):
             description="Limits the number of results that are included in each page of the response."  # noqa: E501
         ),
     ] = attr.ib(default=None)
-
-
-@attr.s
-class FreeTextGetRequest(APIRequest):
-    """FreeText additional Collection-Search parameters for the GET request."""
-
-    q: Annotated[
-        Optional[str],
-        Query(description="A basic free-text search parameter."),
-    ] = attr.ib(default=None)

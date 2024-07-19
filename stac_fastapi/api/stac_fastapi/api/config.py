@@ -20,6 +20,7 @@ class ApiExtensions(enum.Enum):
     transaction = "transaction"
     aggregation = "aggregation"
     collection_search = "collection-search"
+    free_text = "free-text"
 
 
 class AddOns(enum.Enum):
