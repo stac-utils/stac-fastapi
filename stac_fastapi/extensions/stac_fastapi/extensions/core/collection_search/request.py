@@ -24,4 +24,4 @@ class CollectionSearchExtensionGetRequest(APIRequest):
         Query(
             description="Limits the number of results that are included in each page of the response."  # noqa: E501
         ),
-    ] = attr.ib(default=None)
+    ] = attr.ib(default=10)
