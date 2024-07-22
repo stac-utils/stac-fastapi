@@ -8,7 +8,7 @@
 
 ### Added
 * Add Free-text Extension ([#655](https://github.com/stac-utils/stac-fastapi/pull/655))
-* Add Collection-Search Extension
+* Add Collection-Search Extension ([#736](https://github.com/stac-utils/stac-fastapi/pull/736))
 
 ## [3.0.0b2] - 2024-07-09
 
