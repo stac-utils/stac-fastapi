@@ -174,9 +174,9 @@ class BaseSearchGetRequest(APIRequest):
         default=None, converter=_datetime_converter
     )
     limit: Annotated[
-        Optional[int],
+        Optional[Limit],
         Query(
-            description="Limits the number of results that are included in each page of the response."  # noqa: E501
+            description="Limits the number of results that are included in each page of the response (capped to 10_000)."  # noqa: E501
         ),
     ] = attr.ib(default=10)
 
@@ -186,5 +186,5 @@ class BaseSearchPostRequest(Search):
 
     limit: Optional[Limit] = Field(
         10,
-        description="Limits the number of results that are included in each page of the response.",  # noqa: E501
+        description="Limits the number of results that are included in each page of the response (capped to 10_000).",  # noqa: E501
     )

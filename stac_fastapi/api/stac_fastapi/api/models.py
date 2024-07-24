@@ -14,6 +14,7 @@ from stac_fastapi.types.search import (
     APIRequest,
     BaseSearchGetRequest,
     BaseSearchPostRequest,
+    Limit,
     _bbox_converter,
     _datetime_converter,
 )
@@ -113,7 +114,12 @@ class ItemCollectionUri(APIRequest):
     """Get item collection."""
 
     collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
-    limit: Annotated[int, Query()] = attr.ib(default=10)
+    limit: Annotated[
+        Optional[Limit],
+        Query(
+            description="Limits the number of results that are included in each page of the response (capped to 10_000)."  # noqa: E501
+        ),
+    ] = attr.ib(default=10)
     bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
     datetime: Optional[DateTimeType] = attr.ib(
         default=None, converter=_datetime_converter
