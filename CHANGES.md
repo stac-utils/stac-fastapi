@@ -1,6 +1,8 @@
 # Changelog
 
-## [Unreleased] - TBD
+## [Unreleased]
+
+## [3.0.0b3] - 2024-07-25
 
 ### Changed
 
@@ -448,7 +450,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b2..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b3..main>
+[3.0.0b3]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b2..3.0.0b3>
 [3.0.0b2]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b1..3.0.0b2>
 [3.0.0b1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a4..3.0.0b1>
 [3.0.0a4]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a3..3.0.0a4>
