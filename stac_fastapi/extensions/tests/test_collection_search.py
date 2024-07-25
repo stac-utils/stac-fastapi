@@ -1,20 +1,44 @@
 import json
 from urllib.parse import quote_plus
 
+import attr
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import create_request_model
-from stac_fastapi.extensions.core import CollectionSearchExtension
-from stac_fastapi.extensions.core.collection_search import ConformanceClasses
-from stac_fastapi.extensions.core.collection_search.request import (
-    CollectionSearchExtensionGetRequest,
+from stac_fastapi.extensions.core import (
+    CollectionSearchExtension,
+    CollectionSearchPostExtension,
 )
-from stac_fastapi.extensions.core.fields.request import FieldsExtensionGetRequest
-from stac_fastapi.extensions.core.filter.request import FilterExtensionGetRequest
-from stac_fastapi.extensions.core.free_text.request import FreeTextExtensionGetRequest
-from stac_fastapi.extensions.core.query.request import QueryExtensionGetRequest
-from stac_fastapi.extensions.core.sort.request import SortExtensionGetRequest
+from stac_fastapi.extensions.core.collection_search import ConformanceClasses
+from stac_fastapi.extensions.core.collection_search.client import (
+    BaseCollectionSearchClient,
+)
+from stac_fastapi.extensions.core.collection_search.request import (
+    BaseCollectionSearchGetRequest,
+    BaseCollectionSearchPostRequest,
+)
+from stac_fastapi.extensions.core.fields.request import (
+    FieldsExtensionGetRequest,
+    FieldsExtensionPostRequest,
+)
+from stac_fastapi.extensions.core.filter.request import (
+    FilterExtensionGetRequest,
+    FilterExtensionPostRequest,
+)
+from stac_fastapi.extensions.core.free_text.request import (
+    FreeTextExtensionGetRequest,
+    FreeTextExtensionPostRequest,
+)
+from stac_fastapi.extensions.core.query.request import (
+    QueryExtensionGetRequest,
+    QueryExtensionPostRequest,
+)
+from stac_fastapi.extensions.core.sort.request import (
+    SortExtensionGetRequest,
+    SortExtensionPostRequest,
+)
+from stac_fastapi.types import stac
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseCoreClient
 
@@ -40,13 +64,22 @@ class DummyCoreClient(BaseCoreClient):
         raise NotImplementedError
 
 
+@attr.s
+class DummyPostClient(BaseCollectionSearchClient):
+    def post_all_collections(
+        self, search_request: BaseCollectionSearchPostRequest, **kwargs
+    ) -> stac.ItemCollection:
+        """fake method."""
+        return search_request.model_dump()
+
+
 def test_collection_search_extension_default():
-    """Test /collections endpoint with collection-search ext."""
+    """Test GET - /collections endpoint with collection-search ext."""
     api = StacApi(
         settings=ApiSettings(),
         client=DummyCoreClient(),
         extensions=[CollectionSearchExtension()],
-        collections_get_request_model=CollectionSearchExtensionGetRequest,
+        collections_get_request_model=BaseCollectionSearchGetRequest,
     )
     with TestClient(api.app) as client:
         response = client.get("/conformance")
@@ -87,10 +120,12 @@ def test_collection_search_extension_default():
 
 
 def test_collection_search_extension_models():
-    """Test /collections endpoint with collection-search ext with additional models."""
+    """Test GET - /collections endpoint with collection-search ext
+    with additional models.
+    """
     collections_get_request_model = create_request_model(
         model_name="SearchGetRequest",
-        base_model=CollectionSearchExtensionGetRequest,
+        base_model=BaseCollectionSearchGetRequest,
         mixins=[
             FreeTextExtensionGetRequest,
             FilterExtensionGetRequest,
@@ -106,6 +141,7 @@ def test_collection_search_extension_models():
         client=DummyCoreClient(),
         extensions=[
             CollectionSearchExtension(
+                GET=collections_get_request_model,
                 conformance_classes=[
                     ConformanceClasses.COLLECTIONSEARCH,
                     ConformanceClasses.BASIS,
@@ -114,7 +150,7 @@ def test_collection_search_extension_models():
                     ConformanceClasses.QUERY,
                     ConformanceClasses.SORT,
                     ConformanceClasses.FIELDS,
-                ]
+                ],
             )
         ],
         collections_get_request_model=collections_get_request_model,
@@ -179,3 +215,180 @@ def test_collection_search_extension_models():
         assert "query" in response_dict
         assert ["-gsd", "-datetime"] == response_dict["sortby"]
         assert ["properties.datetime"] == response_dict["fields"]
+
+
+def test_collection_search_extension_post_default():
+    """Test POST - /collections endpoint with collection-search ext."""
+    settings = ApiSettings()
+    collection_search_ext = CollectionSearchPostExtension(
+        client=DummyPostClient(),
+        settings=settings,
+    )
+
+    api = StacApi(
+        settings=settings,
+        client=DummyCoreClient(),
+        extensions=[collection_search_ext],
+    )
+    with TestClient(api.app) as client:
+        response = client.get("/conformance")
+        assert response.is_success, response.json()
+        response_dict = response.json()
+        assert (
+            "https://api.stacspec.org/v1.0.0-rc.1/collection-search"
+            in response_dict["conformsTo"]
+        )
+        assert (
+            "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query"
+            in response_dict["conformsTo"]
+        )
+
+        response = client.post("/collections", json={})
+        assert response.is_success, response.json()
+        response_dict = response.json()
+        assert "bbox" in response_dict
+        assert "datetime" in response_dict
+        assert "limit" in response_dict
+        assert response_dict["limit"] == 10
+
+        response = client.post(
+            "/collections",
+            json={
+                "datetime": "2020-06-13T13:00:00Z/2020-06-13T14:00:00Z",
+                "bbox": [-175.05, -85.05, 175.05, 85.05],
+                "limit": 100_000,
+            },
+        )
+        assert response.is_success, response.json()
+        response_dict = response.json()
+        assert [-175.05, -85.05, 175.05, 85.05] == response_dict["bbox"]
+        assert "2020-06-13T13:00:00Z/2020-06-13T14:00:00Z" == response_dict["datetime"]
+        assert 10_000 == response_dict["limit"]
+
+
+def test_collection_search_extension_post_models():
+    """Test POST - /collections endpoint with collection-search ext
+    with additional models.
+    """
+    post_request_model = create_request_model(
+        model_name="SearchPostRequest",
+        base_model=BaseCollectionSearchPostRequest,
+        mixins=[
+            FreeTextExtensionPostRequest,
+            FilterExtensionPostRequest,
+            QueryExtensionPostRequest,
+            SortExtensionPostRequest,
+            FieldsExtensionPostRequest,
+        ],
+        request_type="POST",
+    )
+
+    get_request_model = create_request_model(
+        model_name="SearchGetRequest",
+        base_model=BaseCollectionSearchGetRequest,
+        mixins=[
+            FreeTextExtensionGetRequest,
+            FilterExtensionGetRequest,
+            QueryExtensionGetRequest,
+            SortExtensionGetRequest,
+            FieldsExtensionGetRequest,
+        ],
+        request_type="GET",
+    )
+
+    settings = ApiSettings()
+    api = StacApi(
+        settings=settings,
+        client=DummyCoreClient(),
+        extensions=[
+            CollectionSearchPostExtension(
+                settings=settings,
+                client=DummyPostClient(),
+                GET=get_request_model,
+                POST=post_request_model,
+                conformance_classes=[
+                    ConformanceClasses.COLLECTIONSEARCH,
+                    ConformanceClasses.BASIS,
+                    ConformanceClasses.FREETEXT,
+                    ConformanceClasses.FILTER,
+                    ConformanceClasses.QUERY,
+                    ConformanceClasses.SORT,
+                    ConformanceClasses.FIELDS,
+                ],
+            )
+        ],
+        collections_get_request_model=get_request_model,
+    )
+
+    with TestClient(api.app) as client:
+        response = client.get("/conformance")
+        assert response.is_success, response.json()
+        response_dict = response.json()
+        conforms = response_dict["conformsTo"]
+        assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search" in conforms
+        assert (
+            "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query"
+            in conforms
+        )
+        assert (
+            "https://api.stacspec.org/v1.0.0-rc.1/collection-search#free-text" in conforms
+        )
+        assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter" in conforms
+        assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#query" in conforms
+        assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort" in conforms
+        assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#fields" in conforms
+
+        response = client.post("/collections", json={})
+        assert response.is_success, response.json()
+        response_dict = response.json()
+        assert "bbox" in response_dict
+        assert "datetime" in response_dict
+        assert "limit" in response_dict
+        assert "q" in response_dict
+        assert "filter" in response_dict
+        assert "query" in response_dict
+        assert "sortby" in response_dict
+        assert "fields" in response_dict
+
+        response = client.post(
+            "/collections",
+            json={
+                "datetime": "2020-06-13T13:00:00Z/2020-06-13T14:00:00Z",
+                "bbox": [-175.05, -85.05, 175.05, 85.05],
+                "limit": 100_000,
+                "q": ["EO", "Earth Observation"],
+                "filter": {
+                    "op": "and",
+                    "args": [
+                        {"op": "=", "args": [{"property": "id"}, "item_id"]},
+                        {
+                            "op": "=",
+                            "args": [{"property": "collection"}, "collection_id"],
+                        },
+                    ],
+                },
+                "query": {"eo:cloud_cover": {"gte": 95}},
+                "sortby": [
+                    {
+                        "field": "properties.gsd",
+                        "direction": "desc",
+                    },
+                    {
+                        "field": "properties.datetime",
+                        "direction": "asc",
+                    },
+                ],
+            },
+        )
+        assert response.is_success, response.json()
+        response_dict = response.json()
+        assert [-175.05, -85.05, 175.05, 85.05] == response_dict["bbox"]
+        assert "2020-06-13T13:00:00Z/2020-06-13T14:00:00Z" == response_dict["datetime"]
+        assert 10_000 == response_dict["limit"]
+        assert ["EO", "Earth Observation"] == response_dict["q"]
+        assert response_dict["filter"]
+        assert "filter_crs" in response_dict
+        assert "cql2-json" in response_dict["filter_lang"]
+        assert response_dict["query"]
+        assert response_dict["sortby"]
+        assert response_dict["fields"]

@@ -5,12 +5,12 @@
 ### Changed
 
 * Add more openapi metadata in input models [#734](https://github.com/stac-utils/stac-fastapi/pull/734)
-* Use same `Limit` (capped to `10_000`) for `/items` and `GET - /search` input models ([#737](https://github.com/stac-utils/stac-fastapi/pull/737))
+* Use same `Limit` (capped to `10_000`) for `/items` and `GET - /search` input models ([#738](https://github.com/stac-utils/stac-fastapi/pull/738))
 
 ### Added
 
 * Add Free-text Extension ([#655](https://github.com/stac-utils/stac-fastapi/pull/655))
-* Add Collection-Search Extension ([#736](https://github.com/stac-utils/stac-fastapi/pull/736))
+* Add Collection-Search Extension ([#736](https://github.com/stac-utils/stac-fastapi/pull/736), [#739](https://github.com/stac-utils/stac-fastapi/pull/739))
 
 ## [3.0.0b2] - 2024-07-09
 
