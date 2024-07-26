@@ -3,7 +3,6 @@
 import copy
 import functools
 import inspect
-import warnings
 from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
 
 from fastapi import Depends, params
@@ -38,18 +37,11 @@ def sync_to_async(func):
 def create_async_endpoint(
     func: Callable,
     request_model: Union[Type[APIRequest], Type[BaseModel], Dict],
-    response_class: Optional[Type[Response]] = None,
 ):
     """Wrap a function in a coroutine which may be used to create a FastAPI endpoint.
 
     Synchronous functions are executed asynchronously using a background thread.
     """
-
-    if response_class:
-        warnings.warn(
-            "`response_class` option is deprecated, please set the Response class directly in the endpoint.",  # noqa: E501
-            DeprecationWarning,
-        )
 
     if not inspect.iscoroutinefunction(func):
         func = sync_to_async(func)
