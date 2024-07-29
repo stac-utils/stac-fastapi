@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [3.0.0] - 2024-07-29
+
+### Changed
+
+* Add version pinning (`~=3.0`) for stac-fastapi submodules
+* Moved `AsyncBaseFiltersClient` and `BaseFiltersClient` classes in `stac_fastapi.extensions.core.filter.client` submodule
+
+### Removed
+
+* Removed the `Context` extension
+* Removed deprecated `stac_fastapi.api.openapi.config_openapi` method and `stac_fastapi.api.openapi.VndOaiResponse` class
+* Removed `response_class` argument in `stac_fastapi.api.routes.create_async_endpoint` method
+* Removed `filter_fields` property in `stac_fastapi.extensions.core.fields.request.PostFieldsExtension` class
+
 ## [3.0.0b3] - 2024-07-25
 
 ### Changed
