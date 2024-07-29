@@ -150,7 +150,6 @@ class StacApi:
             if isinstance(ext, extension):
                 return ext
         return None
-   
 
     def register_landing_page(self):
         """Register landing page (GET /).
