@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
 
 from fastapi import Depends, params
 from fastapi.dependencies.utils import get_parameterless_sub_dependant
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
@@ -15,6 +16,8 @@ from starlette.routing import BaseRoute, Match
 from starlette.status import HTTP_204_NO_CONTENT
 
 from stac_fastapi.api.models import APIRequest
+
+import jwt
 
 
 def _wrap_response(resp: Any) -> Any:
@@ -32,6 +35,27 @@ def sync_to_async(func):
         return await run_in_threadpool(func, *args, **kwargs)
 
     return run
+
+# Define the OAuth2 scheme for Bearer token
+bearer_scheme = HTTPBearer(auto_error=False)
+
+# TODO: Also extract group information from the headers
+def extract_headers(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)) -> Dict[str, str]:
+        """Extract headers from request.
+
+        Args:
+            token: The OAuth2 token extracted from the Authorization header.
+
+        Returns:
+            Dict of headers.
+        """
+        if credentials:
+            decoded_jwt = jwt.decode(credentials.credentials, options={"verify_signature": False}, algorithms=["HS256"])
+            username = decoded_jwt.get("preferred_username")
+        else:
+            username = ""
+
+        return {"X-Username": username} # Allows support for more headers in future, e.g. group information
 
 
 def create_async_endpoint(
@@ -58,27 +82,30 @@ def create_async_endpoint(
         async def _endpoint(
             request: Request,
             request_data: request_model = Depends(),  # type:ignore
+            username_header = Depends(extract_headers),
         ):
             """Endpoint."""
-            return _wrap_response(await func(request=request, **request_data.kwargs()))
+            return _wrap_response(await func(request=request, username_header=username_header, **request_data.kwargs()))
 
     elif issubclass(request_model, BaseModel):
 
         async def _endpoint(
             request: Request,
             request_data: request_model,  # type:ignore
+            username_header = Depends(extract_headers),
         ):
             """Endpoint."""
-            return _wrap_response(await func(request_data, request=request))
+            return _wrap_response(await func(request_data, username_header=username_header, request=request))
 
     else:
 
         async def _endpoint(
             request: Request,
             request_data: Dict[str, Any],  # type:ignore
+            username_header = Depends(extract_headers),
         ):
             """Endpoint."""
-            return _wrap_response(await func(request_data, request=request))
+            return _wrap_response(await func(request_data, username_header=username_header, request=request))
 
     return _endpoint
 
