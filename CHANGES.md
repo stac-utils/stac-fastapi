@@ -465,15 +465,7 @@
 * First PyPi release!
 
 [Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0..main>
-[3.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b3..3.0.0>
-[3.0.0b3]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b2..3.0.0b3>
-[3.0.0b2]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b1..3.0.0b2>
-[3.0.0b1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a4..3.0.0b1>
-[3.0.0a4]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a3..3.0.0a4>
-[3.0.0a3]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a2..3.0.0a3>
-[3.0.0a2]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a1..3.0.0a2>
-[3.0.0a1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a0..3.0.0a1>
-[3.0.0a0]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5.post1..3.0.0a0>
+[3.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5.post1..3.0.0>
 [2.5.5.post1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5..2.5.5.post1>
 [2.5.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.4..2.5.5>
 [2.5.4]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.3..2.5.4>
