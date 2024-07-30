@@ -464,7 +464,8 @@
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b3..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0..main>
+[3.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b3..3.0.0>
 [3.0.0b3]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b2..3.0.0b3>
 [3.0.0b2]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0b1..3.0.0b2>
 [3.0.0b1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0a4..3.0.0b1>
