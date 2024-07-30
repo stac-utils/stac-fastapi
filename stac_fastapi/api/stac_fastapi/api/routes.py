@@ -59,6 +59,7 @@ def extract_headers(
             algorithms=["HS256"],
         )
         username = decoded_jwt.get("preferred_username")
+        print(f"Logged in as user: {username}")
     else:
         username = ""
 
