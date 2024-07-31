@@ -4,6 +4,10 @@
 
 ## [3.0.0] - 2024-07-29
 
+Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#changelog
+
+**Changes since 3.0.0b3:**
+
 ### Changed
 
 * Add version pinning (`~=3.0`) for stac-fastapi submodules
@@ -16,11 +20,11 @@
 * Removed `response_class` argument in `stac_fastapi.api.routes.create_async_endpoint` method
 * Removed `filter_fields` property in `stac_fastapi.extensions.core.fields.request.PostFieldsExtension` class
 
-## [3.0.0b3] - 2024-07-25
+## 3.0.0b3 - 2024-07-25
 
 ### Changed
 
-* Add more openapi metadata in input models [#734](https://github.com/stac-utils/stac-fastapi/pull/734)
+* Add more openapi metadata in input models ([#734](https://github.com/stac-utils/stac-fastapi/pull/734))
 * Use same `Limit` (capped to `10_000`) for `/items` and `GET - /search` input models ([#738](https://github.com/stac-utils/stac-fastapi/pull/738))
 
 ### Added
@@ -28,13 +32,13 @@
 * Add Free-text Extension ([#655](https://github.com/stac-utils/stac-fastapi/pull/655))
 * Add Collection-Search Extension ([#736](https://github.com/stac-utils/stac-fastapi/pull/736), [#739](https://github.com/stac-utils/stac-fastapi/pull/739))
 
-## [3.0.0b2] - 2024-07-09
+## 3.0.0b2 - 2024-07-09
 
 ### Changed
 
-* move back to `@attrs` (instead of dataclass) for `APIRequest` (model for GET request) class type [#729](https://github.com/stac-utils/stac-fastapi/pull/729)
+* move back to `@attrs` (instead of dataclass) for `APIRequest` (model for GET request) class type ([#729](https://github.com/stac-utils/stac-fastapi/pull/729))
 
-## [3.0.0b1] - 2024-07-05
+## 3.0.0b1 - 2024-07-05
 
 ### Added
 
@@ -46,33 +50,33 @@
 
 ### Removed
 
-* Removed the Filter Extension dependency from `AggregationExtensionPostRequest` and `AggregationExtensionGetRequest` [#716](https://github.com/stac-utils/stac-fastapi/pull/716)
+* Removed the Filter Extension dependency from `AggregationExtensionPostRequest` and `AggregationExtensionGetRequest` ([#716](https://github.com/stac-utils/stac-fastapi/pull/716))
 * Removed `pagination_extension` attribute in `stac_fastapi.api.app.StacApi`
 * Removed use of `pagination_extension` in `register_get_item_collection` function (User now need to construct the request model and pass it using `items_get_request_model` attribute)
 * Removed use of `FieldsExtension` in `stac_fastapi.api.app.StacApi`. If users use `FieldsExtension`, they would have to handle overpassing the model validation step by returning a `JSONResponse` from the `post_search` and `get_search` client methods.
 
 ### Changed
 
-* Replaced `@attrs` with python `@dataclass` for `APIRequest` (model for GET request) class type [#714](https://github.com/stac-utils/stac-fastapi/pull/714)
-* Moved `GETPagination`, `POSTPagination`, `GETTokenPagination` and `POSTTokenPagination` to `stac_fastapi.extensions.core.pagination.request` submodule [#717](https://github.com/stac-utils/stac-fastapi/pull/717)
+* Replaced `@attrs` with python `@dataclass` for `APIRequest` (model for GET request) class type ([#714](https://github.com/stac-utils/stac-fastapi/pull/714))
+* Moved `GETPagination`, `POSTPagination`, `GETTokenPagination` and `POSTTokenPagination` to `stac_fastapi.extensions.core.pagination.request` submodule ([#717](https://github.com/stac-utils/stac-fastapi/pull/717))
 * update FastAPI requirement to `>=0.111.0`
 
-## [3.0.0a4] - 2024-06-27
+## 3.0.0a4 - 2024-06-27
 
 ### Fixed
 
-* Updated default filter language in filter extension's POST search request model to match the extension's documentation [#711](https://github.com/stac-utils/stac-fastapi/issues/711)
+* Updated default filter language in filter extension's POST search request model to match the extension's documentation ([#711](https://github.com/stac-utils/stac-fastapi/issues/711))
 
 ### Removed
 
-* Removed the Filter Extension depenency from `AggregationExtensionPostRequest` and `AggregationExtensionGetRequest` [#716](https://github.com/stac-utils/stac-fastapi/pull/716)
-* Removed `add_middleware` method in `StacApi` object and let starlette handle the middleware stack creation [721](https://github.com/stac-utils/stac-fastapi/pull/721)
+* Removed the Filter Extension depenency from `AggregationExtensionPostRequest` and `AggregationExtensionGetRequest` ([#716](https://github.com/stac-utils/stac-fastapi/pull/716))
+* Removed `add_middleware` method in `StacApi` object and let starlette handle the middleware stack creation ([#721](https://github.com/stac-utils/stac-fastapi/pull/721))
 
-## [3.0.0a3] - 2024-06-13
+## 3.0.0a3 - 2024-06-13
 
 ### Added
 
-* Add base support for the Aggregation extension [#684](https://github.com/stac-utils/stac-fastapi/pull/684)
+* Add base support for the Aggregation extension ([#684](https://github.com/stac-utils/stac-fastapi/pull/684))
 
 ### Changed
 
@@ -81,13 +85,13 @@
 * Removed `default_includes` from `stac_fastapi.types.config.ApiSettings` ([#706](https://github.com/stac-utils/stac-fastapi/pull/706))
 * Deprecated *Fields* extension `PostFieldsExtension.filter_fields` property ([#706](https://github.com/stac-utils/stac-fastapi/pull/706))
 
-## [3.0.0a2] - 2024-05-31
+## 3.0.0a2 - 2024-05-31
 
 ### Fixed
 
 * Fix missing default (`None`) for optional `query` attribute in `QueryExtensionPostRequest` model ([#701](https://github.com/stac-utils/stac-fastapi/pull/701))
 
-## [3.0.0a1] - 2024-05-22
+## 3.0.0a1 - 2024-05-22
 
 ### Changed
 
@@ -103,7 +107,7 @@
 
 * Make `str_to_interval` not return a tuple for single-value input (fixing `datetime` argument as passed to `get_search`). ([#692](https://github.com/stac-utils/stac-fastapi/pull/692))
 
-## [3.0.0a0] - 2024-05-06
+## 3.0.0a0 - 2024-05-06
 
 ### Added
 
