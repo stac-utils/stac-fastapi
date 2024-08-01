@@ -1,29 +1,9 @@
 """openapi."""
 
-import warnings
-
 from fastapi import FastAPI
-from fastapi.openapi.utils import get_openapi
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route, request_response
-
-from stac_fastapi.api.config import ApiExtensions
-from stac_fastapi.types.config import ApiSettings
-
-
-class VndOaiResponse(JSONResponse):
-    """JSON with custom, vendor content-type."""
-
-    media_type = "application/vnd.oai.openapi+json;version=3.0"
-
-    def __init__(self, *args, **kwargs):
-        """Init function with deprecation warning."""
-        warnings.warn(
-            "VndOaiResponse is deprecated and will be removed in v3.0",
-            DeprecationWarning,
-        )
-        super().__init__(*args, **kwargs)
 
 
 def update_openapi(app: FastAPI) -> FastAPI:
@@ -55,33 +35,3 @@ def update_openapi(app: FastAPI) -> FastAPI:
 
     # return the patched app
     return app
-
-
-def config_openapi(app: FastAPI, settings: ApiSettings):
-    """Config openapi."""
-    warnings.warn(
-        "config_openapi is deprecated and will be removed in v3.0",
-        DeprecationWarning,
-    )
-
-    def custom_openapi():
-        """Config openapi."""
-        if app.openapi_schema:
-            return app.openapi_schema
-
-        openapi_schema = get_openapi(
-            title="Arturo STAC API", version="0.1", routes=app.routes
-        )
-
-        if settings.api_extension_is_enabled(ApiExtensions.fields):
-            openapi_schema["paths"]["/search"]["get"]["responses"]["200"]["content"][
-                "application/json"
-            ]["schema"] = {"$ref": "#/components/schemas/ItemCollection"}
-            openapi_schema["paths"]["/search"]["post"]["responses"]["200"]["content"][
-                "application/json"
-            ]["schema"] = {"$ref": "#/components/schemas/ItemCollection"}
-
-        app.openapi_schema = openapi_schema
-        return app.openapi_schema
-
-    app.openapi = custom_openapi

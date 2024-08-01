@@ -2,7 +2,6 @@
 
 from .aggregation import AggregationExtension
 from .collection_search import CollectionSearchExtension, CollectionSearchPostExtension
-from .context import ContextExtension
 from .fields import FieldsExtension
 from .filter import FilterExtension
 from .free_text import FreeTextAdvancedExtension, FreeTextExtension
@@ -13,7 +12,6 @@ from .transaction import TransactionExtension
 
 __all__ = (
     "AggregationExtension",
-    "ContextExtension",
     "FieldsExtension",
     "FilterExtension",
     "FreeTextExtension",

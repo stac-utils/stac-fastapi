@@ -12,7 +12,6 @@ class ApiExtensions(enum.Enum):
     Ref: https://github.com/stac-api-extensions
     """
 
-    context = "context"
     fields = "fields"
     filter = "filter"
     query = "query"

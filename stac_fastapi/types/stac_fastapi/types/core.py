@@ -1,8 +1,6 @@
 """Base clients."""
 
 import abc
-import importlib
-import warnings
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
@@ -784,18 +782,3 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             An ItemCollection.
         """
         ...
-
-
-# TODO: remove for 3.0.0 final release
-def __getattr__(name: str) -> Any:
-    if name in ["AsyncBaseFiltersClient", "BaseFiltersClient"]:
-        warnings.warn(
-            f"""importing {name} from `stac_fastapi.types.core` is deprecated,
-            please import it from `stac_fastapi.extensions.core.filter.client`.""",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        clients = importlib.import_module("stac_fastapi.extensions.core.filter.client")
-        return getattr(clients, name)
-
-    raise AttributeError(f"module {__name__} has no attribute {name}")
