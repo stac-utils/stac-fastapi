@@ -1,5 +1,78 @@
 # Changelog
 
+## EODHP
+The following changes have been made for the EODHP project
+### V0.3.8 - 2024-07-30
+Access-Control Logic in Catalog
+- Adding access control to catalogs and collections added to the catalogue
+- Access limited based on incoming `authorization` header username
+- Workspace parameter used when creating/editing entries to ensure workspace has required access to make the requested changes
+- Access determined by hashing the provided username or workspace name, storing in elasticsearch and filtering results
+### v0.3.7 - 2024-07-02
+Catalog creation logic improvement
+- Ensure parent catalog exists before creating child
+- Two new functions implemented (async and sync) for catalog preparation
+
+Code clean up
+  - Comments for nested catalog logic
+  - Correct response code for incorrect query parameters when searching
+  - Split up collection-search extension from core `/collections` implementation
+  - Defining abstract functions for collection and discovery search extensions  
+
+Bugfixes
+  - Remove unnecessary parameter from collection-search call
+  - Improve discovery-search implementation to ensure all nested catalogs and collections are returned in catalog responses
+  - Corrected links in response form `/catalogs` endpoints
+### v0.3.6 - 2024-06-14
+## Support nested catalogs
+- Data within (arbitrarily) nested catalogs can be accessed as before with the provided catalog path parameter, e.g. `/supported-datasets/dataset-1`
+- Requires `catalog_path` parameter to be provided to specify where in the catalog directories the data should be placed/recalled from
+- Update endpoints to support nested catalog definition in URL path
+- Better support for STAC-Browser and pystac python client:
+  - Updating link generator logic
+### v0.3.5 - 2024-05-31
+Support configuration for read-only deployments:
+- Allow transaction extensions (including Bulk Transactions) to be disabled by environment variable (STAC_FASTAPI_ENABLE_TRANSACTIONS) at deployment time
+- STAC-fastapi instances can be defined as either read-only (transaction endpoints disabled) or read-write (with all transactions endpoints enabled)
+
+The following bugs were also addressed:
+- Corrected update catalog functionality to reindex all items sitting within the updated catalog when the catalog id is changed
+- Corrected issue with pagination links being broken and added support for discovery and collections search
+### v0.3.4 - 2024-05-14
+#### Added new endpoint to allow free-text searching of collections and catalogues:
+- New endpoints:
+  - Discovery Search (GET/POST)
+  - This queries title, description and keyword (collections only) fields when available
+#### Added support for catalogues to split up collections and items into catalogues of data
+  - This leads to updates for the following endpoints to filter by catalogues:
+    - Get Collection
+    - Get ItemCollection
+    - Get CatalogCollections
+    - Create Item
+    - Update Item
+    - Delete Item
+    - Create Collection
+    - Update Collection
+    - Delete Collection
+  - New endpoints added for catalogues:
+    - Update Catalog
+    - Create Catalog
+    - Delete Catalog
+    - Get Catalogs
+##### Minor changes
+- Update to the datetime handling for Get ItemCollection to include string converter.
+### v0.3.3 - 2024-05-08
+Including fix to address incorrect links returned from `/search` and `/collection-search` endpoints defining the `self` and `next` item locations.
+### v0.3.2 - 2024-05-01
+Bugfixes:
+- Bugfix for missing collection search links
+- Bugfix to address JSON validation error in search results
+### V0.3.1 - 2024-04-26
+General code clean up to improve initialisation commands
+### V3.0.0 - 2024-04-23
+Added [collection search](https://github.com/stac-api-extensions/collection-search) to STAC Fastapi  allowing spatial and temporal searching of collections by BBOX and datetime.
+
+
 ## [Unreleased]
 
 ## [2.5.2] - 2024-04-19

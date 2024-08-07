@@ -23,6 +23,7 @@ class PostItem(CollectionUri):
     item: Union[stac_types.Item, stac_types.ItemCollection] = attr.ib(
         default=Body(None)
     )
+    workspace: str = attr.ib(default=None)
 
 
 @attr.s
@@ -30,6 +31,8 @@ class PostCatalog(CatalogUri):
     """Create Item."""
 
     catalog: Union[stac_types.Catalog] = attr.ib(default=Body(None))
+    workspace: str = attr.ib(default=None)
+    is_public: bool = attr.ib(default=False)
 
 
 @attr.s
@@ -37,6 +40,8 @@ class PostBaseCatalog(APIRequest):
     """Create Item."""
 
     catalog: Union[stac_types.Catalog] = attr.ib(default=Body(None))
+    workspace: str = attr.ib(default=None)
+    is_public: bool = attr.ib(default=False)
 
 
 @attr.s
@@ -44,6 +49,8 @@ class PutCollection(CollectionUri):
     """Update Collection."""
 
     collection: Union[stac_types.Collection] = attr.ib(default=Body(None))
+    workspace: str = attr.ib(default=None)
+    is_public: bool = attr.ib(default=False)
 
 
 @attr.s
@@ -51,6 +58,8 @@ class PostCollection(CatalogUri):
     """Create Collection."""
 
     collection: Union[stac_types.Collection] = attr.ib(default=Body(None))
+    workspace: str = attr.ib(default=None)
+    is_public: bool = attr.ib(default=False)
 
 
 @attr.s
@@ -58,6 +67,15 @@ class PutItem(ItemUri):
     """Update Item."""
 
     item: stac_types.Item = attr.ib(default=Body(None))
+    workspace: str = attr.ib(default=None)
+    is_public: bool = attr.ib(default=False)
+
+
+@attr.s  # type:ignore
+class DeleteCatalogUri(CatalogUri):
+    """Delete catalog."""
+
+    workspace: str = attr.ib(default=None)
 
 
 @attr.s
@@ -240,7 +258,9 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=create_async_endpoint(self.client.delete_catalog, CatalogUri),
+            endpoint=create_async_endpoint(
+                self.client.delete_catalog, DeleteCatalogUri
+            ),
         )
 
     def register(self, app: FastAPI) -> None:
