@@ -6,6 +6,7 @@ import attr
 from fastapi import Body
 from pydantic import BaseModel
 from stac_pydantic import Collection, Item, ItemCollection
+from typing_extensions import Annotated
 
 from stac_fastapi.api.models import CollectionUri, ItemUri
 
@@ -14,14 +15,14 @@ from stac_fastapi.api.models import CollectionUri, ItemUri
 class PostItem(CollectionUri):
     """Create Item."""
 
-    item: Union[Item, ItemCollection] = attr.ib(default=Body(None))
+    item: Annotated[Union[Item, ItemCollection], Body()] = attr.ib(default=None)
 
 
 @attr.s
 class PutPatchItem(ItemUri):
     """Update Item."""
 
-    item: Item = attr.ib(default=Body(None))
+    item: Annotated[Item, Body()] = attr.ib(default=None)
 
 
 @attr.s
@@ -62,4 +63,4 @@ class PatchMoveCopy(PatchOperation):
 class PutPatchCollection(CollectionUri):
     """Update Collection."""
 
-    collection: Collection = attr.ib(default=Body(None))
+    collection: Annotated[Collection, Body()] = attr.ib(default=None)
