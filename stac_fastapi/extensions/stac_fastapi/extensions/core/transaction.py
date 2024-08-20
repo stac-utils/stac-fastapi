@@ -3,8 +3,8 @@
 from typing import List, Optional, Type, Union
 
 import attr
-from fastapi import APIRouter, Body, FastAPI
-from stac_pydantic import Collection, Item, ItemCollection
+from fastapi import APIRouter, FastAPI
+from stac_pydantic import Collection, Item
 from stac_pydantic.shared import MimeTypes
 from starlette.responses import JSONResponse, Response
 
@@ -13,27 +13,12 @@ from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
-
-
-@attr.s
-class PostItem(CollectionUri):
-    """Create Item."""
-
-    item: Union[Item, ItemCollection] = attr.ib(default=Body(None))
-
-
-@attr.s
-class PutItem(ItemUri):
-    """Update Item."""
-
-    item: Item = attr.ib(default=Body(None))
-
-
-@attr.s
-class PutCollection(CollectionUri):
-    """Update Collection."""
-
-    collection: Collection = attr.ib(default=Body(None))
+from stac_fastapi.types.transaction import (
+    PatchOperation,
+    PostItem,
+    PutPatchCollection,
+    PutPatchItem,
+)
 
 
 @attr.s
@@ -110,7 +95,32 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_async_endpoint(self.client.update_item, PutItem),
+            endpoint=create_async_endpoint(self.client.update_item, PutPatchItem),
+        )
+
+    def register_patch_item(self):
+        """Register patch item endpoint (PATCH
+        /collections/{collection_id}/items/{item_id})."""
+        self.router.add_api_route(
+            name="Patch Item",
+            path="/collections/{collection_id}/items/{item_id}",
+            response_model=Item if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": Item,
+                }
+            },
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["PATCH"],
+            endpoint=create_async_endpoint(
+                self.client.patch_item,
+                Union[PutPatchItem, List[PatchOperation]],
+            ),
         )
 
     def register_delete_item(self):
@@ -134,11 +144,6 @@ class TransactionExtension(ApiExtension):
             methods=["DELETE"],
             endpoint=create_async_endpoint(self.client.delete_item, ItemUri),
         )
-
-    def register_patch_item(self):
-        """Register patch item endpoint (PATCH
-        /collections/{collection_id}/items/{item_id})."""
-        raise NotImplementedError
 
     def register_create_collection(self):
         """Register create collection endpoint (POST /collections)."""
@@ -180,7 +185,33 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_async_endpoint(self.client.update_collection, PutCollection),
+            endpoint=create_async_endpoint(
+                self.client.update_collection, PutPatchCollection
+            ),
+        )
+
+    def register_patch_collection(self):
+        """Register patch collection endpoint (PATCH /collections/{collection_id})."""
+        self.router.add_api_route(
+            name="Patch Collection",
+            path="/collections/{collection_id}",
+            response_model=Collection if self.settings.enable_response_models else None,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.geojson.value: {},
+                    },
+                    "model": Collection,
+                }
+            },
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["PATCH"],
+            endpoint=create_async_endpoint(
+                self.client.patch_collection,
+                Union[PutPatchCollection, List[PatchOperation]],
+            ),
         )
 
     def register_delete_collection(self):
@@ -204,10 +235,6 @@ class TransactionExtension(ApiExtension):
             endpoint=create_async_endpoint(self.client.delete_collection, CollectionUri),
         )
 
-    def register_patch_collection(self):
-        """Register patch collection endpoint (PATCH /collections/{collection_id})."""
-        raise NotImplementedError
-
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
 
@@ -220,8 +247,10 @@ class TransactionExtension(ApiExtension):
         self.router.prefix = app.state.router_prefix
         self.register_create_item()
         self.register_update_item()
+        self.register_patch_item()
         self.register_delete_item()
         self.register_create_collection()
         self.register_update_collection()
+        self.register_patch_collection()
         self.register_delete_collection()
         app.include_router(self.router, tags=["Transaction Extension"])
