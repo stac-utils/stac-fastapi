@@ -17,7 +17,7 @@ class QueryExtension(ApiExtension):
     The Query extension adds an additional `query` parameter to `/search` requests which
     allows the caller to perform queries against item metadata (ex. find all images with
     cloud cover less than 15%).
-    https://github.com/radiantearth/stac-api-spec/blob/master/item-search/README.md#query
+    https://github.com/stac-api-extensions/query
     """
 
     GET = QueryExtensionGetRequest

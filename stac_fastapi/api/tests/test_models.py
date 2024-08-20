@@ -1,17 +1,20 @@
 import json
 
 import pytest
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from stac_fastapi.api.models import create_get_request_model, create_post_request_model
-from stac_fastapi.extensions.core.filter.filter import FilterExtension
-from stac_fastapi.extensions.core.sort.sort import SortExtension
+from stac_fastapi.extensions.core import FieldsExtension, FilterExtension, SortExtension
 from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 
 
 def test_create_get_request_model():
-    extensions = [FilterExtension()]
-    request_model = create_get_request_model(extensions, BaseSearchGetRequest)
+    request_model = create_get_request_model(
+        extensions=[FilterExtension(), FieldsExtension()],
+        base_model=BaseSearchGetRequest,
+    )
 
     model = request_model(
         collections="test1,test2",
@@ -26,13 +29,36 @@ def test_create_get_request_model():
         datetime="2020-01-01T00:00:00Z",
         limit=10,
         filter="test==test",
-        # FIXME: https://github.com/stac-utils/stac-fastapi/issues/638
-        # hyphen aliases are not properly working
-        # **{"filter-crs": "epsg:4326", "filter-lang": "cql2-text"},
+        filter_crs="epsg:4326",
+        filter_lang="cql2-text",
     )
 
     assert model.collections == ["test1", "test2"]
-    # assert model.filter_crs == "epsg:4326"
+    assert model.filter_crs == "epsg:4326"
+
+    with pytest.raises(HTTPException):
+        request_model(datetime="yo")
+
+    app = FastAPI()
+
+    @app.get("/test")
+    def route(model=Depends(request_model)):
+        return model
+
+    with TestClient(app) as client:
+        resp = client.get(
+            "/test",
+            params={
+                "collections": "test1,test2",
+                "filter-crs": "epsg:4326",
+                "filter-lang": "cql2-text",
+            },
+        )
+        assert resp.status_code == 200
+        response_dict = resp.json()
+        assert response_dict["collections"] == ["test1", "test2"]
+        assert response_dict["filter_crs"] == "epsg:4326"
+        assert response_dict["filter_lang"] == "cql2-text"
 
 
 @pytest.mark.parametrize(
@@ -40,8 +66,10 @@ def test_create_get_request_model():
     [(None, True), ({"test": "test"}, True), ("test==test", False), ([], False)],
 )
 def test_create_post_request_model(filter, passes):
-    extensions = [FilterExtension()]
-    request_model = create_post_request_model(extensions, BaseSearchPostRequest)
+    request_model = create_post_request_model(
+        extensions=[FilterExtension(), FieldsExtension()],
+        base_model=BaseSearchPostRequest,
+    )
 
     if not passes:
         with pytest.raises(ValidationError):
@@ -78,8 +106,10 @@ def test_create_post_request_model(filter, passes):
     ],
 )
 def test_create_post_request_model_nested_fields(sortby, passes):
-    extensions = [SortExtension()]
-    request_model = create_post_request_model(extensions, BaseSearchPostRequest)
+    request_model = create_post_request_model(
+        extensions=[SortExtension()],
+        base_model=BaseSearchPostRequest,
+    )
 
     if not passes:
         with pytest.raises(ValidationError):

@@ -18,18 +18,15 @@ from starlette.responses import JSONResponse, Response
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.middleware import CORSMiddleware, ProxyHeaderMiddleware
 from stac_fastapi.api.models import (
+    APIRequest,
     CollectionUri,
     EmptyRequest,
     GeoJSONResponse,
     ItemCollectionUri,
     ItemUri,
-    create_request_model,
 )
 from stac_fastapi.api.openapi import update_openapi
 from stac_fastapi.api.routes import Scope, add_route_dependencies, create_async_endpoint
-
-# TODO: make this module not depend on `stac_fastapi.extensions`
-from stac_fastapi.extensions.core import FieldsExtension, TokenPaginationExtension
 from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
@@ -108,7 +105,10 @@ class StacApi:
     search_post_request_model: Type[BaseSearchPostRequest] = attr.ib(
         default=BaseSearchPostRequest
     )
-    pagination_extension = attr.ib(default=TokenPaginationExtension)
+    collections_get_request_model: Type[APIRequest] = attr.ib(default=EmptyRequest)
+    collection_get_request_model: Type[APIRequest] = attr.ib(default=CollectionUri)
+    items_get_request_model: Type[APIRequest] = attr.ib(default=ItemCollectionUri)
+    item_get_request_model: Type[APIRequest] = attr.ib(default=ItemUri)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
     middlewares: List[Middleware] = attr.ib(
         default=attr.Factory(
@@ -211,7 +211,9 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(self.client.get_item, ItemUri),
+            endpoint=create_async_endpoint(
+                self.client.get_item, self.item_get_request_model
+            ),
         )
 
     def register_post_search(self):
@@ -220,15 +222,12 @@ class StacApi:
         Returns:
             None
         """
-        fields_ext = self.get_extension(FieldsExtension)
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(
-                (api.ItemCollection if not fields_ext else None)
-                if self.settings.enable_response_models
-                else None
-            ),
+            response_model=api.ItemCollection
+            if self.settings.enable_response_models
+            else None,
             responses={
                 200: {
                     "content": {
@@ -252,15 +251,12 @@ class StacApi:
         Returns:
             None
         """
-        fields_ext = self.get_extension(FieldsExtension)
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=(
-                (api.ItemCollection if not fields_ext else None)
-                if self.settings.enable_response_models
-                else None
-            ),
+            response_model=api.ItemCollection
+            if self.settings.enable_response_models
+            else None,
             responses={
                 200: {
                     "content": {
@@ -302,7 +298,9 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(self.client.all_collections, EmptyRequest),
+            endpoint=create_async_endpoint(
+                self.client.all_collections, self.collections_get_request_model
+            ),
         )
 
     def register_get_collection(self):
@@ -329,7 +327,9 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(self.client.get_collection, CollectionUri),
+            endpoint=create_async_endpoint(
+                self.client.get_collection, self.collection_get_request_model
+            ),
         )
 
     def register_get_item_collection(self):
@@ -338,16 +338,6 @@ class StacApi:
         Returns:
             None
         """
-        pagination_extension = self.get_extension(self.pagination_extension)
-        if pagination_extension is not None:
-            mixins = [pagination_extension.GET]
-        else:
-            mixins = None
-        request_model = create_request_model(
-            "ItemCollectionURI",
-            base_model=ItemCollectionUri,
-            mixins=mixins,
-        )
         self.router.add_api_route(
             name="Get ItemCollection",
             path="/collections/{collection_id}/items",
@@ -366,7 +356,9 @@ class StacApi:
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(self.client.item_collection, request_model),
+            endpoint=create_async_endpoint(
+                self.client.item_collection, self.items_get_request_model
+            ),
         )
 
     def register_core(self):
@@ -439,11 +431,6 @@ class StacApi:
         """
         return add_route_dependencies(self.app.router.routes, scopes, dependencies)
 
-    def add_middleware(self, middleware: Middleware):
-        """Add a middleware class to the application."""
-        self.app.user_middleware.insert(0, middleware)
-        self.app.middleware_stack = self.app.build_middleware_stack()
-
     def __attrs_post_init__(self):
         """Post-init hook.
 
@@ -483,8 +470,11 @@ class StacApi:
         self.app.openapi = self.customize_openapi
 
         # add middlewares
+        if self.middlewares and self.app.middleware_stack is not None:
+            raise RuntimeError("Cannot add middleware after an application has started")
+
         for middleware in self.middlewares:
-            self.add_middleware(middleware)
+            self.app.user_middleware.insert(0, middleware)
 
         # customize route dependencies
         for scopes, dependencies in self.route_dependencies:

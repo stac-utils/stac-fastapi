@@ -12,13 +12,14 @@ class ApiExtensions(enum.Enum):
     Ref: https://github.com/stac-api-extensions
     """
 
-    context = "context"
     fields = "fields"
     filter = "filter"
     query = "query"
     sort = "sort"
     transaction = "transaction"
     aggregation = "aggregation"
+    collection_search = "collection-search"
+    free_text = "free-text"
 
 
 class AddOns(enum.Enum):

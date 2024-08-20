@@ -1,12 +1,12 @@
 """Api request/response models."""
 
-import importlib.util
 from typing import List, Optional, Type, Union
 
 import attr
-from fastapi import Path
+from fastapi import Path, Query
 from pydantic import BaseModel, create_model
 from stac_pydantic.shared import BBox
+from typing_extensions import Annotated
 
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.rfc3339 import DateTimeType
@@ -14,9 +14,16 @@ from stac_fastapi.types.search import (
     APIRequest,
     BaseSearchGetRequest,
     BaseSearchPostRequest,
-    str2bbox,
-    str_to_interval,
+    Limit,
+    _bbox_converter,
+    _datetime_converter,
 )
+
+try:
+    import orjson  # noqa
+    from fastapi.responses import ORJSONResponse as JSONResponse
+except ImportError:  # pragma: nocover
+    from starlette.responses import JSONResponse
 
 
 def create_request_model(
@@ -80,18 +87,19 @@ def create_post_request_model(
     )
 
 
-@attr.s  # type:ignore
+@attr.s
 class CollectionUri(APIRequest):
     """Get or delete collection."""
 
-    collection_id: str = attr.ib(default=Path(..., description="Collection ID"))
+    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
 
 
 @attr.s
-class ItemUri(CollectionUri):
+class ItemUri(APIRequest):
     """Get or delete item."""
 
-    item_id: str = attr.ib(default=Path(..., description="Item ID"))
+    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
+    item_id: Annotated[str, Path(description="Item ID")] = attr.ib()
 
 
 @attr.s
@@ -102,63 +110,29 @@ class EmptyRequest(APIRequest):
 
 
 @attr.s
-class ItemCollectionUri(CollectionUri):
+class ItemCollectionUri(APIRequest):
     """Get item collection."""
 
-    limit: int = attr.ib(default=10)
-    bbox: Optional[BBox] = attr.ib(default=None, converter=str2bbox)
-    datetime: Optional[DateTimeType] = attr.ib(default=None, converter=str_to_interval)
+    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
+    limit: Annotated[
+        Optional[Limit],
+        Query(
+            description="Limits the number of results that are included in each page of the response (capped to 10_000)."  # noqa: E501
+        ),
+    ] = attr.ib(default=10)
+    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
+    datetime: Optional[DateTimeType] = attr.ib(
+        default=None, converter=_datetime_converter
+    )
 
 
-class POSTTokenPagination(BaseModel):
-    """Token pagination model for POST requests."""
+class GeoJSONResponse(JSONResponse):
+    """JSON with custom, vendor content-type."""
 
-    token: Optional[str] = None
-
-
-@attr.s
-class GETTokenPagination(APIRequest):
-    """Token pagination for GET requests."""
-
-    token: Optional[str] = attr.ib(default=None)
+    media_type = "application/geo+json"
 
 
-class POSTPagination(BaseModel):
-    """Page based pagination for POST requests."""
+class JSONSchemaResponse(JSONResponse):
+    """JSON with custom, vendor content-type."""
 
-    page: Optional[str] = None
-
-
-@attr.s
-class GETPagination(APIRequest):
-    """Page based pagination for GET requests."""
-
-    page: Optional[str] = attr.ib(default=None)
-
-
-# Test for ORJSON and use it rather than stdlib JSON where supported
-if importlib.util.find_spec("orjson") is not None:
-    from fastapi.responses import ORJSONResponse
-
-    class GeoJSONResponse(ORJSONResponse):
-        """JSON with custom, vendor content-type."""
-
-        media_type = "application/geo+json"
-
-    class JSONSchemaResponse(ORJSONResponse):
-        """JSON with custom, vendor content-type."""
-
-        media_type = "application/schema+json"
-
-else:
-    from starlette.responses import JSONResponse
-
-    class GeoJSONResponse(JSONResponse):
-        """JSON with custom, vendor content-type."""
-
-        media_type = "application/geo+json"
-
-    class JSONSchemaResponse(JSONResponse):
-        """JSON with custom, vendor content-type."""
-
-        media_type = "application/schema+json"
+    media_type = "application/schema+json"
