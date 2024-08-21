@@ -95,11 +95,11 @@ class CollectionSearchExtension(ApiExtension):
             conf = supported_extensions.get(ext.__class__.__name__, None)
             if not conf:
                 warnings.warn(
-                    f"Conformance class for `{ext.__class__.__name__}` extension not found.",
+                    f"Conformance class for `{ext.__class__.__name__}` extension not found.",  # noqa: E501
                     UserWarning,
                 )
             else:
-                conformance_classes.append(supported_extension[ext.__class__.__name__])
+                conformance_classes.append(conf)
 
         get_request_model = create_request_model(
             model_name="CollectionsGetRequest",
@@ -203,11 +203,11 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
             conf = supported_extensions.get(ext.__class__.__name__, None)
             if not conf:
                 warnings.warn(
-                    f"Conformance class for `{ext.__class__.__name__}` extension not found.",
+                    f"Conformance class for `{ext.__class__.__name__}` extension not found.",  # noqa: E501
                     UserWarning,
                 )
             else:
-                conformance_classes.append(supported_extension[ext.__class__.__name__])
+                conformance_classes.append(conf)
 
         get_request_model = create_request_model(
             model_name="CollectionsGetRequest",
