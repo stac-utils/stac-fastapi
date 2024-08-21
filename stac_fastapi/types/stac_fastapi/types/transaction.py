@@ -1,6 +1,6 @@
 """Transaction extension types."""
 
-from typing import Any, List, Literal, NewType, Union
+from typing import Any, List, Literal, Union
 
 import attr
 from fastapi import Body
