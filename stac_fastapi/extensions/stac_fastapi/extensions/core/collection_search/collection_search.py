@@ -79,7 +79,7 @@ class CollectionSearchExtension(ApiExtension):
         schema_href: Optional[str] = None,
     ) -> "CollectionSearchExtension":
         """Create CollectionSearchExtension object from extensions."""
-        supported_extension = {
+        supported_extensions = {
             "FreeTextExtension": ConformanceClasses.FREETEXT,
             "FreeTextAdvancedExtension": ConformanceClasses.FREETEXT,
             "QueryExtension": ConformanceClasses.QUERY,
@@ -92,7 +92,7 @@ class CollectionSearchExtension(ApiExtension):
             ConformanceClasses.BASIS,
         ]
         for ext in extensions:
-            conf = supported_extension.get(ext.__class__.__name__, None)
+            conf = supported_extensions.get(ext.__class__.__name__, None)
             if not conf:
                 warnings.warn(
                     f"{ext.__class__.__name__} extension not supported in `CollectionSearchExtension.from_extensions` method.",  # noqa: E501
@@ -187,7 +187,7 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
         router: Optional[APIRouter] = None,
     ) -> "CollectionSearchPostExtension":
         """Create CollectionSearchPostExtension object from extensions."""
-        supported_extension = {
+        supported_extensions = {
             "FreeTextExtension": ConformanceClasses.FREETEXT,
             "FreeTextAdvancedExtension": ConformanceClasses.FREETEXT,
             "QueryExtension": ConformanceClasses.QUERY,
@@ -200,7 +200,7 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
             ConformanceClasses.BASIS,
         ]
         for ext in extensions:
-            conf = supported_extension.get(ext.__class__.__name__, None)
+            conf = supported_extensions.get(ext.__class__.__name__, None)
             if not conf:
                 warnings.warn(
                     f"{ext.__class__.__name__} extension not supported in `CollectionSearchExtension.from_extensions` method.",  # noqa: E501
