@@ -84,8 +84,8 @@ class BaseTransactionsClient(abc.ABC):
 
     def patch_item(
         self,
-        item_id: str,
         collection_id: str,
+        item_id: str,
         patch: Union[Item, list[PatchOperation]],
         request: Request,
         **kwargs,
@@ -102,11 +102,11 @@ class BaseTransactionsClient(abc.ABC):
         Returns:
             The patched item.
         """
-        content_type = request.headers["content-type"]
+        content_type = request.headers.get("content-type", "application/json")
         if isinstance(patch, list) and content_type == "application/json-patch+json":
             return self.json_patch_item(
-                item_id,
                 collection_id,
+                item_id,
                 patch,
                 **kwargs,
             )
@@ -116,20 +116,22 @@ class BaseTransactionsClient(abc.ABC):
             "application/json",
         ]:
             return self.merge_patch_item(
-                item_id,
                 collection_id,
+                item_id,
                 patch,
                 **kwargs,
             )
 
         else:
-            raise NotImplementedError("Content-Type and body combination not implemented")
+            raise NotImplementedError(
+                "Content-Type and body combination not implemented"
+            )
 
     @abc.abstractmethod
     def merge_patch_item(
         self,
-        item_id: str,
         collection_id: str,
+        item_id: str,
         item: Item,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
@@ -150,8 +152,8 @@ class BaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def json_patch_item(
         self,
-        item_id: str,
         collection_id: str,
+        item_id: str,
         operations: list[PatchOperation],
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
@@ -240,18 +242,20 @@ class BaseTransactionsClient(abc.ABC):
         Returns:
             The patched collection.
         """
-        content_type = request.headers["content-type"]
+        content_type = request.headers.get("content-type", "application/json")
         if isinstance(patch, list) and content_type == "application/json-patch+json":
-            self.json_patch_collection(collection_id, patch, **kwargs)
+            return self.json_patch_collection(collection_id, patch, **kwargs)
 
         elif isinstance(patch, Collection) and content_type in [
             "application/merge-patch+json",
             "application/json",
         ]:
-            self.merge_patch_collection(collection_id, patch, **kwargs)
+            return self.merge_patch_collection(collection_id, patch, **kwargs)
 
         else:
-            raise NotImplementedError("Content-Type and body combination not implemented")
+            raise NotImplementedError(
+                "Content-Type and body combination not implemented"
+            )
 
     @abc.abstractmethod
     def merge_patch_collection(
@@ -373,7 +377,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         Returns:
             The patched item.
         """
-        content_type = request.headers["content-type"]
+        content_type = request.headers.get("content-type", "application/json")
         if isinstance(patch, list) and content_type == "application/json-patch+json":
             return self.json_patch_item(
                 item_id,
@@ -394,7 +398,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
             )
 
         else:
-            raise NotImplementedError("Content-Type and body combination not implemented")
+            raise NotImplementedError(
+                "Content-Type and body combination not implemented"
+            )
 
     @abc.abstractmethod
     def merge_patch_item(
@@ -511,18 +517,20 @@ class AsyncBaseTransactionsClient(abc.ABC):
         Returns:
             The patched collection.
         """
-        content_type = request.headers["content-type"]
+        content_type = request.headers.get("content-type", "application/json")
         if isinstance(patch, list) and content_type == "application/json-patch+json":
-            self.json_patch_collection(collection_id, patch, **kwargs)
+            return self.json_patch_collection(collection_id, patch, **kwargs)
 
         elif isinstance(patch, Collection) and content_type in [
             "application/merge-patch+json",
             "application/json",
         ]:
-            self.merge_patch_collection(collection_id, patch, **kwargs)
+            return self.merge_patch_collection(collection_id, patch, **kwargs)
 
         else:
-            raise NotImplementedError("Content-Type and body combination not implemented")
+            raise NotImplementedError(
+                "Content-Type and body combination not implemented"
+            )
 
     @abc.abstractmethod
     def merge_patch_collection(

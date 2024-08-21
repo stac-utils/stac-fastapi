@@ -3,10 +3,8 @@ from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import ItemCollectionUri, create_request_model
-from stac_fastapi.extensions.core import (
-    TokenPaginationExtension,
-    TransactionExtension,
-)
+from stac_fastapi.extensions.core import (TokenPaginationExtension,
+                                          TransactionExtension)
 from stac_fastapi.types import config, core
 
 
@@ -430,6 +428,12 @@ class DummyTransactionsClient(core.BaseTransactionsClient):
     def update_item(self, *args, **kwargs):
         return "dummy response"
 
+    def json_patch_item(self, *args, **kwargs):
+        return "dummy response"
+    
+    def merge_patch_item(self, *args, **kwargs):
+        return "dummy response"
+
     def delete_item(self, *args, **kwargs):
         return "dummy response"
 
@@ -437,6 +441,12 @@ class DummyTransactionsClient(core.BaseTransactionsClient):
         return "dummy response"
 
     def update_collection(self, *args, **kwargs):
+        return "dummy response"
+
+    def merge_patch_collection(self, *args, **kwargs):
+        return "dummy response"
+    
+    def json_patch_collection(self, *args, **kwargs):
         return "dummy response"
 
     def delete_collection(self, *args, **kwargs):

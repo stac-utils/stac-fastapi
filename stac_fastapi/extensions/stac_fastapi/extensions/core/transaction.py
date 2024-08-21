@@ -14,10 +14,11 @@ from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.transaction import (
-    PatchOperation,
+    PatchCollection,
+    PatchItem,
     PostItem,
-    PutPatchCollection,
-    PutPatchItem,
+    PutCollection,
+    PutItem,
 )
 
 
@@ -95,7 +96,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_async_endpoint(self.client.update_item, PutPatchItem),
+            endpoint=create_async_endpoint(self.client.update_item, PutItem),
         )
 
     def register_patch_item(self):
@@ -119,7 +120,7 @@ class TransactionExtension(ApiExtension):
             methods=["PATCH"],
             endpoint=create_async_endpoint(
                 self.client.patch_item,
-                Union[PutPatchItem, List[PatchOperation]],
+                PatchItem,
             ),
         )
 
@@ -186,7 +187,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["PUT"],
             endpoint=create_async_endpoint(
-                self.client.update_collection, PutPatchCollection
+                self.client.update_collection, PutCollection
             ),
         )
 
@@ -210,7 +211,7 @@ class TransactionExtension(ApiExtension):
             methods=["PATCH"],
             endpoint=create_async_endpoint(
                 self.client.patch_collection,
-                Union[PutPatchCollection, List[PatchOperation]],
+                PatchCollection,
             ),
         )
 
