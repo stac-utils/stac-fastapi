@@ -2,13 +2,21 @@ import json
 from urllib.parse import quote_plus
 
 import attr
+import pytest
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import create_request_model
 from stac_fastapi.extensions.core import (
+    AggregationExtension,
     CollectionSearchExtension,
     CollectionSearchPostExtension,
+    FieldsExtension,
+    FilterExtension,
+    FreeTextAdvancedExtension,
+    FreeTextExtension,
+    QueryExtension,
+    SortExtension,
 )
 from stac_fastapi.extensions.core.collection_search import ConformanceClasses
 from stac_fastapi.extensions.core.collection_search.client import (
@@ -302,8 +310,8 @@ def test_collection_search_extension_post_models():
         client=DummyCoreClient(),
         extensions=[
             CollectionSearchPostExtension(
-                settings=settings,
                 client=DummyPostClient(),
+                settings=settings,
                 GET=get_request_model,
                 POST=post_request_model,
                 conformance_classes=[
@@ -392,3 +400,112 @@ def test_collection_search_extension_post_models():
         assert response_dict["query"]
         assert response_dict["sortby"]
         assert response_dict["fields"]
+
+
+@pytest.mark.parametrize(
+    "extensions",
+    [
+        # with FreeTextExtension
+        [
+            FieldsExtension(),
+            FilterExtension(),
+            FreeTextExtension(),
+            QueryExtension(),
+            SortExtension(),
+        ],
+        # with FreeTextAdvancedExtension
+        [
+            FieldsExtension(),
+            FilterExtension(),
+            FreeTextAdvancedExtension(),
+            QueryExtension(),
+            SortExtension(),
+        ],
+    ],
+)
+def test_from_extensions_methods(extensions):
+    """
+    Make sure `from_extensions` create the correct
+    models and adds desired conformances classes.
+    """
+    ext = CollectionSearchExtension.from_extensions(
+        extensions,
+    )
+    collection_search = ext.GET()
+    assert collection_search.__class__.__name__ == "CollectionsGetRequest"
+    assert hasattr(collection_search, "bbox")
+    assert hasattr(collection_search, "datetime")
+    assert hasattr(collection_search, "limit")
+    assert hasattr(collection_search, "fields")
+    assert hasattr(collection_search, "q")
+    assert hasattr(collection_search, "sortby")
+    assert hasattr(collection_search, "filter")
+    assert ext.conformance_classes == [
+        ConformanceClasses.COLLECTIONSEARCH,
+        ConformanceClasses.BASIS,
+        ConformanceClasses.FIELDS,
+        ConformanceClasses.FILTER,
+        ConformanceClasses.FREETEXT,
+        ConformanceClasses.QUERY,
+        ConformanceClasses.SORT,
+    ]
+
+    ext = CollectionSearchPostExtension.from_extensions(
+        extensions,
+        client=DummyPostClient(),
+        settings=ApiSettings(),
+    )
+    collection_search = ext.POST()
+    assert collection_search.__class__.__name__ == "CollectionsPostRequest"
+    assert hasattr(collection_search, "bbox")
+    assert hasattr(collection_search, "datetime")
+    assert hasattr(collection_search, "limit")
+    assert hasattr(collection_search, "fields")
+    assert hasattr(collection_search, "q")
+    assert hasattr(collection_search, "sortby")
+    assert hasattr(collection_search, "filter")
+    assert ext.conformance_classes == [
+        ConformanceClasses.COLLECTIONSEARCH,
+        ConformanceClasses.BASIS,
+        ConformanceClasses.FIELDS,
+        ConformanceClasses.FILTER,
+        ConformanceClasses.FREETEXT,
+        ConformanceClasses.QUERY,
+        ConformanceClasses.SORT,
+    ]
+
+
+def test_from_extensions_methods_invalid():
+    """Should raise warnings for invalid extensions."""
+    extensions = [
+        AggregationExtension(),
+    ]
+    with pytest.warns((UserWarning)):
+        ext = CollectionSearchExtension.from_extensions(
+            extensions,
+        )
+    collection_search = ext.GET()
+    assert collection_search.__class__.__name__ == "CollectionsGetRequest"
+    assert hasattr(collection_search, "bbox")
+    assert hasattr(collection_search, "datetime")
+    assert hasattr(collection_search, "limit")
+    assert ext.conformance_classes == [
+        ConformanceClasses.COLLECTIONSEARCH,
+        ConformanceClasses.BASIS,
+    ]
+
+    with pytest.warns((UserWarning)):
+        ext = CollectionSearchPostExtension.from_extensions(
+            extensions,
+            client=DummyPostClient(),
+            settings=ApiSettings(),
+        )
+    collection_search = ext.POST()
+    assert collection_search.__class__.__name__ == "CollectionsPostRequest"
+    assert hasattr(collection_search, "bbox")
+    assert hasattr(collection_search, "datetime")
+    assert hasattr(collection_search, "limit")
+    assert ext.conformance_classes == [
+        ConformanceClasses.COLLECTIONSEARCH,
+        ConformanceClasses.BASIS,
+    ]
