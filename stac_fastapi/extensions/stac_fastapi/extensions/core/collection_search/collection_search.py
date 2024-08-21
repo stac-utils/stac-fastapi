@@ -95,7 +95,7 @@ class CollectionSearchExtension(ApiExtension):
             conf = supported_extensions.get(ext.__class__.__name__, None)
             if not conf:
                 warnings.warn(
-                    f"{ext.__class__.__name__} extension not supported in `CollectionSearchExtension.from_extensions` method.",  # noqa: E501
+                    f"Conformance class for `{ext.__class__.__name__}` extension not found.",
                     UserWarning,
                 )
             else:
@@ -203,7 +203,7 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
             conf = supported_extensions.get(ext.__class__.__name__, None)
             if not conf:
                 warnings.warn(
-                    f"{ext.__class__.__name__} extension not supported in `CollectionSearchExtension.from_extensions` method.",  # noqa: E501
+                    f"Conformance class for `{ext.__class__.__name__}` extension not found.",
                     UserWarning,
                 )
             else:
