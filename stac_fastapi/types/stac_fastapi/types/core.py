@@ -86,7 +86,7 @@ class BaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         item_id: str,
-        patch: Union[Item, list[PatchOperation]],
+        patch: Union[Item, List[PatchOperation]],
         request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
@@ -152,7 +152,7 @@ class BaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         item_id: str,
-        operations: list[PatchOperation],
+        operations: List[PatchOperation],
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -225,7 +225,7 @@ class BaseTransactionsClient(abc.ABC):
     def patch_collection(
         self,
         collection_id: str,
-        patch: Union[Collection, list[PatchOperation]],
+        patch: Union[Collection, List[PatchOperation]],
         request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
@@ -277,7 +277,7 @@ class BaseTransactionsClient(abc.ABC):
     def json_patch_collection(
         self,
         collection_id: str,
-        operations: list[PatchOperation],
+        operations: List[PatchOperation],
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -357,7 +357,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         self,
         item_id: str,
         collection_id: str,
-        patch: Union[Item, list[PatchOperation]],
+        patch: Union[Item, List[PatchOperation]],
         request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
@@ -423,7 +423,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         self,
         item_id: str,
         collection_id: str,
-        operations: list[PatchOperation],
+        operations: List[PatchOperation],
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -496,7 +496,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     def patch_collection(
         self,
         collection_id: str,
-        patch: Union[Collection, list[PatchOperation]],
+        patch: Union[Collection, List[PatchOperation]],
         request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
@@ -548,7 +548,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     def json_patch_collection(
         self,
         collection_id: str,
-        operations: list[PatchOperation],
+        operations: List[PatchOperation],
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
