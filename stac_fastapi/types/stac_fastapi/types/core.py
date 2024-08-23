@@ -123,9 +123,7 @@ class BaseTransactionsClient(abc.ABC):
             )
 
         else:
-            raise NotImplementedError(
-                "Content-Type and body combination not implemented"
-            )
+            raise NotImplementedError("Content-Type and body combination not implemented")
 
     @abc.abstractmethod
     def merge_patch_item(
@@ -253,9 +251,7 @@ class BaseTransactionsClient(abc.ABC):
             return self.merge_patch_collection(collection_id, patch, **kwargs)
 
         else:
-            raise NotImplementedError(
-                "Content-Type and body combination not implemented"
-            )
+            raise NotImplementedError("Content-Type and body combination not implemented")
 
     @abc.abstractmethod
     def merge_patch_collection(
@@ -398,9 +394,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
             )
 
         else:
-            raise NotImplementedError(
-                "Content-Type and body combination not implemented"
-            )
+            raise NotImplementedError("Content-Type and body combination not implemented")
 
     @abc.abstractmethod
     def merge_patch_item(
@@ -528,9 +522,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
             return self.merge_patch_collection(collection_id, patch, **kwargs)
 
         else:
-            raise NotImplementedError(
-                "Content-Type and body combination not implemented"
-            )
+            raise NotImplementedError("Content-Type and body combination not implemented")
 
     @abc.abstractmethod
     def merge_patch_collection(
