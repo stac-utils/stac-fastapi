@@ -1,6 +1,6 @@
 """Transaction extension types."""
 
-from typing import Any, List, Literal, Union
+from typing import Any, Dict, List, Literal, Union
 
 import attr
 from fastapi import Body
@@ -63,7 +63,7 @@ class PatchItem(ItemUri):
     """Patch Item."""
 
     patch: Annotated[
-        Union[Item, List[PatchOperation]],
+        Union[Dict, List[PatchOperation]],
         Body(),
     ] = attr.ib(default=None)
 
@@ -80,6 +80,6 @@ class PatchCollection(CollectionUri):
     """Patch Collection."""
 
     patch: Annotated[
-        Union[Collection, List[PatchOperation]],
+        Union[Dict, List[PatchOperation]],
         Body(),
     ] = attr.ib(default=None)

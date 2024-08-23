@@ -86,7 +86,7 @@ class BaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         item_id: str,
-        patch: Union[dict, List[PatchOperation]],
+        patch: Union[Dict, List[PatchOperation]],
         request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
@@ -225,7 +225,7 @@ class BaseTransactionsClient(abc.ABC):
     def patch_collection(
         self,
         collection_id: str,
-        patch: Union[dict, List[PatchOperation]],
+        patch: Union[Dict, List[PatchOperation]],
         request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
@@ -357,7 +357,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         item_id: str,
-        patch: Union[dict, List[PatchOperation]],
+        patch: Union[Dict, List[PatchOperation]],
         request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
@@ -373,6 +373,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         Returns:
             The patched item.
         """
+        print(type(patch))
         content_type = request.headers.get("content-type", "application/json")
         if isinstance(patch, list) and content_type == "application/json-patch+json":
             return self.json_patch_item(
@@ -496,7 +497,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     def patch_collection(
         self,
         collection_id: str,
-        patch: Union[dict, List[PatchOperation]],
+        patch: Union[Dict, List[PatchOperation]],
         request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
