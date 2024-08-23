@@ -86,7 +86,7 @@ class BaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         item_id: str,
-        patch: Union[Item, List[PatchOperation]],
+        patch: Union[dict, List[PatchOperation]],
         request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
@@ -111,7 +111,7 @@ class BaseTransactionsClient(abc.ABC):
                 **kwargs,
             )
 
-        elif isinstance(patch, Item) and content_type in [
+        elif isinstance(patch, dict) and content_type in [
             "application/merge-patch+json",
             "application/json",
         ]:
@@ -123,14 +123,16 @@ class BaseTransactionsClient(abc.ABC):
             )
 
         else:
-            raise NotImplementedError("Content-Type and body combination not implemented")
+            raise NotImplementedError(
+                "Content-Type and body combination not implemented"
+            )
 
     @abc.abstractmethod
     def merge_patch_item(
         self,
         collection_id: str,
         item_id: str,
-        item: Item,
+        item: Dict,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -225,7 +227,7 @@ class BaseTransactionsClient(abc.ABC):
     def patch_collection(
         self,
         collection_id: str,
-        patch: Union[Collection, List[PatchOperation]],
+        patch: Union[dict, List[PatchOperation]],
         request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
@@ -244,20 +246,22 @@ class BaseTransactionsClient(abc.ABC):
         if isinstance(patch, list) and content_type == "application/json-patch+json":
             return self.json_patch_collection(collection_id, patch, **kwargs)
 
-        elif isinstance(patch, Collection) and content_type in [
+        elif isinstance(patch, dict) and content_type in [
             "application/merge-patch+json",
             "application/json",
         ]:
             return self.merge_patch_collection(collection_id, patch, **kwargs)
 
         else:
-            raise NotImplementedError("Content-Type and body combination not implemented")
+            raise NotImplementedError(
+                "Content-Type and body combination not implemented"
+            )
 
     @abc.abstractmethod
     def merge_patch_collection(
         self,
         collection_id: str,
-        collection: Collection,
+        collection: Dict,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -355,9 +359,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
     def patch_item(
         self,
-        item_id: str,
         collection_id: str,
-        patch: Union[Item, List[PatchOperation]],
+        item_id: str,
+        patch: Union[dict, List[PatchOperation]],
         request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
@@ -376,32 +380,34 @@ class AsyncBaseTransactionsClient(abc.ABC):
         content_type = request.headers.get("content-type", "application/json")
         if isinstance(patch, list) and content_type == "application/json-patch+json":
             return self.json_patch_item(
-                item_id,
                 collection_id,
+                item_id,
                 patch,
                 **kwargs,
             )
 
-        elif isinstance(patch, Item) and content_type in [
+        elif isinstance(patch, dict) and content_type in [
             "application/merge-patch+json",
             "application/json",
         ]:
             return self.merge_patch_item(
-                item_id,
                 collection_id,
+                item_id,
                 patch,
                 **kwargs,
             )
 
         else:
-            raise NotImplementedError("Content-Type and body combination not implemented")
+            raise NotImplementedError(
+                "Content-Type and body combination not implemented"
+            )
 
     @abc.abstractmethod
     def merge_patch_item(
         self,
-        item_id: str,
         collection_id: str,
-        item: Item,
+        item_id: str,
+        item: Dict,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -421,8 +427,8 @@ class AsyncBaseTransactionsClient(abc.ABC):
     @abc.abstractmethod
     def json_patch_item(
         self,
-        item_id: str,
         collection_id: str,
+        item_id: str,
         operations: List[PatchOperation],
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
@@ -496,7 +502,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     def patch_collection(
         self,
         collection_id: str,
-        patch: Union[Collection, List[PatchOperation]],
+        patch: Union[dict, List[PatchOperation]],
         request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
@@ -515,20 +521,22 @@ class AsyncBaseTransactionsClient(abc.ABC):
         if isinstance(patch, list) and content_type == "application/json-patch+json":
             return self.json_patch_collection(collection_id, patch, **kwargs)
 
-        elif isinstance(patch, Collection) and content_type in [
+        elif isinstance(patch, dict) and content_type in [
             "application/merge-patch+json",
             "application/json",
         ]:
             return self.merge_patch_collection(collection_id, patch, **kwargs)
 
         else:
-            raise NotImplementedError("Content-Type and body combination not implemented")
+            raise NotImplementedError(
+                "Content-Type and body combination not implemented"
+            )
 
     @abc.abstractmethod
     def merge_patch_collection(
         self,
         collection_id: str,
-        collection: Collection,
+        collection: Dict,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.

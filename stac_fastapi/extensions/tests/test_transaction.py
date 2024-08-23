@@ -1,5 +1,5 @@
 import json
-from typing import Iterator, List, Union
+from typing import Dict, Iterator, List, Union
 
 import pytest
 from stac_pydantic import Collection
@@ -51,13 +51,13 @@ class DummyTransactionsClient(BaseTransactionsClient):
         self,
         collection_id: str,
         item_id: str,
-        item: Collection,
+        item: Dict,
         **kwargs,
     ):
         return {
             "path_collection_id": collection_id,
             "path_item_id": item_id,
-            "type": item.type,
+            "type": item["type"],
         }
 
     def json_patch_item(
@@ -88,10 +88,10 @@ class DummyTransactionsClient(BaseTransactionsClient):
     def merge_patch_collection(
         self,
         collection_id: str,
-        collection: Collection,
+        collection: Dict,
         **kwargs,
     ):
-        return {"path_collection_id": collection_id, "type": collection.type}
+        return {"path_collection_id": collection_id, "type": collection["type"]}
 
     def json_patch_collection(
         self,
@@ -145,7 +145,9 @@ def test_merge_patch_item(client: TestClient, item: Item) -> None:
 
 
 def test_json_patch_item(client: TestClient) -> None:
-    operations = [{"op": "add", "path": "properties.new_prop", "value": "new_prop_value"}]
+    operations = [
+        {"op": "add", "path": "properties.new_prop", "value": "new_prop_value"}
+    ]
     headers = {"Content-Type": "application/json-patch+json"}
     response = client.patch(
         "/collections/a-collection/items/an-item",
@@ -189,7 +191,9 @@ def test_merge_patch_collection(client: TestClient, collection: Collection) -> N
 
 
 def test_json_patch_collection(client: TestClient) -> None:
-    operations = [{"op": "add", "path": "summaries.new_prop", "value": "new_prop_value"}]
+    operations = [
+        {"op": "add", "path": "summaries.new_prop", "value": "new_prop_value"}
+    ]
     headers = {"Content-Type": "application/json-patch+json"}
     response = client.patch(
         "/collections/a-collection/items/an-item",
@@ -269,7 +273,9 @@ def collection() -> Collection:
         "description": "A test collection",
         "extent": {
             "spatial": {"bbox": [[-180, -90, 180, 90]]},
-            "temporal": {"interval": [["2000-01-01T00:00:00Z", "2024-01-01T00:00:00Z"]]},
+            "temporal": {
+                "interval": [["2000-01-01T00:00:00Z", "2024-01-01T00:00:00Z"]]
+            },
         },
         "links": [],
         "assets": {},
