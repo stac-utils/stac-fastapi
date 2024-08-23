@@ -87,7 +87,6 @@ class BaseTransactionsClient(abc.ABC):
         collection_id: str,
         item_id: str,
         patch: Union[Dict, List[PatchOperation]],
-        request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -102,7 +101,7 @@ class BaseTransactionsClient(abc.ABC):
         Returns:
             The patched item.
         """
-        content_type = request.headers.get("content-type", "application/json")
+        content_type = kwargs["request"].headers.get("content-type", "application/json")
         if isinstance(patch, list) and content_type == "application/json-patch+json":
             return self.json_patch_item(
                 collection_id,
@@ -226,7 +225,6 @@ class BaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         patch: Union[Dict, List[PatchOperation]],
-        request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -240,7 +238,7 @@ class BaseTransactionsClient(abc.ABC):
         Returns:
             The patched collection.
         """
-        content_type = request.headers.get("content-type", "application/json")
+        content_type = kwargs["request"].headers.get("content-type", "application/json")
         if isinstance(patch, list) and content_type == "application/json-patch+json":
             return self.json_patch_collection(collection_id, patch, **kwargs)
 
@@ -358,7 +356,6 @@ class AsyncBaseTransactionsClient(abc.ABC):
         collection_id: str,
         item_id: str,
         patch: Union[Dict, List[PatchOperation]],
-        request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -374,7 +371,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
             The patched item.
         """
         print(type(patch))
-        content_type = request.headers.get("content-type", "application/json")
+        content_type = kwargs["request"].headers.get("content-type", "application/json")
         if isinstance(patch, list) and content_type == "application/json-patch+json":
             return await self.json_patch_item(
                 collection_id,
@@ -498,7 +495,6 @@ class AsyncBaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         patch: Union[Dict, List[PatchOperation]],
-        request: Request,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -512,7 +508,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         Returns:
             The patched collection.
         """
-        content_type = request.headers.get("content-type", "application/json")
+        content_type = kwargs["request"].headers.get("content-type", "application/json")
         if isinstance(patch, list) and content_type == "application/json-patch+json":
             return await self.json_patch_collection(collection_id, patch, **kwargs)
 
