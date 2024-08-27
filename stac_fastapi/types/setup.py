@@ -6,7 +6,7 @@ with open("README.md") as f:
     desc = f.read()
 
 install_requires = [
-    "fastapi-slim>=0.111.0",
+    "fastapi>=0.100.0",
     "attrs>=23.2.0",
     "pydantic-settings>=2",
     "stac_pydantic~=3.1",
