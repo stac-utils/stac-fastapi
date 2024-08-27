@@ -6,7 +6,7 @@
 
 ### Changed
 
-* Update fastapi version to `>=0.100.0`
+* Update fastapi version to `>=0.109.0`
 
 ## [3.0.0] - 2024-07-29
 
