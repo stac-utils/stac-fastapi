@@ -6,6 +6,12 @@
 
 * Add `from_extensions()` method to `CollectionSearchExtension` and `CollectionSearchPostExtension` extensions to build the class based on a list of available extensions.
 
+## [3.0.1] - 2024-08-27
+
+### Changed
+
+* Update fastapi version to `>=0.109.0`
+
 ## [3.0.0] - 2024-07-29
 
 Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#changelog
@@ -472,7 +478,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.1..main>
+[3.0.1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0..3.0.1>
 [3.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5.post1..3.0.0>
 [2.5.5.post1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5..2.5.5.post1>
 [2.5.5]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.4..2.5.5>
