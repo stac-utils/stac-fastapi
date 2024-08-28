@@ -1,7 +1,7 @@
 """Base clients."""
 
 import abc
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 from urllib.parse import urljoin
 
 import attr
@@ -17,15 +17,15 @@ from starlette.responses import Response
 from stac_fastapi.types import stac
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
-from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.requests import get_base_url
-from stac_fastapi.types.rfc3339 import DateTimeType
-from stac_fastapi.types.search import BaseSearchPostRequest
-from stac_fastapi.types.transaction import (
+from stac_fastapi.types.extension import (
+    ApiExtension,
     PartialCollection,
     PartialItem,
     PatchOperation,
 )
+from stac_fastapi.types.requests import get_base_url
+from stac_fastapi.types.rfc3339 import DateTimeType
+from stac_fastapi.types.search import BaseSearchPostRequest
 
 __all__ = [
     "NumType",
@@ -92,7 +92,13 @@ class BaseTransactionsClient(abc.ABC):
         collection_id: str,
         item_id: str,
         patch: Union[PartialItem, List[PatchOperation]],
-        content_type: Optional[str] = "application/json",
+        content_type: Optional[
+            Literal[
+                "application/json-patch+json",
+                "application/merge-patch+json",
+                "application/json",
+            ]
+        ] = "application/json",
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -233,7 +239,13 @@ class BaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         patch: Union[PartialCollection, List[PatchOperation]],
-        content_type: Optional[str] = "application/json",
+        content_type: Optional[
+            Literal[
+                "application/json-patch+json",
+                "application/merge-patch+json",
+                "application/json",
+            ]
+        ] = "application/json",
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -371,7 +383,13 @@ class AsyncBaseTransactionsClient(abc.ABC):
         collection_id: str,
         item_id: str,
         patch: Union[PartialItem, List[PatchOperation]],
-        content_type: Optional[str] = "application/json",
+        content_type: Optional[
+            Literal[
+                "application/json-patch+json",
+                "application/merge-patch+json",
+                "application/json",
+            ]
+        ] = "application/json",
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -512,7 +530,13 @@ class AsyncBaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         patch: Union[PartialCollection, List[PatchOperation]],
-        content_type: Optional[str] = "application/json",
+        content_type: Optional[
+            Literal[
+                "application/json-patch+json",
+                "application/merge-patch+json",
+                "application/json",
+            ]
+        ] = "application/json",
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
