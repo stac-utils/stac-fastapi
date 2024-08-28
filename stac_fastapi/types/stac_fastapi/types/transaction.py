@@ -1,14 +1,54 @@
 """Transaction extension types."""
 
-from typing import Any, Dict, List, Literal, Union
+import sys
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import attr
 from fastapi import Body
 from pydantic import BaseModel
 from stac_pydantic import Collection, Item, ItemCollection
+from stac_pydantic.shared import BBox
 from typing_extensions import Annotated
 
 from stac_fastapi.api.models import CollectionUri, ItemUri
+
+if sys.version_info < (3, 12, 0):
+    from typing_extensions import TypedDict
+else:
+    from typing import TypedDict
+
+
+class PartialCollection(TypedDict, total=False):
+    """Partial STAC Collection."""
+
+    type: Optional[str]
+    stac_version: Optional[str]
+    stac_extensions: Optional[List[str]]
+    id: Optional[str]
+    title: Optional[str]
+    description: Optional[str]
+    links: List[Dict[str, Any]]
+    keywords: Optional[List[str]]
+    license: Optional[str]
+    providers: Optional[List[Dict[str, Any]]]
+    extent: Optional[Dict[str, Any]]
+    summaries: Optional[Dict[str, Any]]
+    assets: Optional[Dict[str, Any]]
+
+
+class PartialItem(TypedDict, total=False):
+    """Partial STAC Item."""
+
+    type: Optional[Literal["Feature"]]
+    stac_version: Optional[str]
+    stac_extensions: Optional[List[str]]
+    id: Optional[str]
+    geometry: Optional[Dict[str, Any]]
+    bbox: Optional[BBox]
+    properties: Optional[Dict[str, Any]]
+    links: Optional[List[Dict[str, Any]]]
+    assets: Optional[Dict[str, Any]]
+    collection: Optional[str]
 
 
 @attr.s
@@ -63,7 +103,7 @@ class PatchItem(ItemUri):
     """Patch Item."""
 
     patch: Annotated[
-        Union[Dict, List[PatchOperation]],
+        Union[PartialItem, List[PatchOperation]],
         Body(),
     ] = attr.ib(default=None)
 
@@ -80,6 +120,6 @@ class PatchCollection(CollectionUri):
     """Patch Collection."""
 
     patch: Annotated[
-        Union[Dict, List[PatchOperation]],
+        Union[PartialCollection, List[PatchOperation]],
         Body(),
     ] = attr.ib(default=None)

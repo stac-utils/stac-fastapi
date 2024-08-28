@@ -7,6 +7,7 @@ from urllib.parse import urljoin
 import attr
 from fastapi import Request
 from geojson_pydantic.geometries import Geometry
+from pydantic import TypeAdapter
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.api.version import STAC_API_VERSION
 from stac_pydantic.links import Relations
@@ -20,7 +21,11 @@ from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import BaseSearchPostRequest
-from stac_fastapi.types.transaction import PatchOperation
+from stac_fastapi.types.transaction import (
+    PartialCollection,
+    PartialItem,
+    PatchOperation,
+)
 
 __all__ = [
     "NumType",
@@ -86,7 +91,7 @@ class BaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         item_id: str,
-        patch: Union[Dict, List[PatchOperation]],
+        patch: Union[PartialItem, List[PatchOperation]],
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -114,6 +119,9 @@ class BaseTransactionsClient(abc.ABC):
             "application/merge-patch+json",
             "application/json",
         ]:
+            partialItemValidator = TypeAdapter(PartialItem)
+
+            patch = partialItemValidator.validate_python(patch)
             return self.merge_patch_item(
                 collection_id,
                 item_id,
@@ -129,7 +137,7 @@ class BaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         item_id: str,
-        item: Dict,
+        item: PartialItem,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -224,7 +232,7 @@ class BaseTransactionsClient(abc.ABC):
     def patch_collection(
         self,
         collection_id: str,
-        patch: Union[Dict, List[PatchOperation]],
+        patch: Union[PartialCollection, List[PatchOperation]],
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -246,7 +254,14 @@ class BaseTransactionsClient(abc.ABC):
             "application/merge-patch+json",
             "application/json",
         ]:
-            return self.merge_patch_collection(collection_id, patch, **kwargs)
+            partialCollectionValidator = TypeAdapter(PartialCollection)
+
+            patch = partialCollectionValidator.validate_python(patch)
+            return self.merge_patch_collection(
+                collection_id,
+                patch,
+                **kwargs,
+            )
 
         else:
             raise NotImplementedError("Content-Type and body combination not implemented")
@@ -255,7 +270,7 @@ class BaseTransactionsClient(abc.ABC):
     def merge_patch_collection(
         self,
         collection_id: str,
-        collection: Dict,
+        collection: PartialCollection,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -355,7 +370,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         item_id: str,
-        patch: Union[Dict, List[PatchOperation]],
+        patch: Union[PartialItem, List[PatchOperation]],
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -370,7 +385,6 @@ class AsyncBaseTransactionsClient(abc.ABC):
         Returns:
             The patched item.
         """
-        print(type(patch))
         content_type = kwargs["request"].headers.get("content-type", "application/json")
         if isinstance(patch, list) and content_type == "application/json-patch+json":
             return await self.json_patch_item(
@@ -384,6 +398,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
             "application/merge-patch+json",
             "application/json",
         ]:
+            partialItemValidator = TypeAdapter(PartialItem)
+
+            patch = partialItemValidator.validate_python(patch)
             return await self.merge_patch_item(
                 collection_id,
                 item_id,
@@ -399,7 +416,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         item_id: str,
-        item: Dict,
+        item: PartialItem,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -494,7 +511,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     async def patch_collection(
         self,
         collection_id: str,
-        patch: Union[Dict, List[PatchOperation]],
+        patch: Union[PartialCollection, List[PatchOperation]],
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -510,7 +527,14 @@ class AsyncBaseTransactionsClient(abc.ABC):
         """
         content_type = kwargs["request"].headers.get("content-type", "application/json")
         if isinstance(patch, list) and content_type == "application/json-patch+json":
-            return await self.json_patch_collection(collection_id, patch, **kwargs)
+            partialCollectionValidator = TypeAdapter(PartialCollection)
+
+            patch = partialCollectionValidator.validate_python(patch)
+            return await self.json_patch_collection(
+                collection_id,
+                patch,
+                **kwargs,
+            )
 
         elif isinstance(patch, dict) and content_type in [
             "application/merge-patch+json",
@@ -525,7 +549,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     async def merge_patch_collection(
         self,
         collection_id: str,
-        collection: Dict,
+        collection: PartialCollection,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
