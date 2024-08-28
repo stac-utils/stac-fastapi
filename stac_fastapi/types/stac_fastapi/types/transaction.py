@@ -4,7 +4,7 @@ import sys
 from typing import Any, Dict, List, Literal, Optional, Union
 
 import attr
-from fastapi import Body
+from fastapi import Body, Header
 from pydantic import BaseModel
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.shared import BBox
@@ -106,6 +106,10 @@ class PatchItem(ItemUri):
         Union[PartialItem, List[PatchOperation]],
         Body(),
     ] = attr.ib(default=None)
+    content_type: Annotated[
+        Optional[str],
+        Header(),
+    ] = attr.ib(default="application/json")
 
 
 @attr.s
@@ -123,3 +127,7 @@ class PatchCollection(CollectionUri):
         Union[PartialCollection, List[PatchOperation]],
         Body(),
     ] = attr.ib(default=None)
+    content_type: Annotated[
+        Optional[str],
+        Header(),
+    ] = attr.ib(default="application/json")
