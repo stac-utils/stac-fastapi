@@ -1,25 +1,146 @@
 """Transaction extension."""
 
-from typing import List, Optional, Type, Union
+from typing import Any, Dict, List, Literal, Optional, Type, Union
 
 import attr
-from fastapi import APIRouter, FastAPI
-from stac_pydantic import Collection, Item
-from stac_pydantic.shared import MimeTypes
+from fastapi import APIRouter, Body, FastAPI, Header
+from stac_pydantic import Collection, Item, ItemCollection
+from stac_pydantic.shared import BBox, MimeTypes
 from starlette.responses import JSONResponse, Response
+from typing_extensions import Annotated, TypedDict
 
 from stac_fastapi.api.models import CollectionUri, ItemUri
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.transaction import (
-    PatchCollection,
-    PatchItem,
-    PostItem,
-    PutCollection,
-    PutItem,
-)
+
+
+class PartialCollection(TypedDict, total=False):
+    """Partial STAC Collection."""
+
+    type: Optional[str]
+    stac_version: Optional[str]
+    stac_extensions: Optional[List[str]]
+    id: Optional[str]
+    title: Optional[str]
+    description: Optional[str]
+    links: List[Dict[str, Any]]
+    keywords: Optional[List[str]]
+    license: Optional[str]
+    providers: Optional[List[Dict[str, Any]]]
+    extent: Optional[Dict[str, Any]]
+    summaries: Optional[Dict[str, Any]]
+    assets: Optional[Dict[str, Any]]
+
+
+class PartialItem(TypedDict, total=False):
+    """Partial STAC Item."""
+
+    type: Optional[Literal["Feature"]]
+    stac_version: Optional[str]
+    stac_extensions: Optional[List[str]]
+    id: Optional[str]
+    geometry: Optional[Dict[str, Any]]
+    bbox: Optional[BBox]
+    properties: Optional[Dict[str, Any]]
+    links: Optional[List[Dict[str, Any]]]
+    assets: Optional[Dict[str, Any]]
+    collection: Optional[str]
+
+
+@attr.s
+class PostItem(CollectionUri):
+    """Create Item."""
+
+    item: Annotated[Union[Item, ItemCollection], Body()] = attr.ib(default=None)
+
+
+@attr.s
+class PatchAddReplaceTest:
+    """Add, Replace or Test Operation."""
+
+    path: str = attr.ib()
+    op: Literal["add", "replace", "test"] = attr.ib()
+    value: Any = attr.ib()
+
+
+@attr.s
+class PatchRemove:
+    """Remove Operation."""
+
+    path: str = attr.ib()
+    op: Literal["remove"] = attr.ib()
+
+
+@attr.s
+class PatchMoveCopy:
+    """Move or Copy Operation."""
+
+    path: str = attr.ib()
+    op: Literal["move", "copy"] = attr.ib()
+
+    def __attrs_init__(self, *args, **kwargs):
+        """Init function to add 'from' field."""
+        super().__init__(*args, **kwargs)
+        self.__setattr__("from", kwargs["from"])
+
+
+PatchOperation = Union[PatchAddReplaceTest, PatchMoveCopy, PatchRemove]
+
+
+@attr.s
+class PutItem(ItemUri):
+    """Update Item."""
+
+    item: Annotated[Item, Body()] = attr.ib(default=None)
+
+
+@attr.s
+class PatchItem(ItemUri):
+    """Patch Item."""
+
+    patch: Annotated[
+        Union[PartialItem, List[PatchOperation]],
+        Body(),
+    ] = attr.ib(default=None)
+    content_type: Annotated[
+        Optional[
+            Literal[
+                "application/json-patch+json",
+                "application/merge-patch+json",
+                "application/json",
+            ]
+        ],
+        Header(),
+    ] = attr.ib(default="application/json")
+
+
+@attr.s
+class PutCollection(CollectionUri):
+    """Update Collection."""
+
+    collection: Annotated[Collection, Body()] = attr.ib(default=None)
+
+
+@attr.s
+class PatchCollection(CollectionUri):
+    """Patch Collection."""
+
+    patch: Annotated[
+        Union[PartialCollection, List[PatchOperation]],
+        Body(),
+    ] = attr.ib(default=None)
+    content_type: Annotated[
+        Optional[
+            Literal[
+                "application/json-patch+json",
+                "application/merge-patch+json",
+                "application/json",
+            ]
+        ],
+        Header(),
+    ] = attr.ib(default="application/json")
 
 
 @attr.s
