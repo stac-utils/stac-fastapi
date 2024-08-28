@@ -21,7 +21,11 @@ from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import BaseSearchPostRequest
-from stac_fastapi.types.transaction import PartialCollection, PartialItem, PatchOperation
+from stac_fastapi.types.transaction import (
+    PartialCollection,
+    PartialItem,
+    PatchOperation,
+)
 
 __all__ = [
     "NumType",
@@ -88,7 +92,7 @@ class BaseTransactionsClient(abc.ABC):
         collection_id: str,
         item_id: str,
         patch: Union[PartialItem, List[PatchOperation]],
-        content_type: Optional[str],
+        content_type: Optional[str] = "application/json",
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -229,7 +233,7 @@ class BaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         patch: Union[PartialCollection, List[PatchOperation]],
-        content_type: Optional[str],
+        content_type: Optional[str] = "application/json",
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -367,7 +371,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         collection_id: str,
         item_id: str,
         patch: Union[PartialItem, List[PatchOperation]],
-        content_type: Optional[str],
+        content_type: Optional[str] = "application/json",
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -382,7 +386,6 @@ class AsyncBaseTransactionsClient(abc.ABC):
         Returns:
             The patched item.
         """
-        print("content_type", content_type)
         if isinstance(patch, list) and content_type == "application/json-patch+json":
             return await self.json_patch_item(
                 collection_id,
@@ -509,7 +512,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         patch: Union[PartialCollection, List[PatchOperation]],
-        content_type: Optional[str],
+        content_type: Optional[str] = "application/json",
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
