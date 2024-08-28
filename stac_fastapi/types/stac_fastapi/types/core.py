@@ -17,15 +17,12 @@ from starlette.responses import Response
 from stac_fastapi.types import stac
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
-from stac_fastapi.types.extension import (
-    ApiExtension,
-    PartialCollection,
-    PartialItem,
-    PatchOperation,
-)
+from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
 from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import BaseSearchPostRequest
+from stac_fastapi.types.stac import (PartialCollection, PartialItem,
+                                     PatchOperation)
 
 __all__ = [
     "NumType",
