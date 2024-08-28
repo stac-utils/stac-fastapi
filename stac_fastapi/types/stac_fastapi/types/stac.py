@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, List, Literal, Optional, Union
 
-import attr
+from pydantic import BaseModel
 from stac_pydantic.shared import BBox
 from typing_extensions import TypedDict
 
@@ -110,31 +110,28 @@ class PartialItem(TypedDict, total=False):
     collection: Optional[str]
 
 
-@attr.s
-class PatchAddReplaceTest:
+class PatchAddReplaceTest(BaseModel):
     """Add, Replace or Test Operation."""
 
-    path: str = attr.ib()
-    op: Literal["add", "replace", "test"] = attr.ib()
-    value: Any = attr.ib()
+    path: str
+    op: Literal["add", "replace", "test"]
+    value: Any
 
 
-@attr.s
-class PatchRemove:
+class PatchRemove(BaseModel):
     """Remove Operation."""
 
-    path: str = attr.ib()
-    op: Literal["remove"] = attr.ib()
+    path: str
+    op: Literal["remove"]
 
 
-@attr.s
-class PatchMoveCopy:
+class PatchMoveCopy(BaseModel):
     """Move or Copy Operation."""
 
-    path: str = attr.ib()
-    op: Literal["move", "copy"] = attr.ib()
+    path: str
+    op: Literal["move", "copy"]
 
-    def __attrs_init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """Init function to add 'from' field."""
         super().__init__(*args, **kwargs)
         self.__setattr__("from", kwargs["from"])
