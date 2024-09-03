@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 from stac_pydantic.shared import BBox
 from typing_extensions import TypedDict
 
@@ -128,13 +128,15 @@ class PatchRemove(BaseModel):
 class PatchMoveCopy(BaseModel):
     """Move or Copy Operation."""
 
+    model_config = ConfigDict(populate_by_name=True)
+
     path: str
     op: Literal["move", "copy"]
+    from_: str = Field(alias="from")
 
-    def __init__(self, *args, **kwargs):
-        """Init function to add 'from' field."""
-        super().__init__(*args, **kwargs)
-        self.__setattr__("from", kwargs["from"])
+    def model_dump(self, by_alias=True, **kwargs) -> dict[str, Any]:
+        """Override by_alias default to True"""
+        return super().model_dump(by_alias=by_alias, **kwargs)
 
 
 PatchOperation = Union[PatchAddReplaceTest, PatchMoveCopy, PatchRemove]
