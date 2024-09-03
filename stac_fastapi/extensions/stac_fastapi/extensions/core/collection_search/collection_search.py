@@ -1,5 +1,6 @@
 """Collection-Search extension."""
 
+import warnings
 from enum import Enum
 from typing import List, Optional, Union
 
@@ -8,7 +9,7 @@ from fastapi import APIRouter, FastAPI
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.shared import MimeTypes
 
-from stac_fastapi.api.models import GeoJSONResponse
+from stac_fastapi.api.models import GeoJSONResponse, create_request_model
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.extension import ApiExtension
@@ -71,6 +72,48 @@ class CollectionSearchExtension(ApiExtension):
         """
         pass
 
+    @classmethod
+    def from_extensions(
+        cls,
+        extensions: List[ApiExtension],
+        schema_href: Optional[str] = None,
+    ) -> "CollectionSearchExtension":
+        """Create CollectionSearchExtension object from extensions."""
+        supported_extensions = {
+            "FreeTextExtension": ConformanceClasses.FREETEXT,
+            "FreeTextAdvancedExtension": ConformanceClasses.FREETEXT,
+            "QueryExtension": ConformanceClasses.QUERY,
+            "SortExtension": ConformanceClasses.SORT,
+            "FieldsExtension": ConformanceClasses.FIELDS,
+            "FilterExtension": ConformanceClasses.FILTER,
+        }
+        conformance_classes = [
+            ConformanceClasses.COLLECTIONSEARCH,
+            ConformanceClasses.BASIS,
+        ]
+        for ext in extensions:
+            conf = supported_extensions.get(ext.__class__.__name__, None)
+            if not conf:
+                warnings.warn(
+                    f"Conformance class for `{ext.__class__.__name__}` extension not found.",  # noqa: E501
+                    UserWarning,
+                )
+            else:
+                conformance_classes.append(conf)
+
+        get_request_model = create_request_model(
+            model_name="CollectionsGetRequest",
+            base_model=BaseCollectionSearchGetRequest,
+            extensions=extensions,
+            request_type="GET",
+        )
+
+        return cls(
+            GET=get_request_model,
+            conformance_classes=conformance_classes,
+            schema_href=schema_href,
+        )
+
 
 @attr.s
 class CollectionSearchPostExtension(CollectionSearchExtension):
@@ -132,3 +175,60 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
             endpoint=create_async_endpoint(self.client.post_all_collections, self.POST),
         )
         app.include_router(self.router)
+
+    @classmethod
+    def from_extensions(
+        cls,
+        extensions: List[ApiExtension],
+        *,
+        client: Union[AsyncBaseCollectionSearchClient, BaseCollectionSearchClient],
+        settings: ApiSettings,
+        schema_href: Optional[str] = None,
+        router: Optional[APIRouter] = None,
+    ) -> "CollectionSearchPostExtension":
+        """Create CollectionSearchPostExtension object from extensions."""
+        supported_extensions = {
+            "FreeTextExtension": ConformanceClasses.FREETEXT,
+            "FreeTextAdvancedExtension": ConformanceClasses.FREETEXT,
+            "QueryExtension": ConformanceClasses.QUERY,
+            "SortExtension": ConformanceClasses.SORT,
+            "FieldsExtension": ConformanceClasses.FIELDS,
+            "FilterExtension": ConformanceClasses.FILTER,
+        }
+        conformance_classes = [
+            ConformanceClasses.COLLECTIONSEARCH,
+            ConformanceClasses.BASIS,
+        ]
+        for ext in extensions:
+            conf = supported_extensions.get(ext.__class__.__name__, None)
+            if not conf:
+                warnings.warn(
+                    f"Conformance class for `{ext.__class__.__name__}` extension not found.",  # noqa: E501
+                    UserWarning,
+                )
+            else:
+                conformance_classes.append(conf)
+
+        get_request_model = create_request_model(
+            model_name="CollectionsGetRequest",
+            base_model=BaseCollectionSearchGetRequest,
+            extensions=extensions,
+            request_type="GET",
+        )
+
+        post_request_model = create_request_model(
+            model_name="CollectionsPostRequest",
+            base_model=BaseCollectionSearchPostRequest,
+            extensions=extensions,
+            request_type="POST",
+        )
+
+        return cls(
+            client=client,
+            settings=settings,
+            GET=get_request_model,
+            POST=post_request_model,
+            conformance_classes=conformance_classes,
+            router=router or APIRouter(),
+            schema_href=schema_href,
+        )
