@@ -134,7 +134,7 @@ class PatchMoveCopy(BaseModel):
     op: Literal["move", "copy"]
     from_: str = Field(alias="from")
 
-    def model_dump(self, by_alias=True, **kwargs) -> dict[str, Any]:
+    def model_dump(self, by_alias=True, **kwargs) -> Dict[str, Any]:
         """Override by_alias default to True"""
         return super().model_dump(by_alias=by_alias, **kwargs)
 
