@@ -2,6 +2,9 @@
 
 ## EODHP
 The following changes have been made for the EODHP project
+### V0.3.9 - 2024-09-04
+Bugfix to add workspace parameter to delete_collection and delete_item endpoints
+- Ensures user has necessary access to delete the chosen collection and catalog
 ### V0.3.8 - 2024-07-30
 Access-Control Logic in Catalog
 - Adding access control to catalogs and collections added to the catalogue
