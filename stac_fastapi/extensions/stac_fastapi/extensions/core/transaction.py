@@ -71,7 +71,7 @@ class PutItem(ItemUri):
     is_public: bool = attr.ib(default=False)
 
 @attr.s  # type:ignore
-class DeleteCItemUri(ItemUri):
+class DeleteItemUri(ItemUri):
     """Delete item."""
 
     workspace: str = attr.ib(default=None)
@@ -157,7 +157,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=create_async_endpoint(self.client.delete_item, DeleteCItemUri),
+            endpoint=create_async_endpoint(self.client.delete_item, DeleteItemUri),
         )
 
     def register_create_collection(self):
