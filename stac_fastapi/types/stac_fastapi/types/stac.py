@@ -58,7 +58,7 @@ class Collection(Catalog, total=False):
     summaries: Dict[str, Any]
     assets: Dict[str, Any]
     links: List[Dict[str, Any]]
-
+    renders: Dict[str, Any]
 
 class Item(TypedDict, total=False):
     """STAC Item."""
