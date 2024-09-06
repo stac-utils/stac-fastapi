@@ -60,6 +60,7 @@ class Collection(Catalog, total=False):
     links: List[Dict[str, Any]]
     renders: Dict[str, Any]
 
+
 class Item(TypedDict, total=False):
     """STAC Item."""
 
