@@ -5,6 +5,7 @@
 ### Added
 
 * Add `from_extensions()` method to `CollectionSearchExtension` and `CollectionSearchPostExtension` extensions to build the class based on a list of available extensions.
+* Add `stac_fastapi_max_search_limit` member to `ApiSettings`, so that it can be used in `types.search.crop()` to clamp `limit` to the desired value.
 
 ## [3.0.1] - 2024-08-27
 
