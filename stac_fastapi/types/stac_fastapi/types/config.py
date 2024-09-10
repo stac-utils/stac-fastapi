@@ -23,6 +23,7 @@ class ApiSettings(BaseSettings):
     stac_fastapi_description: str = "stac-fastapi"
     stac_fastapi_version: str = "0.1"
     stac_fastapi_landing_id: str = "stac-fastapi"
+    stac_fastapi_max_search_limit: int = 10000
 
     app_host: str = "0.0.0.0"
     app_port: int = 8000

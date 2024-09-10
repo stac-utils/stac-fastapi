@@ -13,11 +13,14 @@ from stac_pydantic.shared import BBox
 from typing_extensions import Annotated
 
 from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
+from stac_fastapi.types.config import ApiSettings
 
+
+settings = ApiSettings()
 
 def crop(v: PositiveInt) -> PositiveInt:
     """Crop value to 10,000."""
-    limit = 10_000
+    limit = settings.stac_fastapi_max_search_limit
     if v > limit:
         v = limit
     return v
