@@ -2,8 +2,8 @@
 
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field
-from stac_pydantic.shared import BBox
+from pydantic import ConfigDict, Field
+from stac_pydantic.shared import BBox, StacBaseModel
 from typing_extensions import TypedDict
 
 NumType = Union[float, int]
@@ -110,7 +110,7 @@ class PartialItem(TypedDict, total=False):
     collection: Optional[str]
 
 
-class PatchAddReplaceTest(BaseModel):
+class PatchAddReplaceTest(StacBaseModel):
     """Add, Replace or Test Operation."""
 
     path: str
@@ -118,14 +118,14 @@ class PatchAddReplaceTest(BaseModel):
     value: Any
 
 
-class PatchRemove(BaseModel):
+class PatchRemove(StacBaseModel):
     """Remove Operation."""
 
     path: str
     op: Literal["remove"]
 
 
-class PatchMoveCopy(BaseModel):
+class PatchMoveCopy(StacBaseModel):
     """Move or Copy Operation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -133,10 +133,6 @@ class PatchMoveCopy(BaseModel):
     path: str
     op: Literal["move", "copy"]
     from_: str = Field(alias="from")
-
-    def model_dump(self, by_alias=True, **kwargs) -> Dict[str, Any]:
-        """Override by_alias default to True"""
-        return super().model_dump(by_alias=by_alias, **kwargs)
 
 
 PatchOperation = Union[PatchAddReplaceTest, PatchMoveCopy, PatchRemove]
