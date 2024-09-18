@@ -1,18 +1,10 @@
 """STAC types."""
 
-import sys
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from stac_pydantic.shared import BBox
-
-# Avoids a Pydantic error:
-# TypeError: You should use `typing_extensions.TypedDict` instead of
-# `typing.TypedDict` with Python < 3.12.0.  Without it, there is no way to
-# differentiate required and optional fields when subclassed.
-if sys.version_info < (3, 12, 0):
-    from typing_extensions import TypedDict
-else:
-    from typing import TypedDict
+from pydantic import ConfigDict, Field
+from stac_pydantic.shared import BBox, StacBaseModel
+from typing_extensions import TypedDict
 
 NumType = Union[float, int]
 
@@ -83,3 +75,64 @@ class Collections(TypedDict, total=False):
 
     collections: List[Collection]
     links: List[Dict[str, Any]]
+
+
+class PartialCollection(TypedDict, total=False):
+    """Partial STAC Collection."""
+
+    type: Optional[str]
+    stac_version: Optional[str]
+    stac_extensions: Optional[List[str]]
+    id: Optional[str]
+    title: Optional[str]
+    description: Optional[str]
+    links: List[Dict[str, Any]]
+    keywords: Optional[List[str]]
+    license: Optional[str]
+    providers: Optional[List[Dict[str, Any]]]
+    extent: Optional[Dict[str, Any]]
+    summaries: Optional[Dict[str, Any]]
+    assets: Optional[Dict[str, Any]]
+
+
+class PartialItem(TypedDict, total=False):
+    """Partial STAC Item."""
+
+    type: Optional[Literal["Feature"]]
+    stac_version: Optional[str]
+    stac_extensions: Optional[List[str]]
+    id: Optional[str]
+    geometry: Optional[Dict[str, Any]]
+    bbox: Optional[BBox]
+    properties: Optional[Dict[str, Any]]
+    links: Optional[List[Dict[str, Any]]]
+    assets: Optional[Dict[str, Any]]
+    collection: Optional[str]
+
+
+class PatchAddReplaceTest(StacBaseModel):
+    """Add, Replace or Test Operation."""
+
+    path: str
+    op: Literal["add", "replace", "test"]
+    value: Any
+
+
+class PatchRemove(StacBaseModel):
+    """Remove Operation."""
+
+    path: str
+    op: Literal["remove"]
+
+
+class PatchMoveCopy(StacBaseModel):
+    """Move or Copy Operation."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    path: str
+    op: Literal["move", "copy"]
+    from_: str = Field(alias="from")
+
+
+PatchOperation = Union[PatchAddReplaceTest, PatchMoveCopy, PatchRemove]
