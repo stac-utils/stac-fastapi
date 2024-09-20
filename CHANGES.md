@@ -1,10 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [3.0.2] - 2024-09-20
 
 ### Added
 
-* Add `from_extensions()` method to `CollectionSearchExtension` and `CollectionSearchPostExtension` extensions to build the class based on a list of available extensions.
+* Add `from_extensions()` method to `CollectionSearchExtension` and `CollectionSearchPostExtension` extensions to build the class based on a list of available extensions ([#745](https://github.com/stac-utils/stac-fastapi/pull/745))
 
 ## [3.0.1] - 2024-08-27
 
