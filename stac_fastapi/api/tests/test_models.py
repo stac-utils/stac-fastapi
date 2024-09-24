@@ -63,7 +63,7 @@ def test_create_get_request_model():
 
 @pytest.mark.parametrize(
     "filter,passes",
-    [(None, True), ({"test": "test"}, True), ("test==test", False), ([], False)],
+    [(None, True), ({"test": "test"}, True), ([], False)],
 )
 def test_create_post_request_model(filter, passes):
     request_model = create_post_request_model(
@@ -82,7 +82,7 @@ def test_create_post_request_model(filter, passes):
             datetime="2020-01-01T00:00:00Z",
             limit=10,
             filter=filter,
-            **{"filter-crs": "epsg:4326", "filter-lang": "cql2-text"},
+            **{"filter-crs": "epsg:4326", "filter-lang": "cql2-json"},
         )
 
         assert model.collections == ["test1", "test2"]
