@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Removed
+
+* Removed `cql2-text` in supported `filter-lang` for `FilterExtensionPostRequest` model (as per specification)
+
 ## [3.0.2] - 2024-09-20
 
 ### Added

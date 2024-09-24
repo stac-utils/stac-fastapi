@@ -62,12 +62,12 @@ def test_search_filter_post_filter_lang_default(client: TestClient):
 
 def test_search_filter_post_filter_lang_non_default(client: TestClient):
     """Test search POST endpoint with filter ext."""
-    filter_lang_value = "cql2-text"
+    filter_lang_value = "cql-json"
     response = client.post(
         "/search",
         json={
             "collections": ["test"],
-            "filter": {"op": "=", "args": [{"property": "test_property"}, "test-value"]},
+            "filter": {"eq": [{"property": "test_property"}, "test-value"]},
             "filter-lang": filter_lang_value,
         },
     )
