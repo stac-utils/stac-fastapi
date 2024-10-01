@@ -21,9 +21,6 @@ class DummyCoreClient(BaseCoreClient):
     def get_collection(self, *args, **kwargs):
         raise NotImplementedError
 
-    def get_catalog_collections(self, *args, **kwargs):
-        raise NotImplementedError
-
     def get_item(self, *args, **kwargs):
         raise NotImplementedError
 

@@ -151,7 +151,7 @@ class StacApi:
                 return ext
         return None
 
-    def register_landing_page(self):
+    def register_root_landing_page(self):
         """Register landing page (GET /).
 
         Returns:
@@ -167,7 +167,26 @@ class StacApi:
             response_model_exclude_unset=False,
             response_model_exclude_none=True,
             methods=["GET"],
-            endpoint=create_async_endpoint(self.client.landing_page, EmptyRequest),
+            endpoint=create_async_endpoint(self.client.root_landing_page, EmptyRequest),
+        )
+
+    def register_landing_page(self):
+        """Register landing page (GET /).
+
+        Returns:
+            None
+        """
+        self.router.add_api_route(
+            name="Landing Page",
+            path="/catalogs/{catalog_path:path}/",
+            response_model=(
+                LandingPage if self.settings.enable_response_models else None
+            ),
+            response_class=self.response_class,
+            response_model_exclude_unset=False,
+            response_model_exclude_none=True,
+            methods=["GET"],
+            endpoint=create_async_endpoint(self.client.landing_page, CatalogUri),
         )
 
     def register_conformance_classes(self):
@@ -365,26 +384,6 @@ class StacApi:
             endpoint=create_async_endpoint(self.client.all_catalogs, EmptyRequest),
         )
 
-    def register_get_catalog_collections(self):
-        """Register get catalogs collections endpoint (GET /catalogs/{catalog_id}/collections).
-
-        Returns:
-            None
-        """
-        self.router.add_api_route(
-            name="Get CatalogCollections",
-            path="/catalogs/{catalog_path:path}/collections",
-            response_model=(
-                Collections if self.settings.enable_response_models else None
-            ),
-            response_class=self.response_class,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
-            methods=["GET"],
-            endpoint=create_async_endpoint(
-                self.client.get_catalog_collections, CatalogUri
-            ),
-        )
 
     def register_get_collection(self):
         """Register get collection endpoint (GET /catalogs/{catalog_id}/collection/{collection_id}).
@@ -468,20 +467,20 @@ class StacApi:
         Returns:
             None
         """
-        self.register_landing_page()
-        self.register_conformance_classes()
-        self.register_get_item()
-        self.register_post_global_search()
-        self.register_get_global_search()
-        self.register_post_search()
-        self.register_get_search()
-        self.register_get_item_collection()
-        self.register_get_catalog_collections()
-        self.register_get_catalogs()
-        self.register_get_all_catalogs()
-        self.register_get_collection()
-        self.register_get_catalog()
-        self.register_get_collections()
+        self.register_root_landing_page() # "/"
+        self.register_landing_page() # "/catalogs/{catalog_path}/"
+        self.register_conformance_classes() # "/conformance"
+        self.register_post_global_search() # "/search"
+        self.register_get_global_search() # "/search"
+        self.register_get_all_catalogs() # "/catalogs"
+        self.register_post_search() # "/catalogs/{catalog_path}/search"
+        self.register_get_search() # "/catalogs/{catalog_path}/search"
+        self.register_get_item() # "/catalogs/{catalog_path}/collections/{collection_id}/items/{item_id}"
+        self.register_get_item_collection() # "/catalogs/{catalog_path}/collections/{collection_id}/items"
+        self.register_get_collection() # "/catalogs/{catalog_path}/collections/{collection_id}"
+        self.register_get_catalogs() # "/catalogs/{catalog_path}/catalogs"
+        self.register_get_catalog() # "/catalogs/{catalog_path}"       
+        
 
     def customize_openapi(self) -> Optional[Dict[str, Any]]:
         """Customize openapi schema."""
@@ -548,18 +547,24 @@ class StacApi:
         Settings.set(self.settings)
         self.app.state.settings = self.settings
 
-        # Register core STAC endpoints
-        self.register_core()
-        self.app.include_router(self.router)
-
         # keep link to the router prefix value
         router_prefix = self.router.prefix
         self.app.state.router_prefix = router_prefix if router_prefix else ""
+
+        # register collection search extensions
+        for ext in self.extensions:
+            if isinstance(ext, CollectionSearchExtension):
+                ext.register(self.app)
+
+        # Register core STAC endpoints
+        self.register_core()
+        self.app.include_router(self.router)
 
         # register extensions
         for ext in self.extensions:
             ext.register(self.app)
 
+        
         # add health check
         self.add_health_check()
 

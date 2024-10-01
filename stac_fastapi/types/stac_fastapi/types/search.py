@@ -355,8 +355,17 @@ class BaseCollectionSearchGetRequest(APIRequest):
     limit: Optional[int] = attr.ib(default=10)
     q: Optional[List[str]] = attr.ib(default=None, converter=str2list)
 
+@attr.s
+class CollectionSearchGetRequest(BaseCollectionSearchGetRequest):
+    """Base arguments for Collection Search GET Request with Catalog path"""
+    catalog_path: str = attr.ib(
+        default=Path(
+            ..., description="Path to selected Catalog", example="cat1/cat2/cat3"
+        )
+    )
 
-class BaseCollectionSearchPostRequest(BaseModel):
+
+class BaseCollectionSearchPostRequest(Search):
     """Search model.
     Replace base model in STAC-pydantic as it includes additional fields, not in the core
     model.
@@ -404,6 +413,15 @@ class BaseCollectionSearchPostRequest(BaseModel):
         if type(v) == str:
             v = str_to_interval(v)
         return v
+
+@attr.s
+class CollectionSearchPostRequest(APIRequest):
+    """Search model.
+    Replace base model in STAC-pydantic as it includes additional fields, not in the core
+    model. Also includes Catalog path.
+    """
+    catalog_path: str = attr.ib(default=Path(..., description="Catalog Path"))
+    search_request: BaseCollectionSearchPostRequest = attr.ib(default=None)
 
 
 @attr.s
