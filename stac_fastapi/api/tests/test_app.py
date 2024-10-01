@@ -191,7 +191,7 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
                 "collections": ["test"],
                 "filter": {},
                 "filter-crs": "EPSG:4326",
-                "filter-lang": "cql2-text",
+                "filter-lang": "cql2-json",
             },
         )
 

@@ -70,7 +70,7 @@ class FilterExtensionPostRequest(BaseModel):
         default=None,
         description="The coordinate reference system (CRS) used by spatial literals in the 'filter' value. Default is `http://www.opengis.net/def/crs/OGC/1.3/CRS84`",  # noqa: E501
     )
-    filter_lang: Optional[FilterLang] = Field(
+    filter_lang: Optional[Literal["cql-json", "cql2-json"]] = Field(
         alias="filter-lang",
         default="cql2-json",
         description="The CQL filter encoding that the 'filter' value uses.",
