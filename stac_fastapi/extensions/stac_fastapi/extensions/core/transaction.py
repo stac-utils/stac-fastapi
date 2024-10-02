@@ -164,7 +164,7 @@ class TransactionExtension(ApiExtension):
         """Register create collection endpoint (POST /catalogs/{catalog_id}/collections)."""
         self.router.add_api_route(
             name="Create Collection",
-            path="/catalogs/{catalog_path:path}/collections",
+            path="/catalogs/{catalog_path:path}/collection",
             response_model=Collection if self.settings.enable_response_models else None,
             response_class=self.response_class,
             response_model_exclude_unset=True,
@@ -231,21 +231,6 @@ class TransactionExtension(ApiExtension):
             endpoint=create_async_endpoint(self.client.create_catalog, PostBaseCatalog),
         )
 
-    def register_create_super_catalog(self):
-        """Register create catalog endpoint (POST /catalogs)."""
-        self.router.add_api_route(
-            name="Create Top-Level Catalog",
-            path="/",
-            response_model=Catalog if self.settings.enable_response_models else None,
-            response_class=self.response_class,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
-            methods=["POST"],
-            endpoint=create_async_endpoint(
-                self.client.create_super_catalog, stac_types.Catalog
-            ),
-        )
-
     def register_update_catalog(self):
         """Register update collection endpoint (PUT /collections/{collection_id})."""
         self.router.add_api_route(
@@ -290,7 +275,6 @@ class TransactionExtension(ApiExtension):
         self.register_create_collection()
         self.register_create_catalog()
         self.register_create_base_catalog()
-        # self.register_create_super_catalog()
         self.register_update_collection()
         self.register_update_catalog()
         self.register_delete_collection()

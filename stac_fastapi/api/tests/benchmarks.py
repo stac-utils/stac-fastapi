@@ -128,11 +128,6 @@ class CoreClient(BaseCoreClient):
     ) -> stac_types.Collection:
         return collections[0]
 
-    def get_catalog_collection(
-        self, catalog_path: str, **kwargs
-    ) -> stac_types.Catalogs:
-        return collections[0]
-
     def get_catalog(self, catalog_path: str, **kwargs) -> stac_types.Catalog:
         return catalogs[0]
 

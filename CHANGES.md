@@ -2,6 +2,12 @@
 
 ## EODHP
 The following changes have been made for the EODHP project
+### 0.3.10 - 2024-10-01
+- Added catalog spceific endpoint for landing page
+- Updated collections search to support catalog path URLs, e.g. "/catalogs/catalog_name/collections" to search collections within that specific catalog
+- Remove unnecessary functions
+- Reorder routings to ensure correct path precedence
+- Update `create_collection` endpoint URL to be "/collection" to avoid conflict with collections search POST request
 ### V0.3.9 - 2024-09-06
 - Added support for the renders STAC extension at the collection level
 Bugfix to add workspace parameter to delete_collection and delete_item endpoints:

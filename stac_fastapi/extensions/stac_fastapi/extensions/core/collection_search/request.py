@@ -3,6 +3,7 @@
 from typing import List, Optional
 
 import attr
+from fastapi import Path
 from pydantic import BaseModel, Field
 from stac_pydantic.shared import BBox
 
@@ -19,6 +20,16 @@ class CollectionSearchExtensionGetRequest(APIRequest):
     limit: Optional[int] = attr.ib(default=10)
     q: Optional[List[str]] = attr.ib(default=None, converter=str2list)
 
+@attr.s
+class CollectionSearchExtensionGetRequestExt(CollectionSearchExtensionGetRequest):
+    """Collection Search extension GET request model."""
+
+    catalog_path: str = attr.ib(
+        default=Path(
+            ..., description="Path to selected Catalog", example="cat1/cat2/cat3"
+        )
+    )
+
 
 class CollectionSearchExtensionPostRequest(BaseModel):
     """Collection Search extension POST request model."""
@@ -27,3 +38,13 @@ class CollectionSearchExtensionPostRequest(BaseModel):
     datetime: Optional[DateTimeType]
     limit: Optional[Limit] = Field(default=10)
     q: Optional[List[str]]
+
+
+class CollectionSearchExtensionPostRequestExt(CollectionSearchExtensionPostRequest):
+    """Collection Search extension POST request model."""
+
+    catalog_path: str = attr.ib(
+        default=Path(
+            ..., description="Path to selected Catalog", example="cat1/cat2/cat3"
+        )
+    )

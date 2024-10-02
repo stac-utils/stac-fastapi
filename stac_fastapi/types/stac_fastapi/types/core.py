@@ -674,22 +674,6 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_catalog_collections(
-        self, catalog_path: str, **kwargs
-    ) -> stac_types.Collections:
-        """Get collections by catalog id.
-
-        Called with `GET /catalogs/{catalog_id}/collections`.
-
-        Args:
-            catalog_id: Id of the catalog.
-
-        Returns:
-            Collections.
-        """
-        ...
-
-    @abc.abstractmethod
     def item_collection(
         self,
         collection_id: str,
