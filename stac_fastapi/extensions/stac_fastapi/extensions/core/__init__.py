@@ -5,7 +5,11 @@ from .collection_search import CollectionSearchExtension, CollectionSearchPostEx
 from .fields import FieldsExtension
 from .filter import FilterExtension
 from .free_text import FreeTextAdvancedExtension, FreeTextExtension
-from .pagination import PaginationExtension, TokenPaginationExtension
+from .pagination import (
+    OffsetPaginationExtension,
+    PaginationExtension,
+    TokenPaginationExtension,
+)
 from .query import QueryExtension
 from .sort import SortExtension
 from .transaction import TransactionExtension
@@ -16,6 +20,7 @@ __all__ = (
     "FilterExtension",
     "FreeTextExtension",
     "FreeTextAdvancedExtension",
+    "OffsetPaginationExtension",
     "PaginationExtension",
     "QueryExtension",
     "SortExtension",
