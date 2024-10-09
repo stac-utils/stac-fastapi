@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [3.0.3] - 2024-10-09
+
 ### Removed
 
 * Removed `cql2-text` in supported `filter-lang` for `FilterExtensionPostRequest` model (as per specification)
@@ -488,7 +490,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.2..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.3..main>
+[3.0.3]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.2..3.0.3>
 [3.0.2]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.1..3.0.2>
 [3.0.1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0..3.0.1>
 [3.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5.post1..3.0.0>
