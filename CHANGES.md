@@ -6,6 +6,10 @@
 
 * Removed `cql2-text` in supported `filter-lang` for `FilterExtensionPostRequest` model (as per specification)
 
+### Added
+
+* Add `OffsetPaginationExtension` extension to add `offset` query/body parameter to endpoints
+
 ## [3.0.2] - 2024-09-20
 
 ### Added

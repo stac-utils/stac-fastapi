@@ -34,3 +34,16 @@ class POSTPagination(BaseModel):
     """Page based pagination for POST requests."""
 
     page: Optional[str] = None
+
+
+@attr.s
+class GETOffsetPagination(APIRequest):
+    """Offset pagination for GET requests."""
+
+    offset: Annotated[Optional[int], Query()] = attr.ib(default=None)
+
+
+class POSTOffsetPagination(BaseModel):
+    """Offset pagination model for POST requests."""
+
+    offset: Optional[int] = None
