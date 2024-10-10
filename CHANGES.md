@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Removed
+
+* Remove deprecated `context` property in `types.stac.ItemCollection` model
+
+### Added
+
+* Add `numberMatched` and `numberReturned` properties in `types.stac.ItemCollection` model
+
 ## [3.0.3] - 2024-10-09
 
 ### Removed

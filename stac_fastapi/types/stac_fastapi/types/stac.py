@@ -73,7 +73,8 @@ class ItemCollection(TypedDict, total=False):
     type: Literal["FeatureCollection"]
     features: List[Item]
     links: List[Dict[str, Any]]
-    context: Optional[Dict[str, int]]
+    numberMatched: Optional[int]
+    numberReturned: Optional[int]
 
 
 class Collections(TypedDict, total=False):
