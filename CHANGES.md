@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+* Add `numberMatched` and `numberReturned` properties in `types.stac.Collections` model
+
 ## [3.0.3] - 2024-10-09
 
 ### Removed

@@ -83,3 +83,5 @@ class Collections(TypedDict, total=False):
 
     collections: List[Collection]
     links: List[Dict[str, Any]]
+    numberMatched: Optional[int] = None
+    numberReturned: Optional[int] = None
