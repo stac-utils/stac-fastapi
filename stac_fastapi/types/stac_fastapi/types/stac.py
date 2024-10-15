@@ -32,6 +32,7 @@ class Catalog(TypedDict, total=False):
 class LandingPage(Catalog, total=False):
     """STAC Landing Page."""
 
+    stac_api_version: str
     conformsTo: List[str]
 
 

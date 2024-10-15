@@ -8,6 +8,7 @@ import attr
 from fastapi import Request
 from geojson_pydantic.geometries import Geometry
 from stac_pydantic import Collection, Item, ItemCollection
+from stac_pydantic.api.version import STAC_API_VERSION
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import BBox, MimeTypes
 from stac_pydantic.version import STAC_VERSION
@@ -269,6 +270,7 @@ class LandingPageMixin(abc.ABC):
     """Create a STAC landing page (GET /)."""
 
     stac_version: str = attr.ib(default=STAC_VERSION)
+    stac_api_version: str = attr.ib(default=STAC_API_VERSION)
     landing_page_id: str = attr.ib(default=api_settings.stac_fastapi_landing_id)
     title: str = attr.ib(default=api_settings.stac_fastapi_title)
     description: str = attr.ib(default=api_settings.stac_fastapi_description)
@@ -285,6 +287,7 @@ class LandingPageMixin(abc.ABC):
             title=self.title,
             description=self.description,
             stac_version=self.stac_version,
+            stac_api_version=self.stac_api_version,
             conformsTo=conformance_classes,
             links=[
                 {

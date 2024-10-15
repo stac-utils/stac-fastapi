@@ -10,6 +10,7 @@
 
 * Add `numberMatched` and `numberReturned` properties in `types.stac.ItemCollection` model
 * Add `numberMatched` and `numberReturned` properties in `types.stac.Collections` model
+* add `stac_api_version` in Landing page response
 
 ## Changed
 

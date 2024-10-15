@@ -10,6 +10,7 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.params import Depends
 from stac_pydantic import api
 from stac_pydantic.api.collections import Collections
+from stac_pydantic.api.version import STAC_API_VERSION
 from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 from starlette.middleware import Middleware
@@ -94,6 +95,7 @@ class StacApi:
         )
     )
     stac_version: str = attr.ib(default=STAC_VERSION)
+    stac_api_version: str = attr.ib(default=STAC_API_VERSION)
     description: str = attr.ib(
         default=attr.Factory(
             lambda self: self.settings.stac_fastapi_description, takes_self=True
@@ -442,6 +444,7 @@ class StacApi:
         # inject settings
         self.client.extensions = self.extensions
         self.client.stac_version = self.stac_version
+        self.client.stac_api_version = self.stac_api_version
         self.client.title = self.title
         self.client.description = self.description
 
