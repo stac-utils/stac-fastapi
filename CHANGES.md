@@ -11,6 +11,10 @@
 * Add `numberMatched` and `numberReturned` properties in `types.stac.ItemCollection` model
 * Add `numberMatched` and `numberReturned` properties in `types.stac.Collections` model
 
+## Changed
+
+* use `stac_pydantic.version.STAC_VERSION` instead of `stac_pydantic.api.version.STAC_API_VERSION` as application `stac_version`
+
 ## [3.0.3] - 2024-10-09
 
 ### Removed
