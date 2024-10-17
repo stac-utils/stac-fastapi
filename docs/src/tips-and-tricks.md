@@ -2,23 +2,24 @@
 
 This page contains a few 'tips and tricks' for getting **stac-fastapi** working in various situations.
 
-## Get stac-fastapi working with CORS
+## Application Middlewares
 
-CORS (Cross-Origin Resource Sharing) support may be required to use stac-fastapi in certain situations.
-For example, if you are running [stac-browser](https://github.com/radiantearth/stac-browser) to browse the STAC catalog created by **stac-fastapi**, then you will need to enable CORS support.
-To do this, edit your backend's `app.py` and add the following import:
+By default the `StacApi` class will enable 3 Middlewares (`BrotliMiddleware`, `CORSMiddleware` and `ProxyHeaderMiddleware`). You may want to overwrite the defaults configuration by editing your backend's `app.py`:
 
 ```python
-from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware import Middleware
+
+from stac_fastapi.api.app import StacApi
+from stac_fastapi.api.middleware import CORSMiddleware
+
+api = StacApi(
+    ...
+    middlewares=[
+        Middleware(CORSMiddleware, allow_origins=["https://myendpoints.io"])
+    ],
+    ...
+)
 ```
-
-and then edit the `api = StacApi(...` call to add the following parameter:
-
-```python
-middlewares=[lambda app: CORSMiddleware(app, allow_origins=["*"])]
-```
-
-If needed, you can edit the `allow_origins` parameter to only allow CORS requests from specific origins.
 
 ## Set API title, description and version
 
