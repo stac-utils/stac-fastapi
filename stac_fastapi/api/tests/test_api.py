@@ -1,4 +1,9 @@
+from json import dumps, loads
+from os import environ
+from typing import Any, Dict
+
 from fastapi import Depends, HTTPException, security, status
+from pytest import MonkeyPatch, mark
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
@@ -454,3 +459,86 @@ def must_be_bob(
         detail="You're not Bob",
         headers={"WWW-Authenticate": "Basic"},
     )
+
+
+@mark.parametrize(
+    "env,",
+    (
+        {},
+        {
+            "api_description": "API Description for Testing",
+            "api_title": "API Title For Testing",
+            "api_version": "0.1-testing",
+            "api_servers": [
+                {"url": "http://api1", "description": "API 1"},
+                {"url": "http://api2"},
+            ],
+            "api_terms_of_service": "http://terms-of-service",
+            "api_contact": {
+                "name": "Contact",
+                "url": "http://contact",
+                "email": "info@contact",
+            },
+            "api_license_info": {
+                "name": "License",
+                "url": "http://license",
+            },
+            "api_tags": [
+                {
+                    "name": "Tag",
+                    "description": "Test tag",
+                    "externalDocs": {
+                        "url": "http://tags/tag",
+                        "description": "rtfm",
+                    },
+                }
+            ],
+        },
+    ),
+)
+def test_openapi(monkeypatch: MonkeyPatch, env: Dict[str, Any]):
+    for key, value in env.items():
+        monkeypatch.setenv(
+            key.upper(),
+            value if isinstance(value, str) else dumps(value),
+        )
+    settings = config.ApiSettings()
+
+    api = StacApi(
+        **{
+            "settings": settings,
+            "client": DummyCoreClient(),
+            "extensions": [
+                TransactionExtension(
+                    client=DummyTransactionsClient(), settings=settings
+                ),
+                TokenPaginationExtension(),
+            ],
+        }
+    )
+
+    with TestClient(api.app) as client:
+        response = client.get(api.app.openapi_url)
+
+    assert response.status_code == 200
+    assert (
+        response.headers["Content-Type"]
+        == "application/vnd.oai.openapi+json;version=3.0"
+    )
+
+    def expected_value(key: str, json=False) -> Any:
+        if key.upper() in environ:
+            value = environ[key.upper()]
+            return loads(value) if json else value
+        return getattr(settings, key)
+
+    data = response.json()
+    info = data["info"]
+    assert info["description"] == expected_value("api_description")
+    assert info["title"] == expected_value("api_title")
+    assert info["version"] == expected_value("api_version")
+    assert info.get("termsOfService", None) == expected_value("api_terms_of_service")
+    assert info.get("contact") == expected_value("api_contact", True)
+    assert info.get("license") == expected_value("api_license_info", True)
+    assert data.get("servers", []) == expected_value("api_servers", True)
+    assert data.get("tags", []) == expected_value("api_tags", True)

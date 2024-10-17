@@ -198,6 +198,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 ## [2.5.0] - 2024-04-12
 
+* Add support for setting OpenAPI metadata through environment variables.
+
 ### Added
 
 * Add benchmark in CI ([#650](https://github.com/stac-utils/stac-fastapi/pull/650))
