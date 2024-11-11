@@ -1,5 +1,6 @@
 """Link helpers."""
 
+import os
 from typing import Any, Dict, List
 from urllib.parse import urljoin, urlsplit
 
@@ -81,13 +82,20 @@ class CollectionLinks(BaseLinks):
 
     def items(self) -> Dict[str, Any]:
         """Create the `items` link."""
+        if self.catalog_path == "supported-datasets/planet":
+            items_href = urljoin(
+                self.base_url,
+                f"{os.environ['PLANET_API_URL']}/collections/{self.collection_id}/items",
+            )
+        else:
+            items_href = urljoin(
+                self.base_url,
+                f"catalogs/{self.catalog_path}/collections/{self.collection_id}/items",
+            )
         return dict(
             rel="items",
             type=MimeTypes.geojson,
-            href=urljoin(
-                self.base_url,
-                f"catalogs/{self.catalog_path}/collections/{self.collection_id}/items",
-            ),
+            href=items_href,
         )
 
     def create_links(self) -> List[Dict[str, Any]]:
