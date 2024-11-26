@@ -19,7 +19,7 @@ from stac_fastapi.types.search import (
     BaseCollectionSearchGetRequest,
     BaseCollectionSearchPostRequest,
     CollectionSearchPostRequest,
-    CollectionSearchGetRequest
+    CollectionSearchGetRequest,
 )
 
 from .request import (
@@ -66,15 +66,15 @@ class CollectionSearchExtension(ApiExtension):
     GET = CollectionSearchExtensionGetRequest
     POST = CollectionSearchExtensionPostRequest
 
-    global_collections_post_request_model: Type[BaseCollectionSearchPostRequest] = attr.ib(
-        default=BaseCollectionSearchPostRequest
+    global_collections_post_request_model: Type[BaseCollectionSearchPostRequest] = (
+        attr.ib(default=BaseCollectionSearchPostRequest)
     )
     collections_post_request_model: Type[CollectionSearchPostRequest] = attr.ib(
         default=CollectionSearchPostRequest
     )
 
-    global_collections_get_request_model: Type[BaseCollectionSearchGetRequest] = attr.ib(
-        default=BaseCollectionSearchGetRequest
+    global_collections_get_request_model: Type[BaseCollectionSearchGetRequest] = (
+        attr.ib(default=BaseCollectionSearchGetRequest)
     )
     collections_get_request_model: Type[CollectionSearchGetRequest] = attr.ib(
         default=CollectionSearchGetRequest
@@ -116,8 +116,10 @@ class CollectionSearchExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=create_async_endpoint(
-                self.client.post_all_collections, self.global_collections_post_request_model
+                self.client.post_all_collections,
+                self.global_collections_post_request_model,
             ),
+            operation_id="post_collections",
         )
 
         self.router.add_api_route(
@@ -133,6 +135,7 @@ class CollectionSearchExtension(ApiExtension):
             endpoint=create_async_endpoint(
                 self.client.post_all_collections, self.collections_post_request_model
             ),
+            operation_id="post_collections_catalog_specific",
         )
 
         self.router.add_api_route(
@@ -146,8 +149,10 @@ class CollectionSearchExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=create_async_endpoint(
-                self.client.get_all_collections, self.global_collections_get_request_model
+                self.client.get_all_collections,
+                self.global_collections_get_request_model,
             ),
+            operation_id="get_collections",
         )
 
         self.router.add_api_route(
@@ -163,6 +168,7 @@ class CollectionSearchExtension(ApiExtension):
             endpoint=create_async_endpoint(
                 self.client.get_all_collections, self.collections_get_request_model
             ),
+            operation_id="get_collections_catalog_specific",
         )
 
-        app.include_router(self.router)
+        app.include_router(self.router, tags=["Search/Retrieve Endpoints"])

@@ -28,29 +28,43 @@ class PostItem(CollectionUri):
 
 @attr.s
 class PostCatalog(CatalogUri):
-    """Create Item."""
+    """Create Catalog."""
 
     catalog: Union[stac_types.Catalog] = attr.ib(default=Body(None))
     workspace: str = attr.ib(default=None)
     is_public: bool = attr.ib(default=False)
+
+@attr.s
+class PutCatalogStripped(CatalogUri):
+    """Create Catalog."""
+
+    workspace: str = attr.ib(default=None)
+    is_public: bool = attr.ib(default=False)
+    access_list: List[str] = attr.ib(default=[])
 
 
 @attr.s
 class PostBaseCatalog(APIRequest):
-    """Create Item."""
-
-    catalog: Union[stac_types.Catalog] = attr.ib(default=Body(None))
+    """Create Catalog."""
     workspace: str = attr.ib(default=None)
+    catalog: Union[stac_types.Catalog] = attr.ib(default=Body(None))
     is_public: bool = attr.ib(default=False)
 
 
 @attr.s
-class PutCollection(CollectionUri):
+class PutCollectionStripped(CollectionUri):
+    """Update Collection."""
+
+    workspace: str = attr.ib(default=None)
+    is_public: bool = attr.ib(default=False)
+    access_list: List[str] = attr.ib(default=[])
+
+
+@attr.s
+class PutCollection(PutCollectionStripped):
     """Update Collection."""
 
     collection: Union[stac_types.Collection] = attr.ib(default=Body(None))
-    workspace: str = attr.ib(default=None)
-    is_public: bool = attr.ib(default=False)
 
 
 @attr.s
@@ -61,14 +75,13 @@ class PostCollection(CatalogUri):
     workspace: str = attr.ib(default=None)
     is_public: bool = attr.ib(default=False)
 
-
 @attr.s
 class PutItem(ItemUri):
     """Update Item."""
 
     item: stac_types.Item = attr.ib(default=Body(None))
     workspace: str = attr.ib(default=None)
-    is_public: bool = attr.ib(default=False)
+
 
 @attr.s  # type:ignore
 class DeleteItemUri(ItemUri):
@@ -76,11 +89,13 @@ class DeleteItemUri(ItemUri):
 
     workspace: str = attr.ib(default=None)
 
+
 @attr.s  # type:ignore
 class DeleteCollectionUri(CollectionUri):
     """Delete collection."""
 
     workspace: str = attr.ib(default=None)
+
 
 @attr.s  # type:ignore
 class DeleteCatalogUri(CatalogUri):
@@ -232,7 +247,7 @@ class TransactionExtension(ApiExtension):
         )
 
     def register_update_catalog(self):
-        """Register update collection endpoint (PUT /collections/{collection_id})."""
+        """Register update catalog endpoint (PUT /catalogs/{catalog_id})."""
         self.router.add_api_route(
             name="Update Catalog",
             path="/catalogs/{catalog_path:path}",
@@ -259,6 +274,34 @@ class TransactionExtension(ApiExtension):
             ),
         )
 
+    def register_update_catalog_access(self):
+        """Register update collection endpoint (PUT /catalogs/{catalog_path})."""
+        self.router.add_api_route(
+            name="Update Catalog Access Control",
+            path="/catalogs/{catalog_path:path}/access",
+            response_model=Catalog if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["PUT"],
+            endpoint=create_async_endpoint(self.client.update_catalog_access_control, PutCatalogStripped),
+        )
+
+    def register_update_collection_access(self):
+        """Register update collection endpoint (PUT /catalogs/{catalog_path}/collections/{collection_id})."""
+        self.router.add_api_route(
+            name="Update Collection Access Control",
+            path="/catalogs/{catalog_path:path}/collections/{collection_id}/access",
+            response_model=Collection if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["PUT"],
+            endpoint=create_async_endpoint(
+                self.client.update_collection_access_control, PutCollectionStripped
+            ),
+        )
+
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
 
@@ -275,8 +318,11 @@ class TransactionExtension(ApiExtension):
         self.register_create_collection()
         self.register_create_catalog()
         self.register_create_base_catalog()
-        self.register_update_collection()
-        self.register_update_catalog()
+        
         self.register_delete_collection()
         self.register_delete_catalog()
+        self.register_update_collection_access()
+        self.register_update_catalog_access()
+        self.register_update_collection()
+        self.register_update_catalog()
         app.include_router(self.router, tags=["Transaction Extension"])

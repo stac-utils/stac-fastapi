@@ -131,9 +131,7 @@ class StacApi:
     pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
     middlewares: List = attr.ib(
-        default=attr.Factory(
-            lambda: [BrotliMiddleware, ProxyHeaderMiddleware]
-        )
+        default=attr.Factory(lambda: [BrotliMiddleware, ProxyHeaderMiddleware])
     )
     route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
 
@@ -325,31 +323,6 @@ class StacApi:
             ),
         )
 
-    def register_get_collections(self):
-        """Register get collections endpoint (GET /collections).
-
-        Returns:
-            None
-        """
-        collection_search_ext = self.get_extension(CollectionSearchExtension)
-        if not collection_search_ext:
-            self.router.add_api_route(
-                name="Get Collections",
-                path="/collections",
-                response_model=(
-                    (Collections if not collection_search_ext else None)
-                    if self.settings.enable_response_models
-                    else None
-                ),
-                response_class=self.response_class,
-                response_model_exclude_unset=True,
-                response_model_exclude_none=True,
-                methods=["GET"],
-                endpoint=create_async_endpoint(
-                    self.client.all_collections, EmptyRequest
-                ),
-            )
-
     def register_get_catalogs(self):
         """Register get catalogs endpoint (GET /catalogs).
 
@@ -383,7 +356,6 @@ class StacApi:
             methods=["GET"],
             endpoint=create_async_endpoint(self.client.all_catalogs, EmptyRequest),
         )
-
 
     def register_get_collection(self):
         """Register get collection endpoint (GET /catalogs/{catalog_id}/collection/{collection_id}).
@@ -467,20 +439,19 @@ class StacApi:
         Returns:
             None
         """
-        self.register_root_landing_page() # "/"
-        self.register_landing_page() # "/catalogs/{catalog_path}/"
-        self.register_conformance_classes() # "/conformance"
-        self.register_post_global_search() # "/search"
-        self.register_get_global_search() # "/search"
-        self.register_get_all_catalogs() # "/catalogs"
-        self.register_post_search() # "/catalogs/{catalog_path}/search"
-        self.register_get_search() # "/catalogs/{catalog_path}/search"
-        self.register_get_item() # "/catalogs/{catalog_path}/collections/{collection_id}/items/{item_id}"
-        self.register_get_item_collection() # "/catalogs/{catalog_path}/collections/{collection_id}/items"
-        self.register_get_collection() # "/catalogs/{catalog_path}/collections/{collection_id}"
-        self.register_get_catalogs() # "/catalogs/{catalog_path}/catalogs"
-        self.register_get_catalog() # "/catalogs/{catalog_path}"       
-        
+        self.register_root_landing_page()  # "/"
+        self.register_landing_page()  # "/catalogs/{catalog_path}/"
+        self.register_conformance_classes()  # "/conformance"
+        self.register_post_global_search()  # "/search"
+        self.register_get_global_search()  # "/search"
+        self.register_get_all_catalogs()  # "/catalogs"
+        self.register_post_search()  # "/catalogs/{catalog_path}/search"
+        self.register_get_search()  # "/catalogs/{catalog_path}/search"
+        self.register_get_item()  # "/catalogs/{catalog_path}/collections/{collection_id}/items/{item_id}"
+        self.register_get_item_collection()  # "/catalogs/{catalog_path}/collections/{collection_id}/items"
+        self.register_get_collection()  # "/catalogs/{catalog_path}/collections/{collection_id}"
+        self.register_get_catalogs()  # "/catalogs/{catalog_path}/catalogs"
+        self.register_get_catalog()  # "/catalogs/{catalog_path}"
 
     def customize_openapi(self) -> Optional[Dict[str, Any]]:
         """Customize openapi schema."""
@@ -558,13 +529,12 @@ class StacApi:
 
         # Register core STAC endpoints
         self.register_core()
-        self.app.include_router(self.router)
+        self.app.include_router(self.router, tags=["Search/Retrieve Endpoints"])
 
         # register extensions
         for ext in self.extensions:
             ext.register(self.app)
 
-        
         # add health check
         self.add_health_check()
 

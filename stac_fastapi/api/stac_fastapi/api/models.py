@@ -237,7 +237,8 @@ class CatalogUri(APIRequest):
 
     catalog_path: str = attr.ib(
         default=Path(
-            ..., description="Path to selected Catalog", example="cat1/cat2/cat3"
+            ..., description="Path to selected Catalog", example="catalogs/catalog_1/catalogs/catalog_2",
+            # regex=r"^catalogs/[^/]+(/catalogs/[^/]+)*$"
         )
     )
 
@@ -254,7 +255,6 @@ class ItemUri(CollectionUri):
     """Delete item."""
 
     item_id: str = attr.ib(default=Path(..., description="Item ID"))
-
 
 @attr.s
 class EmptyRequest(APIRequest):
