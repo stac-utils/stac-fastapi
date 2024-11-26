@@ -20,6 +20,7 @@ class CollectionSearchExtensionGetRequest(APIRequest):
     limit: Optional[int] = attr.ib(default=10)
     q: Optional[List[str]] = attr.ib(default=None, converter=str2list)
 
+
 @attr.s
 class CollectionSearchExtensionGetRequestExt(CollectionSearchExtensionGetRequest):
     """Collection Search extension GET request model."""

@@ -22,6 +22,7 @@ from stac_fastapi.api.models import APIRequest
 
 logger = logging.getLogger(__name__)
 
+
 def _wrap_response(resp: Any) -> Any:
     if resp is not None:
         return resp
