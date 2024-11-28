@@ -111,7 +111,6 @@ class BaseTransactionsClient(abc.ABC):
         catalog_path: str,
         collection: stac_types.Collection,
         workspace: str,
-        is_public: bool = False,
         **kwargs,
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Create a new collection.
@@ -132,7 +131,6 @@ class BaseTransactionsClient(abc.ABC):
         catalog: stac_types.Catalog,
         workspace: str,
         catalog_path: Optional[str],
-        is_public: bool = False,
         **kwargs,
     ) -> Optional[Union[stac_types.Catalog, Response]]:
         """Create a new catalog.
@@ -200,6 +198,52 @@ class BaseTransactionsClient(abc.ABC):
 
         Returns:
             The deleted collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def update_catalog_access_control(
+        self,
+        workspace: str,
+        access_policy: stac_types.AccessPolicy,
+        catalog_path: str,
+        **kwargs,
+    ):
+        """Update the access policy for a catalog.
+
+        Called with `PUT /catalogs/{catalog_path}/access-policy`
+
+        Args:
+            workspace: the user's workspace
+            access_policy: dictionary defining access policy for the collection
+            catalog_path: path to the catalog
+
+        Returns:
+            N/A
+        """
+        ...
+
+    @abc.abstractmethod
+    async def update_collection_access_control(
+        self,
+        workspace: str,
+        collection_id: str,
+        access_policy: stac_types.AccessPolicy,
+        catalog_path: Optional[str] = None,
+        **kwargs,
+    ):
+        """Update the access policy for a collection.
+
+        Called with `PUT /catalogs/{catalog_path}/collections/{collection_id}/access-policy`
+
+        Args:
+            workspace: the user's workspace
+            catalog_path: path to the catalog
+            access_policy: dictionary defining access policy for the collection
+            collection_id: id of the collection.
+
+        Returns:
+            N/A
         """
         ...
 
@@ -282,7 +326,6 @@ class AsyncBaseTransactionsClient(abc.ABC):
         self,
         collection: stac_types.Collection,
         workspace: str,
-        is_public: bool,
         **kwargs,
     ) -> Optional[Union[stac_types.Collection, Response]]:
         """Create a new collection.
@@ -335,6 +378,116 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
         Returns:
             The deleted collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def create_catalog(
+        self,
+        catalog: stac_types.Catalog,
+        workspace: str,
+        catalog_path: Optional[str] = None,
+        **kwargs,
+    ) -> stac_types.Catalog:
+        """Create a new catalog in the database.
+
+        Args:
+            catalog (stac_types.Catalog): The catalog to be created.
+            workspace (str): The workspace being used to create the catalog.
+            catalog_path (Optional[str]): The path to the catalog to be created.
+            is_public (bool): Whether the catalog is public or not.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            stac_types.Catalog: The created catalog object.
+
+        """
+        ...
+
+    @abc.abstractmethod
+    async def update_catalog(
+        self, catalog_path: str, catalog: stac_types.Catalog, workspace: str, **kwargs
+    ) -> stac_types.Catalog:
+        """
+        Update a catalog.
+
+        This method updates an existing catalog in the database.
+
+        Args:
+            catalog_path: Path to the catalog.
+            catalog: The updated catalog.
+            workspace: The user's workspace.
+            kwargs: Additional keyword arguments.
+
+        Returns:
+            A STAC catalog that has been updated in the database.
+
+        """
+        ...
+
+    @abc.abstractmethod
+    async def delete_catalog(
+        self, catalog_path: str, workspace: str, **kwargs
+    ) -> Optional[stac_types.Catalog]:
+        """
+        Delete a catalog.
+
+        This method deletes an existing catalog in the database.
+
+        Args:
+            catalog_path: Path to the catalog.
+            workspace: The user's workspace.
+            kwargs: Additional keyword arguments.
+
+        Returns:
+            None.
+
+        """
+        ...
+
+    @abc.abstractmethod
+    async def update_catalog_access_control(
+        self,
+        workspace: str,
+        access_policy: stac_types.AccessPolicy,
+        catalog_path: str,
+        **kwargs,
+    ):
+        """Update the access policy for a catalog.
+
+        Called with `PUT /catalogs/{catalog_path}/access-policy`
+
+        Args:
+            workspace: the user's workspace
+            access_policy: dictionary defining access policy for the collection
+            catalog_path: path to the catalog
+
+        Returns:
+            N/A
+        """
+        ...
+
+    @abc.abstractmethod
+    async def update_collection_access_control(
+        self,
+        workspace: str,
+        collection_id: str,
+        access_policy: stac_types.AccessPolicy,
+        catalog_path: Optional[str] = None,
+        **kwargs,
+    ):
+        """Update the access policy for a collection.
+
+        Called with `PUT /catalogs/{catalog_path}/collections/{collection_id}/access-policy`
+
+        Args:
+            workspace: the user's workspace
+            catalog_path: path to the catalog
+            access_policy: dictionary defining access policy for the collection
+            collection_id: id of the collection.
+
+        Returns:
+            N/A
         """
         ...
 
