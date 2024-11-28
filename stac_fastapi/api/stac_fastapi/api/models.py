@@ -239,7 +239,7 @@ class CatalogUri(APIRequest):
         default=Path(
             ...,
             description="Path to selected Catalog",
-            example="catalogs/catalog_1/catalogs/catalog_2",
+            example="catalog_1/catalog_2",
             # regex=r"^catalogs/[^/]+(/catalogs/[^/]+)*$"
         )
     )

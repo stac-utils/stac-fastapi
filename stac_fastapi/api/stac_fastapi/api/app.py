@@ -130,9 +130,7 @@ class StacApi:
     )
     pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
-    middlewares: List = attr.ib(
-        default=attr.Factory(lambda: [BrotliMiddleware, ProxyHeaderMiddleware])
-    )
+    middlewares: List = attr.ib(default=attr.Factory(lambda: [BrotliMiddleware, ProxyHeaderMiddleware]))
     route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
@@ -322,6 +320,31 @@ class StacApi:
                 self.client.get_search, self.search_catalog_get_request_model
             ),
         )
+
+    def register_get_collections(self):
+        """Register get collections endpoint (GET /collections).
+
+        Returns:
+            None
+        """
+        collection_search_ext = self.get_extension(CollectionSearchExtension)
+        if not collection_search_ext:
+            self.router.add_api_route(
+                name="Get Collections",
+                path="/collections",
+                response_model=(
+                    (Collections if not collection_search_ext else None)
+                    if self.settings.enable_response_models
+                    else None
+                ),
+                response_class=self.response_class,
+                response_model_exclude_unset=True,
+                response_model_exclude_none=True,
+                methods=["GET"],
+                endpoint=create_async_endpoint(
+                    self.client.all_collections, EmptyRequest
+                ),
+            )
 
     def register_get_catalogs(self):
         """Register get catalogs endpoint (GET /catalogs).

@@ -36,7 +36,7 @@ class PostCatalog(CatalogUri):
 
 
 @attr.s
-class PutCatalogStripped(CatalogUri):
+class UpdateCatalogAccess(CatalogUri):
     """Create Catalog."""
 
     workspace: str = attr.ib(default=None)
@@ -54,7 +54,7 @@ class PostBaseCatalog(APIRequest):
 
 
 @attr.s
-class PutCollectionStripped(CollectionUri):
+class UpdateCollectionAccess(CollectionUri):
     """Update Collection."""
 
     workspace: str = attr.ib(default=None)
@@ -63,10 +63,11 @@ class PutCollectionStripped(CollectionUri):
 
 
 @attr.s
-class PutCollection(PutCollectionStripped):
+class PutCollection(CatalogUri):
     """Update Collection."""
 
     collection: Union[stac_types.Collection] = attr.ib(default=Body(None))
+    workspace: str = attr.ib(default=None)
 
 
 @attr.s
@@ -288,7 +289,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["PUT"],
             endpoint=create_async_endpoint(
-                self.client.update_catalog_access_control, PutCatalogStripped
+                self.client.update_catalog_access_control, UpdateCatalogAccess
             ),
         )
 
@@ -303,7 +304,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["PUT"],
             endpoint=create_async_endpoint(
-                self.client.update_collection_access_control, PutCollectionStripped
+                self.client.update_collection_access_control, UpdateCollectionAccess
             ),
         )
 
