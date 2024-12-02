@@ -1,6 +1,5 @@
 """Fastapi app creation."""
 
-
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import attr
@@ -26,7 +25,12 @@ from stac_fastapi.api.models import (
     ItemUri,
 )
 from stac_fastapi.api.openapi import update_openapi
-from stac_fastapi.api.routes import Scope, add_route_dependencies, create_async_endpoint
+from stac_fastapi.api.routes import (
+    Scope,
+    add_route_dependencies,
+    add_route_securities,
+    create_async_endpoint,
+)
 from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
@@ -120,6 +124,7 @@ class StacApi:
         )
     )
     route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
+    route_securities: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -225,9 +230,9 @@ class StacApi:
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=api.ItemCollection
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                api.ItemCollection if self.settings.enable_response_models else None
+            ),
             responses={
                 200: {
                     "content": {
@@ -254,9 +259,9 @@ class StacApi:
         self.router.add_api_route(
             name="Search",
             path="/search",
-            response_model=api.ItemCollection
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                api.ItemCollection if self.settings.enable_response_models else None
+            ),
             responses={
                 200: {
                     "content": {
@@ -312,9 +317,9 @@ class StacApi:
         self.router.add_api_route(
             name="Get Collection",
             path="/collections/{collection_id}",
-            response_model=api.Collection
-            if self.settings.enable_response_models
-            else None,
+            response_model=(
+                api.Collection if self.settings.enable_response_models else None
+            ),
             responses={
                 200: {
                     "content": {
@@ -431,6 +436,17 @@ class StacApi:
         """
         return add_route_dependencies(self.app.router.routes, scopes, dependencies)
 
+    def add_route_securities(self) -> None:
+        """Add custom securities to routes.
+
+        Returns:
+            None
+        """
+        return add_route_securities(
+            self.app.router.routes,
+            self.route_securities,
+        )
+
     def __attrs_post_init__(self):
         """Post-init hook.
 
@@ -479,3 +495,5 @@ class StacApi:
         # customize route dependencies
         for scopes, dependencies in self.route_dependencies:
             self.add_route_dependencies(scopes=scopes, dependencies=dependencies)
+
+        self.add_route_securities()
