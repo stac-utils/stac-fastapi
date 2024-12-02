@@ -170,7 +170,7 @@ def merge_dependencies2(*dependencies: Callable) -> Callable:
 
 
 def map_route_securities(
-    route_securites: List[Tuple[List[Scope], List[Depends]]]
+    route_securites: List[Tuple[List[Scope], List[Depends]]],
 ) -> Dict:
     """Map route securities.
 
@@ -220,7 +220,6 @@ def add_route_securities(
             scope[default_method].append(default_security)
 
         for method, security in scope.items():
-
             method = scope["method"]
             if method == "*":
                 method = list(route.methods)[0]
