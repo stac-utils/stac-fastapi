@@ -545,7 +545,7 @@ class StacApi:
         router_prefix = self.router.prefix
         self.app.state.router_prefix = router_prefix if router_prefix else ""
 
-        # register collection search extensions
+        # register collection search extensions first to ensure precendence over other endpoints
         for ext in self.extensions:
             if isinstance(ext, CollectionSearchExtension):
                 ext.register(self.app)
@@ -556,7 +556,8 @@ class StacApi:
 
         # register extensions
         for ext in self.extensions:
-            ext.register(self.app)
+            if not isinstance(ext, CollectionSearchExtension):
+                ext.register(self.app)
 
         # add health check
         self.add_health_check()
