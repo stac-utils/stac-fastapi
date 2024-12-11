@@ -29,6 +29,11 @@ class LandingPage(TypedDict, total=False):
     conformsTo: List[str]
     links: List[Dict[str, Any]]
 
+class AccessPolicy(TypedDict, total=False):
+    """Metadata Access Policy."""
+
+    public: bool
+    acl: List[str]
 
 class Conformance(TypedDict):
     """STAC Conformance Classes."""

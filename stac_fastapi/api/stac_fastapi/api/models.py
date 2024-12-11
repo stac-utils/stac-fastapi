@@ -237,7 +237,10 @@ class CatalogUri(APIRequest):
 
     catalog_path: str = attr.ib(
         default=Path(
-            ..., description="Path to selected Catalog", example="cat1/cat2/cat3"
+            ...,
+            description="Path to selected Catalog",
+            example="catalog_1/catalog_2",
+            # regex=r"^catalogs/[^/]+(/catalogs/[^/]+)*$"
         )
     )
 

@@ -130,11 +130,7 @@ class StacApi:
     )
     pagination_extension = attr.ib(default=TokenPaginationExtension)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
-    middlewares: List = attr.ib(
-        default=attr.Factory(
-            lambda: [BrotliMiddleware, ProxyHeaderMiddleware]
-        )
-    )
+    middlewares: List = attr.ib(default=attr.Factory(lambda: [BrotliMiddleware, ProxyHeaderMiddleware]))
     route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
@@ -384,7 +380,6 @@ class StacApi:
             endpoint=create_async_endpoint(self.client.all_catalogs, EmptyRequest),
         )
 
-
     def register_get_collection(self):
         """Register get collection endpoint (GET /catalogs/{catalog_id}/collection/{collection_id}).
 
@@ -467,20 +462,19 @@ class StacApi:
         Returns:
             None
         """
-        self.register_root_landing_page() # "/"
-        self.register_landing_page() # "/catalogs/{catalog_path}/"
-        self.register_conformance_classes() # "/conformance"
-        self.register_post_global_search() # "/search"
-        self.register_get_global_search() # "/search"
-        self.register_get_all_catalogs() # "/catalogs"
-        self.register_post_search() # "/catalogs/{catalog_path}/search"
-        self.register_get_search() # "/catalogs/{catalog_path}/search"
-        self.register_get_item() # "/catalogs/{catalog_path}/collections/{collection_id}/items/{item_id}"
-        self.register_get_item_collection() # "/catalogs/{catalog_path}/collections/{collection_id}/items"
-        self.register_get_collection() # "/catalogs/{catalog_path}/collections/{collection_id}"
-        self.register_get_catalogs() # "/catalogs/{catalog_path}/catalogs"
-        self.register_get_catalog() # "/catalogs/{catalog_path}"       
-        
+        self.register_root_landing_page()  # "/"
+        self.register_landing_page()  # "/catalogs/{catalog_path}/"
+        self.register_conformance_classes()  # "/conformance"
+        self.register_post_global_search()  # "/search"
+        self.register_get_global_search()  # "/search"
+        self.register_get_all_catalogs()  # "/catalogs"
+        self.register_post_search()  # "/catalogs/{catalog_path}/search"
+        self.register_get_search()  # "/catalogs/{catalog_path}/search"
+        self.register_get_item()  # "/catalogs/{catalog_path}/collections/{collection_id}/items/{item_id}"
+        self.register_get_item_collection()  # "/catalogs/{catalog_path}/collections/{collection_id}/items"
+        self.register_get_collection()  # "/catalogs/{catalog_path}/collections/{collection_id}"
+        self.register_get_catalogs()  # "/catalogs/{catalog_path}/catalogs"
+        self.register_get_catalog()  # "/catalogs/{catalog_path}"
 
     def customize_openapi(self) -> Optional[Dict[str, Any]]:
         """Customize openapi schema."""
@@ -551,20 +545,20 @@ class StacApi:
         router_prefix = self.router.prefix
         self.app.state.router_prefix = router_prefix if router_prefix else ""
 
-        # register collection search extensions
+        # register collection search extensions first to ensure precendence over other endpoints
         for ext in self.extensions:
             if isinstance(ext, CollectionSearchExtension):
                 ext.register(self.app)
 
         # Register core STAC endpoints
         self.register_core()
-        self.app.include_router(self.router)
+        self.app.include_router(self.router, tags=["Search/Retrieve Endpoints"])
 
         # register extensions
         for ext in self.extensions:
-            ext.register(self.app)
+            if not isinstance(ext, CollectionSearchExtension):
+                ext.register(self.app)
 
-        
         # add health check
         self.add_health_check()
 

@@ -2,6 +2,7 @@
 
 import functools
 import inspect
+import logging
 import warnings
 from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
 
@@ -17,6 +18,9 @@ from starlette.routing import BaseRoute, Match
 from starlette.status import HTTP_204_NO_CONTENT
 
 from stac_fastapi.api.models import APIRequest
+
+
+logger = logging.getLogger(__name__)
 
 
 def _wrap_response(resp: Any) -> Any:
@@ -59,9 +63,10 @@ def extract_headers(
             algorithms=["HS256"],
         )
         username = decoded_jwt.get("preferred_username")
-        print(f"Logged in as user: {username}")
+        logger.info(f"Logged in as user: {username}")
     else:
         username = ""
+        logger.info(f"Not logged in as any user")
 
     return {
         "X-Username": username

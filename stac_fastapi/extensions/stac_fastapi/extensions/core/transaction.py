@@ -28,20 +28,41 @@ class PostItem(CollectionUri):
 
 @attr.s
 class PostCatalog(CatalogUri):
-    """Create Item."""
+    """Create Catalog."""
 
     catalog: Union[stac_types.Catalog] = attr.ib(default=Body(None))
     workspace: str = attr.ib(default=None)
-    is_public: bool = attr.ib(default=False)
+
+@attr.s
+class PutCatalog(CatalogUri):
+    """Create Catalog."""
+
+    catalog: Union[stac_types.Catalog] = attr.ib(default=Body(None))
+    workspace: str = attr.ib(default=None)
+
+
+@attr.s
+class UpdateCatalogAccess(CatalogUri):
+    """Create Catalog."""
+
+    workspace: str = attr.ib(default=None)
+    access_policy: Union[stac_types.AccessPolicy] = attr.ib(default=Body(None))
 
 
 @attr.s
 class PostBaseCatalog(APIRequest):
-    """Create Item."""
+    """Create Catalog."""
 
-    catalog: Union[stac_types.Catalog] = attr.ib(default=Body(None))
     workspace: str = attr.ib(default=None)
-    is_public: bool = attr.ib(default=False)
+    catalog: Union[stac_types.Catalog] = attr.ib(default=Body(None))
+
+
+@attr.s
+class UpdateCollectionAccess(CollectionUri):
+    """Update Collection."""
+
+    workspace: str = attr.ib(default=None)
+    access_policy: Union[stac_types.AccessPolicy] = attr.ib(default=Body(None))
 
 
 @attr.s
@@ -50,7 +71,6 @@ class PutCollection(CollectionUri):
 
     collection: Union[stac_types.Collection] = attr.ib(default=Body(None))
     workspace: str = attr.ib(default=None)
-    is_public: bool = attr.ib(default=False)
 
 
 @attr.s
@@ -59,7 +79,6 @@ class PostCollection(CatalogUri):
 
     collection: Union[stac_types.Collection] = attr.ib(default=Body(None))
     workspace: str = attr.ib(default=None)
-    is_public: bool = attr.ib(default=False)
 
 
 @attr.s
@@ -68,7 +87,7 @@ class PutItem(ItemUri):
 
     item: stac_types.Item = attr.ib(default=Body(None))
     workspace: str = attr.ib(default=None)
-    is_public: bool = attr.ib(default=False)
+
 
 @attr.s  # type:ignore
 class DeleteItemUri(ItemUri):
@@ -76,11 +95,13 @@ class DeleteItemUri(ItemUri):
 
     workspace: str = attr.ib(default=None)
 
+
 @attr.s  # type:ignore
 class DeleteCollectionUri(CollectionUri):
     """Delete collection."""
 
     workspace: str = attr.ib(default=None)
+
 
 @attr.s  # type:ignore
 class DeleteCatalogUri(CatalogUri):
@@ -232,7 +253,7 @@ class TransactionExtension(ApiExtension):
         )
 
     def register_update_catalog(self):
-        """Register update collection endpoint (PUT /collections/{collection_id})."""
+        """Register update catalog endpoint (PUT /catalogs/{catalog_id})."""
         self.router.add_api_route(
             name="Update Catalog",
             path="/catalogs/{catalog_path:path}",
@@ -241,7 +262,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_async_endpoint(self.client.update_catalog, PostCatalog),
+            endpoint=create_async_endpoint(self.client.update_catalog, PutCatalog),
         )
 
     def register_delete_catalog(self):
@@ -256,6 +277,36 @@ class TransactionExtension(ApiExtension):
             methods=["DELETE"],
             endpoint=create_async_endpoint(
                 self.client.delete_catalog, DeleteCatalogUri
+            ),
+        )
+
+    def register_update_catalog_access(self):
+        """Register update collection endpoint (PUT /catalogs/{catalog_path})."""
+        self.router.add_api_route(
+            name="Update Catalog Access Control",
+            path="/catalogs/{catalog_path:path}/access-policy",
+            response_model=Catalog if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["PUT"],
+            endpoint=create_async_endpoint(
+                self.client.update_catalog_access_control, UpdateCatalogAccess
+            ),
+        )
+
+    def register_update_collection_access(self):
+        """Register update collection endpoint (PUT /catalogs/{catalog_path}/collections/{collection_id})."""
+        self.router.add_api_route(
+            name="Update Collection Access Control",
+            path="/catalogs/{catalog_path:path}/collections/{collection_id}/access-policy",
+            response_model=Collection if self.settings.enable_response_models else None,
+            response_class=self.response_class,
+            response_model_exclude_unset=True,
+            response_model_exclude_none=True,
+            methods=["PUT"],
+            endpoint=create_async_endpoint(
+                self.client.update_collection_access_control, UpdateCollectionAccess
             ),
         )
 
@@ -275,8 +326,11 @@ class TransactionExtension(ApiExtension):
         self.register_create_collection()
         self.register_create_catalog()
         self.register_create_base_catalog()
-        self.register_update_collection()
-        self.register_update_catalog()
+
         self.register_delete_collection()
         self.register_delete_catalog()
+        self.register_update_collection_access()
+        self.register_update_catalog_access()
+        self.register_update_collection()
+        self.register_update_catalog()
         app.include_router(self.router, tags=["Transaction Extension"])
