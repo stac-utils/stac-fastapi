@@ -26,8 +26,7 @@ logger = logging.getLogger(__name__)
 KEYCLOAK_BASE_URL = os.environ.get("KEYCLOAK_BASE_URL")
 REALM = os.environ.get("REALM")
 CLIENT_ID = os.environ.get("CLIENT_ID")
-# CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
-CLIENT_SECRET = "HWGhOvvqCn6Ts8aV7vRiETb8ht0OM78d"
+CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 KEYCLOAK_URL = f"{KEYCLOAK_BASE_URL}/realms/{REALM}/protocol/openid-connect/token"
 
 def _wrap_response(resp: Any) -> Any:
