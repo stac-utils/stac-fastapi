@@ -4,6 +4,8 @@ import functools
 import inspect
 import logging
 import warnings
+import requests
+import os
 from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
 
 import jwt
@@ -18,10 +20,10 @@ from starlette.routing import BaseRoute, Match
 from starlette.status import HTTP_204_NO_CONTENT
 
 from stac_fastapi.api.models import APIRequest
-
+from settings import KEYCLOAK_BASE_URL, REALM, CLIENT_ID, CLIENT_SECRET
 
 logger = logging.getLogger(__name__)
-
+KEYCLOAK_URL = f"{KEYCLOAK_BASE_URL}/realms/{REALM}/protocol/openid-connect/token"
 
 def _wrap_response(resp: Any) -> Any:
     if resp is not None:
@@ -43,11 +45,29 @@ def sync_to_async(func):
 # Define the OAuth2 scheme for Bearer token
 bearer_scheme = HTTPBearer(auto_error=False)
 
+def token_exchange(subject_token: str, scope: str = None) -> str:
+    payload = {
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+        "subject_token": subject_token,
+        "scope": scope,
+    }
+    response = requests.post(
+        KEYCLOAK_URL,
+        data=payload,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+
+    if not response.ok:
+        raise Exception(f"Error: {response.text}")
+
+    return response.json().get("access_token")
 
 # TODO: Also extract group information from the headers
 def extract_headers(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> Dict[str, str]:
+) -> Dict[str, Any]:
     """Extract headers from request.
 
     Args:
@@ -56,21 +76,25 @@ def extract_headers(
     Returns:
         Dict of headers.
     """
+    headers = {}
     if credentials:
+        # Exchange the token
+        keycloak_token = token_exchange(credentials.credentials, "workspaces")
         decoded_jwt = jwt.decode(
-            credentials.credentials,
+            keycloak_token,
             options={"verify_signature": False},
             algorithms=["HS256"],
         )
-        username = decoded_jwt.get("preferred_username")
-        logger.info(f"Logged in as user: {username}")
+        workspaces = decoded_jwt.get("workspaces", [])
+        logger.info(f"workspaces: {workspaces}")
+        headers["X-Workspaces"] = workspaces
+        headers["X-Authorized"] = 'authorized'
     else:
-        username = ""
-        logger.info(f"Not logged in as any user")
+        logger.info("Not logged in as any user")
+        headers["X-Workspaces"] = []
+        headers["X-Authorized"] = 'unauthorized'
 
-    return {
-        "X-Username": username
-    }  # Allows support for more headers in future, e.g. group information
+    return headers  # Allows support for more headers in future, e.g. group information
 
 
 def create_async_endpoint(
@@ -97,13 +121,13 @@ def create_async_endpoint(
         async def _endpoint(
             request: Request,
             request_data: request_model = Depends(),  # type:ignore
-            username_header=Depends(extract_headers),
+            headers=Depends(extract_headers),
         ):
             """Endpoint."""
             return _wrap_response(
                 await func(
                     request=request,
-                    username_header=username_header,
+                    headers=headers,
                     **request_data.kwargs(),
                 )
             )
@@ -113,12 +137,12 @@ def create_async_endpoint(
         async def _endpoint(
             request: Request,
             request_data: request_model,  # type:ignore
-            username_header=Depends(extract_headers),
+            headers=Depends(extract_headers),
         ):
             """Endpoint."""
             return _wrap_response(
                 await func(
-                    request_data, username_header=username_header, request=request
+                    request_data, headers=headers, request=request
                 )
             )
 
@@ -127,12 +151,12 @@ def create_async_endpoint(
         async def _endpoint(
             request: Request,
             request_data: Dict[str, Any],  # type:ignore
-            username_header=Depends(extract_headers),
+            headers=Depends(extract_headers),
         ):
             """Endpoint."""
             return _wrap_response(
                 await func(
-                    request_data, username_header=username_header, request=request
+                    request_data, headers=headers, request=request
                 )
             )
 
