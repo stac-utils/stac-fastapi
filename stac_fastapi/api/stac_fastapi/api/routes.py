@@ -34,9 +34,9 @@ def _wrap_response(resp: Any, url_path: str) -> Any:
                 # Add cache control headers
                 return JSONResponse(content=resp, headers={"cache-control": CACHE_CONTROL_HEADERS})
         # Return with no cache control headers
-        return JSONResponse(content=resp)
+        return JSONResponse(content=resp, headers={"cache-control": "max-age=0"})
     else:  # None is returned as 204 No Content
-        return Response(status_code=HTTP_204_NO_CONTENT)
+        return Response(status_code=HTTP_204_NO_CONTENT, headers={"cache-control": "max-age=0"})
 
 
 def sync_to_async(func):
