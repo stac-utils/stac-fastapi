@@ -10,6 +10,7 @@ from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
 
 import jwt
 from fastapi import Depends, params
+from fastapi.responses import JSONResponse
 from fastapi.dependencies.utils import get_parameterless_sub_dependant
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
@@ -20,14 +21,20 @@ from starlette.routing import BaseRoute, Match
 from starlette.status import HTTP_204_NO_CONTENT
 
 from stac_fastapi.api.models import APIRequest
-from settings import KEYCLOAK_BASE_URL, REALM, CLIENT_ID, CLIENT_SECRET
+from stac_fastapi.api.settings import KEYCLOAK_BASE_URL, REALM, CLIENT_ID, CLIENT_SECRET, CACHE_CONTROL_CATALOGS_LIST, CACHE_CONTROL_HEADERS
 
 logger = logging.getLogger(__name__)
 KEYCLOAK_URL = f"{KEYCLOAK_BASE_URL}/realms/{REALM}/protocol/openid-connect/token"
 
-def _wrap_response(resp: Any) -> Any:
+def _wrap_response(resp: Any, url_path: str) -> Any:
     if resp is not None:
-        return resp
+        if url_path.startswith("/catalogs/"):
+            root_catalog = url_path.split("/")[2]
+            if root_catalog in CACHE_CONTROL_CATALOGS_LIST:
+                # Add cache control headers
+                return JSONResponse(content=resp, headers={"cache-control": CACHE_CONTROL_HEADERS})
+        # Return with no cache control headers
+        return JSONResponse(content=resp)
     else:  # None is returned as 204 No Content
         return Response(status_code=HTTP_204_NO_CONTENT)
 
@@ -129,7 +136,8 @@ def create_async_endpoint(
                     request=request,
                     headers=headers,
                     **request_data.kwargs(),
-                )
+                ),
+                request.url.path
             )
 
     elif issubclass(request_model, BaseModel):
@@ -143,7 +151,8 @@ def create_async_endpoint(
             return _wrap_response(
                 await func(
                     request_data, headers=headers, request=request
-                )
+                ),
+                request.url.path
             )
 
     else:
@@ -157,7 +166,8 @@ def create_async_endpoint(
             return _wrap_response(
                 await func(
                     request_data, headers=headers, request=request
-                )
+                ),
+                request.url.path
             )
 
     return _endpoint
