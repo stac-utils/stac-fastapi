@@ -387,3 +387,70 @@ def test_request_model(AsyncTestCoreClient):
             "/collections/test_collection/items/test_item", params={"user": "Chewbacca"}
         )
         assert resp.status_code == 200
+
+
+def test_client_datetime_input_params():
+    """Test all endpoints. Verify input models."""
+
+    class FakeClient(BaseCoreClient):
+        def post_search(self, search_request: BaseSearchPostRequest, **kwargs):
+            return search_request.datetime
+
+        def get_search(
+            self,
+            collections: Optional[List[str]] = None,
+            ids: Optional[List[str]] = None,
+            bbox: Optional[List[NumType]] = None,
+            intersects: Optional[str] = None,
+            datetime: Optional[Union[str, datetime]] = None,
+            limit: Optional[int] = 10,
+            **kwargs,
+        ):
+            return datetime
+
+        def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
+            raise NotImplementedError
+
+        def all_collections(self, **kwargs) -> stac.Collections:
+            raise NotImplementedError
+
+        def get_collection(self, collection_id: str, **kwargs) -> stac.Collection:
+            raise NotImplementedError
+
+        def item_collection(
+            self,
+            collection_id: str,
+            bbox: Optional[List[Union[float, int]]] = None,
+            datetime: Optional[Union[str, datetime]] = None,
+            limit: int = 10,
+            token: str = None,
+            **kwargs,
+        ) -> stac.ItemCollection:
+            raise NotImplementedError
+
+    test_app = app.StacApi(
+        settings=ApiSettings(enable_response_models=False),
+        client=FakeClient(),
+    )
+
+    with TestClient(test_app.app) as client:
+        get_search = client.get(
+            "/search",
+            params={
+                "collections": ["test"],
+                "datetime": "2020-01-01T00:00:00.00001Z",
+            },
+        )
+        post_search = client.post(
+            "/search",
+            json={
+                "collections": ["test"],
+                "datetime": "2020-01-01T00:00:00.00001Z",
+            },
+        )
+
+    assert get_search.status_code == 200, get_search.text
+    assert get_search.json() == "2020-01-01T00:00:00.000010+00:00"
+
+    assert post_search.status_code == 200, post_search.text
+    assert post_search.json() == "2020-01-01T00:00:00.00001Z"

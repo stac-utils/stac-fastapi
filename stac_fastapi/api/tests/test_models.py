@@ -26,7 +26,7 @@ def test_create_get_request_model():
                 "coordinates": [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]],
             }
         ),
-        datetime="2020-01-01T00:00:00Z",
+        datetime="2020-01-01T00:00:00.00001Z",
         limit=10,
         filter="test==test",
         filter_crs="epsg:4326",
@@ -35,6 +35,8 @@ def test_create_get_request_model():
 
     assert model.collections == ["test1", "test2"]
     assert model.filter_crs == "epsg:4326"
+    d = model.datetime
+    assert d.microsecond == 10
 
     with pytest.raises(HTTPException):
         request_model(datetime="yo")
@@ -62,10 +64,10 @@ def test_create_get_request_model():
 
 
 @pytest.mark.parametrize(
-    "filter,passes",
+    "filter_val,passes",
     [(None, True), ({"test": "test"}, True), ([], False)],
 )
-def test_create_post_request_model(filter, passes):
+def test_create_post_request_model(filter_val, passes):
     request_model = create_post_request_model(
         extensions=[FilterExtension(), FieldsExtension()],
         base_model=BaseSearchPostRequest,
@@ -73,21 +75,22 @@ def test_create_post_request_model(filter, passes):
 
     if not passes:
         with pytest.raises(ValidationError):
-            model = request_model(filter=filter)
+            model = request_model(filter=filter_val)
     else:
         model = request_model(
             collections=["test1", "test2"],
             ids=["test1", "test2"],
             bbox=[0, 0, 1, 1],
-            datetime="2020-01-01T00:00:00Z",
+            datetime="2020-01-01T00:00:00.00001Z",
             limit=10,
-            filter=filter,
+            filter=filter_val,
             **{"filter-crs": "epsg:4326", "filter-lang": "cql2-json"},
         )
 
         assert model.collections == ["test1", "test2"]
         assert model.filter_crs == "epsg:4326"
-        assert model.filter == filter
+        assert model.filter == filter_val
+        assert model.datetime == "2020-01-01T00:00:00.00001Z"
 
 
 @pytest.mark.parametrize(
