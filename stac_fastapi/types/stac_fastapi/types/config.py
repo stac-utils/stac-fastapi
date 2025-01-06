@@ -31,6 +31,7 @@ class ApiSettings(BaseSettings):
 
     openapi_url: str = "/api"
     docs_url: str = "/api.html"
+    root_path: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", extra="allow")
 

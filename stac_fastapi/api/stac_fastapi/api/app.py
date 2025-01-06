@@ -77,6 +77,7 @@ class StacApi:
                 openapi_url=self.settings.openapi_url,
                 docs_url=self.settings.docs_url,
                 redoc_url=None,
+                root_path=self.settings.root_path,
             ),
             takes_self=True,
         ),
