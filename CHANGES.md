@@ -11,6 +11,7 @@
 * Add `numberMatched` and `numberReturned` properties in `types.stac.ItemCollection` model
 * Add `numberMatched` and `numberReturned` properties in `types.stac.Collections` model
 * Add `root_path` to `stac_fastapi.types.config.ApiSettings` and use it in the default FastAPI application
+* Add `python3.13` support
 
 ## Changed
 
