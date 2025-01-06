@@ -10,6 +10,7 @@
 
 * Add `numberMatched` and `numberReturned` properties in `types.stac.ItemCollection` model
 * Add `numberMatched` and `numberReturned` properties in `types.stac.Collections` model
+* Add `python3.13` support
 
 ## Changed
 
