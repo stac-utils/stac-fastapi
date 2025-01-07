@@ -4,6 +4,7 @@ import logging
 from typing import Callable, Dict, Type, TypedDict
 
 from fastapi import FastAPI
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from starlette import status
 from starlette.requests import Request
@@ -88,7 +89,7 @@ def add_exception_handlers(
         request: Request, exc: RequestValidationError
     ) -> JSONResponse:
         return JSONResponse(
-            content=ErrorResponse(code=exc.__class__.__name__, description=str(exc)),
+            content=jsonable_encoder({"detail": exc.errors(), "body": exc.body}),
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
