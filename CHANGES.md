@@ -16,6 +16,7 @@
 ## Changed
 
 * use `stac_pydantic.version.STAC_VERSION` instead of `stac_pydantic.api.version.STAC_API_VERSION` as application `stac_version`
+* Return more informations from pydantic validation errors
 
 ## [3.0.3] - 2024-10-09
 
