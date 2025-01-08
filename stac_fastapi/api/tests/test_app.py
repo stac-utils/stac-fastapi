@@ -165,13 +165,11 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
                 type="FeatureCollection", features=[stac.Item(**item_dict)]
             )
 
-    post_request_model = create_post_request_model([FilterExtension()])
-
     test_app = app.StacApi(
         settings=ApiSettings(enable_response_models=validate),
-        client=FilterClient(post_request_model=post_request_model),
+        client=FilterClient(),
         search_get_request_model=create_get_request_model([FilterExtension()]),
-        search_post_request_model=post_request_model,
+        search_post_request_model=create_post_request_model([FilterExtension()]),
         extensions=[FilterExtension()],
     )
 

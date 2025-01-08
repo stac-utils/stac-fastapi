@@ -15,8 +15,9 @@
 
 ## Changed
 
-* use `stac_pydantic.version.STAC_VERSION` instead of `stac_pydantic.api.version.STAC_API_VERSION` as application `stac_version`
+* Use `stac_pydantic.version.STAC_VERSION` instead of `stac_pydantic.api.version.STAC_API_VERSION` as application `stac_version`
 * Return more informations from pydantic validation errors
+* Add deprecation notice for `post_request_model` attribute in `BaseCoreClient` and `AsyncBaseCoreClient`
 
 ## [3.0.3] - 2024-10-09
 
