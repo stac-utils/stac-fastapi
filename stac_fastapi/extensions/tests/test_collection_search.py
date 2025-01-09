@@ -476,35 +476,36 @@ def test_from_extensions_methods(extensions):
 
 
 def test_from_extensions_methods_invalid():
-    """Should raise warnings for invalid extensions."""
+    """Should also work with unknown extensions."""
     extensions = [
         AggregationExtension(),
     ]
-    with pytest.warns((UserWarning)):
-        ext = CollectionSearchExtension.from_extensions(
-            extensions,
-        )
+    ext = CollectionSearchExtension.from_extensions(
+        extensions,
+    )
+
     collection_search = ext.GET()
     assert collection_search.__class__.__name__ == "CollectionsGetRequest"
     assert hasattr(collection_search, "bbox")
     assert hasattr(collection_search, "datetime")
     assert hasattr(collection_search, "limit")
+    assert hasattr(collection_search, "aggregations")
     assert ext.conformance_classes == [
         ConformanceClasses.COLLECTIONSEARCH,
         ConformanceClasses.BASIS,
     ]
 
-    with pytest.warns((UserWarning)):
-        ext = CollectionSearchPostExtension.from_extensions(
-            extensions,
-            client=DummyPostClient(),
-            settings=ApiSettings(),
-        )
+    ext = CollectionSearchPostExtension.from_extensions(
+        extensions,
+        client=DummyPostClient(),
+        settings=ApiSettings(),
+    )
     collection_search = ext.POST()
     assert collection_search.__class__.__name__ == "CollectionsPostRequest"
     assert hasattr(collection_search, "bbox")
     assert hasattr(collection_search, "datetime")
     assert hasattr(collection_search, "limit")
+    assert hasattr(collection_search, "aggregations")
     assert ext.conformance_classes == [
         ConformanceClasses.COLLECTIONSEARCH,
         ConformanceClasses.BASIS,

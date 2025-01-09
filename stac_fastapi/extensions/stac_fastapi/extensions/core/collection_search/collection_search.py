@@ -1,6 +1,5 @@
 """Collection-Search extension."""
 
-import warnings
 from enum import Enum
 from typing import List, Optional, Union
 
@@ -79,7 +78,7 @@ class CollectionSearchExtension(ApiExtension):
         schema_href: Optional[str] = None,
     ) -> "CollectionSearchExtension":
         """Create CollectionSearchExtension object from extensions."""
-        supported_extensions = {
+        known_extension_conformances = {
             "FreeTextExtension": ConformanceClasses.FREETEXT,
             "FreeTextAdvancedExtension": ConformanceClasses.FREETEXT,
             "QueryExtension": ConformanceClasses.QUERY,
@@ -92,13 +91,7 @@ class CollectionSearchExtension(ApiExtension):
             ConformanceClasses.BASIS,
         ]
         for ext in extensions:
-            conf = supported_extensions.get(ext.__class__.__name__, None)
-            if not conf:
-                warnings.warn(
-                    f"Conformance class for `{ext.__class__.__name__}` extension not found.",  # noqa: E501
-                    UserWarning,
-                )
-            else:
+            if conf := known_extension_conformances.get(ext.__class__.__name__, None):
                 conformance_classes.append(conf)
 
         get_request_model = create_request_model(
@@ -187,7 +180,7 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
         router: Optional[APIRouter] = None,
     ) -> "CollectionSearchPostExtension":
         """Create CollectionSearchPostExtension object from extensions."""
-        supported_extensions = {
+        known_extension_conformances = {
             "FreeTextExtension": ConformanceClasses.FREETEXT,
             "FreeTextAdvancedExtension": ConformanceClasses.FREETEXT,
             "QueryExtension": ConformanceClasses.QUERY,
@@ -200,13 +193,7 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
             ConformanceClasses.BASIS,
         ]
         for ext in extensions:
-            conf = supported_extensions.get(ext.__class__.__name__, None)
-            if not conf:
-                warnings.warn(
-                    f"Conformance class for `{ext.__class__.__name__}` extension not found.",  # noqa: E501
-                    UserWarning,
-                )
-            else:
+            if conf := known_extension_conformances.get(ext.__class__.__name__, None):
                 conformance_classes.append(conf)
 
         get_request_model = create_request_model(

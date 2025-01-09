@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Removed
+
+* Remove `warnings` in `CollectionSearchExtension.from_extensions()` methods when passing `unknown` extensions
+
 ## [3.0.4] - 2025-01-08
 
 ### Removed
