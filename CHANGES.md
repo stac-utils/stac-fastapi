@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [3.0.5] - 2025-01-10
+
 ### Removed
 
 * Remove `warnings` in `CollectionSearchExtension.from_extensions()` methods when passing `unknown` extensions
@@ -513,7 +515,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.4..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.5..main>
+[3.0.5]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.4..3.0.5>
 [3.0.4]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.3..3.0.4>
 [3.0.3]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.2..3.0.3>
 [3.0.2]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.1..3.0.2>
