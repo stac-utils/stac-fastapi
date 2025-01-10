@@ -162,7 +162,7 @@ def test_api_prefix_with_root_path(TestCoreClient, prefix):
     with TestClient(api.app, base_url="http://stac.io", root_path="/api/v1") as client:
         landing = client.get(f"{prefix}/")
         assert landing.status_code == 200, landing.json()
-        print(landing.text)
+
         service_doc = client.get(f"{prefix}/api.html")
         assert service_doc.status_code == 200, service_doc.text
 
