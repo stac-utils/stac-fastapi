@@ -439,6 +439,13 @@ def test_client_datetime_input_params():
                 "datetime": "2020-01-01T00:00:00.00001Z",
             },
         )
+        get_search_zero = client.get(
+            "/search",
+            params={
+                "collections": ["test"],
+                "datetime": "2020-01-01T00:00:00.0000Z",
+            },
+        )
         post_search = client.post(
             "/search",
             json={
@@ -446,9 +453,20 @@ def test_client_datetime_input_params():
                 "datetime": "2020-01-01T00:00:00.00001Z",
             },
         )
+        post_search_zero = client.post(
+            "/search",
+            json={
+                "collections": ["test"],
+                "datetime": "2020-01-01T00:00:00.0000Z",
+            },
+        )
 
     assert get_search.status_code == 200, get_search.text
     assert get_search.json() == "2020-01-01T00:00:00.000010+00:00"
+    assert get_search_zero.status_code == 200, get_search_zero.text
+    assert get_search_zero.json() == "2020-01-01T00:00:00+00:00"
 
     assert post_search.status_code == 200, post_search.text
     assert post_search.json() == "2020-01-01T00:00:00.00001Z"
+    assert post_search_zero.status_code == 200, post_search_zero.text
+    assert post_search_zero.json() == "2020-01-01T00:00:00.0000Z"
