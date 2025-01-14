@@ -120,10 +120,7 @@ def test_collection_search_extension_default():
         assert response.is_success, response.json()
         response_dict = response.json()
         assert [-175.05, -85.05, 175.05, 85.05] == response_dict["bbox"]
-        assert [
-            "2020-06-13T13:00:00+00:00",
-            "2020-06-13T14:00:00+00:00",
-        ] == response_dict["datetime"]
+        assert "2020-06-13T13:00:00Z/2020-06-13T14:00:00Z" == response_dict["datetime"]
         assert 100 == response_dict["limit"]
 
 
@@ -211,10 +208,7 @@ def test_collection_search_extension_models():
         assert response.is_success, response.json()
         response_dict = response.json()
         assert [-175.05, -85.05, 175.05, 85.05] == response_dict["bbox"]
-        assert [
-            "2020-06-13T13:00:00+00:00",
-            "2020-06-13T14:00:00+00:00",
-        ] == response_dict["datetime"]
+        assert "2020-06-13T13:00:00Z/2020-06-13T14:00:00Z" == response_dict["datetime"]
         assert 100 == response_dict["limit"]
         assert ["EO", "Earth Observation"] == response_dict["q"]
         assert "id='item_id' AND collection='collection_id'" == response_dict["filter"]

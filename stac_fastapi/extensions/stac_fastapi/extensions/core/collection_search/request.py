@@ -69,12 +69,14 @@ class BaseCollectionSearchPostRequest(BaseModel):
     """Collection-Search POST model."""
 
     bbox: Optional[BBox] = Field(
+        default=None,
         description="Only return items intersecting this bounding box. Mutually exclusive with **intersects**.",  # noqa: E501
         json_schema_extra={
             "example": [-175.05, -85.05, 175.05, 85.05],
         },
     )
     datetime: Optional[str] = Field(
+        default=None,
         description="""Only return items that have a temporal property that intersects this value.\n
 Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
         json_schema_extra={
