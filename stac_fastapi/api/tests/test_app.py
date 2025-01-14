@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime as python_datetime
 from typing import List, Optional, Union
 
 import attr
@@ -141,7 +141,7 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
             ids: Optional[List[str]] = None,
             bbox: Optional[List[NumType]] = None,
             intersects: Optional[str] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[Union[str, python_datetime]] = None,
             limit: Optional[int] = 10,
             filter: Optional[str] = None,
             filter_crs: Optional[str] = None,
@@ -221,7 +221,7 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
             ids: Optional[List[str]] = None,
             bbox: Optional[List[NumType]] = None,
             intersects: Optional[str] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[Union[str, python_datetime]] = None,
             limit: Optional[int] = 10,
             **kwargs,
         ) -> stac.ItemCollection:
@@ -247,7 +247,7 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
             self,
             collection_id: str,
             bbox: Optional[List[Union[float, int]]] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[Union[str, python_datetime]] = None,
             limit: int = 10,
             token: str = None,
             **kwargs,
@@ -400,10 +400,11 @@ def test_client_datetime_input_params():
             ids: Optional[List[str]] = None,
             bbox: Optional[List[NumType]] = None,
             intersects: Optional[str] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[Union[str, python_datetime]] = None,
             limit: Optional[int] = 10,
             **kwargs,
         ):
+            assert isinstance(datetime, python_datetime)
             return datetime
 
         def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
@@ -419,7 +420,7 @@ def test_client_datetime_input_params():
             self,
             collection_id: str,
             bbox: Optional[List[Union[float, int]]] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[Union[str, python_datetime]] = None,
             limit: int = 10,
             token: str = None,
             **kwargs,
