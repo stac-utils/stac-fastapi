@@ -19,7 +19,6 @@ from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
-from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import BaseSearchPostRequest
 
 __all__ = [
@@ -497,7 +496,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ids: Optional[List[str]] = None,
         bbox: Optional[BBox] = None,
         intersects: Optional[Geometry] = None,
-        datetime: Optional[DateTimeType] = None,
+        datetime: Optional[str] = None,
         limit: Optional[int] = 10,
         **kwargs,
     ) -> stac.ItemCollection:
@@ -555,7 +554,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         self,
         collection_id: str,
         bbox: Optional[BBox] = None,
-        datetime: Optional[DateTimeType] = None,
+        datetime: Optional[str] = None,
         limit: int = 10,
         token: str = None,
         **kwargs,
@@ -733,7 +732,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ids: Optional[List[str]] = None,
         bbox: Optional[BBox] = None,
         intersects: Optional[Geometry] = None,
-        datetime: Optional[DateTimeType] = None,
+        datetime: Optional[str] = None,
         limit: Optional[int] = 10,
         **kwargs,
     ) -> stac.ItemCollection:
@@ -791,7 +790,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         self,
         collection_id: str,
         bbox: Optional[BBox] = None,
-        datetime: Optional[DateTimeType] = None,
+        datetime: Optional[str] = None,
         limit: int = 10,
         token: str = None,
         **kwargs,

@@ -35,8 +35,9 @@ def test_create_get_request_model():
 
     assert model.collections == ["test1", "test2"]
     assert model.filter_crs == "epsg:4326"
-    d = model.datetime
+    d = model.start_date
     assert d.microsecond == 10
+    assert not model.end_date
 
     with pytest.raises(HTTPException):
         request_model(datetime="yo")

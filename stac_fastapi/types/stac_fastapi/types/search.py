@@ -1,7 +1,7 @@
 """stac_fastapi.types.search module.
 
 """
-
+from datetime import datetime as dt
 from typing import Dict, List, Optional, Union
 
 import attr
@@ -12,7 +12,7 @@ from stac_pydantic.api import Search
 from stac_pydantic.shared import BBox
 from typing_extensions import Annotated
 
-from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
+from stac_fastapi.types.rfc3339 import str_to_interval
 
 
 def crop(v: PositiveInt) -> PositiveInt:
@@ -81,24 +81,6 @@ def _bbox_converter(
     ] = None,
 ) -> Optional[BBox]:
     return str2bbox(val)
-
-
-def _datetime_converter(
-    val: Annotated[
-        Optional[str],
-        Query(
-            description="""Only return items that have a temporal property that intersects this value.\n
-Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
-            openapi_examples={
-                "datetime": {"value": "2018-02-12T23:20:50Z"},
-                "closed-interval": {"value": "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"},
-                "open-interval-from": {"value": "2018-02-12T00:00:00Z/.."},
-                "open-interval-to": {"value": "../2018-03-18T12:31:12Z"},
-            },
-        ),
-    ] = None,
-):
-    return str_to_interval(val)
 
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
@@ -170,15 +152,46 @@ class BaseSearchGetRequest(APIRequest):
             },
         ),
     ] = attr.ib(default=None)
-    datetime: Optional[DateTimeType] = attr.ib(
-        default=None, converter=_datetime_converter
-    )
+    datetime: Annotated[
+        Optional[str],
+        Query(
+            description="""Only return items that have a temporal property that intersects this value.\n
+Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
+            openapi_examples={
+                "datetime": {"value": "2018-02-12T23:20:50Z"},
+                "closed-interval": {"value": "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"},
+                "open-interval-from": {"value": "2018-02-12T00:00:00Z/.."},
+                "open-interval-to": {"value": "../2018-03-18T12:31:12Z"},
+            },
+        ),
+    ] = attr.ib(default=None)
     limit: Annotated[
         Optional[Limit],
         Query(
             description="Limits the number of results that are included in each page of the response (capped to 10_000)."  # noqa: E501
         ),
     ] = attr.ib(default=10)
+
+    @datetime.validator
+    def validate_datetime(self, attribute, value):
+        """Validate Datetime."""
+        _ = str_to_interval(value)
+
+    @property
+    def start_date(self) -> Optional[dt]:
+        """Start Date."""
+        if self.datetime is None:
+            return self.datetime
+        interval = str_to_interval(self.datetime)
+        return interval if isinstance(interval, dt) else interval[0]
+
+    @property
+    def end_date(self) -> Optional[dt]:
+        """End Date."""
+        if self.datetime is None:
+            return self.datetime
+        interval = str_to_interval(self.datetime)
+        return interval[1] if isinstance(interval, tuple) else None
 
 
 class BaseSearchPostRequest(Search):
