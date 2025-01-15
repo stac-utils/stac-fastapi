@@ -93,16 +93,6 @@ NumType = Union[float, int]
 Limit = Annotated[PositiveInt, AfterValidator(crop)]
 
 
-@attr.s
-class APIRequest:
-    """Generic API Request base class."""
-
-    def kwargs(self) -> Dict:
-        """Transform api request params into format which matches the signature of the
-        endpoint."""
-        return self.__dict__
-
-
 DateTimeQueryType = Annotated[
     Optional[str],
     Query(
@@ -116,6 +106,16 @@ Either a date-time or an interval, open or closed. Date and time expressions adh
         },
     ),
 ]
+
+
+@attr.s
+class APIRequest:
+    """Generic API Request base class."""
+
+    def kwargs(self) -> Dict:
+        """Transform api request params into format which matches the signature of the
+        endpoint."""
+        return self.__dict__
 
 
 @attr.s
