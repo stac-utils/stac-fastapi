@@ -12,7 +12,7 @@ from stac_pydantic.api import Search
 from stac_pydantic.shared import BBox
 from typing_extensions import Annotated
 
-from stac_fastapi.types.rfc3339 import str_to_interval
+from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
 
 
 def crop(v: PositiveInt) -> PositiveInt:
@@ -124,21 +124,27 @@ class DatetimeMixin:
 
     datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
 
+    def parse_datetime(self) -> Optional[DateTimeType]:
+        """Return Datetime objects."""
+        return str_to_interval(self.datetime)
+
     @property
     def start_date(self) -> Optional[dt]:
         """Start Date."""
-        if self.datetime is None:
-            return self.datetime
-        interval = str_to_interval(self.datetime)
-        return interval if isinstance(interval, dt) else interval[0]
+        parsed = self.parse_datetime()
+        if parsed is None:
+            return None
+
+        return parsed[0] if isinstance(parsed, tuple) else parsed
 
     @property
     def end_date(self) -> Optional[dt]:
         """End Date."""
-        if self.datetime is None:
-            return self.datetime
-        interval = str_to_interval(self.datetime)
-        return interval[1] if isinstance(interval, tuple) else None
+        parsed = self.parse_datetime()
+        if parsed is None:
+            return None
+
+        return parsed[1] if isinstance(parsed, tuple) else None
 
 
 @attr.s

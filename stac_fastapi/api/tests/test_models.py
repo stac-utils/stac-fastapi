@@ -39,8 +39,19 @@ def test_create_get_request_model():
     assert d.microsecond == 10
     assert not model.end_date
 
+    model = request_model(
+        datetime="2020-01-01T00:00:00.00001Z/2020-01-02T00:00:00.00001Z",
+    )
+    assert model.start_date
+    assert model.end_date
+
+    # invalid datetime format
     with pytest.raises(HTTPException):
         request_model(datetime="yo")
+
+    # Wrong order
+    with pytest.raises(HTTPException):
+        request_model(datetime="2020-01-02T00:00:00.00001Z/2020-01-01T00:00:00.00001Z")
 
     app = FastAPI()
 
@@ -92,6 +103,9 @@ def test_create_post_request_model(filter_val, passes):
         assert model.filter_crs == "epsg:4326"
         assert model.filter == filter_val
         assert model.datetime == "2020-01-01T00:00:00.00001Z"
+
+    with pytest.raises(ValidationError):
+        request_model(datetime="yo")
 
 
 @pytest.mark.parametrize(
