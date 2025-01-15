@@ -10,59 +10,28 @@ from stac_pydantic.api.search import SearchDatetime
 from stac_pydantic.shared import BBox
 from typing_extensions import Annotated
 
-from stac_fastapi.types.rfc3339 import str_to_interval
 from stac_fastapi.types.search import (
     APIRequest,
+    DatetimeMixin,
+    DateTimeQueryType,
     Limit,
     _bbox_converter,
+    _validate_datetime,
 )
 
 
 @attr.s
-class BaseCollectionSearchGetRequest(APIRequest):
+class BaseCollectionSearchGetRequest(APIRequest, DatetimeMixin):
     """Basics additional Collection-Search parameters for the GET request."""
 
     bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
-    datetime: Annotated[
-        Optional[str],
-        Query(
-            description="""Only return items that have a temporal property that intersects this value.\n
-Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
-            openapi_examples={
-                "datetime": {"value": "2018-02-12T23:20:50Z"},
-                "closed-interval": {"value": "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"},
-                "open-interval-from": {"value": "2018-02-12T00:00:00Z/.."},
-                "open-interval-to": {"value": "../2018-03-18T12:31:12Z"},
-            },
-        ),
-    ] = attr.ib(default=None)
+    datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
     limit: Annotated[
         Optional[Limit],
         Query(
             description="Limits the number of results that are included in each page of the response."  # noqa: E501
         ),
     ] = attr.ib(default=10)
-
-    @datetime.validator
-    def validate_datetime(self, attribute, value):
-        """Validate Datetime."""
-        _ = str_to_interval(value)
-
-    @property
-    def start_date(self) -> Optional[dt]:
-        """Start Date."""
-        if self.datetime is None:
-            return self.datetime
-        interval = str_to_interval(self.datetime)
-        return interval if isinstance(interval, dt) else interval[0]
-
-    @property
-    def end_date(self) -> Optional[dt]:
-        """End Date."""
-        if self.datetime is None:
-            return self.datetime
-        interval = str_to_interval(self.datetime)
-        return interval[1] if isinstance(interval, tuple) else None
 
 
 class BaseCollectionSearchPostRequest(BaseModel):

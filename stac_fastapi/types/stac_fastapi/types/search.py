@@ -83,6 +83,11 @@ def _bbox_converter(
     return str2bbox(val)
 
 
+def _validate_datetime(instance, attribute, value):
+    """Validate Datetime."""
+    _ = str_to_interval(value)
+
+
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
 Limit = Annotated[PositiveInt, AfterValidator(crop)]
@@ -98,8 +103,46 @@ class APIRequest:
         return self.__dict__
 
 
+DateTimeQueryType = Annotated[
+    Optional[str],
+    Query(
+        description="""Only return items that have a temporal property that intersects this value.\n
+Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
+        openapi_examples={
+            "datetime": {"value": "2018-02-12T23:20:50Z"},
+            "closed-interval": {"value": "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"},
+            "open-interval-from": {"value": "2018-02-12T00:00:00Z/.."},
+            "open-interval-to": {"value": "../2018-03-18T12:31:12Z"},
+        },
+    ),
+]
+
+
 @attr.s
-class BaseSearchGetRequest(APIRequest):
+class DatetimeMixin:
+    """Datetime Mixin."""
+
+    datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
+
+    @property
+    def start_date(self) -> Optional[dt]:
+        """Start Date."""
+        if self.datetime is None:
+            return self.datetime
+        interval = str_to_interval(self.datetime)
+        return interval if isinstance(interval, dt) else interval[0]
+
+    @property
+    def end_date(self) -> Optional[dt]:
+        """End Date."""
+        if self.datetime is None:
+            return self.datetime
+        interval = str_to_interval(self.datetime)
+        return interval[1] if isinstance(interval, tuple) else None
+
+
+@attr.s
+class BaseSearchGetRequest(APIRequest, DatetimeMixin):
     """Base arguments for GET Request."""
 
     collections: Optional[List[str]] = attr.ib(
@@ -152,46 +195,13 @@ class BaseSearchGetRequest(APIRequest):
             },
         ),
     ] = attr.ib(default=None)
-    datetime: Annotated[
-        Optional[str],
-        Query(
-            description="""Only return items that have a temporal property that intersects this value.\n
-Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
-            openapi_examples={
-                "datetime": {"value": "2018-02-12T23:20:50Z"},
-                "closed-interval": {"value": "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"},
-                "open-interval-from": {"value": "2018-02-12T00:00:00Z/.."},
-                "open-interval-to": {"value": "../2018-03-18T12:31:12Z"},
-            },
-        ),
-    ] = attr.ib(default=None)
+    datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
     limit: Annotated[
         Optional[Limit],
         Query(
             description="Limits the number of results that are included in each page of the response (capped to 10_000)."  # noqa: E501
         ),
     ] = attr.ib(default=10)
-
-    @datetime.validator
-    def validate_datetime(self, attribute, value):
-        """Validate Datetime."""
-        _ = str_to_interval(value)
-
-    @property
-    def start_date(self) -> Optional[dt]:
-        """Start Date."""
-        if self.datetime is None:
-            return self.datetime
-        interval = str_to_interval(self.datetime)
-        return interval if isinstance(interval, dt) else interval[0]
-
-    @property
-    def end_date(self) -> Optional[dt]:
-        """End Date."""
-        if self.datetime is None:
-            return self.datetime
-        interval = str_to_interval(self.datetime)
-        return interval[1] if isinstance(interval, tuple) else None
 
 
 class BaseSearchPostRequest(Search):
