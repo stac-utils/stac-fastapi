@@ -169,6 +169,20 @@ def test_replace_header_value_by_name(
             },
             ("https", "second-server", 1111),
         ),
+        (
+            {
+                "scheme": "http",
+                "server": ["testserver", 80],
+                "headers": [
+                    (
+                        b"forwarded",
+                        # check when host and port are inverted
+                        b"host=test:1234;proto=https",
+                    )
+                ],
+            },
+            ("https", "test", 1234),
+        ),
     ],
 )
 def test_get_forwarded_url_parts(

@@ -68,14 +68,16 @@ class ProxyHeaderMiddleware:
                         proto == "https" and port != HTTPS_PORT
                     ):
                         port_suffix = f":{port}"
+
                 scope["headers"] = self._replace_header_value_by_name(
                     scope,
                     "host",
                     f"{domain}{port_suffix}",
                 )
+
         await self.app(scope, receive, send)
 
-    def _get_forwarded_url_parts(self, scope: Scope) -> Tuple[str]:  # noqa: C901
+    def _get_forwarded_url_parts(self, scope: Scope) -> Tuple[str]:
         proto = scope.get("scheme", "http")
         header_host = self._get_header_value_by_name(scope, "host")
         if header_host is None:
@@ -87,35 +89,28 @@ class ProxyHeaderMiddleware:
             else:
                 domain = header_host_parts[0]
                 port = None
-        forwarded = self._get_header_value_by_name(scope, "forwarded")
-        if forwarded is not None:
-            proxy_servers = forwarded.split(",")  # values from the last server are used
-            for proxy_server in proxy_servers:
-                parts = proxy_server.split(";")
-                for part in parts:
-                    if len(part) > 0 and re.search("=", part):
-                        key, value = part.split("=")
-                        if key == "proto":
-                            proto = value
-                        elif key == "host":
-                            host_parts = value.split(":")
-                            domain = host_parts[0]
-                            try:
-                                port = (
-                                    int(host_parts[1]) if len(host_parts) == 2 else None
-                                )
-                            except ValueError:
-                                # ignore ports that are not valid integers
-                                pass
+
+        if forwarded := self._get_header_value_by_name(scope, "forwarded"):
+            for proxy in forwarded.split(","):
+                if (proto_expr := re.search(r"proto=(?P<proto>http(s)?)", proxy)) and (
+                    host_expr := re.search(
+                        r"host=(?P<host>[\w.-]+)(:(?P<port>\w+))?", proxy
+                    )
+                ):
+                    proto = proto_expr.groupdict()["proto"]
+                    domain = host_expr.groupdict()["host"]
+                    port_str = host_expr.groupdict().get("port", None)
+
         else:
             domain = self._get_header_value_by_name(scope, "x-forwarded-host", domain)
             proto = self._get_header_value_by_name(scope, "x-forwarded-proto", proto)
             port_str = self._get_header_value_by_name(scope, "x-forwarded-port", port)
-            try:
-                port = int(port_str) if port_str is not None else None
-            except ValueError:
-                # ignore ports that are not valid integers
-                pass
+
+        try:
+            port = int(port_str) if port_str is not None else None
+        except ValueError:
+            # ignore ports that are not valid integers
+            pass
 
         return (proto, domain, port)
 
