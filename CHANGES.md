@@ -2,10 +2,14 @@
 
 ## [Unreleased]
 
-## Changed
+### Changed
 
 * use `string` type instead of python `datetime.datetime` for datetime parameter in `BaseSearchGetRequest`, `ItemCollectionUri` and `BaseCollectionSearchGetRequest` GET models
 * rename `filter` to `filter_expr` for `FilterExtensionGetRequest` and `FilterExtensionPostRequest` attributes to avoid conflict with python filter method
+
+### Fixed
+
+* Support multiple proxy servers in the `forwarded` header in `ProxyHeaderMiddleware` ([#782](https://github.com/stac-utils/stac-fastapi/pull/782))
 
 ## [3.0.5] - 2025-01-10
 
