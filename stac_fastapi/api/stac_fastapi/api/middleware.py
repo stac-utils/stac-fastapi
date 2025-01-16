@@ -94,7 +94,7 @@ class ProxyHeaderMiddleware:
             for proxy in forwarded.split(","):
                 if (proto_expr := re.search(r"proto=(?P<proto>http(s)?)", proxy)) and (
                     host_expr := re.search(
-                        r"host=(?P<host>[\w.-]+)(:(?P<port>\w+))?", proxy
+                        r"host=(?P<host>[\w.-]+)(:(?P<port>\d{1,5}))?", proxy
                     )
                 ):
                     proto = proto_expr.groupdict()["proto"]
@@ -107,7 +107,7 @@ class ProxyHeaderMiddleware:
             port_str = self._get_header_value_by_name(scope, "x-forwarded-port", port)
 
         try:
-            port = int(port_str) if port_str is not None else None
+            port = int(port_str) if port_str is not None else port
         except ValueError:
             # ignore ports that are not valid integers
             pass
