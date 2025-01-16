@@ -155,6 +155,20 @@ def test_replace_header_value_by_name(
             },
             ("https", "test", 1234),
         ),
+        (
+            {
+                "scheme": "http",
+                "server": ["testserver", 80],
+                "headers": [
+                    (
+                        b"forwarded",
+                        # two proxy servers added an entry, we want to use the last one
+                        b"proto=https;host=test:1234,proto=https;host=second-server:1111",
+                    )
+                ],
+            },
+            ("https", "second-server", 1111),
+        ),
     ],
 )
 def test_get_forwarded_url_parts(

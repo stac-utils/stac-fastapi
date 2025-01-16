@@ -75,7 +75,7 @@ class ProxyHeaderMiddleware:
                 )
         await self.app(scope, receive, send)
 
-    def _get_forwarded_url_parts(self, scope: Scope) -> Tuple[str]:
+    def _get_forwarded_url_parts(self, scope: Scope) -> Tuple[str]:  # noqa: C901
         proto = scope.get("scheme", "http")
         header_host = self._get_header_value_by_name(scope, "host")
         if header_host is None:
@@ -89,20 +89,24 @@ class ProxyHeaderMiddleware:
                 port = None
         forwarded = self._get_header_value_by_name(scope, "forwarded")
         if forwarded is not None:
-            parts = forwarded.split(";")
-            for part in parts:
-                if len(part) > 0 and re.search("=", part):
-                    key, value = part.split("=")
-                    if key == "proto":
-                        proto = value
-                    elif key == "host":
-                        host_parts = value.split(":")
-                        domain = host_parts[0]
-                        try:
-                            port = int(host_parts[1]) if len(host_parts) == 2 else None
-                        except ValueError:
-                            # ignore ports that are not valid integers
-                            pass
+            proxy_servers = forwarded.split(",")  # values from the last server are used
+            for proxy_server in proxy_servers:
+                parts = proxy_server.split(";")
+                for part in parts:
+                    if len(part) > 0 and re.search("=", part):
+                        key, value = part.split("=")
+                        if key == "proto":
+                            proto = value
+                        elif key == "host":
+                            host_parts = value.split(":")
+                            domain = host_parts[0]
+                            try:
+                                port = (
+                                    int(host_parts[1]) if len(host_parts) == 2 else None
+                                )
+                            except ValueError:
+                                # ignore ports that are not valid integers
+                                pass
         else:
             domain = self._get_header_value_by_name(scope, "x-forwarded-host", domain)
             proto = self._get_header_value_by_name(scope, "x-forwarded-proto", proto)
