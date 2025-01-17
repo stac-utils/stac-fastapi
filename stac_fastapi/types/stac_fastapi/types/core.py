@@ -1,7 +1,6 @@
 """Base clients."""
 
 import abc
-import warnings
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
@@ -341,20 +340,6 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         factory=lambda: BASE_CONFORMANCE_CLASSES
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    post_request_model = attr.ib(default=None)
-
-    @post_request_model.validator
-    def _deprecate_post_model(self, attribute, value):
-        """Check and raise warning if `post_request_model` is set."""
-        if value is not None:
-            warnings.warn(
-                "`post_request_model` attribute is deprecated and will be removed in 3.1",
-                DeprecationWarning,
-            )
-
-    def __attrs_post_init__(self):
-        """Set default value for post_request_model."""
-        self.post_request_model = self.post_request_model or BaseSearchPostRequest
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base
@@ -586,20 +571,6 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         factory=lambda: BASE_CONFORMANCE_CLASSES
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    post_request_model = attr.ib(default=None)
-
-    @post_request_model.validator
-    def _deprecate_post_model(self, attribute, value):
-        """Check and raise warning if `post_request_model` is set."""
-        if value is not None:
-            warnings.warn(
-                "`post_request_model` attribute is deprecated and will be removed in 3.1",
-                DeprecationWarning,
-            )
-
-    def __attrs_post_init__(self):
-        """Set default value for post_request_model."""
-        self.post_request_model = self.post_request_model or BaseSearchPostRequest
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base
