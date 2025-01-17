@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [3.1.0] - 2025-01-17
+
 ## Changed
 
 * use `string` type instead of python `datetime.datetime` for datetime parameter in `BaseSearchGetRequest`, `ItemCollectionUri` and `BaseCollectionSearchGetRequest` GET models
@@ -520,7 +522,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.5..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.1.0..main>
+[3.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.5..3.1.0>
 [3.0.5]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.4..3.0.5>
 [3.0.4]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.3..3.0.4>
 [3.0.3]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.2..3.0.3>
