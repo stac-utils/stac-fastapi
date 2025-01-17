@@ -5,6 +5,7 @@
 ## Changed
 
 * use `string` type instead of python `datetime.datetime` for datetime parameter in `BaseSearchGetRequest`, `ItemCollectionUri` and `BaseCollectionSearchGetRequest` GET models
+* rename `filter` to `filter_expr` for `FilterExtensionGetRequest` and `FilterExtensionPostRequest` attributes to avoid conflict with python filter method
 
 ## [3.0.5] - 2025-01-10
 

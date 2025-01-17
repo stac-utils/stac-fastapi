@@ -185,7 +185,7 @@ def test_collection_search_extension_models():
         assert "datetime" in response_dict
         assert "limit" in response_dict
         assert "q" in response_dict
-        assert "filter" in response_dict
+        assert "filter_expr" in response_dict
         assert "query" in response_dict
         assert "sortby" in response_dict
         assert "fields" in response_dict
@@ -211,7 +211,9 @@ def test_collection_search_extension_models():
         assert "2020-06-13T13:00:00Z/2020-06-13T14:00:00Z" == response_dict["datetime"]
         assert 100 == response_dict["limit"]
         assert ["EO", "Earth Observation"] == response_dict["q"]
-        assert "id='item_id' AND collection='collection_id'" == response_dict["filter"]
+        assert (
+            "id='item_id' AND collection='collection_id'" == response_dict["filter_expr"]
+        )
         assert "filter_crs" in response_dict
         assert "cql2-text" in response_dict["filter_lang"]
         assert "query" in response_dict
@@ -347,7 +349,7 @@ def test_collection_search_extension_post_models():
         assert "datetime" in response_dict
         assert "limit" in response_dict
         assert "q" in response_dict
-        assert "filter" in response_dict
+        assert "filter_expr" in response_dict
         assert "query" in response_dict
         assert "sortby" in response_dict
         assert "fields" in response_dict
@@ -388,7 +390,7 @@ def test_collection_search_extension_post_models():
         assert "2020-06-13T13:00:00Z/2020-06-13T14:00:00Z" == response_dict["datetime"]
         assert 10_000 == response_dict["limit"]
         assert ["EO", "Earth Observation"] == response_dict["q"]
-        assert response_dict["filter"]
+        assert response_dict["filter_expr"]
         assert "filter_crs" in response_dict
         assert "cql2-json" in response_dict["filter_lang"]
         assert response_dict["query"]
@@ -433,7 +435,7 @@ def test_from_extensions_methods(extensions):
     assert hasattr(collection_search, "fields")
     assert hasattr(collection_search, "q")
     assert hasattr(collection_search, "sortby")
-    assert hasattr(collection_search, "filter")
+    assert hasattr(collection_search, "filter_expr")
     assert ext.conformance_classes == [
         ConformanceClasses.COLLECTIONSEARCH,
         ConformanceClasses.BASIS,
@@ -457,7 +459,7 @@ def test_from_extensions_methods(extensions):
     assert hasattr(collection_search, "fields")
     assert hasattr(collection_search, "q")
     assert hasattr(collection_search, "sortby")
-    assert hasattr(collection_search, "filter")
+    assert hasattr(collection_search, "filter_expr")
     assert ext.conformance_classes == [
         ConformanceClasses.COLLECTIONSEARCH,
         ConformanceClasses.BASIS,

@@ -57,6 +57,7 @@ def test_search_filter_post_filter_lang_default(client: TestClient):
     )
     assert response.is_success, response.json()
     response_dict = response.json()
+    assert response_dict["filter_expr"]
     assert response_dict["filter_lang"] == "cql2-json"
 
 
@@ -73,6 +74,7 @@ def test_search_filter_post_filter_lang_non_default(client: TestClient):
     )
     assert response.is_success, response.json()
     response_dict = response.json()
+    assert response_dict["filter_expr"]
     assert response_dict["filter_lang"] == filter_lang_value
 
 
@@ -87,7 +89,7 @@ def test_search_filter_get(client: TestClient):
     assert response.is_success, response.json()
     response_dict = response.json()
     assert not response_dict["collections"]
-    assert response_dict["filter"] == "id='item_id' AND collection='collection_id'"
+    assert response_dict["filter_expr"] == "id='item_id' AND collection='collection_id'"
     assert not response_dict["filter_crs"]
     assert response_dict["filter_lang"] == "cql2-text"
 
@@ -102,7 +104,7 @@ def test_search_filter_get(client: TestClient):
     response_dict = response.json()
     assert not response_dict["collections"]
     assert (
-        response_dict["filter"]
+        response_dict["filter_expr"]
         == "{'op': '=', 'args': [{'property': 'id'}, 'test-item']}"
     )
     assert not response_dict["filter_crs"]

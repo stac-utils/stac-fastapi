@@ -126,7 +126,7 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
             self, search_request: BaseSearchPostRequest, **kwargs
         ) -> stac.ItemCollection:
             search_request.collections = ["test"]
-            search_request.filter = {}
+            search_request.filter_expr = {}
             search_request.filter_crs = "EPSG:4326"
             search_request.filter_lang = "cql2-text"
 
@@ -142,23 +142,14 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
             intersects: Optional[str] = None,
             datetime: Optional[str] = None,
             limit: Optional[int] = 10,
-            filter: Optional[str] = None,
+            filter_expr: Optional[str] = None,
             filter_crs: Optional[str] = None,
             filter_lang: Optional[str] = None,
             **kwargs,
         ) -> stac.ItemCollection:
-            # Check if all filter parameters are passed correctly
-
-            assert filter == "TEST"
-
-            # FIXME: https://github.com/stac-utils/stac-fastapi/issues/638
-            # hyphen alias for filter_crs and filter_lang are currently not working
-            # Query parameters `filter-crs` and `filter-lang`
-            # should be recognized by the API
-            # They are present in the `request.query_params` but not in the `kwargs`
-
-            # assert filter_crs == "EPSG:4326"
-            # assert filter_lang == "cql2-text"
+            assert filter_expr == "TEST"
+            assert filter_crs == "EPSG:4326"
+            assert filter_lang == "cql2-text"
 
             return stac.ItemCollection(
                 type="FeatureCollection", features=[stac.Item(**item_dict)]
