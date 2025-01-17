@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## Changed
+
+* use `string` type instead of python `datetime.datetime` for datetime parameter in `BaseSearchGetRequest`, `ItemCollectionUri` and `BaseCollectionSearchGetRequest` GET models
+
 ## [3.0.5] - 2025-01-10
 
 ### Removed

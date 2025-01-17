@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List, Optional, Union
 
 import attr
@@ -141,7 +140,7 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
             ids: Optional[List[str]] = None,
             bbox: Optional[List[NumType]] = None,
             intersects: Optional[str] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[str] = None,
             limit: Optional[int] = 10,
             filter: Optional[str] = None,
             filter_crs: Optional[str] = None,
@@ -221,7 +220,7 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
             ids: Optional[List[str]] = None,
             bbox: Optional[List[NumType]] = None,
             intersects: Optional[str] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[str] = None,
             limit: Optional[int] = 10,
             **kwargs,
         ) -> stac.ItemCollection:
@@ -247,7 +246,7 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
             self,
             collection_id: str,
             bbox: Optional[List[Union[float, int]]] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[str] = None,
             limit: int = 10,
             token: str = None,
             **kwargs,
@@ -392,6 +391,7 @@ def test_client_datetime_input_params():
 
     class FakeClient(BaseCoreClient):
         def post_search(self, search_request: BaseSearchPostRequest, **kwargs):
+            assert isinstance(search_request.datetime, str)
             return search_request.datetime
 
         def get_search(
@@ -400,10 +400,11 @@ def test_client_datetime_input_params():
             ids: Optional[List[str]] = None,
             bbox: Optional[List[NumType]] = None,
             intersects: Optional[str] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[str] = None,
             limit: Optional[int] = 10,
             **kwargs,
         ):
+            assert isinstance(datetime, str)
             return datetime
 
         def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
@@ -419,7 +420,7 @@ def test_client_datetime_input_params():
             self,
             collection_id: str,
             bbox: Optional[List[Union[float, int]]] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[str] = None,
             limit: int = 10,
             token: str = None,
             **kwargs,
@@ -439,6 +440,13 @@ def test_client_datetime_input_params():
                 "datetime": "2020-01-01T00:00:00.00001Z",
             },
         )
+        get_search_zero = client.get(
+            "/search",
+            params={
+                "collections": ["test"],
+                "datetime": "2020-01-01T00:00:00.0000Z",
+            },
+        )
         post_search = client.post(
             "/search",
             json={
@@ -446,9 +454,20 @@ def test_client_datetime_input_params():
                 "datetime": "2020-01-01T00:00:00.00001Z",
             },
         )
+        post_search_zero = client.post(
+            "/search",
+            json={
+                "collections": ["test"],
+                "datetime": "2020-01-01T00:00:00.0000Z",
+            },
+        )
 
     assert get_search.status_code == 200, get_search.text
-    assert get_search.json() == "2020-01-01T00:00:00.000010+00:00"
+    assert get_search.json() == "2020-01-01T00:00:00.00001Z"
+    assert get_search_zero.status_code == 200, get_search_zero.text
+    assert get_search_zero.json() == "2020-01-01T00:00:00.0000Z"
 
     assert post_search.status_code == 200, post_search.text
     assert post_search.json() == "2020-01-01T00:00:00.00001Z"
+    assert post_search_zero.status_code == 200, post_search_zero.text
+    assert post_search_zero.json() == "2020-01-01T00:00:00.0000Z"

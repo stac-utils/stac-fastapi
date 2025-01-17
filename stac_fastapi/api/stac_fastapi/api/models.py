@@ -9,14 +9,15 @@ from stac_pydantic.shared import BBox
 from typing_extensions import Annotated
 
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import (
     APIRequest,
     BaseSearchGetRequest,
     BaseSearchPostRequest,
+    DatetimeMixin,
+    DateTimeQueryType,
     Limit,
     _bbox_converter,
-    _datetime_converter,
+    _validate_datetime,
 )
 
 try:
@@ -110,7 +111,7 @@ class EmptyRequest(APIRequest):
 
 
 @attr.s
-class ItemCollectionUri(APIRequest):
+class ItemCollectionUri(APIRequest, DatetimeMixin):
     """Get item collection."""
 
     collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
@@ -121,9 +122,7 @@ class ItemCollectionUri(APIRequest):
         ),
     ] = attr.ib(default=10)
     bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
-    datetime: Optional[DateTimeType] = attr.ib(
-        default=None, converter=_datetime_converter
-    )
+    datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
 
 
 class GeoJSONResponse(JSONResponse):
