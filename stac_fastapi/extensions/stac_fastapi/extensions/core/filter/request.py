@@ -16,9 +16,10 @@ FilterLang = Literal["cql-json", "cql2-json", "cql2-text"]
 class FilterExtensionGetRequest(APIRequest):
     """Filter extension GET request model."""
 
-    filter: Annotated[
+    filter_expr: Annotated[
         Optional[str],
         Query(
+            alias="filter",
             description="""A CQL filter expression for filtering items.\n
 Supports `CQL-JSON` as defined in https://portal.ogc.org/files/96288\n
 Remember to URL encode the CQL-JSON if using GET""",
@@ -46,8 +47,9 @@ Remember to URL encode the CQL-JSON if using GET""",
 class FilterExtensionPostRequest(BaseModel):
     """Filter extension POST request model."""
 
-    filter: Optional[Dict[str, Any]] = Field(
+    filter_expr: Optional[Dict[str, Any]] = Field(
         default=None,
+        alias="filter",
         description="A CQL filter expression for filtering items.",
         json_schema_extra={
             "example": {

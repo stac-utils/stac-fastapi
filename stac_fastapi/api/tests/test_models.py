@@ -28,12 +28,13 @@ def test_create_get_request_model():
         ),
         datetime="2020-01-01T00:00:00.00001Z",
         limit=10,
-        filter="test==test",
+        filter_expr="test==test",
         filter_crs="epsg:4326",
         filter_lang="cql2-text",
     )
 
     assert model.collections == ["test1", "test2"]
+    assert model.filter_expr == "test==test"
     assert model.filter_crs == "epsg:4326"
     d = model.start_date
     assert d.microsecond == 10
@@ -64,6 +65,7 @@ def test_create_get_request_model():
             "/test",
             params={
                 "collections": "test1,test2",
+                "filter": "test=test",
                 "filter-crs": "epsg:4326",
                 "filter-lang": "cql2-text",
             },
@@ -71,6 +73,7 @@ def test_create_get_request_model():
         assert resp.status_code == 200
         response_dict = resp.json()
         assert response_dict["collections"] == ["test1", "test2"]
+        assert response_dict["filter_expr"] == "test=test"
         assert response_dict["filter_crs"] == "epsg:4326"
         assert response_dict["filter_lang"] == "cql2-text"
 
@@ -89,19 +92,22 @@ def test_create_post_request_model(filter_val, passes):
         with pytest.raises(ValidationError):
             model = request_model(filter=filter_val)
     else:
-        model = request_model(
-            collections=["test1", "test2"],
-            ids=["test1", "test2"],
-            bbox=[0, 0, 1, 1],
-            datetime="2020-01-01T00:00:00.00001Z",
-            limit=10,
-            filter=filter_val,
-            **{"filter-crs": "epsg:4326", "filter-lang": "cql2-json"},
+        model = request_model.model_validate(
+            {
+                "collections": ["test1", "test2"],
+                "ids": ["test1", "test2"],
+                "bbox": [0, 0, 1, 1],
+                "datetime": "2020-01-01T00:00:00.00001Z",
+                "limit": 10,
+                "filter": filter_val,
+                "filter-crs": "epsg:4326",
+                "filter-lang": "cql2-json",
+            }
         )
 
         assert model.collections == ["test1", "test2"]
+        assert model.filter_expr == filter_val
         assert model.filter_crs == "epsg:4326"
-        assert model.filter == filter_val
         assert model.datetime == "2020-01-01T00:00:00.00001Z"
 
     with pytest.raises(ValidationError):
