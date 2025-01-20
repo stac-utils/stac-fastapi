@@ -80,6 +80,7 @@ nav:
           - version: api/stac_fastapi/types/version.md
   - Migration Guides:
     - v2.5 -> v3.0: migrations/v3.0.0.md
+    - v3.0 -> v4.0: migrations/v4.0.0.md
   - Performance Benchmarks: benchmarks.html
   - Development - Contributing: "contributing.md"
   - Release Notes: "release-notes.md"
