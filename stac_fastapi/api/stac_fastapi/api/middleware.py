@@ -4,7 +4,7 @@ import contextlib
 import re
 import typing
 from http.client import HTTP_PORT, HTTPS_PORT
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from starlette.middleware.cors import CORSMiddleware as _CORSMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
@@ -116,8 +116,8 @@ class ProxyHeaderMiddleware:
         return (proto, domain, port)
 
     def _get_header_value_by_name(
-        self, scope: Scope, header_name: str, default_value: str | None = None
-    ) -> str | None:
+        self, scope: Scope, header_name: str, default_value: Optional[str] = None
+    ) -> Optional[str]:
         headers = scope["headers"]
         candidates = [
             value.decode() for key, value in headers if key.decode() == header_name
