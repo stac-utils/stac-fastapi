@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+* support `forwarded` headers in `ProxyHeaderMiddleware` that do not contain a host key ([#788](https://github.com/stac-utils/stac-fastapi/pull/788))
+
 ## [4.0.0] - 2025-01-17
 
 ### Changed
