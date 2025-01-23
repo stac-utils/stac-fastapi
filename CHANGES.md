@@ -4,7 +4,7 @@
 
 ### Fixed
 
-* support `forwarded` headers in `ProxyHeaderMiddleware` that do not contain a host key ([#782](https://github.com/stac-utils/stac-fastapi/pull/788))
+* support `forwarded` headers in `ProxyHeaderMiddleware` that do not contain a host key ([#788](https://github.com/stac-utils/stac-fastapi/pull/788))
 
 ## [4.0.0] - 2025-01-17
 
