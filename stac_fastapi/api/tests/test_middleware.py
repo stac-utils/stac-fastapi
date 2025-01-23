@@ -183,6 +183,20 @@ def test_replace_header_value_by_name(
             },
             ("https", "test", 1234),
         ),
+        (
+            {
+                "scheme": "http",
+                "server": ["testserver", 80],
+                "headers": [
+                    (
+                        b"forwarded",
+                        # proto is set, but no host
+                        b'for="85.193.181.55";proto=https,for="85.193.181.55";proto=https',
+                    )
+                ],
+            },
+            ("https", "testserver", 80),
+        ),
     ],
 )
 def test_get_forwarded_url_parts(
