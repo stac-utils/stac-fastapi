@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- sort conformance classes
+
 ## [4.0.0] - 2025-01-17
 
 ### Changed
