@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## [Unreleased]
+
+### Changed
+
+- sort conformance classes
 
 ### Fixed
 

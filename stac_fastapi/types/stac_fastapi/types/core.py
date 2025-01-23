@@ -350,7 +350,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
             extension_classes = getattr(extension, "conformance_classes", [])
             base_conformance_classes.extend(extension_classes)
 
-        return list(set(base_conformance_classes))
+        return sorted(list(set(base_conformance_classes)))
 
     def extension_is_enabled(self, extension: str) -> bool:
         """Check if an api extension is enabled."""
@@ -581,7 +581,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             extension_classes = getattr(extension, "conformance_classes", [])
             conformance_classes.extend(extension_classes)
 
-        return list(set(conformance_classes))
+        return sorted(list(set(conformance_classes)))
 
     def extension_is_enabled(self, extension: str) -> bool:
         """Check if an api extension is enabled."""
