@@ -2,10 +2,13 @@
 
 ## [Unreleased]
 
+### Changed
+
 - refactored conformance classes for extensions
 
   - renamed `collection_search.ConformanceClasses` -> `collection_search.CollectionSearchConformanceClasses`
-  - `collection_search.CollectionSearchPostExtension.from_extension(ext)` method will now use the conformance classes from the input extensions to derived the output conformance classes.
+  - removed `FREETEXT`, `FILTER`, `QUERY`, `SORT` and `FIELDS` entries from the `CollectionSearchConformanceClasses` Enum (and moved to each extension's Enum)
+  - changed `collection_search.CollectionSearchPostExtension.from_extension(ext)` to use the conformance classes from the input extensions to derive the output conformance classes.
   - added `fields.FieldsConformanceClasses` Enum
   - renamed `filter.FilterConformanceClasses.FEATURES_FILTER` -> `filter.FilterConformanceClasses.ITEMS`
   - renamed `filter.FilterConformanceClasses.ITEM_SEARCH_FILTER` -> `filter.FilterConformanceClasses.SEARCH`
