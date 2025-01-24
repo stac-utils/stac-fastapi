@@ -1,5 +1,6 @@
 """Transaction extension."""
 
+from enum import Enum
 from typing import List, Optional, Type, Union
 
 import attr
@@ -14,6 +15,17 @@ from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
+
+
+class TransactionConformanceClasses(str, Enum):
+    """Conformance classes for the Transaction extension.
+
+    See https://github.com/stac-api-extensions/transaction
+
+    """
+
+    ITEMS = "https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction"
+    COLLECTIONS = "https://api.stacspec.org/v1.0.0/collections/extensions/transaction"
 
 
 @attr.s
@@ -62,8 +74,8 @@ class TransactionExtension(ApiExtension):
     settings: ApiSettings = attr.ib()
     conformance_classes: List[str] = attr.ib(
         factory=lambda: [
-            "https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction",
-            "https://api.stacspec.org/v1.0.0/collections/extensions/transaction",
+            TransactionConformanceClasses.ITEMS,
+            TransactionConformanceClasses.COLLECTIONS,
         ]
     )
     schema_href: Optional[str] = attr.ib(default=None)

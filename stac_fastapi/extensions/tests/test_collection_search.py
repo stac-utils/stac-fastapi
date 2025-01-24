@@ -10,15 +10,17 @@ from stac_fastapi.api.models import create_request_model
 from stac_fastapi.extensions.core import (
     AggregationExtension,
     CollectionSearchExtension,
+    CollectionSearchFilterExtension,
     CollectionSearchPostExtension,
     FieldsExtension,
-    FilterExtension,
     FreeTextAdvancedExtension,
     FreeTextExtension,
     QueryExtension,
     SortExtension,
 )
-from stac_fastapi.extensions.core.collection_search import ConformanceClasses
+from stac_fastapi.extensions.core.collection_search import (
+    CollectionSearchConformanceClasses,
+)
 from stac_fastapi.extensions.core.collection_search.client import (
     BaseCollectionSearchClient,
 )
@@ -26,22 +28,27 @@ from stac_fastapi.extensions.core.collection_search.request import (
     BaseCollectionSearchGetRequest,
     BaseCollectionSearchPostRequest,
 )
+from stac_fastapi.extensions.core.fields import FieldsConformanceClasses
 from stac_fastapi.extensions.core.fields.request import (
     FieldsExtensionGetRequest,
     FieldsExtensionPostRequest,
 )
+from stac_fastapi.extensions.core.filter import FilterConformanceClasses
 from stac_fastapi.extensions.core.filter.request import (
     FilterExtensionGetRequest,
     FilterExtensionPostRequest,
 )
+from stac_fastapi.extensions.core.free_text import FreeTextConformanceClasses
 from stac_fastapi.extensions.core.free_text.request import (
     FreeTextExtensionGetRequest,
     FreeTextExtensionPostRequest,
 )
+from stac_fastapi.extensions.core.query import QueryConformanceClasses
 from stac_fastapi.extensions.core.query.request import (
     QueryExtensionGetRequest,
     QueryExtensionPostRequest,
 )
+from stac_fastapi.extensions.core.sort import SortConformanceClasses
 from stac_fastapi.extensions.core.sort.request import (
     SortExtensionGetRequest,
     SortExtensionPostRequest,
@@ -148,13 +155,13 @@ def test_collection_search_extension_models():
             CollectionSearchExtension(
                 GET=collections_get_request_model,
                 conformance_classes=[
-                    ConformanceClasses.COLLECTIONSEARCH,
-                    ConformanceClasses.BASIS,
-                    ConformanceClasses.FREETEXT,
-                    ConformanceClasses.FILTER,
-                    ConformanceClasses.QUERY,
-                    ConformanceClasses.SORT,
-                    ConformanceClasses.FIELDS,
+                    CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+                    CollectionSearchConformanceClasses.BASIS,
+                    FieldsConformanceClasses.COLLECTIONS,
+                    FilterConformanceClasses.COLLECTIONS,
+                    FreeTextConformanceClasses.COLLECTIONS,
+                    QueryConformanceClasses.COLLECTIONS,
+                    SortConformanceClasses.COLLECTIONS,
                 ],
             )
         ],
@@ -311,13 +318,13 @@ def test_collection_search_extension_post_models():
                 GET=get_request_model,
                 POST=post_request_model,
                 conformance_classes=[
-                    ConformanceClasses.COLLECTIONSEARCH,
-                    ConformanceClasses.BASIS,
-                    ConformanceClasses.FREETEXT,
-                    ConformanceClasses.FILTER,
-                    ConformanceClasses.QUERY,
-                    ConformanceClasses.SORT,
-                    ConformanceClasses.FIELDS,
+                    CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+                    CollectionSearchConformanceClasses.BASIS,
+                    FieldsConformanceClasses.COLLECTIONS,
+                    FilterConformanceClasses.COLLECTIONS,
+                    FreeTextConformanceClasses.COLLECTIONS,
+                    QueryConformanceClasses.COLLECTIONS,
+                    SortConformanceClasses.COLLECTIONS,
                 ],
             )
         ],
@@ -403,19 +410,23 @@ def test_collection_search_extension_post_models():
     [
         # with FreeTextExtension
         [
-            FieldsExtension(),
-            FilterExtension(),
-            FreeTextExtension(),
-            QueryExtension(),
-            SortExtension(),
+            FieldsExtension(conformance_classes=[FieldsConformanceClasses.COLLECTIONS]),
+            CollectionSearchFilterExtension(),
+            FreeTextExtension(
+                conformance_classes=[FreeTextConformanceClasses.COLLECTIONS]
+            ),
+            QueryExtension(conformance_classes=[QueryConformanceClasses.COLLECTIONS]),
+            SortExtension(conformance_classes=[SortConformanceClasses.COLLECTIONS]),
         ],
         # with FreeTextAdvancedExtension
         [
-            FieldsExtension(),
-            FilterExtension(),
-            FreeTextAdvancedExtension(),
-            QueryExtension(),
-            SortExtension(),
+            FieldsExtension(conformance_classes=[FieldsConformanceClasses.COLLECTIONS]),
+            CollectionSearchFilterExtension(),
+            FreeTextAdvancedExtension(
+                conformance_classes=[FreeTextConformanceClasses.COLLECTIONS]
+            ),
+            QueryExtension(conformance_classes=[QueryConformanceClasses.COLLECTIONS]),
+            SortExtension(conformance_classes=[SortConformanceClasses.COLLECTIONS]),
         ],
     ],
 )
@@ -436,15 +447,20 @@ def test_from_extensions_methods(extensions):
     assert hasattr(collection_search, "q")
     assert hasattr(collection_search, "sortby")
     assert hasattr(collection_search, "filter_expr")
-    assert ext.conformance_classes == [
-        ConformanceClasses.COLLECTIONSEARCH,
-        ConformanceClasses.BASIS,
-        ConformanceClasses.FIELDS,
-        ConformanceClasses.FILTER,
-        ConformanceClasses.FREETEXT,
-        ConformanceClasses.QUERY,
-        ConformanceClasses.SORT,
-    ]
+    for conf in [
+        CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+        CollectionSearchConformanceClasses.BASIS,
+        FieldsConformanceClasses.COLLECTIONS,
+        FilterConformanceClasses.COLLECTIONS,
+        FilterConformanceClasses.FILTER,
+        FilterConformanceClasses.BASIC_CQL2,
+        FilterConformanceClasses.CQL2_JSON,
+        FilterConformanceClasses.CQL2_TEXT,
+        FreeTextConformanceClasses.COLLECTIONS,
+        QueryConformanceClasses.COLLECTIONS,
+        SortConformanceClasses.COLLECTIONS,
+    ]:
+        assert conf in ext.conformance_classes
 
     ext = CollectionSearchPostExtension.from_extensions(
         extensions,
@@ -460,15 +476,20 @@ def test_from_extensions_methods(extensions):
     assert hasattr(collection_search, "q")
     assert hasattr(collection_search, "sortby")
     assert hasattr(collection_search, "filter_expr")
-    assert ext.conformance_classes == [
-        ConformanceClasses.COLLECTIONSEARCH,
-        ConformanceClasses.BASIS,
-        ConformanceClasses.FIELDS,
-        ConformanceClasses.FILTER,
-        ConformanceClasses.FREETEXT,
-        ConformanceClasses.QUERY,
-        ConformanceClasses.SORT,
-    ]
+    for conf in [
+        CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+        CollectionSearchConformanceClasses.BASIS,
+        FieldsConformanceClasses.COLLECTIONS,
+        FilterConformanceClasses.COLLECTIONS,
+        FilterConformanceClasses.FILTER,
+        FilterConformanceClasses.BASIC_CQL2,
+        FilterConformanceClasses.CQL2_JSON,
+        FilterConformanceClasses.CQL2_TEXT,
+        FreeTextConformanceClasses.COLLECTIONS,
+        QueryConformanceClasses.COLLECTIONS,
+        SortConformanceClasses.COLLECTIONS,
+    ]:
+        assert conf in ext.conformance_classes
 
 
 def test_from_extensions_methods_invalid():
@@ -486,10 +507,11 @@ def test_from_extensions_methods_invalid():
     assert hasattr(collection_search, "datetime")
     assert hasattr(collection_search, "limit")
     assert hasattr(collection_search, "aggregations")
-    assert ext.conformance_classes == [
-        ConformanceClasses.COLLECTIONSEARCH,
-        ConformanceClasses.BASIS,
-    ]
+    for conf in [
+        CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+        CollectionSearchConformanceClasses.BASIS,
+    ]:
+        assert conf in ext.conformance_classes
 
     ext = CollectionSearchPostExtension.from_extensions(
         extensions,
@@ -502,7 +524,8 @@ def test_from_extensions_methods_invalid():
     assert hasattr(collection_search, "datetime")
     assert hasattr(collection_search, "limit")
     assert hasattr(collection_search, "aggregations")
-    assert ext.conformance_classes == [
-        ConformanceClasses.COLLECTIONSEARCH,
-        ConformanceClasses.BASIS,
-    ]
+    for conf in [
+        CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+        CollectionSearchConformanceClasses.BASIS,
+    ]:
+        assert conf in ext.conformance_classes

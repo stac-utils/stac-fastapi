@@ -3,7 +3,12 @@
 from .aggregation import AggregationExtension
 from .collection_search import CollectionSearchExtension, CollectionSearchPostExtension
 from .fields import FieldsExtension
-from .filter import FilterExtension
+from .filter import (
+    CollectionSearchFilterExtension,
+    FilterExtension,
+    ItemCollectionFilterExtension,
+    SearchFilterExtension,
+)
 from .free_text import FreeTextAdvancedExtension, FreeTextExtension
 from .pagination import (
     OffsetPaginationExtension,
@@ -28,4 +33,7 @@ __all__ = (
     "TransactionExtension",
     "CollectionSearchExtension",
     "CollectionSearchPostExtension",
+    "SearchFilterExtension",
+    "ItemCollectionFilterExtension",
+    "CollectionSearchFilterExtension",
 )
