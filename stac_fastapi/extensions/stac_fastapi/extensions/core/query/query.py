@@ -1,5 +1,6 @@
 """Query extension."""
 
+from enum import Enum
 from typing import List, Optional
 
 import attr
@@ -8,6 +9,17 @@ from fastapi import FastAPI
 from stac_fastapi.types.extension import ApiExtension
 
 from .request import QueryExtensionGetRequest, QueryExtensionPostRequest
+
+
+class QueryConformanceClasses(str, Enum):
+    """Conformance classes for the Query extension.
+
+    See https://github.com/stac-api-extensions/query
+    """
+
+    SEARCH = "https://api.stacspec.org/v1.0.0/item-search#query"
+    ITEMS = "https://api.stacspec.org/v1.0.0/ogcapi-features#query"
+    COLLECTIONS = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#query"
 
 
 @attr.s
@@ -24,7 +36,9 @@ class QueryExtension(ApiExtension):
     POST = QueryExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
-        factory=lambda: ["https://api.stacspec.org/v1.0.0/item-search#query"]
+        factory=lambda: [
+            QueryConformanceClasses.SEARCH,
+        ]
     )
     schema_href: Optional[str] = attr.ib(default=None)
 

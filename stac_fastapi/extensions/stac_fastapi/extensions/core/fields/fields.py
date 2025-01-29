@@ -1,5 +1,6 @@
 """Fields extension."""
 
+from enum import Enum
 from typing import List, Optional
 
 import attr
@@ -8,6 +9,18 @@ from fastapi import FastAPI
 from stac_fastapi.types.extension import ApiExtension
 
 from .request import FieldsExtensionGetRequest, FieldsExtensionPostRequest
+
+
+class FieldsConformanceClasses(str, Enum):
+    """Conformance classes for the Fields extension.
+
+    See https://github.com/stac-api-extensions/fields
+
+    """
+
+    SEARCH = "https://api.stacspec.org/v1.0.0/item-search#fields"
+    ITEMS = "https://api.stacspec.org/v1.0.0/ogcapi-features#fields"
+    COLLECTIONS = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#fields"
 
 
 @attr.s
@@ -33,7 +46,9 @@ class FieldsExtension(ApiExtension):
     POST = FieldsExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
-        factory=lambda: ["https://api.stacspec.org/v1.0.0/item-search#fields"]
+        factory=lambda: [
+            FieldsConformanceClasses.SEARCH,
+        ]
     )
     schema_href: Optional[str] = attr.ib(default=None)
 

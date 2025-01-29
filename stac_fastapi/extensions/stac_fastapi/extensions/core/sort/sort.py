@@ -1,5 +1,6 @@
 """Sort extension."""
 
+from enum import Enum
 from typing import List, Optional
 
 import attr
@@ -8,6 +9,18 @@ from fastapi import FastAPI
 from stac_fastapi.types.extension import ApiExtension
 
 from .request import SortExtensionGetRequest, SortExtensionPostRequest
+
+
+class SortConformanceClasses(str, Enum):
+    """Conformance classes for the Sort extension.
+
+    See https://github.com/stac-api-extensions/sort
+
+    """
+
+    SEARCH = "https://api.stacspec.org/v1.0.0/item-search#sort"
+    ITEMS = "https://api.stacspec.org/v1.0.0/ogcapi-features#sort"
+    COLLECTIONS = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort"
 
 
 @attr.s
@@ -23,7 +36,9 @@ class SortExtension(ApiExtension):
     POST = SortExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
-        factory=lambda: ["https://api.stacspec.org/v1.0.0/item-search#sort"]
+        factory=lambda: [
+            SortConformanceClasses.SEARCH,
+        ]
     )
     schema_href: Optional[str] = attr.ib(default=None)
 
