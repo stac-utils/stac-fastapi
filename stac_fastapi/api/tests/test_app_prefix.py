@@ -208,3 +208,30 @@ def test_api_prefix_with_root_path(TestCoreClient, prefix):
 
             resp = client.get(prefix + expected_path)
             assert resp.status_code == 200
+
+
+def test_api_fastapi_option(TestCoreClient):
+    api_settings = ApiSettings(
+        stac_fastapi_title="stac-fastapi-tests",
+        stac_fastapi_description="test for stac-fastapi",
+        stac_fastapi_version="0.1.0dev",
+    )
+
+    api = StacApi(
+        settings=api_settings,
+        client=TestCoreClient(),
+    )
+
+    with TestClient(api.app, base_url="http://stac.io") as client:
+        landing = client.get("/")
+        assert landing.status_code == 200
+        body = landing.json()
+        assert body["title"] == "stac-fastapi-tests"
+        assert body["description"] == "test for stac-fastapi"
+
+        service_desc = client.get("/api")
+        assert service_desc.status_code == 200
+        body = service_desc.json()["info"]
+        assert body["title"] == "stac-fastapi-tests"
+        assert body["description"] == "test for stac-fastapi"
+        assert body["version"] == "0.1.0dev"

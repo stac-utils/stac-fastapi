@@ -18,6 +18,13 @@
   - added `query.QueryConformanceClasses` Enum
   - added `SortConformanceClasses` Enum
 
+- removed `StacApi.customize_openapi` method
+- reordered `StacApi` attributes (moved `title`, `api_version` and `description` before `app`)
+
+### Added
+
+* forward `StacApi.title`, `StacApi.api_version` and `Stac.Api.description` to the FastAPI application
+
 ## [4.0.1] - 2025-01-23
 
 ### Changed
