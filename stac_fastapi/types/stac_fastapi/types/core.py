@@ -384,7 +384,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add Queryables link
-        if self.extension_is_enabled("FilterExtension"):
+        if self.extension_is_enabled("FilterExtension") or self.extension_is_enabled(
+            "SearchFilterExtension"
+        ):
             landing_page["links"].append(
                 {
                     "rel": Relations.queryables.value,
@@ -605,7 +607,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add Queryables link
-        if self.extension_is_enabled("FilterExtension"):
+        if self.extension_is_enabled("FilterExtension") or self.extension_is_enabled(
+            "SearchFilterExtension"
+        ):
             landing_page["links"].append(
                 {
                     "rel": Relations.queryables.value,
