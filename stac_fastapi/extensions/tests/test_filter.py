@@ -1,6 +1,7 @@
 from typing import Iterator
 
 import pytest
+from fastapi import APIRouter
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
@@ -185,3 +186,28 @@ def test_search_filter_get(client_name, request):
     assert response.is_success, response.json()
     response_dict = response.json()
     assert response_dict["collections"] == ["collection1", "collection2"]
+
+
+@pytest.mark.parametrize("prefix", ["", "/a_prefix"])
+def test_multi_ext_prefix(prefix):
+    settings = ApiSettings()
+    extensions = [
+        SearchFilterExtension(),
+        ItemCollectionFilterExtension(),
+        # Technically `CollectionSearchFilterExtension`
+        # shouldn't be registered to the application but to the collection-search class
+        CollectionSearchFilterExtension(),
+    ]
+
+    api = StacApi(
+        settings=settings,
+        router=APIRouter(prefix=prefix),
+        client=DummyCoreClient(),
+        extensions=extensions,
+        search_get_request_model=create_get_request_model([SearchFilterExtension()]),
+        search_post_request_model=create_post_request_model([SearchFilterExtension()]),
+    )
+    with TestClient(api.app, base_url="http://stac.io") as client:
+        queryables = client.get(f"{prefix}/queryables")
+        assert queryables.status_code == 200, queryables.json()
+        assert queryables.headers["content-type"] == "application/schema+json"

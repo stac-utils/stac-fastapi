@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [5.0.2] - 2025-01-30
+
+### Fixed
+
+- forward `prefix` to `ItemCollectionFilterExtension.router`
+
 ## [5.0.1] - 2025-01-30
 
 ### Fixed
