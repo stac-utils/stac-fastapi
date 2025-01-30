@@ -15,7 +15,11 @@ from stac_fastapi.api.models import (
     create_get_request_model,
     create_post_request_model,
 )
-from stac_fastapi.extensions.core import FieldsExtension, FilterExtension
+from stac_fastapi.extensions.core import (
+    FieldsExtension,
+    FilterExtension,
+    SearchFilterExtension,
+)
 from stac_fastapi.types import stac
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseCoreClient, NumType
@@ -184,6 +188,40 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
         )
 
     assert landing.status_code == 200, landing.text
+    assert "Queryables" in [link.get("title") for link in landing.json()["links"]]
+    assert get_search.status_code == 200, get_search.text
+    assert post_search.status_code == 200, post_search.text
+
+    test_app = app.StacApi(
+        settings=ApiSettings(enable_response_models=validate),
+        client=FilterClient(),
+        search_get_request_model=create_get_request_model([SearchFilterExtension()]),
+        search_post_request_model=create_post_request_model([SearchFilterExtension()]),
+        extensions=[SearchFilterExtension()],
+    )
+
+    with TestClient(test_app.app) as client:
+        landing = client.get("/")
+        get_search = client.get(
+            "/search",
+            params={
+                "filter": "TEST",
+                "filter-crs": "EPSG:4326",
+                "filter-lang": "cql2-text",
+            },
+        )
+        post_search = client.post(
+            "/search",
+            json={
+                "collections": ["test"],
+                "filter": {},
+                "filter-crs": "EPSG:4326",
+                "filter-lang": "cql2-json",
+            },
+        )
+
+    assert landing.status_code == 200, landing.text
+    assert "Queryables" in [link.get("title") for link in landing.json()["links"]]
     assert get_search.status_code == 200, get_search.text
     assert post_search.status_code == 200, post_search.text
 

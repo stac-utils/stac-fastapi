@@ -20,7 +20,7 @@ from stac_fastapi.types.core import BaseCoreClient
 
 class DummyCoreClient(BaseCoreClient):
     def all_collections(self, *args, **kwargs):
-        raise NotImplementedError
+        return {"collections": [], "links": []}
 
     def get_collection(self, *args, **kwargs):
         raise NotImplementedError
@@ -36,48 +36,6 @@ class DummyCoreClient(BaseCoreClient):
 
     def item_collection(self, *args, **kwargs):
         raise NotImplementedError
-
-
-def test_get_aggregations(client: TestClient) -> None:
-    response = client.get("/aggregations")
-    assert response.is_success, response.text
-    assert response.json()["aggregations"] == [
-        {"name": "total_count", "data_type": "integer"}
-    ]
-    assert AggregationCollection(
-        type="AggregationCollection",
-        aggregations=[Aggregation(**response.json()["aggregations"][0])],
-    )
-
-
-def test_get_aggregate(client: TestClient) -> None:
-    response = client.get("/aggregate")
-    assert response.is_success, response.text
-    assert response.json()["aggregations"] == []
-    assert AggregationCollection(
-        type="AggregationCollection", aggregations=response.json()["aggregations"]
-    )
-
-
-def test_post_aggregations(client: TestClient) -> None:
-    response = client.post("/aggregations")
-    assert response.is_success, response.text
-    assert response.json()["aggregations"] == [
-        {"name": "total_count", "data_type": "integer"}
-    ]
-    assert AggregationCollection(
-        type="AggregationCollection",
-        aggregations=[Aggregation(**response.json()["aggregations"][0])],
-    )
-
-
-def test_post_aggregate(client: TestClient) -> None:
-    response = client.post("/aggregate", content="{}")
-    assert response.is_success, response.text
-    assert response.json()["aggregations"] == []
-    assert AggregationCollection(
-        type="AggregationCollection", aggregations=response.json()["aggregations"]
-    )
 
 
 @pytest.fixture
@@ -132,3 +90,40 @@ def test_agg_get_query():
         params = response.json()
         assert params["collections"] == ["collection1", "collection2"]
         assert params["aggregations"] == ["prop1", "prop2"]
+
+
+def test_landing(client: TestClient) -> None:
+    landing = client.get("/")
+    assert landing.status_code == 200, landing.text
+    assert "Aggregate" in [link.get("title") for link in landing.json()["links"]]
+    assert "Aggregations" in [link.get("title") for link in landing.json()["links"]]
+
+
+def test_get_aggregate(client: TestClient) -> None:
+    response = client.get("/aggregate")
+    assert response.is_success, response.text
+    assert response.json()["aggregations"] == []
+    assert AggregationCollection(
+        type="AggregationCollection", aggregations=response.json()["aggregations"]
+    )
+
+
+def test_post_aggregations(client: TestClient) -> None:
+    response = client.post("/aggregations")
+    assert response.is_success, response.text
+    assert response.json()["aggregations"] == [
+        {"name": "total_count", "data_type": "integer"}
+    ]
+    assert AggregationCollection(
+        type="AggregationCollection",
+        aggregations=[Aggregation(**response.json()["aggregations"][0])],
+    )
+
+
+def test_post_aggregate(client: TestClient) -> None:
+    response = client.post("/aggregate", content="{}")
+    assert response.is_success, response.text
+    assert response.json()["aggregations"] == []
+    assert AggregationCollection(
+        type="AggregationCollection", aggregations=response.json()["aggregations"]
+    )
