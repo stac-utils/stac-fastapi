@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+
+### Changed
+
+- remove `child` links (`collections`) in landing page response
+
 ## [5.0.2] - 2025-01-30
 
 ### Fixed
