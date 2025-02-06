@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+
+### Changed
+
+- remove `child` links (`collections`) in landing page response
+
 ## [5.0.2] - 2025-01-30
 
 ### Fixed
@@ -575,7 +580,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.1..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.2..main>
+[5.0.2]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.1..5.0.2>
 [5.0.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.0..5.0.1>
 [5.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/4.0.1..5.0.0>
 [4.0.1]: <https://github.com/stac-utils/stac-fastapi/compare/4.0.0..4.0.1>
