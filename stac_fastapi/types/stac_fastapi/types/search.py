@@ -35,7 +35,7 @@ def str2bbox(x: str) -> Optional[BBox]:
     """Convert string to BBox based on , delimiter."""
     if x:
         t = tuple(float(v) for v in str2list(x))
-        assert len(t) == 4
+        assert len(t) == 4, f"BBox '{x}' must have 4 values."
         return t
 
     return None

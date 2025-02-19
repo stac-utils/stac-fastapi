@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- added descriptive message to `types.search.str2bbox` length assert
+
 ## [5.0.2] - 2025-01-30
 
 ### Fixed
