@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
+### Added
+
 - added descriptive message to `types.search.str2bbox` length assert
+
+### Fixed
+
+- fix collection-search POST request model:
+  - fix pydantic model to make sure class variables `_start_date` and `_end_date` not edited (ported from stac-pydantic)
+  - fix bbox validation to allow anti-meridian crossing (ported from stac-pydantic)
 
 ## [5.0.2] - 2025-01-30
 
