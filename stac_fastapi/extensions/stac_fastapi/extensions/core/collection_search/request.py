@@ -5,7 +5,7 @@ from typing import List, Optional, Tuple, cast
 
 import attr
 from fastapi import Query
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, PrivateAttr, ValidationInfo, field_validator
 from stac_pydantic.api.search import SearchDatetime
 from stac_pydantic.shared import BBox
 from typing_extensions import Annotated
@@ -64,8 +64,8 @@ Either a date-time or an interval, open or closed. Date and time expressions adh
 
     # Private properties to store the parsed datetime values.
     # Not part of the model schema.
-    _start_date: Optional[dt] = None
-    _end_date: Optional[dt] = None
+    _start_date: Optional[dt] = PrivateAttr(default=None)
+    _end_date: Optional[dt] = PrivateAttr(default=None)
 
     # Properties to return the private values
     @property
@@ -94,35 +94,33 @@ Either a date-time or an interval, open or closed. Date and time expressions adh
                     raise ValueError(
                         "Maximum elevation must greater than minimum elevation"
                     )
-
-            if xmax < xmin:
-                raise ValueError(
-                    "Maximum longitude must be greater than minimum longitude"
-                )
+            # Validate against WGS84
+            if xmin < -180 or ymin < -90 or xmax > 180 or ymax > 90:
+                raise ValueError("Bounding box must be within (-180, -90, 180, 90)")
 
             if ymax < ymin:
                 raise ValueError(
                     "Maximum longitude must be greater than minimum longitude"
                 )
 
-            # Validate against WGS84
-            if xmin < -180 or ymin < -90 or xmax > 180 or ymax > 90:
-                raise ValueError("Bounding box must be within (-180, -90, 180, 90)")
-
         return v
 
-    @field_validator("datetime")
+    @field_validator("datetime", mode="after")
     @classmethod
-    def validate_datetime(cls, value: str) -> str:
+    def validate_datetime(
+        cls, value: Optional[str], info: ValidationInfo
+    ) -> Optional[str]:
         """validate datetime."""
         # Split on "/" and replace no value or ".." with None
+        if value is None:
+            return value
         values = [v if v and v != ".." else None for v in value.split("/")]
 
         # If there are more than 2 dates, it's invalid
         if len(values) > 2:
             raise ValueError(
-                """Invalid datetime range. Too many values.
-                Must match format: {begin_date}/{end_date}"""
+                """Invalid datetime range. Too many values. """
+                """Must match format: {begin_date}/{end_date}"""
             )
 
         # If there is only one date, duplicate to use for both start and end dates
@@ -149,8 +147,8 @@ Either a date-time or an interval, open or closed. Date and time expressions adh
             )
 
         # Store the parsed dates
-        cls._start_date = dates[0]
-        cls._end_date = dates[1]
+        info.data["_start_date"] = dates[0]
+        info.data["_end_date"] = dates[1]
 
         # Return the original string value
         return value

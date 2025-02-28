@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix collection-search POST request model:
+  - Fix pydantic model to make sure class variables `_start_date` and `_end_date` not edited (ported from stac-pydantic)
+  - Fix bbox validation to allow anti-meridian crossing (ported from stac-pydantic)
+
 ## [5.0.2] - 2025-01-30
 
 ### Fixed
