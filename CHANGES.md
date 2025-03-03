@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.0.3] - 2025-03-03
+
 ### Added
 
 - added descriptive message to `types.search.str2bbox` length assert
@@ -585,7 +587,9 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.1..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.3..main>
+[5.0.3]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.1..5.0.3>
+[5.0.2]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.1..5.0.2>
 [5.0.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.0..5.0.1>
 [5.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/4.0.1..5.0.0>
 [4.0.1]: <https://github.com/stac-utils/stac-fastapi/compare/4.0.0..4.0.1>
