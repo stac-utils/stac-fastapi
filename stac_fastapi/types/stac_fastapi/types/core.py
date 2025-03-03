@@ -289,16 +289,19 @@ class LandingPageMixin(abc.ABC):
                 {
                     "rel": Relations.self.value,
                     "type": MimeTypes.json.value,
+                    "title": "This document",
                     "href": base_url,
                 },
                 {
                     "rel": Relations.root.value,
                     "type": MimeTypes.json.value,
+                    "title": "Root",
                     "href": base_url,
                 },
                 {
                     "rel": Relations.data.value,
                     "type": MimeTypes.json.value,
+                    "title": "Collections available for this Catalog",
                     "href": urljoin(base_url, "collections"),
                 },
                 {
@@ -310,14 +313,14 @@ class LandingPageMixin(abc.ABC):
                 {
                     "rel": Relations.search.value,
                     "type": MimeTypes.geojson.value,
-                    "title": "STAC search",
+                    "title": "STAC search [GET]",
                     "href": urljoin(base_url, "search"),
                     "method": "GET",
                 },
                 {
                     "rel": Relations.search.value,
                     "type": MimeTypes.geojson.value,
-                    "title": "STAC search",
+                    "title": "STAC search [POST]",
                     "href": urljoin(base_url, "search"),
                     "method": "POST",
                 },
@@ -391,7 +394,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 {
                     "rel": Relations.queryables.value,
                     "type": MimeTypes.jsonschema.value,
-                    "title": "Queryables",
+                    "title": "Queryables available for this Catalog",
                     "href": urljoin(base_url, "queryables"),
                 }
             )
@@ -601,7 +604,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 {
                     "rel": Relations.queryables.value,
                     "type": MimeTypes.jsonschema.value,
-                    "title": "Queryables",
+                    "title": "Catalog Queryables",
                     "href": urljoin(base_url, "queryables"),
                     "method": "GET",
                 }

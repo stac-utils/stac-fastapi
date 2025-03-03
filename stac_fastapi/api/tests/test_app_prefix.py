@@ -64,6 +64,7 @@ def test_api_prefix(TestCoreClient, prefix):
 
         link_tests = [
             ("root", "application/json", "/"),
+            ("self", "application/json", "/"),
             ("conformance", "application/json", "/conformance"),
             ("data", "application/json", "/collections"),
             ("search", "application/geo+json", "/search"),
@@ -126,6 +127,7 @@ def test_async_api_prefix(AsyncTestCoreClient, prefix):
 
         link_tests = [
             ("root", "application/json", "/"),
+            ("self", "application/json", "/"),
             ("conformance", "application/json", "/conformance"),
             ("data", "application/json", "/collections"),
             ("search", "application/geo+json", "/search"),
@@ -190,6 +192,7 @@ def test_api_prefix_with_root_path(TestCoreClient, prefix):
 
         link_tests = [
             ("root", "application/json", "/"),
+            ("self", "application/json", "/"),
             ("conformance", "application/json", "/conformance"),
             ("data", "application/json", "/collections"),
             ("search", "application/geo+json", "/search"),

@@ -188,7 +188,7 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
         )
 
     assert landing.status_code == 200, landing.text
-    assert "Queryables" in [link.get("title") for link in landing.json()["links"]]
+    assert "Catalog Queryables" in [link.get("title") for link in landing.json()["links"]]
     assert get_search.status_code == 200, get_search.text
     assert post_search.status_code == 200, post_search.text
 
@@ -221,7 +221,7 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
         )
 
     assert landing.status_code == 200, landing.text
-    assert "Queryables" in [link.get("title") for link in landing.json()["links"]]
+    assert "Catalog Queryables" in [link.get("title") for link in landing.json()["links"]]
     assert get_search.status_code == 200, get_search.text
     assert post_search.status_code == 200, post_search.text
 
