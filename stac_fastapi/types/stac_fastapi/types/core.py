@@ -415,19 +415,6 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                 ]
             )
 
-        # Add Collections links
-        collections = self.all_collections(request=kwargs["request"])
-
-        for collection in collections["collections"]:
-            landing_page["links"].append(
-                {
-                    "rel": Relations.child.value,
-                    "type": MimeTypes.json.value,
-                    "title": collection.get("title") or collection.get("id"),
-                    "href": urljoin(base_url, f"collections/{collection['id']}"),
-                }
-            )
-
         # Add OpenAPI URL
         landing_page["links"].append(
             {
@@ -637,19 +624,6 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                         "href": urljoin(base_url, "aggregations"),
                     },
                 ]
-            )
-
-        # Add Collections links
-        collections = await self.all_collections(request=kwargs["request"])
-
-        for collection in collections["collections"]:
-            landing_page["links"].append(
-                {
-                    "rel": Relations.child.value,
-                    "type": MimeTypes.json.value,
-                    "title": collection.get("title") or collection.get("id"),
-                    "href": urljoin(base_url, f"collections/{collection['id']}"),
-                }
             )
 
         # Add OpenAPI URL
