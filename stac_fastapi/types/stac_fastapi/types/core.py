@@ -604,7 +604,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                 {
                     "rel": Relations.queryables.value,
                     "type": MimeTypes.jsonschema.value,
-                    "title": "Catalog Queryables",
+                    "title": "Queryables available for this Catalog",
                     "href": urljoin(base_url, "queryables"),
                     "method": "GET",
                 }
