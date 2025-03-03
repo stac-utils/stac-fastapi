@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from urllib.parse import quote_plus
 
 import attr
@@ -86,6 +87,19 @@ class DummyPostClient(BaseCollectionSearchClient):
     ) -> stac.ItemCollection:
         """fake method."""
         return search_request.model_dump()
+
+
+def test_datetime_clean():
+    # ref: https://github.com/stac-utils/stac-pydantic/issues/170
+    utcnow = datetime.now(timezone.utc)
+    utcnow_str = utcnow.isoformat()
+    search = BaseCollectionSearchPostRequest(datetime=utcnow_str)
+    assert search.start_date == utcnow
+    assert search.end_date == utcnow
+
+    search = BaseCollectionSearchPostRequest()
+    assert not search.start_date
+    assert not search.end_date
 
 
 def test_collection_search_extension_default():
