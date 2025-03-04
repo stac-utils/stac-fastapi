@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- titles in `Landing` page links
+
 ### Changed
 
 - remove `child` links (`collections`) in landing page response
