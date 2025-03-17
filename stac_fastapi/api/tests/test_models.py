@@ -40,6 +40,12 @@ def test_create_get_request_model():
     assert d.microsecond == 10
     assert not model.end_date
 
+    model = request_model(bbox="0,0,0,1,1,1")
+    assert model.bbox == (0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+
+    with pytest.raises(AssertionError):
+        request_model(bbox="0,0,0,1,1")
+
     model = request_model(
         datetime="2020-01-01T00:00:00.00001Z/2020-01-02T00:00:00.00001Z",
     )
