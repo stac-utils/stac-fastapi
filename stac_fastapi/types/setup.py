@@ -9,7 +9,7 @@ install_requires = [
     "fastapi>=0.109.0",
     "attrs>=23.2.0",
     "pydantic-settings>=2",
-    "stac_pydantic~=3.1",
+    "stac_pydantic>=3.1.3,<4.0",
     "iso8601>=1.0.2,<2.2.0",
 ]
 
@@ -30,16 +30,16 @@ setup(
     description="An implementation of STAC API based on the FastAPI framework.",
     long_description=desc,
     long_description_content_type="text/markdown",
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "License :: OSI Approved :: MIT License",
     ],
     keywords="STAC FastAPI COG",

@@ -23,10 +23,11 @@ class FilterConformanceClasses(str, Enum):
     """
 
     FILTER = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter"
-    FEATURES_FILTER = (
-        "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"
-    )
-    ITEM_SEARCH_FILTER = "https://api.stacspec.org/v1.0.0-rc.2/item-search#filter"
+
+    SEARCH = "https://api.stacspec.org/v1.0.0-rc.2/item-search#filter"
+    ITEMS = "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter"
+    COLLECTIONS = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter"
+
     CQL2_TEXT = "http://www.opengis.net/spec/cql2/1.0/conf/cql2-text"
     CQL2_JSON = "http://www.opengis.net/spec/cql2/1.0/conf/cql2-json"
     BASIC_CQL2 = "http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2"
@@ -73,8 +74,8 @@ class FilterExtension(ApiExtension):
     conformance_classes: List[str] = attr.ib(
         default=[
             FilterConformanceClasses.FILTER,
-            FilterConformanceClasses.FEATURES_FILTER,
-            FilterConformanceClasses.ITEM_SEARCH_FILTER,
+            FilterConformanceClasses.SEARCH,
+            FilterConformanceClasses.ITEMS,
             FilterConformanceClasses.BASIC_CQL2,
             FilterConformanceClasses.CQL2_JSON,
             FilterConformanceClasses.CQL2_TEXT,
@@ -124,3 +125,113 @@ class FilterExtension(ApiExtension):
             endpoint=create_async_endpoint(self.client.get_queryables, CollectionUri),
         )
         app.include_router(self.router, tags=["Filter Extension"])
+
+
+@attr.s
+class SearchFilterExtension(FilterExtension):
+    """Item Search Filter Extension."""
+
+    conformance_classes: List[str] = attr.ib(
+        default=[
+            FilterConformanceClasses.FILTER,
+            FilterConformanceClasses.SEARCH,
+            FilterConformanceClasses.BASIC_CQL2,
+            FilterConformanceClasses.CQL2_JSON,
+            FilterConformanceClasses.CQL2_TEXT,
+        ]
+    )
+
+    def register(self, app: FastAPI) -> None:
+        """Register the extension with a FastAPI application.
+
+        Args:
+            app: target FastAPI application.
+
+        Returns:
+            None
+        """
+        self.router.prefix = app.state.router_prefix
+        self.router.add_api_route(
+            name="Queryables",
+            path="/queryables",
+            methods=["GET"],
+            responses={
+                200: {
+                    "content": {
+                        "application/schema+json": {},
+                    },
+                    # TODO: add output model in stac-pydantic
+                },
+            },
+            response_class=self.response_class,
+            endpoint=create_async_endpoint(self.client.get_queryables, EmptyRequest),
+        )
+        app.include_router(self.router, tags=["Filter Extension"])
+
+
+@attr.s
+class ItemCollectionFilterExtension(FilterExtension):
+    """Item Collection Filter Extension."""
+
+    conformance_classes: List[str] = attr.ib(
+        default=[
+            FilterConformanceClasses.FILTER,
+            FilterConformanceClasses.ITEMS,
+            FilterConformanceClasses.BASIC_CQL2,
+            FilterConformanceClasses.CQL2_JSON,
+            FilterConformanceClasses.CQL2_TEXT,
+        ]
+    )
+
+    def register(self, app: FastAPI) -> None:
+        """Register the extension with a FastAPI application.
+
+        Args:
+            app: target FastAPI application.
+
+        Returns:
+            None
+        """
+        self.router.prefix = app.state.router_prefix
+        self.router.add_api_route(
+            name="Collection Queryables",
+            path="/collections/{collection_id}/queryables",
+            methods=["GET"],
+            responses={
+                200: {
+                    "content": {
+                        "application/schema+json": {},
+                    },
+                    # TODO: add output model in stac-pydantic
+                },
+            },
+            response_class=self.response_class,
+            endpoint=create_async_endpoint(self.client.get_queryables, CollectionUri),
+        )
+        app.include_router(self.router, tags=["Filter Extension"])
+
+
+@attr.s
+class CollectionSearchFilterExtension(FilterExtension):
+    """Collection Search Filter Extension."""
+
+    conformance_classes: List[str] = attr.ib(
+        default=[
+            FilterConformanceClasses.FILTER,
+            FilterConformanceClasses.COLLECTIONS,
+            FilterConformanceClasses.BASIC_CQL2,
+            FilterConformanceClasses.CQL2_JSON,
+            FilterConformanceClasses.CQL2_TEXT,
+        ]
+    )
+
+    def register(self, app: FastAPI) -> None:
+        """Register the extension with a FastAPI application.
+
+        Args:
+            app: target FastAPI application.
+
+        Returns:
+            None
+        """
+        pass

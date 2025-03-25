@@ -1,9 +1,10 @@
 """Api middleware."""
 
+import contextlib
 import re
 import typing
 from http.client import HTTP_PORT, HTTPS_PORT
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from starlette.middleware.cors import CORSMiddleware as _CORSMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
@@ -44,6 +45,10 @@ class CORSMiddleware(_CORSMiddleware):
         )
 
 
+_PROTO_HEADER_REGEX = re.compile(r"proto=(?P<proto>http(s)?)")
+_HOST_HEADER_REGEX = re.compile(r"host=(?P<host>[\w.-]+)(:(?P<port>\d{1,5}))?")
+
+
 class ProxyHeaderMiddleware:
     """Account for forwarding headers when deriving base URL.
 
@@ -68,11 +73,13 @@ class ProxyHeaderMiddleware:
                         proto == "https" and port != HTTPS_PORT
                     ):
                         port_suffix = f":{port}"
+
                 scope["headers"] = self._replace_header_value_by_name(
                     scope,
                     "host",
                     f"{domain}{port_suffix}",
                 )
+
         await self.app(scope, receive, send)
 
     def _get_forwarded_url_parts(self, scope: Scope) -> Tuple[str]:
@@ -87,37 +94,30 @@ class ProxyHeaderMiddleware:
             else:
                 domain = header_host_parts[0]
                 port = None
-        forwarded = self._get_header_value_by_name(scope, "forwarded")
-        if forwarded is not None:
-            parts = forwarded.split(";")
-            for part in parts:
-                if len(part) > 0 and re.search("=", part):
-                    key, value = part.split("=")
-                    if key == "proto":
-                        proto = value
-                    elif key == "host":
-                        host_parts = value.split(":")
-                        domain = host_parts[0]
-                        try:
-                            port = int(host_parts[1]) if len(host_parts) == 2 else None
-                        except ValueError:
-                            # ignore ports that are not valid integers
-                            pass
+
+        port_str = None  # make sure it is defined in all paths since we access it later
+
+        if forwarded := self._get_header_value_by_name(scope, "forwarded"):
+            for proxy in forwarded.split(","):
+                if proto_expr := _PROTO_HEADER_REGEX.search(proxy):
+                    proto = proto_expr.group("proto")
+                if host_expr := _HOST_HEADER_REGEX.search(proxy):
+                    domain = host_expr.group("host")
+                    port_str = host_expr.group("port")  # None if not present in the match
+
         else:
             domain = self._get_header_value_by_name(scope, "x-forwarded-host", domain)
             proto = self._get_header_value_by_name(scope, "x-forwarded-proto", proto)
             port_str = self._get_header_value_by_name(scope, "x-forwarded-port", port)
-            try:
-                port = int(port_str) if port_str is not None else None
-            except ValueError:
-                # ignore ports that are not valid integers
-                pass
+
+        with contextlib.suppress(ValueError):  # ignore ports that are not valid integers
+            port = int(port_str) if port_str is not None else port
 
         return (proto, domain, port)
 
     def _get_header_value_by_name(
-        self, scope: Scope, header_name: str, default_value: str = None
-    ) -> str:
+        self, scope: Scope, header_name: str, default_value: Optional[str] = None
+    ) -> Optional[str]:
         headers = scope["headers"]
         candidates = [
             value.decode() for key, value in headers if key.decode() == header_name

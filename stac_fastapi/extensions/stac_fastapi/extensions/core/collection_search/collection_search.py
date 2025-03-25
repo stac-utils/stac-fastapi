@@ -1,6 +1,5 @@
 """Collection-Search extension."""
 
-import warnings
 from enum import Enum
 from typing import List, Optional, Union
 
@@ -18,7 +17,7 @@ from .client import AsyncBaseCollectionSearchClient, BaseCollectionSearchClient
 from .request import BaseCollectionSearchGetRequest, BaseCollectionSearchPostRequest
 
 
-class ConformanceClasses(str, Enum):
+class CollectionSearchConformanceClasses(str, Enum):
     """Conformance classes for the Collection-Search extension.
 
     See
@@ -27,11 +26,6 @@ class ConformanceClasses(str, Enum):
 
     COLLECTIONSEARCH = "https://api.stacspec.org/v1.0.0-rc.1/collection-search"
     BASIS = "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query"
-    FREETEXT = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#free-text"
-    FILTER = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter"
-    QUERY = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#query"
-    SORT = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort"
-    FIELDS = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#fields"
 
 
 @attr.s
@@ -57,7 +51,10 @@ class CollectionSearchExtension(ApiExtension):
     POST = None
 
     conformance_classes: List[str] = attr.ib(
-        default=[ConformanceClasses.COLLECTIONSEARCH, ConformanceClasses.BASIS]
+        default=[
+            CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+            CollectionSearchConformanceClasses.BASIS,
+        ]
     )
     schema_href: Optional[str] = attr.ib(default=None)
 
@@ -79,27 +76,13 @@ class CollectionSearchExtension(ApiExtension):
         schema_href: Optional[str] = None,
     ) -> "CollectionSearchExtension":
         """Create CollectionSearchExtension object from extensions."""
-        supported_extensions = {
-            "FreeTextExtension": ConformanceClasses.FREETEXT,
-            "FreeTextAdvancedExtension": ConformanceClasses.FREETEXT,
-            "QueryExtension": ConformanceClasses.QUERY,
-            "SortExtension": ConformanceClasses.SORT,
-            "FieldsExtension": ConformanceClasses.FIELDS,
-            "FilterExtension": ConformanceClasses.FILTER,
-        }
+
         conformance_classes = [
-            ConformanceClasses.COLLECTIONSEARCH,
-            ConformanceClasses.BASIS,
+            CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+            CollectionSearchConformanceClasses.BASIS,
         ]
         for ext in extensions:
-            conf = supported_extensions.get(ext.__class__.__name__, None)
-            if not conf:
-                warnings.warn(
-                    f"Conformance class for `{ext.__class__.__name__}` extension not found.",  # noqa: E501
-                    UserWarning,
-                )
-            else:
-                conformance_classes.append(conf)
+            conformance_classes.extend(ext.conformance_classes)
 
         get_request_model = create_request_model(
             model_name="CollectionsGetRequest",
@@ -135,7 +118,10 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
     client: Union[AsyncBaseCollectionSearchClient, BaseCollectionSearchClient] = attr.ib()
     settings: ApiSettings = attr.ib()
     conformance_classes: List[str] = attr.ib(
-        default=[ConformanceClasses.COLLECTIONSEARCH, ConformanceClasses.BASIS]
+        default=[
+            CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+            CollectionSearchConformanceClasses.BASIS,
+        ]
     )
     schema_href: Optional[str] = attr.ib(default=None)
     router: APIRouter = attr.ib(factory=APIRouter)
@@ -187,27 +173,12 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
         router: Optional[APIRouter] = None,
     ) -> "CollectionSearchPostExtension":
         """Create CollectionSearchPostExtension object from extensions."""
-        supported_extensions = {
-            "FreeTextExtension": ConformanceClasses.FREETEXT,
-            "FreeTextAdvancedExtension": ConformanceClasses.FREETEXT,
-            "QueryExtension": ConformanceClasses.QUERY,
-            "SortExtension": ConformanceClasses.SORT,
-            "FieldsExtension": ConformanceClasses.FIELDS,
-            "FilterExtension": ConformanceClasses.FILTER,
-        }
         conformance_classes = [
-            ConformanceClasses.COLLECTIONSEARCH,
-            ConformanceClasses.BASIS,
+            CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+            CollectionSearchConformanceClasses.BASIS,
         ]
         for ext in extensions:
-            conf = supported_extensions.get(ext.__class__.__name__, None)
-            if not conf:
-                warnings.warn(
-                    f"Conformance class for `{ext.__class__.__name__}` extension not found.",  # noqa: E501
-                    UserWarning,
-                )
-            else:
-                conformance_classes.append(conf)
+            conformance_classes.extend(ext.conformance_classes)
 
         get_request_model = create_request_model(
             model_name="CollectionsGetRequest",

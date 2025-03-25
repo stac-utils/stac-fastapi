@@ -1,7 +1,7 @@
 """stac_fastapi.types.search module.
 
 """
-
+from datetime import datetime as dt
 from typing import Dict, List, Optional, Union
 
 import attr
@@ -35,7 +35,7 @@ def str2bbox(x: str) -> Optional[BBox]:
     """Convert string to BBox based on , delimiter."""
     if x:
         t = tuple(float(v) for v in str2list(x))
-        assert len(t) == 4
+        assert len(t) in [4, 6], f"BBox '{x}' must have 4 or 6 values."
         return t
 
     return None
@@ -83,27 +83,29 @@ def _bbox_converter(
     return str2bbox(val)
 
 
-def _datetime_converter(
-    val: Annotated[
-        Optional[str],
-        Query(
-            description="""Only return items that have a temporal property that intersects this value.\n
-Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
-            openapi_examples={
-                "datetime": {"value": "2018-02-12T23:20:50Z"},
-                "closed-interval": {"value": "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"},
-                "open-interval-from": {"value": "2018-02-12T00:00:00Z/.."},
-                "open-interval-to": {"value": "../2018-03-18T12:31:12Z"},
-            },
-        ),
-    ] = None,
-):
-    return str_to_interval(val)
+def _validate_datetime(instance, attribute, value):
+    """Validate Datetime."""
+    _ = str_to_interval(value)
 
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
 NumType = Union[float, int]
 Limit = Annotated[PositiveInt, AfterValidator(crop)]
+
+
+DateTimeQueryType = Annotated[
+    Optional[str],
+    Query(
+        description="""Only return items that have a temporal property that intersects this value.\n
+Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
+        openapi_examples={
+            "datetime": {"value": "2018-02-12T23:20:50Z"},
+            "closed-interval": {"value": "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"},
+            "open-interval-from": {"value": "2018-02-12T00:00:00Z/.."},
+            "open-interval-to": {"value": "../2018-03-18T12:31:12Z"},
+        },
+    ),
+]
 
 
 @attr.s
@@ -117,7 +119,36 @@ class APIRequest:
 
 
 @attr.s
-class BaseSearchGetRequest(APIRequest):
+class DatetimeMixin:
+    """Datetime Mixin."""
+
+    datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
+
+    def parse_datetime(self) -> Optional[DateTimeType]:
+        """Return Datetime objects."""
+        return str_to_interval(self.datetime)
+
+    @property
+    def start_date(self) -> Optional[dt]:
+        """Start Date."""
+        parsed = self.parse_datetime()
+        if parsed is None:
+            return None
+
+        return parsed[0] if isinstance(parsed, tuple) else parsed
+
+    @property
+    def end_date(self) -> Optional[dt]:
+        """End Date."""
+        parsed = self.parse_datetime()
+        if parsed is None:
+            return None
+
+        return parsed[1] if isinstance(parsed, tuple) else None
+
+
+@attr.s
+class BaseSearchGetRequest(APIRequest, DatetimeMixin):
     """Base arguments for GET Request."""
 
     collections: Optional[List[str]] = attr.ib(
@@ -170,9 +201,7 @@ class BaseSearchGetRequest(APIRequest):
             },
         ),
     ] = attr.ib(default=None)
-    datetime: Optional[DateTimeType] = attr.ib(
-        default=None, converter=_datetime_converter
-    )
+    datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
     limit: Annotated[
         Optional[Limit],
         Query(

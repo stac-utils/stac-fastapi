@@ -65,7 +65,8 @@ class ItemCollection(TypedDict, total=False):
     type: Literal["FeatureCollection"]
     features: List[Item]
     links: List[Dict[str, Any]]
-    context: Optional[Dict[str, int]]
+    numberMatched: Optional[int]
+    numberReturned: Optional[int]
 
 
 class Collections(TypedDict, total=False):
@@ -75,6 +76,8 @@ class Collections(TypedDict, total=False):
 
     collections: List[Collection]
     links: List[Dict[str, Any]]
+    numberMatched: Optional[int] = None
+    numberReturned: Optional[int] = None
 
 
 class PartialCollection(TypedDict, total=False):
@@ -93,6 +96,8 @@ class PartialCollection(TypedDict, total=False):
     extent: Optional[Dict[str, Any]]
     summaries: Optional[Dict[str, Any]]
     assets: Optional[Dict[str, Any]]
+    numberMatched: Optional[int] = None
+    numberReturned: Optional[int] = None
 
 
 class PartialItem(TypedDict, total=False):

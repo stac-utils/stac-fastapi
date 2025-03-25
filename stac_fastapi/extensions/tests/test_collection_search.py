@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from urllib.parse import quote_plus
 
 import attr
@@ -10,15 +11,17 @@ from stac_fastapi.api.models import create_request_model
 from stac_fastapi.extensions.core import (
     AggregationExtension,
     CollectionSearchExtension,
+    CollectionSearchFilterExtension,
     CollectionSearchPostExtension,
     FieldsExtension,
-    FilterExtension,
     FreeTextAdvancedExtension,
     FreeTextExtension,
     QueryExtension,
     SortExtension,
 )
-from stac_fastapi.extensions.core.collection_search import ConformanceClasses
+from stac_fastapi.extensions.core.collection_search import (
+    CollectionSearchConformanceClasses,
+)
 from stac_fastapi.extensions.core.collection_search.client import (
     BaseCollectionSearchClient,
 )
@@ -26,22 +29,27 @@ from stac_fastapi.extensions.core.collection_search.request import (
     BaseCollectionSearchGetRequest,
     BaseCollectionSearchPostRequest,
 )
+from stac_fastapi.extensions.core.fields import FieldsConformanceClasses
 from stac_fastapi.extensions.core.fields.request import (
     FieldsExtensionGetRequest,
     FieldsExtensionPostRequest,
 )
+from stac_fastapi.extensions.core.filter import FilterConformanceClasses
 from stac_fastapi.extensions.core.filter.request import (
     FilterExtensionGetRequest,
     FilterExtensionPostRequest,
 )
+from stac_fastapi.extensions.core.free_text import FreeTextConformanceClasses
 from stac_fastapi.extensions.core.free_text.request import (
     FreeTextExtensionGetRequest,
     FreeTextExtensionPostRequest,
 )
+from stac_fastapi.extensions.core.query import QueryConformanceClasses
 from stac_fastapi.extensions.core.query.request import (
     QueryExtensionGetRequest,
     QueryExtensionPostRequest,
 )
+from stac_fastapi.extensions.core.sort import SortConformanceClasses
 from stac_fastapi.extensions.core.sort.request import (
     SortExtensionGetRequest,
     SortExtensionPostRequest,
@@ -79,6 +87,19 @@ class DummyPostClient(BaseCollectionSearchClient):
     ) -> stac.ItemCollection:
         """fake method."""
         return search_request.model_dump()
+
+
+def test_datetime_clean():
+    # ref: https://github.com/stac-utils/stac-pydantic/issues/170
+    utcnow = datetime.now(timezone.utc)
+    utcnow_str = utcnow.isoformat()
+    search = BaseCollectionSearchPostRequest(datetime=utcnow_str)
+    assert search.start_date == utcnow
+    assert search.end_date == utcnow
+
+    search = BaseCollectionSearchPostRequest()
+    assert not search.start_date
+    assert not search.end_date
 
 
 def test_collection_search_extension_default():
@@ -120,10 +141,7 @@ def test_collection_search_extension_default():
         assert response.is_success, response.json()
         response_dict = response.json()
         assert [-175.05, -85.05, 175.05, 85.05] == response_dict["bbox"]
-        assert [
-            "2020-06-13T13:00:00+00:00",
-            "2020-06-13T14:00:00+00:00",
-        ] == response_dict["datetime"]
+        assert "2020-06-13T13:00:00Z/2020-06-13T14:00:00Z" == response_dict["datetime"]
         assert 100 == response_dict["limit"]
 
 
@@ -151,13 +169,13 @@ def test_collection_search_extension_models():
             CollectionSearchExtension(
                 GET=collections_get_request_model,
                 conformance_classes=[
-                    ConformanceClasses.COLLECTIONSEARCH,
-                    ConformanceClasses.BASIS,
-                    ConformanceClasses.FREETEXT,
-                    ConformanceClasses.FILTER,
-                    ConformanceClasses.QUERY,
-                    ConformanceClasses.SORT,
-                    ConformanceClasses.FIELDS,
+                    CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+                    CollectionSearchConformanceClasses.BASIS,
+                    FieldsConformanceClasses.COLLECTIONS,
+                    FilterConformanceClasses.COLLECTIONS,
+                    FreeTextConformanceClasses.COLLECTIONS,
+                    QueryConformanceClasses.COLLECTIONS,
+                    SortConformanceClasses.COLLECTIONS,
                 ],
             )
         ],
@@ -188,7 +206,7 @@ def test_collection_search_extension_models():
         assert "datetime" in response_dict
         assert "limit" in response_dict
         assert "q" in response_dict
-        assert "filter" in response_dict
+        assert "filter_expr" in response_dict
         assert "query" in response_dict
         assert "sortby" in response_dict
         assert "fields" in response_dict
@@ -211,13 +229,12 @@ def test_collection_search_extension_models():
         assert response.is_success, response.json()
         response_dict = response.json()
         assert [-175.05, -85.05, 175.05, 85.05] == response_dict["bbox"]
-        assert [
-            "2020-06-13T13:00:00+00:00",
-            "2020-06-13T14:00:00+00:00",
-        ] == response_dict["datetime"]
+        assert "2020-06-13T13:00:00Z/2020-06-13T14:00:00Z" == response_dict["datetime"]
         assert 100 == response_dict["limit"]
         assert ["EO", "Earth Observation"] == response_dict["q"]
-        assert "id='item_id' AND collection='collection_id'" == response_dict["filter"]
+        assert (
+            "id='item_id' AND collection='collection_id'" == response_dict["filter_expr"]
+        )
         assert "filter_crs" in response_dict
         assert "cql2-text" in response_dict["filter_lang"]
         assert "query" in response_dict
@@ -315,13 +332,13 @@ def test_collection_search_extension_post_models():
                 GET=get_request_model,
                 POST=post_request_model,
                 conformance_classes=[
-                    ConformanceClasses.COLLECTIONSEARCH,
-                    ConformanceClasses.BASIS,
-                    ConformanceClasses.FREETEXT,
-                    ConformanceClasses.FILTER,
-                    ConformanceClasses.QUERY,
-                    ConformanceClasses.SORT,
-                    ConformanceClasses.FIELDS,
+                    CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+                    CollectionSearchConformanceClasses.BASIS,
+                    FieldsConformanceClasses.COLLECTIONS,
+                    FilterConformanceClasses.COLLECTIONS,
+                    FreeTextConformanceClasses.COLLECTIONS,
+                    QueryConformanceClasses.COLLECTIONS,
+                    SortConformanceClasses.COLLECTIONS,
                 ],
             )
         ],
@@ -353,7 +370,7 @@ def test_collection_search_extension_post_models():
         assert "datetime" in response_dict
         assert "limit" in response_dict
         assert "q" in response_dict
-        assert "filter" in response_dict
+        assert "filter_expr" in response_dict
         assert "query" in response_dict
         assert "sortby" in response_dict
         assert "fields" in response_dict
@@ -394,7 +411,7 @@ def test_collection_search_extension_post_models():
         assert "2020-06-13T13:00:00Z/2020-06-13T14:00:00Z" == response_dict["datetime"]
         assert 10_000 == response_dict["limit"]
         assert ["EO", "Earth Observation"] == response_dict["q"]
-        assert response_dict["filter"]
+        assert response_dict["filter_expr"]
         assert "filter_crs" in response_dict
         assert "cql2-json" in response_dict["filter_lang"]
         assert response_dict["query"]
@@ -407,19 +424,23 @@ def test_collection_search_extension_post_models():
     [
         # with FreeTextExtension
         [
-            FieldsExtension(),
-            FilterExtension(),
-            FreeTextExtension(),
-            QueryExtension(),
-            SortExtension(),
+            FieldsExtension(conformance_classes=[FieldsConformanceClasses.COLLECTIONS]),
+            CollectionSearchFilterExtension(),
+            FreeTextExtension(
+                conformance_classes=[FreeTextConformanceClasses.COLLECTIONS]
+            ),
+            QueryExtension(conformance_classes=[QueryConformanceClasses.COLLECTIONS]),
+            SortExtension(conformance_classes=[SortConformanceClasses.COLLECTIONS]),
         ],
         # with FreeTextAdvancedExtension
         [
-            FieldsExtension(),
-            FilterExtension(),
-            FreeTextAdvancedExtension(),
-            QueryExtension(),
-            SortExtension(),
+            FieldsExtension(conformance_classes=[FieldsConformanceClasses.COLLECTIONS]),
+            CollectionSearchFilterExtension(),
+            FreeTextAdvancedExtension(
+                conformance_classes=[FreeTextConformanceClasses.COLLECTIONS]
+            ),
+            QueryExtension(conformance_classes=[QueryConformanceClasses.COLLECTIONS]),
+            SortExtension(conformance_classes=[SortConformanceClasses.COLLECTIONS]),
         ],
     ],
 )
@@ -439,16 +460,21 @@ def test_from_extensions_methods(extensions):
     assert hasattr(collection_search, "fields")
     assert hasattr(collection_search, "q")
     assert hasattr(collection_search, "sortby")
-    assert hasattr(collection_search, "filter")
-    assert ext.conformance_classes == [
-        ConformanceClasses.COLLECTIONSEARCH,
-        ConformanceClasses.BASIS,
-        ConformanceClasses.FIELDS,
-        ConformanceClasses.FILTER,
-        ConformanceClasses.FREETEXT,
-        ConformanceClasses.QUERY,
-        ConformanceClasses.SORT,
-    ]
+    assert hasattr(collection_search, "filter_expr")
+    for conf in [
+        CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+        CollectionSearchConformanceClasses.BASIS,
+        FieldsConformanceClasses.COLLECTIONS,
+        FilterConformanceClasses.COLLECTIONS,
+        FilterConformanceClasses.FILTER,
+        FilterConformanceClasses.BASIC_CQL2,
+        FilterConformanceClasses.CQL2_JSON,
+        FilterConformanceClasses.CQL2_TEXT,
+        FreeTextConformanceClasses.COLLECTIONS,
+        QueryConformanceClasses.COLLECTIONS,
+        SortConformanceClasses.COLLECTIONS,
+    ]:
+        assert conf in ext.conformance_classes
 
     ext = CollectionSearchPostExtension.from_extensions(
         extensions,
@@ -463,49 +489,57 @@ def test_from_extensions_methods(extensions):
     assert hasattr(collection_search, "fields")
     assert hasattr(collection_search, "q")
     assert hasattr(collection_search, "sortby")
-    assert hasattr(collection_search, "filter")
-    assert ext.conformance_classes == [
-        ConformanceClasses.COLLECTIONSEARCH,
-        ConformanceClasses.BASIS,
-        ConformanceClasses.FIELDS,
-        ConformanceClasses.FILTER,
-        ConformanceClasses.FREETEXT,
-        ConformanceClasses.QUERY,
-        ConformanceClasses.SORT,
-    ]
+    assert hasattr(collection_search, "filter_expr")
+    for conf in [
+        CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+        CollectionSearchConformanceClasses.BASIS,
+        FieldsConformanceClasses.COLLECTIONS,
+        FilterConformanceClasses.COLLECTIONS,
+        FilterConformanceClasses.FILTER,
+        FilterConformanceClasses.BASIC_CQL2,
+        FilterConformanceClasses.CQL2_JSON,
+        FilterConformanceClasses.CQL2_TEXT,
+        FreeTextConformanceClasses.COLLECTIONS,
+        QueryConformanceClasses.COLLECTIONS,
+        SortConformanceClasses.COLLECTIONS,
+    ]:
+        assert conf in ext.conformance_classes
 
 
 def test_from_extensions_methods_invalid():
-    """Should raise warnings for invalid extensions."""
+    """Should also work with unknown extensions."""
     extensions = [
         AggregationExtension(),
     ]
-    with pytest.warns((UserWarning)):
-        ext = CollectionSearchExtension.from_extensions(
-            extensions,
-        )
+    ext = CollectionSearchExtension.from_extensions(
+        extensions,
+    )
+
     collection_search = ext.GET()
     assert collection_search.__class__.__name__ == "CollectionsGetRequest"
     assert hasattr(collection_search, "bbox")
     assert hasattr(collection_search, "datetime")
     assert hasattr(collection_search, "limit")
-    assert ext.conformance_classes == [
-        ConformanceClasses.COLLECTIONSEARCH,
-        ConformanceClasses.BASIS,
-    ]
+    assert hasattr(collection_search, "aggregations")
+    for conf in [
+        CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+        CollectionSearchConformanceClasses.BASIS,
+    ]:
+        assert conf in ext.conformance_classes
 
-    with pytest.warns((UserWarning)):
-        ext = CollectionSearchPostExtension.from_extensions(
-            extensions,
-            client=DummyPostClient(),
-            settings=ApiSettings(),
-        )
+    ext = CollectionSearchPostExtension.from_extensions(
+        extensions,
+        client=DummyPostClient(),
+        settings=ApiSettings(),
+    )
     collection_search = ext.POST()
     assert collection_search.__class__.__name__ == "CollectionsPostRequest"
     assert hasattr(collection_search, "bbox")
     assert hasattr(collection_search, "datetime")
     assert hasattr(collection_search, "limit")
-    assert ext.conformance_classes == [
-        ConformanceClasses.COLLECTIONSEARCH,
-        ConformanceClasses.BASIS,
-    ]
+    assert hasattr(collection_search, "aggregations")
+    for conf in [
+        CollectionSearchConformanceClasses.COLLECTIONSEARCH,
+        CollectionSearchConformanceClasses.BASIS,
+    ]:
+        assert conf in ext.conformance_classes

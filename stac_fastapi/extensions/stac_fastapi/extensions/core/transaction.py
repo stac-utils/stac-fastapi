@@ -1,5 +1,6 @@
 """Transaction extension."""
 
+from enum import Enum
 from typing import List, Literal, Optional, Type, Union
 
 import attr
@@ -15,6 +16,17 @@ from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.stac import PartialCollection, PartialItem, PatchOperation
+
+
+class TransactionConformanceClasses(str, Enum):
+    """Conformance classes for the Transaction extension.
+
+    See https://github.com/stac-api-extensions/transaction
+
+    """
+
+    ITEMS = "https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction"
+    COLLECTIONS = "https://api.stacspec.org/v1.0.0/collections/extensions/transaction"
 
 
 @attr.s
@@ -103,8 +115,8 @@ class TransactionExtension(ApiExtension):
     settings: ApiSettings = attr.ib()
     conformance_classes: List[str] = attr.ib(
         factory=lambda: [
-            "https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction",
-            "https://api.stacspec.org/v1.0.0/collections/extensions/transaction",
+            TransactionConformanceClasses.ITEMS,
+            TransactionConformanceClasses.COLLECTIONS,
         ]
     )
     schema_href: Optional[str] = attr.ib(default=None)
@@ -242,7 +254,9 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["PUT"],
-            endpoint=create_async_endpoint(self.client.update_collection, PutCollection),
+            endpoint=create_async_endpoint(
+                self.client.update_collection, PutCollection
+            ),
         )
 
     def register_patch_collection(self):
@@ -287,7 +301,9 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["DELETE"],
-            endpoint=create_async_endpoint(self.client.delete_collection, CollectionUri),
+            endpoint=create_async_endpoint(
+                self.client.delete_collection, CollectionUri
+            ),
         )
 
     def register(self, app: FastAPI) -> None:

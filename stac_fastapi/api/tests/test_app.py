@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List, Optional, Union
 
 import attr
@@ -16,7 +15,11 @@ from stac_fastapi.api.models import (
     create_get_request_model,
     create_post_request_model,
 )
-from stac_fastapi.extensions.core import FieldsExtension, FilterExtension
+from stac_fastapi.extensions.core import (
+    FieldsExtension,
+    FilterExtension,
+    SearchFilterExtension,
+)
 from stac_fastapi.types import stac
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseCoreClient, NumType
@@ -127,7 +130,7 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
             self, search_request: BaseSearchPostRequest, **kwargs
         ) -> stac.ItemCollection:
             search_request.collections = ["test"]
-            search_request.filter = {}
+            search_request.filter_expr = {}
             search_request.filter_crs = "EPSG:4326"
             search_request.filter_lang = "cql2-text"
 
@@ -141,37 +144,26 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
             ids: Optional[List[str]] = None,
             bbox: Optional[List[NumType]] = None,
             intersects: Optional[str] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[str] = None,
             limit: Optional[int] = 10,
-            filter: Optional[str] = None,
+            filter_expr: Optional[str] = None,
             filter_crs: Optional[str] = None,
             filter_lang: Optional[str] = None,
             **kwargs,
         ) -> stac.ItemCollection:
-            # Check if all filter parameters are passed correctly
-
-            assert filter == "TEST"
-
-            # FIXME: https://github.com/stac-utils/stac-fastapi/issues/638
-            # hyphen alias for filter_crs and filter_lang are currently not working
-            # Query parameters `filter-crs` and `filter-lang`
-            # should be recognized by the API
-            # They are present in the `request.query_params` but not in the `kwargs`
-
-            # assert filter_crs == "EPSG:4326"
-            # assert filter_lang == "cql2-text"
+            assert filter_expr == "TEST"
+            assert filter_crs == "EPSG:4326"
+            assert filter_lang == "cql2-text"
 
             return stac.ItemCollection(
                 type="FeatureCollection", features=[stac.Item(**item_dict)]
             )
 
-    post_request_model = create_post_request_model([FilterExtension()])
-
     test_app = app.StacApi(
         settings=ApiSettings(enable_response_models=validate),
-        client=FilterClient(post_request_model=post_request_model),
+        client=FilterClient(),
         search_get_request_model=create_get_request_model([FilterExtension()]),
-        search_post_request_model=post_request_model,
+        search_post_request_model=create_post_request_model([FilterExtension()]),
         extensions=[FilterExtension()],
     )
 
@@ -191,11 +183,49 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
                 "collections": ["test"],
                 "filter": {},
                 "filter-crs": "EPSG:4326",
-                "filter-lang": "cql2-text",
+                "filter-lang": "cql2-json",
             },
         )
 
     assert landing.status_code == 200, landing.text
+    assert "Queryables available for this Catalog" in [
+        link.get("title") for link in landing.json()["links"]
+    ]
+    assert get_search.status_code == 200, get_search.text
+    assert post_search.status_code == 200, post_search.text
+
+    test_app = app.StacApi(
+        settings=ApiSettings(enable_response_models=validate),
+        client=FilterClient(),
+        search_get_request_model=create_get_request_model([SearchFilterExtension()]),
+        search_post_request_model=create_post_request_model([SearchFilterExtension()]),
+        extensions=[SearchFilterExtension()],
+    )
+
+    with TestClient(test_app.app) as client:
+        landing = client.get("/")
+        get_search = client.get(
+            "/search",
+            params={
+                "filter": "TEST",
+                "filter-crs": "EPSG:4326",
+                "filter-lang": "cql2-text",
+            },
+        )
+        post_search = client.post(
+            "/search",
+            json={
+                "collections": ["test"],
+                "filter": {},
+                "filter-crs": "EPSG:4326",
+                "filter-lang": "cql2-json",
+            },
+        )
+
+    assert landing.status_code == 200, landing.text
+    assert "Queryables available for this Catalog" in [
+        link.get("title") for link in landing.json()["links"]
+    ]
     assert get_search.status_code == 200, get_search.text
     assert post_search.status_code == 200, post_search.text
 
@@ -223,7 +253,7 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
             ids: Optional[List[str]] = None,
             bbox: Optional[List[NumType]] = None,
             intersects: Optional[str] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[str] = None,
             limit: Optional[int] = 10,
             **kwargs,
         ) -> stac.ItemCollection:
@@ -249,7 +279,7 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
             self,
             collection_id: str,
             bbox: Optional[List[Union[float, int]]] = None,
-            datetime: Optional[Union[str, datetime]] = None,
+            datetime: Optional[str] = None,
             limit: int = 10,
             token: str = None,
             **kwargs,
@@ -387,3 +417,90 @@ def test_request_model(AsyncTestCoreClient):
             "/collections/test_collection/items/test_item", params={"user": "Chewbacca"}
         )
         assert resp.status_code == 200
+
+
+def test_client_datetime_input_params():
+    """Test all endpoints. Verify input models."""
+
+    class FakeClient(BaseCoreClient):
+        def post_search(self, search_request: BaseSearchPostRequest, **kwargs):
+            assert isinstance(search_request.datetime, str)
+            return search_request.datetime
+
+        def get_search(
+            self,
+            collections: Optional[List[str]] = None,
+            ids: Optional[List[str]] = None,
+            bbox: Optional[List[NumType]] = None,
+            intersects: Optional[str] = None,
+            datetime: Optional[str] = None,
+            limit: Optional[int] = 10,
+            **kwargs,
+        ):
+            assert isinstance(datetime, str)
+            return datetime
+
+        def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
+            raise NotImplementedError
+
+        def all_collections(self, **kwargs) -> stac.Collections:
+            raise NotImplementedError
+
+        def get_collection(self, collection_id: str, **kwargs) -> stac.Collection:
+            raise NotImplementedError
+
+        def item_collection(
+            self,
+            collection_id: str,
+            bbox: Optional[List[Union[float, int]]] = None,
+            datetime: Optional[str] = None,
+            limit: int = 10,
+            token: str = None,
+            **kwargs,
+        ) -> stac.ItemCollection:
+            raise NotImplementedError
+
+    test_app = app.StacApi(
+        settings=ApiSettings(enable_response_models=False),
+        client=FakeClient(),
+    )
+
+    with TestClient(test_app.app) as client:
+        get_search = client.get(
+            "/search",
+            params={
+                "collections": ["test"],
+                "datetime": "2020-01-01T00:00:00.00001Z",
+            },
+        )
+        get_search_zero = client.get(
+            "/search",
+            params={
+                "collections": ["test"],
+                "datetime": "2020-01-01T00:00:00.0000Z",
+            },
+        )
+        post_search = client.post(
+            "/search",
+            json={
+                "collections": ["test"],
+                "datetime": "2020-01-01T00:00:00.00001Z",
+            },
+        )
+        post_search_zero = client.post(
+            "/search",
+            json={
+                "collections": ["test"],
+                "datetime": "2020-01-01T00:00:00.0000Z",
+            },
+        )
+
+    assert get_search.status_code == 200, get_search.text
+    assert get_search.json() == "2020-01-01T00:00:00.00001Z"
+    assert get_search_zero.status_code == 200, get_search_zero.text
+    assert get_search_zero.json() == "2020-01-01T00:00:00.0000Z"
+
+    assert post_search.status_code == 200, post_search.text
+    assert post_search.json() == "2020-01-01T00:00:00.00001Z"
+    assert post_search_zero.status_code == 200, post_search_zero.text
+    assert post_search_zero.json() == "2020-01-01T00:00:00.0000Z"

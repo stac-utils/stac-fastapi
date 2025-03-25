@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     timeout-minutes: 20
 
     steps:
@@ -24,7 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Lint code
-        if: ${{ matrix.python-version == 3.8 }}
+        if: ${{ matrix.python-version == 3.13 }}
         run: |
           python -m pip install pre-commit
           pre-commit run --all-files
@@ -63,7 +63,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       - name: Install types
         run: |

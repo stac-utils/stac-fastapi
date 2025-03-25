@@ -1,5 +1,5 @@
 """Sort extension module."""
 
-from .sort import SortExtension
+from .sort import SortConformanceClasses, SortExtension
 
-__all__ = ["SortExtension"]
+__all__ = ["SortExtension", "SortConformanceClasses"]

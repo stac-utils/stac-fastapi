@@ -1,13 +1,13 @@
 """Collection-Search extension module."""
 
 from .collection_search import (
+    CollectionSearchConformanceClasses,
     CollectionSearchExtension,
     CollectionSearchPostExtension,
-    ConformanceClasses,
 )
 
 __all__ = [
     "CollectionSearchExtension",
     "CollectionSearchPostExtension",
-    "ConformanceClasses",
+    "CollectionSearchConformanceClasses",
 ]

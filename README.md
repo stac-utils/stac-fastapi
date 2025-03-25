@@ -8,9 +8,6 @@
   <a href="https://github.com/stac-utils/stac-fastapi/actions?query=workflow%3Acicd" target="_blank">
       <img src="https://github.com/stac-utils/stac-fastapi/workflows/stac-fastapi/badge.svg" alt="Test">
   </a>
-  <a href="https://pypi.org/project/stac-fastapi" target="_blank">
-      <img src="https://img.shields.io/pypi/v/stac-fastapi.api?color=%2334D058&label=pypi%20package" alt="Package version">
-  </a>
   <a href="https://github.com/stac-utils/stac-fastapi/blob/main/LICENSE" target="_blank">
       <img src="https://img.shields.io/github/license/stac-utils/stac-fastapi.svg" alt="License">
   </a>
@@ -27,17 +24,19 @@
 Python library for building a STAC compliant FastAPI application.  The project is split up into several namespace
 packages:
 
-- **stac_fastapi.api**: An API layer which enforces the [stac-api-spec](https://github.com/radiantearth/stac-api-spec).
-- **stac_fastapi.extensions**: Abstract base classes for [STAC API extensions](https://github.com/radiantearth/stac-api-spec/blob/master/extensions.md) and third-party extensions.
-- **stac_fastapi.types**: Shared types and abstract base classes used by the library.
+| Package |  Description | Version
+| ------- |------------- | -------
+[**stac_fastapi.api**](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/api) | An API layer which enforces the [stac-api-spec](https://github.com/radiantearth/stac-api-spec). | [![stac-fastapi.api](https://img.shields.io/pypi/v/stac-fastapi.api?color=%2334D058&label=pypi)](https://pypi.org/project/stac-fastapi.api)
+[**stac_fastapi.extensions**](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions) | Abstract base classes for [STAC API extensions](https://github.com/radiantearth/stac-api-spec/blob/master/extensions.md) and third-party extensions. | [![stac-fastapi.extensions](https://img.shields.io/pypi/v/stac-fastapi.extensions?color=%2334D058&label=pypi)](https://pypi.org/project/stac-fastapi.extensions)
+[**stac_fastapi.types**](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/types) | Shared types and abstract base classes used by the library. | [![stac-fastapi.types](https://img.shields.io/pypi/v/stac-fastapi.types?color=%2334D058&label=pypi)](https://pypi.org/project/stac-fastapi.types)
 
 #### Backends
 
 Backends are hosted in their own repositories:
 
 - [stac-fastapi-pgstac](https://github.com/stac-utils/stac-fastapi-pgstac): Postgres backend implementation with [PgSTAC](https://github.com/stac-utils/pgstac).
+- [stac-fastapi-elasticsearch](https://github.com/stac-utils/stac-fastapi-elasticsearch-opensearch): Backend implementation with [Elasticsearch](https://github.com/elastic/elasticsearch).
 - [stac-fastapi-sqlalchemy](https://github.com/stac-utils/stac-fastapi-sqlalchemy): Postgres backend implementation with [sqlalchemy](https://www.sqlalchemy.org/).
-- [stac-fastapi-elasticsearch](https://github.com/stac-utils/stac-fastapi-elasticsearch): Backend implementation with [Elasticsearch](https://github.com/elastic/elasticsearch).
 
 `stac-fastapi` was initially developed by [arturo-ai](https://github.com/arturo-ai).
 

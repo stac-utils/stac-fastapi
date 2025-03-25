@@ -9,9 +9,9 @@ from fastapi import Request
 from geojson_pydantic.geometries import Geometry
 from pydantic import TypeAdapter
 from stac_pydantic import Collection, Item, ItemCollection
-from stac_pydantic.api.version import STAC_API_VERSION
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import BBox, MimeTypes
+from stac_pydantic.version import STAC_VERSION
 from starlette.responses import Response
 
 from stac_fastapi.types import stac
@@ -19,7 +19,6 @@ from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.requests import get_base_url
-from stac_fastapi.types.rfc3339 import DateTimeType
 from stac_fastapi.types.search import BaseSearchPostRequest
 
 __all__ = [
@@ -625,7 +624,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
 class LandingPageMixin(abc.ABC):
     """Create a STAC landing page (GET /)."""
 
-    stac_version: str = attr.ib(default=STAC_API_VERSION)
+    stac_version: str = attr.ib(default=STAC_VERSION)
     landing_page_id: str = attr.ib(default=api_settings.stac_fastapi_landing_id)
     title: str = attr.ib(default=api_settings.stac_fastapi_title)
     description: str = attr.ib(default=api_settings.stac_fastapi_description)
@@ -647,16 +646,19 @@ class LandingPageMixin(abc.ABC):
                 {
                     "rel": Relations.self.value,
                     "type": MimeTypes.json.value,
+                    "title": "This document",
                     "href": base_url,
                 },
                 {
                     "rel": Relations.root.value,
                     "type": MimeTypes.json.value,
+                    "title": "Root",
                     "href": base_url,
                 },
                 {
                     "rel": Relations.data.value,
                     "type": MimeTypes.json.value,
+                    "title": "Collections available for this Catalog",
                     "href": urljoin(base_url, "collections"),
                 },
                 {
@@ -668,14 +670,14 @@ class LandingPageMixin(abc.ABC):
                 {
                     "rel": Relations.search.value,
                     "type": MimeTypes.geojson.value,
-                    "title": "STAC search",
+                    "title": "STAC search [GET]",
                     "href": urljoin(base_url, "search"),
                     "method": "GET",
                 },
                 {
                     "rel": Relations.search.value,
                     "type": MimeTypes.geojson.value,
-                    "title": "STAC search",
+                    "title": "STAC search [POST]",
                     "href": urljoin(base_url, "search"),
                     "method": "POST",
                 },
@@ -698,7 +700,6 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         factory=lambda: BASE_CONFORMANCE_CLASSES
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    post_request_model = attr.ib(default=BaseSearchPostRequest)
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base
@@ -709,7 +710,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
             extension_classes = getattr(extension, "conformance_classes", [])
             base_conformance_classes.extend(extension_classes)
 
-        return list(set(base_conformance_classes))
+        return sorted(list(set(base_conformance_classes)))
 
     def extension_is_enabled(self, extension: str) -> bool:
         """Check if an api extension is enabled."""
@@ -743,12 +744,14 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add Queryables link
-        if self.extension_is_enabled("FilterExtension"):
+        if self.extension_is_enabled("FilterExtension") or self.extension_is_enabled(
+            "SearchFilterExtension"
+        ):
             landing_page["links"].append(
                 {
                     "rel": Relations.queryables.value,
                     "type": MimeTypes.jsonschema.value,
-                    "title": "Queryables",
+                    "title": "Queryables available for this Catalog",
                     "href": urljoin(base_url, "queryables"),
                 }
             )
@@ -770,19 +773,6 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                         "href": urljoin(base_url, "aggregations"),
                     },
                 ]
-            )
-
-        # Add Collections links
-        collections = self.all_collections(request=kwargs["request"])
-
-        for collection in collections["collections"]:
-            landing_page["links"].append(
-                {
-                    "rel": Relations.child.value,
-                    "type": MimeTypes.json.value,
-                    "title": collection.get("title") or collection.get("id"),
-                    "href": urljoin(base_url, f"collections/{collection['id']}"),
-                }
             )
 
         # Add OpenAPI URL
@@ -840,7 +830,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ids: Optional[List[str]] = None,
         bbox: Optional[BBox] = None,
         intersects: Optional[Geometry] = None,
-        datetime: Optional[DateTimeType] = None,
+        datetime: Optional[str] = None,
         limit: Optional[int] = 10,
         **kwargs,
     ) -> stac.ItemCollection:
@@ -898,7 +888,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         self,
         collection_id: str,
         bbox: Optional[BBox] = None,
-        datetime: Optional[DateTimeType] = None,
+        datetime: Optional[str] = None,
         limit: int = 10,
         token: str = None,
         **kwargs,
@@ -930,7 +920,6 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         factory=lambda: BASE_CONFORMANCE_CLASSES
     )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    post_request_model = attr.ib(default=BaseSearchPostRequest)
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base
@@ -941,7 +930,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             extension_classes = getattr(extension, "conformance_classes", [])
             conformance_classes.extend(extension_classes)
 
-        return list(set(conformance_classes))
+        return sorted(list(set(conformance_classes)))
 
     def extension_is_enabled(self, extension: str) -> bool:
         """Check if an api extension is enabled."""
@@ -965,12 +954,14 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add Queryables link
-        if self.extension_is_enabled("FilterExtension"):
+        if self.extension_is_enabled("FilterExtension") or self.extension_is_enabled(
+            "SearchFilterExtension"
+        ):
             landing_page["links"].append(
                 {
                     "rel": Relations.queryables.value,
                     "type": MimeTypes.jsonschema.value,
-                    "title": "Queryables",
+                    "title": "Queryables available for this Catalog",
                     "href": urljoin(base_url, "queryables"),
                     "method": "GET",
                 }
@@ -993,19 +984,6 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                         "href": urljoin(base_url, "aggregations"),
                     },
                 ]
-            )
-
-        # Add Collections links
-        collections = await self.all_collections(request=kwargs["request"])
-
-        for collection in collections["collections"]:
-            landing_page["links"].append(
-                {
-                    "rel": Relations.child.value,
-                    "type": MimeTypes.json.value,
-                    "title": collection.get("title") or collection.get("id"),
-                    "href": urljoin(base_url, f"collections/{collection['id']}"),
-                }
             )
 
         # Add OpenAPI URL
@@ -1063,7 +1041,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         ids: Optional[List[str]] = None,
         bbox: Optional[BBox] = None,
         intersects: Optional[Geometry] = None,
-        datetime: Optional[DateTimeType] = None,
+        datetime: Optional[str] = None,
         limit: Optional[int] = 10,
         **kwargs,
     ) -> stac.ItemCollection:
@@ -1121,7 +1099,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         self,
         collection_id: str,
         bbox: Optional[BBox] = None,
-        datetime: Optional[DateTimeType] = None,
+        datetime: Optional[str] = None,
         limit: int = 10,
         token: str = None,
         **kwargs,

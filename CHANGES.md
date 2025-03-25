@@ -4,9 +4,134 @@
 
 * Add Item and Collection `PATCH` endpoints with support for [RFC 6902](https://tools.ietf.org/html/rfc6902) and [RFC 7396](https://tools.ietf.org/html/rfc7386)
 
+## [5.1.1] - 2025-03-17
+
+### Fixed
+
+- allow bbox with 6 coordinates (3D) in `GET` requests
+
+## [5.1.0] - 2025-03-07
+
 ### Added
 
-* Add `from_extensions()` method to `CollectionSearchExtension` and `CollectionSearchPostExtension` extensions to build the class based on a list of available extensions.
+- titles in `Landing` page links
+
+### Changed
+
+- remove `child` links (`collections`) in landing page response
+
+## [5.0.3] - 2025-03-03
+
+### Added
+
+- added descriptive message to `types.search.str2bbox` length assert
+
+### Fixed
+
+- fix collection-search POST request model:
+  - fix pydantic model to make sure class variables `_start_date` and `_end_date` not edited (ported from stac-pydantic)
+  - fix bbox validation to allow anti-meridian crossing (ported from stac-pydantic)
+
+## [5.0.2] - 2025-01-30
+
+### Fixed
+
+- forward `prefix` to `ItemCollectionFilterExtension.router`
+
+## [5.0.1] - 2025-01-30
+
+### Fixed
+
+- add `Queryables` links when `SearchFilterExtension` is enabled
+
+## [5.0.0] - 2025-01-30
+
+### Changed
+
+- refactored conformance classes for extensions
+
+  - renamed `collection_search.ConformanceClasses` -> `collection_search.CollectionSearchConformanceClasses`
+  - removed `FREETEXT`, `FILTER`, `QUERY`, `SORT` and `FIELDS` entries from the `CollectionSearchConformanceClasses` Enum (and moved to each extension's Enum)
+  - changed `collection_search.CollectionSearchPostExtension.from_extension(ext)` to use the conformance classes from the input extensions to derive the output conformance classes.
+  - added `fields.FieldsConformanceClasses` Enum
+  - renamed `filter.FilterConformanceClasses.FEATURES_FILTER` -> `filter.FilterConformanceClasses.ITEMS`
+  - renamed `filter.FilterConformanceClasses.ITEM_SEARCH_FILTER` -> `filter.FilterConformanceClasses.SEARCH`
+  - added `filter.FilterConformanceClasses.COLLECTIONS`
+  - added `filter.SearchFilterExtension`, `filter.ItemCollectionFilterExtension` and `filter.CollectionSearchFilterExtension` endpoint specific extensions
+  - removed `FreeTextConformanceClasses.COLLECTIONS` and `FreeTextConformanceClasses.ITEMS` in `FreeTextExtension` and `FreeTextAdvancedExtension` default conformances classes
+  - added `query.QueryConformanceClasses` Enum
+  - added `SortConformanceClasses` Enum
+
+- removed `StacApi.customize_openapi` method
+- reordered `StacApi` attributes (moved `title`, `api_version` and `description` before `app`)
+
+### Added
+
+* forward `StacApi.title`, `StacApi.api_version` and `Stac.Api.description` to the FastAPI application
+
+## [4.0.1] - 2025-01-23
+
+### Changed
+
+- sort conformance classes
+
+### Fixed
+
+* support `forwarded` headers in `ProxyHeaderMiddleware` that do not contain a host key ([#788](https://github.com/stac-utils/stac-fastapi/pull/788))
+
+## [4.0.0] - 2025-01-17
+
+### Changed
+
+* use `string` type instead of python `datetime.datetime` for datetime parameter in `BaseSearchGetRequest`, `ItemCollectionUri` and `BaseCollectionSearchGetRequest` GET models
+* rename `filter` to `filter_expr` for `FilterExtensionGetRequest` and `FilterExtensionPostRequest` attributes to avoid conflict with python filter method
+* remove deprecated `post_request_model` attribute in `BaseCoreClient` and `AsyncBaseCoreClient`
+* remove `python3.8` support
+
+### Fixed
+
+* Support multiple proxy servers in the `forwarded` header in `ProxyHeaderMiddleware` ([#782](https://github.com/stac-utils/stac-fastapi/pull/782))
+
+## [3.0.5] - 2025-01-10
+
+### Removed
+
+* Remove `warnings` in `CollectionSearchExtension.from_extensions()` methods when passing `unknown` extensions
+
+## [3.0.4] - 2025-01-08
+
+### Removed
+
+* Remove deprecated `context` property in `types.stac.ItemCollection` model
+
+### Added
+
+* Add `numberMatched` and `numberReturned` properties in `types.stac.ItemCollection` model
+* Add `numberMatched` and `numberReturned` properties in `types.stac.Collections` model
+* Add `root_path` to `stac_fastapi.types.config.ApiSettings` and use it in the default FastAPI application
+* Add `python3.13` support
+
+## Changed
+
+* Use `stac_pydantic.version.STAC_VERSION` instead of `stac_pydantic.api.version.STAC_API_VERSION` as application `stac_version`
+* Return more informations from pydantic validation errors
+* Add deprecation notice for `post_request_model` attribute in `BaseCoreClient` and `AsyncBaseCoreClient`
+
+## [3.0.3] - 2024-10-09
+
+### Removed
+
+* Removed `cql2-text` in supported `filter-lang` for `FilterExtensionPostRequest` model (as per specification)
+
+### Added
+
+* Add `OffsetPaginationExtension` extension to add `offset` query/body parameter to endpoints
+
+## [3.0.2] - 2024-09-20
+
+### Added
+
+* Add `from_extensions()` method to `CollectionSearchExtension` and `CollectionSearchPostExtension` extensions to build the class based on a list of available extensions ([#745](https://github.com/stac-utils/stac-fastapi/pull/745))
 
 ## [3.0.1] - 2024-08-27
 
@@ -479,7 +604,19 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.1..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/5.1.1..main>
+[5.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.1.0..5.1.1>
+[5.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.3..5.1.0>
+[5.0.3]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.2..5.0.3>
+[5.0.2]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.1..5.0.2>
+[5.0.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.0..5.0.1>
+[5.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/4.0.1..5.0.0>
+[4.0.1]: <https://github.com/stac-utils/stac-fastapi/compare/4.0.0..4.0.1>
+[4.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.5..4.0.0>
+[3.0.5]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.4..3.0.5>
+[3.0.4]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.3..3.0.4>
+[3.0.3]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.2..3.0.3>
+[3.0.2]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.1..3.0.2>
 [3.0.1]: <https://github.com/stac-utils/stac-fastapi/compare/3.0.0..3.0.1>
 [3.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5.post1..3.0.0>
 [2.5.5.post1]: <https://github.com/stac-utils/stac-fastapi/compare/2.5.5..2.5.5.post1>
