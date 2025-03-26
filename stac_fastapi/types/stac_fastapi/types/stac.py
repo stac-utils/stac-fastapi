@@ -1,8 +1,9 @@
 """STAC types."""
 
+import json
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, computed_field
 from stac_pydantic.shared import BBox, StacBaseModel
 from typing_extensions import TypedDict
 
@@ -121,6 +122,16 @@ class PatchAddReplaceTest(StacBaseModel):
     path: str
     op: Literal["add", "replace", "test"]
     value: Any
+
+    @computed_field
+    @property
+    def json_value(self) -> str:
+        """JSON dump of value field.
+
+        Returns:
+            str: JSON-ised value
+        """
+        return json.dumps(self.value)
 
 
 class PatchRemove(StacBaseModel):
