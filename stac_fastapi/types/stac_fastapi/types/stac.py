@@ -3,7 +3,7 @@
 import json
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import ConfigDict, Field, computed_field
+from pydantic import ConfigDict, Field
 from stac_pydantic.shared import BBox, StacBaseModel
 from typing_extensions import TypedDict
 
@@ -123,7 +123,6 @@ class PatchAddReplaceTest(StacBaseModel):
     op: Literal["add", "replace", "test"]
     value: Any
 
-    @computed_field
     @property
     def json_value(self) -> str:
         """JSON dump of value field.
