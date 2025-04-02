@@ -176,7 +176,9 @@ class BaseTransactionsClient(abc.ABC):
         raise NotImplementedError("JSON Patch not implemented")
 
     @abc.abstractmethod
-    def delete_item(self, item_id: str, collection_id: str, **kwargs) -> Optional[Union[stac.Item, Response]]:
+    def delete_item(
+        self, item_id: str, collection_id: str, **kwargs
+    ) -> Optional[Union[stac.Item, Response]]:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collection_id}/items/{item_id}`
@@ -191,7 +193,9 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def create_collection(self, collection: Collection, **kwargs) -> Optional[Union[stac.Collection, Response]]:
+    def create_collection(
+        self, collection: Collection, **kwargs
+    ) -> Optional[Union[stac.Collection, Response]]:
         """Create a new collection.
 
         Called with `POST /collections`.
@@ -308,7 +312,9 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def delete_collection(self, collection_id: str, **kwargs) -> Optional[Union[stac.Collection, Response]]:
+    def delete_collection(
+        self, collection_id: str, **kwargs
+    ) -> Optional[Union[stac.Collection, Response]]:
         """Delete a collection.
 
         Called with `DELETE /collections/{collection_id}`
@@ -461,7 +467,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def delete_item(self, item_id: str, collection_id: str, **kwargs) -> Optional[Union[stac.Item, Response]]:
+    async def delete_item(
+        self, item_id: str, collection_id: str, **kwargs
+    ) -> Optional[Union[stac.Item, Response]]:
         """Delete an item from a collection.
 
         Called with `DELETE /collections/{collection_id}/items/{item_id}`
@@ -476,7 +484,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def create_collection(self, collection: Collection, **kwargs) -> Optional[Union[stac.Collection, Response]]:
+    async def create_collection(
+        self, collection: Collection, **kwargs
+    ) -> Optional[Union[stac.Collection, Response]]:
         """Create a new collection.
 
         Called with `POST /collections`.
@@ -593,7 +603,9 @@ class AsyncBaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def delete_collection(self, collection_id: str, **kwargs) -> Optional[Union[stac.Collection, Response]]:
+    async def delete_collection(
+        self, collection_id: str, **kwargs
+    ) -> Optional[Union[stac.Collection, Response]]:
         """Delete a collection.
 
         Called with `DELETE /collections/{collection_id}`
@@ -683,7 +695,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         extensions: list of registered api extensions.
     """
 
-    base_conformance_classes: List[str] = attr.ib(factory=lambda: BASE_CONFORMANCE_CLASSES)
+    base_conformance_classes: List[str] = attr.ib(
+        factory=lambda: BASE_CONFORMANCE_CLASSES
+    )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
     def conformance_classes(self) -> List[str]:
@@ -729,7 +743,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add Queryables link
-        if self.extension_is_enabled("FilterExtension") or self.extension_is_enabled("SearchFilterExtension"):
+        if self.extension_is_enabled("FilterExtension") or self.extension_is_enabled(
+            "SearchFilterExtension"
+        ):
             landing_page["links"].append(
                 {
                     "rel": Relations.queryables.value,
@@ -791,7 +807,9 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         return stac.Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
-    def post_search(self, search_request: BaseSearchPostRequest, **kwargs) -> stac.ItemCollection:
+    def post_search(
+        self, search_request: BaseSearchPostRequest, **kwargs
+    ) -> stac.ItemCollection:
         """Cross catalog search (POST).
 
         Called with `POST /search`.
@@ -897,7 +915,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         extensions: list of registered api extensions.
     """
 
-    base_conformance_classes: List[str] = attr.ib(factory=lambda: BASE_CONFORMANCE_CLASSES)
+    base_conformance_classes: List[str] = attr.ib(
+        factory=lambda: BASE_CONFORMANCE_CLASSES
+    )
     extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
 
     def conformance_classes(self) -> List[str]:
@@ -933,7 +953,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         )
 
         # Add Queryables link
-        if self.extension_is_enabled("FilterExtension") or self.extension_is_enabled("SearchFilterExtension"):
+        if self.extension_is_enabled("FilterExtension") or self.extension_is_enabled(
+            "SearchFilterExtension"
+        ):
             landing_page["links"].append(
                 {
                     "rel": Relations.queryables.value,
@@ -996,7 +1018,9 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         return stac.Conformance(conformsTo=self.conformance_classes())
 
     @abc.abstractmethod
-    async def post_search(self, search_request: BaseSearchPostRequest, **kwargs) -> stac.ItemCollection:
+    async def post_search(
+        self, search_request: BaseSearchPostRequest, **kwargs
+    ) -> stac.ItemCollection:
         """Cross catalog search (POST).
 
         Called with `POST /search`.
