@@ -291,7 +291,6 @@ class BaseTransactionsClient(abc.ABC):
         """
         ...
 
-    @abc.abstractmethod
     def json_patch_collection(
         self,
         collection_id: str,
@@ -309,7 +308,7 @@ class BaseTransactionsClient(abc.ABC):
         Returns:
             The patched collection.
         """
-        ...
+        raise NotImplementedError("JSON Patch not implemented")
 
     @abc.abstractmethod
     def delete_collection(
