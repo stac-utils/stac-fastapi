@@ -1,13 +1,12 @@
 """Base clients."""
 
 import abc
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
 from fastapi import Request
 from geojson_pydantic.geometries import Geometry
-from pydantic import TypeAdapter
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import BBox, MimeTypes
@@ -81,18 +80,13 @@ class BaseTransactionsClient(abc.ABC):
         """
         ...
 
+    @abc.abstractmethod
     def patch_item(
         self,
         collection_id: str,
         item_id: str,
-        patch: Union[stac.PartialItem, List[stac.PatchOperation]],
-        content_type: Optional[
-            Literal[
-                "application/json-patch+json",
-                "application/merge-patch+json",
-                "application/json",
-            ]
-        ] = "application/json",
+        patch: Any,
+        content_type: Optional[str],
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -107,73 +101,7 @@ class BaseTransactionsClient(abc.ABC):
         Returns:
             The patched item.
         """
-        if isinstance(patch, list) and content_type == "application/json-patch+json":
-            return self.json_patch_item(
-                collection_id,
-                item_id,
-                patch,
-                **kwargs,
-            )
-
-        elif isinstance(patch, dict) and content_type in [
-            "application/merge-patch+json",
-            "application/json",
-        ]:
-            partialItemValidator = TypeAdapter(stac.PartialItem)
-
-            patch = partialItemValidator.validate_python(patch)
-            return self.merge_patch_item(
-                collection_id,
-                item_id,
-                patch,
-                **kwargs,
-            )
-
-        else:
-            raise NotImplementedError("Content-Type and body combination not implemented")
-
-    @abc.abstractmethod
-    def merge_patch_item(
-        self,
-        collection_id: str,
-        item_id: str,
-        item: stac.PartialItem,
-        **kwargs,
-    ) -> Optional[Union[stac.Item, Response]]:
-        """Update an item from a collection.
-
-        Called with `PATCH /collections/{collection_id}/items/{item_id}`
-
-        Args:
-            item_id: id of the item.
-            collection_id: id of the collection.
-            item: the partial item.
-
-        Returns:
-            The patched item.
-        """
         ...
-
-    def json_patch_item(
-        self,
-        collection_id: str,
-        item_id: str,
-        operations: List[stac.PatchOperation],
-        **kwargs,
-    ) -> Optional[Union[stac.Item, Response]]:
-        """Update an item from a collection.
-
-        Called with `PATCH /collections/{collection_id}/items/{item_id}`
-
-        Args:
-            item_id: id of the item.
-            collection_id: id of the collection.
-            operations: list of patch operations.
-
-        Returns:
-            The patched item.
-        """
-        raise NotImplementedError("JSON Patch not implemented")
 
     @abc.abstractmethod
     def delete_item(
@@ -228,17 +156,12 @@ class BaseTransactionsClient(abc.ABC):
         """
         ...
 
+    @abc.abstractmethod
     def patch_collection(
         self,
         collection_id: str,
-        patch: Union[stac.PartialCollection, List[stac.PatchOperation]],
-        content_type: Optional[
-            Literal[
-                "application/json-patch+json",
-                "application/merge-patch+json",
-                "application/json",
-            ]
-        ] = "application/json",
+        patch: Any,
+        content_type: Optional[str],
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -252,63 +175,7 @@ class BaseTransactionsClient(abc.ABC):
         Returns:
             The patched collection.
         """
-        if isinstance(patch, list) and content_type == "application/json-patch+json":
-            return self.json_patch_collection(collection_id, patch, **kwargs)
-
-        elif isinstance(patch, dict) and content_type in [
-            "application/merge-patch+json",
-            "application/json",
-        ]:
-            partialCollectionValidator = TypeAdapter(stac.PartialCollection)
-
-            patch = partialCollectionValidator.validate_python(patch)
-            return self.merge_patch_collection(
-                collection_id,
-                patch,
-                **kwargs,
-            )
-
-        else:
-            raise NotImplementedError("Content-Type and body combination not implemented")
-
-    @abc.abstractmethod
-    def merge_patch_collection(
-        self,
-        collection_id: str,
-        collection: stac.PartialCollection,
-        **kwargs,
-    ) -> Optional[Union[stac.Collection, Response]]:
-        """Update a collection.
-
-        Called with `PATCH /collections/{collection_id}`
-
-        Args:
-            collection_id: id of the collection.
-            collection: the partial collection.
-
-        Returns:
-            The patched collection.
-        """
         ...
-
-    def json_patch_collection(
-        self,
-        collection_id: str,
-        operations: List[stac.PatchOperation],
-        **kwargs,
-    ) -> Optional[Union[stac.Collection, Response]]:
-        """Update a collection.
-
-        Called with `PATCH /collections/{collection_id}`
-
-        Args:
-            collection_id: id of the collection.
-            operations: list of patch operations.
-
-        Returns:
-            The patched collection.
-        """
-        raise NotImplementedError("JSON Patch not implemented")
 
     @abc.abstractmethod
     def delete_collection(
@@ -370,18 +237,13 @@ class AsyncBaseTransactionsClient(abc.ABC):
         """
         ...
 
+    @abc.abstractmethod
     async def patch_item(
         self,
         collection_id: str,
         item_id: str,
-        patch: Union[stac.PartialItem, List[stac.PatchOperation]],
-        content_type: Optional[
-            Literal[
-                "application/json-patch+json",
-                "application/merge-patch+json",
-                "application/json",
-            ]
-        ] = "application/json",
+        patch: Any,
+        content_type: Optional[str],
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -392,73 +254,6 @@ class AsyncBaseTransactionsClient(abc.ABC):
             item_id: id of the item.
             collection_id: id of the collection.
             patch: either the partial item or list of patch operations.
-
-        Returns:
-            The patched item.
-        """
-        if isinstance(patch, list) and content_type == "application/json-patch+json":
-            return await self.json_patch_item(
-                collection_id,
-                item_id,
-                patch,
-                **kwargs,
-            )
-
-        elif isinstance(patch, dict) and content_type in [
-            "application/merge-patch+json",
-            "application/json",
-        ]:
-            partialItemValidator = TypeAdapter(stac.PartialItem)
-
-            patch = partialItemValidator.validate_python(patch)
-            return await self.merge_patch_item(
-                collection_id,
-                item_id,
-                patch,
-                **kwargs,
-            )
-
-        else:
-            raise NotImplementedError("Content-Type and body combination not implemented")
-
-    @abc.abstractmethod
-    async def merge_patch_item(
-        self,
-        collection_id: str,
-        item_id: str,
-        item: stac.PartialItem,
-        **kwargs,
-    ) -> Optional[Union[stac.Item, Response]]:
-        """Update an item from a collection.
-
-        Called with `PATCH /collections/{collection_id}/items/{item_id}`
-
-        Args:
-            item_id: id of the item.
-            collection_id: id of the collection.
-            item: the partial item.
-
-        Returns:
-            The patched item.
-        """
-        ...
-
-    @abc.abstractmethod
-    async def json_patch_item(
-        self,
-        collection_id: str,
-        item_id: str,
-        operations: List[stac.PatchOperation],
-        **kwargs,
-    ) -> Optional[Union[stac.Item, Response]]:
-        """Update an item from a collection.
-
-        Called with `PATCH /collections/{collection_id}/items/{item_id}`
-
-        Args:
-            item_id: id of the item.
-            collection_id: id of the collection.
-            operations: list of patch operations.
 
         Returns:
             The patched item.
@@ -518,17 +313,12 @@ class AsyncBaseTransactionsClient(abc.ABC):
         """
         ...
 
+    @abc.abstractmethod
     async def patch_collection(
         self,
         collection_id: str,
-        patch: Union[stac.PartialCollection, List[stac.PatchOperation]],
-        content_type: Optional[
-            Literal[
-                "application/json-patch+json",
-                "application/merge-patch+json",
-                "application/json",
-            ]
-        ] = "application/json",
+        patch: Any,
+        content_type: Optional[str],
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -538,63 +328,6 @@ class AsyncBaseTransactionsClient(abc.ABC):
         Args:
             collection_id: id of the collection.
             patch: either the partial collection or list of patch operations.
-
-        Returns:
-            The patched collection.
-        """
-        if isinstance(patch, list) and content_type == "application/json-patch+json":
-            partialCollectionValidator = TypeAdapter(stac.PartialCollection)
-
-            patch = partialCollectionValidator.validate_python(patch)
-            return await self.json_patch_collection(
-                collection_id,
-                patch,
-                **kwargs,
-            )
-
-        elif isinstance(patch, dict) and content_type in [
-            "application/merge-patch+json",
-            "application/json",
-        ]:
-            return await self.merge_patch_collection(collection_id, patch, **kwargs)
-
-        else:
-            raise NotImplementedError("Content-Type and body combination not implemented")
-
-    @abc.abstractmethod
-    async def merge_patch_collection(
-        self,
-        collection_id: str,
-        collection: stac.PartialCollection,
-        **kwargs,
-    ) -> Optional[Union[stac.Collection, Response]]:
-        """Update a collection.
-
-        Called with `PATCH /collections/{collection_id}`
-
-        Args:
-            collection_id: id of the collection.
-            collection: the partial collection.
-
-        Returns:
-            The patched collection.
-        """
-        ...
-
-    @abc.abstractmethod
-    async def json_patch_collection(
-        self,
-        collection_id: str,
-        operations: List[stac.PatchOperation],
-        **kwargs,
-    ) -> Optional[Union[stac.Collection, Response]]:
-        """Update a collection.
-
-        Called with `PATCH /collections/{collection_id}`
-
-        Args:
-            collection_id: id of the collection.
-            operations: list of patch operations.
 
         Returns:
             The patched collection.

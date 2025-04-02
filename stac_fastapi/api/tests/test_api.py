@@ -427,10 +427,7 @@ class DummyTransactionsClient(core.BaseTransactionsClient):
     def update_item(self, *args, **kwargs):
         return "dummy response"
 
-    def json_patch_item(self, *args, **kwargs):
-        return "dummy response"
-
-    def merge_patch_item(self, *args, **kwargs):
+    def patch_item(self, *args, **kwargs):
         return "dummy response"
 
     def delete_item(self, *args, **kwargs):
@@ -442,10 +439,7 @@ class DummyTransactionsClient(core.BaseTransactionsClient):
     def update_collection(self, *args, **kwargs):
         return "dummy response"
 
-    def merge_patch_collection(self, *args, **kwargs):
-        return "dummy response"
-
-    def json_patch_collection(self, *args, **kwargs):
+    def patch_collection(self, *args, **kwargs):
         return "dummy response"
 
     def delete_collection(self, *args, **kwargs):
