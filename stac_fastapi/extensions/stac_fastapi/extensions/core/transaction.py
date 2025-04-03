@@ -1,7 +1,7 @@
 """Transaction extension."""
 
 from enum import Enum
-from typing import Any, List, Optional, Type, Union
+from typing import List, Optional, Type, Union
 
 import attr
 from fastapi import APIRouter, Body, FastAPI, Header
@@ -15,6 +15,7 @@ from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.stac import PartialCollection, PartialItem, PatchOperation
 
 
 class TransactionConformanceClasses(str, Enum):
@@ -47,7 +48,7 @@ class PatchItem(ItemUri):
     """Patch Item."""
 
     patch: Annotated[
-        Any,
+        Union[PartialItem, List[PatchOperation]],
         Body(),
     ] = attr.ib(default=None)
     content_type: Annotated[
@@ -68,7 +69,7 @@ class PatchCollection(CollectionUri):
     """Patch Collection."""
 
     patch: Annotated[
-        Any,
+        Union[PartialCollection, List[PatchOperation]],
         Body(),
     ] = attr.ib(default=None)
     content_type: Annotated[

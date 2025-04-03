@@ -85,7 +85,7 @@ class BaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         item_id: str,
-        patch: Any,
+        patch: Union[stac.PartialItem, List[stac.PatchOperation]],
         content_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
@@ -160,7 +160,7 @@ class BaseTransactionsClient(abc.ABC):
     def patch_collection(
         self,
         collection_id: str,
-        patch: Any,
+        patch: Union[stac.PartialItem, List[stac.PatchOperation]],
         content_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
@@ -242,7 +242,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         item_id: str,
-        patch: Any,
+        patch: Union[stac.PartialItem, List[stac.PatchOperation]],
         content_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
@@ -317,7 +317,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     async def patch_collection(
         self,
         collection_id: str,
-        patch: Any,
+        patch: Union[stac.PartialItem, List[stac.PatchOperation]],
         content_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
