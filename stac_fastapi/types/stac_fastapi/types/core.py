@@ -92,6 +92,15 @@ class BaseTransactionsClient(abc.ABC):
 
         Called with `PATCH /collections/{collection_id}/items/{item_id}`
 
+        example:
+            # convert merge patch item to list of operations
+            if isinstance(patch, PartialItem):
+                patch = patch.operations()
+
+            item = backend.update_item(collection_id, item_id, patch)
+
+            return item
+
         Args:
             item_id: id of the item.
             collection_id: id of the collection.
@@ -165,6 +174,15 @@ class BaseTransactionsClient(abc.ABC):
         """Update a collection.
 
         Called with `PATCH /collections/{collection_id}`
+
+        example:
+            # convert merge patch item to list of operations
+            if isinstance(patch, PartialCollection):
+                patch = patch.operations()
+
+            collection = backend.update_item(collection_id, patch)
+
+            return collection
 
         Args:
             collection_id: id of the collection.
@@ -247,6 +265,15 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
         Called with `PATCH /collections/{collection_id}/items/{item_id}`
 
+        example:
+            # convert merge patch item to list of operations
+            if isinstance(patch, PartialItem):
+                patch = patch.operations()
+
+            item = backend.update_item(collection_id, item_id, patch)
+
+            return item
+
         Args:
             item_id: id of the item.
             collection_id: id of the collection.
@@ -320,6 +347,15 @@ class AsyncBaseTransactionsClient(abc.ABC):
         """Update a collection.
 
         Called with `PATCH /collections/{collection_id}`
+
+        example:
+            # convert merge patch item to list of operations
+            if isinstance(patch, PartialCollection):
+                patch = patch.operations()
+
+            collection = backend.update_item(collection_id, patch)
+
+            return collection
 
         Args:
             collection_id: id of the collection.
