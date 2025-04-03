@@ -97,7 +97,7 @@ class BaseTransactionsClient(abc.ABC):
             if isinstance(patch, PartialItem):
                 patch = patch.operations()
 
-            item = backend.update_item(collection_id, item_id, patch)
+            item = backend.patch_item(collection_id, item_id, patch)
 
             return item
 
@@ -180,7 +180,7 @@ class BaseTransactionsClient(abc.ABC):
             if isinstance(patch, PartialCollection):
                 patch = patch.operations()
 
-            collection = backend.update_item(collection_id, patch)
+            collection = backend.patch_item(collection_id, patch)
 
             return collection
 
@@ -270,7 +270,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
             if isinstance(patch, PartialItem):
                 patch = patch.operations()
 
-            item = backend.update_item(collection_id, item_id, patch)
+            item = backend.patch_item(collection_id, item_id, patch)
 
             return item
 
@@ -353,7 +353,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
             if isinstance(patch, PartialCollection):
                 patch = patch.operations()
 
-            collection = backend.update_item(collection_id, patch)
+            collection = backend.patch_item(collection_id, patch)
 
             return collection
 
