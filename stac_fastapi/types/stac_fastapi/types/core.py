@@ -1,11 +1,11 @@
 """Base clients."""
 
 import abc
-from typing import Annotated, Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import attr
-from fastapi import Header, Request
+from fastapi import Request
 from geojson_pydantic.geometries import Geometry
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.links import Relations
@@ -86,7 +86,7 @@ class BaseTransactionsClient(abc.ABC):
         collection_id: str,
         item_id: str,
         patch: Any,
-        content_type: Annotated[Optional[str], Header()] = None,
+        content_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -161,7 +161,7 @@ class BaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         patch: Any,
-        content_type: Annotated[Optional[str], Header()] = None,
+        content_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -243,7 +243,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         collection_id: str,
         item_id: str,
         patch: Any,
-        content_type: Annotated[Optional[str], Header()] = None,
+        content_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -318,7 +318,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         patch: Any,
-        content_type: Annotated[Optional[str], Header()] = None,
+        content_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.

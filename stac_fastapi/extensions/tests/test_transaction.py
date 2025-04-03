@@ -119,7 +119,7 @@ def test_patch_item(client: TestClient) -> None:
     assert response.is_success, response.text
     assert response.json()["path_collection_id"] == "a-collection"
     assert response.json()["path_item_id"] == "an-item"
-    assert response.json()["patch"] == '{"patch": true}'
+    assert response.json()["patch"] == {"patch": True}
 
 
 def test_delete_item(client: TestClient) -> None:
@@ -149,7 +149,7 @@ def test_patch_collection(client: TestClient) -> None:
     )
     assert response.is_success, response.text
     assert response.json()["path_collection_id"] == "a-collection"
-    assert response.json()["patch"] == '{"patch": true}'
+    assert response.json()["patch"] == {"patch": True}
 
 
 def test_delete_collection(client: TestClient, collection: Collection) -> None:
