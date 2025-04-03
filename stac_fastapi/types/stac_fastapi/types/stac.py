@@ -81,41 +81,6 @@ class Collections(TypedDict, total=False):
     numberReturned: Optional[int] = None
 
 
-class PartialCollection(TypedDict, total=False):
-    """Partial STAC Collection."""
-
-    type: Optional[str]
-    stac_version: Optional[str]
-    stac_extensions: Optional[List[str]]
-    id: Optional[str]
-    title: Optional[str]
-    description: Optional[str]
-    links: List[Dict[str, Any]]
-    keywords: Optional[List[str]]
-    license: Optional[str]
-    providers: Optional[List[Dict[str, Any]]]
-    extent: Optional[Dict[str, Any]]
-    summaries: Optional[Dict[str, Any]]
-    assets: Optional[Dict[str, Any]]
-    numberMatched: Optional[int] = None
-    numberReturned: Optional[int] = None
-
-
-class PartialItem(TypedDict, total=False):
-    """Partial STAC Item."""
-
-    type: Optional[Literal["Feature"]]
-    stac_version: Optional[str]
-    stac_extensions: Optional[List[str]]
-    id: Optional[str]
-    geometry: Optional[Dict[str, Any]]
-    bbox: Optional[BBox]
-    properties: Optional[Dict[str, Any]]
-    links: Optional[List[Dict[str, Any]]]
-    assets: Optional[Dict[str, Any]]
-    collection: Optional[str]
-
-
 class PatchAddReplaceTest(StacBaseModel):
     """Add, Replace or Test Operation."""
 
@@ -188,3 +153,78 @@ class PatchMoveCopy(StacBaseModel):
 
 
 PatchOperation = Union[PatchAddReplaceTest, PatchMoveCopy, PatchRemove]
+
+
+class BasePartial(StacBaseModel):
+    """Base Partial Class."""
+
+    @staticmethod
+    def merge_to_operations(data: Dict) -> List[PatchOperation]:
+        """Convert merge operation to list of RF6902 operations.
+
+        Args:
+            data: dictionary to convert.
+
+        Returns:
+            List: list of RF6902 operations.
+        """
+        operations = []
+
+        for key, value in data.copy().items():
+            if value is None:
+                operations.append(PatchRemove(op="remove", path=key))
+
+            elif isinstance(value, dict):
+                nested_operations = BasePartial.merge_to_operations(value)
+
+                for nested_operation in nested_operations:
+                    nested_operation.path = f"{key}/{nested_operation.path}"
+                    operations.append(nested_operation)
+
+            else:
+                operations.append(PatchAddReplaceTest(op="add", path=key, value=value))
+
+        return operations
+
+    def operations(self) -> List[PatchOperation]:
+        """Equivalent RF6902 operations to merge of Partial.
+
+        Returns:
+            List[PatchOperation]: Equivalent list of RF6902 operations
+        """
+        return self.merge_to_operations(self.model_dump())
+
+
+class PartialCollection(BasePartial):
+    """Partial STAC Collection."""
+
+    type: Optional[str]
+    stac_version: Optional[str]
+    stac_extensions: Optional[List[str]]
+    id: Optional[str]
+    title: Optional[str]
+    description: Optional[str]
+    links: List[Dict[str, Any]]
+    keywords: Optional[List[str]]
+    license: Optional[str]
+    providers: Optional[List[Dict[str, Any]]]
+    extent: Optional[Dict[str, Any]]
+    summaries: Optional[Dict[str, Any]]
+    assets: Optional[Dict[str, Any]]
+    numberMatched: Optional[int] = None
+    numberReturned: Optional[int] = None
+
+
+class PartialItem(BasePartial):
+    """Partial STAC Item."""
+
+    type: Optional[Literal["Feature"]]
+    stac_version: Optional[str]
+    stac_extensions: Optional[List[str]]
+    id: Optional[str]
+    geometry: Optional[Dict[str, Any]]
+    bbox: Optional[BBox]
+    properties: Optional[Dict[str, Any]]
+    links: Optional[List[Dict[str, Any]]]
+    assets: Optional[Dict[str, Any]]
+    collection: Optional[str]
