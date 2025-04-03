@@ -198,19 +198,19 @@ class BasePartial(StacBaseModel):
 class PartialCollection(BasePartial):
     """Partial STAC Collection."""
 
-    type: Optional[str]
-    stac_version: Optional[str]
-    stac_extensions: Optional[List[str]]
-    id: Optional[str]
-    title: Optional[str]
-    description: Optional[str]
-    links: List[Dict[str, Any]]
-    keywords: Optional[List[str]]
-    license: Optional[str]
-    providers: Optional[List[Dict[str, Any]]]
-    extent: Optional[Dict[str, Any]]
-    summaries: Optional[Dict[str, Any]]
-    assets: Optional[Dict[str, Any]]
+    type: Optional[str] = None
+    stac_version: Optional[str] = None
+    stac_extensions: Optional[List[str]] = None
+    id: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    links: List[Dict[str, Any]] = None
+    keywords: Optional[List[str]] = None
+    license: Optional[str] = None
+    providers: Optional[List[Dict[str, Any]]] = None
+    extent: Optional[Dict[str, Any]] = None
+    summaries: Optional[Dict[str, Any]] = None
+    assets: Optional[Dict[str, Any]] = None
     numberMatched: Optional[int] = None
     numberReturned: Optional[int] = None
 
@@ -218,13 +218,13 @@ class PartialCollection(BasePartial):
 class PartialItem(BasePartial):
     """Partial STAC Item."""
 
-    type: Optional[Literal["Feature"]]
-    stac_version: Optional[str]
-    stac_extensions: Optional[List[str]]
-    id: Optional[str]
-    geometry: Optional[Dict[str, Any]]
-    bbox: Optional[BBox]
-    properties: Optional[Dict[str, Any]]
-    links: Optional[List[Dict[str, Any]]]
-    assets: Optional[Dict[str, Any]]
-    collection: Optional[str]
+    type: Optional[Literal["Feature"]] = None
+    stac_version: Optional[str] = None
+    stac_extensions: Optional[List[str]] = None
+    id: Optional[str] = None
+    geometry: Optional[Dict[str, Any]] = None
+    bbox: Optional[BBox] = None
+    properties: Optional[Dict[str, Any]] = None
+    links: Optional[List[Dict[str, Any]]] = None
+    assets: Optional[Dict[str, Any]] = None
+    collection: Optional[str] = None
