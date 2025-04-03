@@ -172,17 +172,19 @@ class BasePartial(StacBaseModel):
 
         for key, value in data.copy().items():
             if value is None:
-                operations.append(PatchRemove(op="remove", path=key))
+                operations.append(PatchRemove(op="remove", path=f"/{key}"))
 
             elif isinstance(value, dict):
                 nested_operations = BasePartial.merge_to_operations(value)
 
                 for nested_operation in nested_operations:
-                    nested_operation.path = f"{key}/{nested_operation.path}"
+                    nested_operation.path = f"/{key}{nested_operation.path}"
                     operations.append(nested_operation)
 
             else:
-                operations.append(PatchAddReplaceTest(op="add", path=key, value=value))
+                operations.append(
+                    PatchAddReplaceTest(op="add", path=f"/{key}", value=value)
+                )
 
         return operations
 
