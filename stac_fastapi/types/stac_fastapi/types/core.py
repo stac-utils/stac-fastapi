@@ -159,7 +159,7 @@ class BaseTransactionsClient(abc.ABC):
     def patch_collection(
         self,
         collection_id: str,
-        patch: Union[stac.PartialItem, List[stac.PatchOperation]],
+        patch: Union[stac.PartialCollection, List[stac.PatchOperation]],
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -314,7 +314,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
     async def patch_collection(
         self,
         collection_id: str,
-        patch: Union[stac.PartialItem, List[stac.PatchOperation]],
+        patch: Union[stac.PartialCollection, List[stac.PatchOperation]],
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
