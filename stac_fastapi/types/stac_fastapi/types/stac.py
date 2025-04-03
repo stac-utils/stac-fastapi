@@ -119,6 +119,16 @@ class PartialItem(TypedDict, total=False):
 class PatchAddReplaceTest(StacBaseModel):
     """Add, Replace or Test Operation."""
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {"op": "add", "path": "/properties/foo", "value": "bar"},
+                {"op": "replace", "path": "/properties/foo", "value": "bar"},
+                {"op": "test", "path": "/properties/foo", "value": "bar"},
+            ]
+        }
+    )
+
     path: str
     op: Literal["add", "replace", "test"]
     value: Any
@@ -136,6 +146,17 @@ class PatchAddReplaceTest(StacBaseModel):
 class PatchRemove(StacBaseModel):
     """Remove Operation."""
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "op": "remove",
+                    "path": "/properties/foo",
+                }
+            ]
+        }
+    )
+
     path: str
     op: Literal["remove"]
 
@@ -143,7 +164,23 @@ class PatchRemove(StacBaseModel):
 class PatchMoveCopy(StacBaseModel):
     """Move or Copy Operation."""
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        json_schema_extra={
+            "examples": [
+                {
+                    "op": "copy",
+                    "path": "/properties/foo",
+                    "from": "/properties/bar",
+                },
+                {
+                    "op": "move",
+                    "path": "/properties/foo",
+                    "from": "/properties/bar",
+                },
+            ]
+        },
+    )
 
     path: str
     op: Literal["move", "copy"]

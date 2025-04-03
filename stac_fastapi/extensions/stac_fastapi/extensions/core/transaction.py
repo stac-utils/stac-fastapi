@@ -4,7 +4,8 @@ from enum import Enum
 from typing import List, Optional, Type, Union
 
 import attr
-from fastapi import APIRouter, Body, FastAPI, Header
+from fastapi import APIRouter, Body, FastAPI
+from pydantic import TypeAdapter
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.shared import MimeTypes
 from starlette.responses import JSONResponse, Response
@@ -51,10 +52,6 @@ class PatchItem(ItemUri):
         Union[PartialItem, List[PatchOperation]],
         Body(),
     ] = attr.ib(default=None)
-    content_type: Annotated[
-        Optional[str],
-        Header(),
-    ] = attr.ib(default="application/json")
 
 
 @attr.s
@@ -72,10 +69,6 @@ class PatchCollection(CollectionUri):
         Union[PartialCollection, List[PatchOperation]],
         Body(),
     ] = attr.ib(default=None)
-    content_type: Annotated[
-        Optional[str],
-        Header(),
-    ] = attr.ib(default="application/json")
 
 
 @attr.s
@@ -170,6 +163,57 @@ class TransactionExtension(ApiExtension):
                     "model": Item,
                 }
             },
+            openapi_extra={
+                "requestBody": {
+                    "content": {
+                        "application/json-patch+json": {
+                            "schema": TypeAdapter(List[PatchOperation]).json_schema()
+                            | {
+                                "examples": [
+                                    [
+                                        {
+                                            "op": "add",
+                                            "path": "/properties/foo",
+                                            "value": "bar",
+                                        },
+                                        {
+                                            "op": "replace",
+                                            "path": "/properties/foo",
+                                            "value": "bar",
+                                        },
+                                        {
+                                            "op": "test",
+                                            "path": "/properties/foo",
+                                            "value": "bar",
+                                        },
+                                        {
+                                            "op": "copy",
+                                            "path": "/properties/foo",
+                                            "from": "/properties/bar",
+                                        },
+                                        {
+                                            "op": "move",
+                                            "path": "/properties/foo",
+                                            "from": "/properties/bar",
+                                        },
+                                        {
+                                            "op": "remove",
+                                            "path": "/properties/foo",
+                                        },
+                                    ]
+                                ]
+                            },
+                        },
+                        "application/merge-patch+json": {
+                            "schema": TypeAdapter(PartialItem).json_schema(),
+                        },
+                        "application/json": {
+                            "schema": TypeAdapter(PartialItem).json_schema(),
+                        },
+                    },
+                    "required": True,
+                },
+            },
             response_class=self.response_class,
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
@@ -258,6 +302,57 @@ class TransactionExtension(ApiExtension):
                     },
                     "model": Collection,
                 }
+            },
+            openapi_extra={
+                "requestBody": {
+                    "content": {
+                        "application/json-patch+json": {
+                            "schema": TypeAdapter(List[PatchOperation]).json_schema()
+                            | {
+                                "examples": [
+                                    [
+                                        {
+                                            "op": "add",
+                                            "path": "/summeries/foo",
+                                            "value": "bar",
+                                        },
+                                        {
+                                            "op": "replace",
+                                            "path": "/summeries/foo",
+                                            "value": "bar",
+                                        },
+                                        {
+                                            "op": "test",
+                                            "path": "/summeries/foo",
+                                            "value": "bar",
+                                        },
+                                        {
+                                            "op": "copy",
+                                            "path": "/summeries/foo",
+                                            "from": "/summeries/bar",
+                                        },
+                                        {
+                                            "op": "move",
+                                            "path": "/summeries/foo",
+                                            "from": "/summeries/bar",
+                                        },
+                                        {
+                                            "op": "remove",
+                                            "path": "/summeries/foo",
+                                        },
+                                    ]
+                                ]
+                            },
+                        },
+                        "application/merge-patch+json": {
+                            "schema": TypeAdapter(PartialCollection).json_schema(),
+                        },
+                        "application/json": {
+                            "schema": TypeAdapter(PartialCollection).json_schema(),
+                        },
+                    },
+                    "required": True,
+                },
             },
             response_class=self.response_class,
             response_model_exclude_unset=True,

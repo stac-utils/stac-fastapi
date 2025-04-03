@@ -86,7 +86,6 @@ class BaseTransactionsClient(abc.ABC):
         collection_id: str,
         item_id: str,
         patch: Union[stac.PartialItem, List[stac.PatchOperation]],
-        content_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -161,7 +160,6 @@ class BaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         patch: Union[stac.PartialItem, List[stac.PatchOperation]],
-        content_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
@@ -243,7 +241,6 @@ class AsyncBaseTransactionsClient(abc.ABC):
         collection_id: str,
         item_id: str,
         patch: Union[stac.PartialItem, List[stac.PatchOperation]],
-        content_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Union[stac.Item, Response]]:
         """Update an item from a collection.
@@ -318,7 +315,6 @@ class AsyncBaseTransactionsClient(abc.ABC):
         self,
         collection_id: str,
         patch: Union[stac.PartialItem, List[stac.PatchOperation]],
-        content_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Union[stac.Collection, Response]]:
         """Update a collection.
