@@ -1,5 +1,5 @@
 import json
-from typing import Iterator, Union
+from typing import Iterator, List, Union
 
 import pytest
 from stac_pydantic import Collection
@@ -11,6 +11,7 @@ from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import TransactionExtension
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseCoreClient, BaseTransactionsClient
+from stac_fastapi.types.stac import PartialCollection, PartialItem, PatchOperation
 
 
 class DummyCoreClient(BaseCoreClient):
@@ -46,6 +47,22 @@ class DummyTransactionsClient(BaseTransactionsClient):
             "type": item.type,
         }
 
+    def patch_item(
+        self,
+        collection_id: str,
+        item_id: str,
+        patch: Union[PartialItem, List[PatchOperation]],
+        **kwargs,
+    ):
+        if isinstance(patch, PartialItem):
+            patch = patch.operations()
+
+        return {
+            "path_collection_id": collection_id,
+            "path_item_id": item_id,
+            "patch": patch,
+        }
+
     def delete_item(self, item_id: str, collection_id: str, **kwargs):
         return {
             "path_collection_id": collection_id,
@@ -57,6 +74,20 @@ class DummyTransactionsClient(BaseTransactionsClient):
 
     def update_collection(self, collection_id: str, collection: Collection, **kwargs):
         return {"path_collection_id": collection_id, "type": collection.type}
+
+    def patch_collection(
+        self,
+        collection_id: str,
+        patch: Union[PartialCollection, List[PatchOperation]],
+        **kwargs,
+    ):
+        if isinstance(patch, PartialCollection):
+            patch = patch.operations()
+
+        return {
+            "path_collection_id": collection_id,
+            "patch": patch,
+        }
 
     def delete_collection(self, collection_id: str, **kwargs):
         return {"path_collection_id": collection_id}
@@ -88,6 +119,33 @@ def test_update_item(client: TestClient, item: Item) -> None:
     assert response.json()["type"] == "Feature"
 
 
+def test_patch_operation_item(client: TestClient) -> None:
+    response = client.patch(
+        "/collections/a-collection/items/an-item",
+        content='[{"op": "add", "path": "/properties/foo", "value": "bar"}]',
+    )
+    assert response.is_success, response.text
+    assert response.json()["path_collection_id"] == "a-collection"
+    assert response.json()["path_item_id"] == "an-item"
+    assert response.json()["patch"] == [
+        {"op": "add", "path": "/properties/foo", "value": "bar"}
+    ]
+
+
+def test_patch_merge_item(client: TestClient) -> None:
+    response = client.patch(
+        "/collections/a-collection/items/an-item",
+        content=json.dumps({"properties": {"hello": "world", "foo": None}}),
+    )
+    assert response.is_success, response.text
+    assert response.json()["path_collection_id"] == "a-collection"
+    assert response.json()["path_item_id"] == "an-item"
+    assert response.json()["patch"] == [
+        {"op": "add", "path": "/properties/hello", "value": "world"},
+        {"op": "remove", "path": "/properties/foo"},
+    ]
+
+
 def test_delete_item(client: TestClient) -> None:
     response = client.delete("/collections/a-collection/items/an-item")
     assert response.is_success, response.text
@@ -106,6 +164,31 @@ def test_update_collection(client: TestClient, collection: Collection) -> None:
     assert response.is_success, response.text
     assert response.json()["path_collection_id"] == "a-collection"
     assert response.json()["type"] == "Collection"
+
+
+def test_patch_operation_collection(client: TestClient) -> None:
+    response = client.patch(
+        "/collections/a-collection",
+        content='[{"op": "add", "path": "/properties/foo", "value": "bar"}]',
+    )
+    assert response.is_success, response.text
+    assert response.json()["path_collection_id"] == "a-collection"
+    assert response.json()["patch"] == [
+        {"op": "add", "path": "/properties/foo", "value": "bar"}
+    ]
+
+
+def test_patch_merge_collection(client: TestClient) -> None:
+    response = client.patch(
+        "/collections/a-collection",
+        content=json.dumps({"summaries": {"hello": "world", "foo": None}}),
+    )
+    assert response.is_success, response.text
+    assert response.json()["path_collection_id"] == "a-collection"
+    assert response.json()["patch"] == [
+        {"op": "add", "path": "/summaries/hello", "value": "world"},
+        {"op": "remove", "path": "/summaries/foo"},
+    ]
 
 
 def test_delete_collection(client: TestClient, collection: Collection) -> None:
