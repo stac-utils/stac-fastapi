@@ -1,4 +1,4 @@
-"""Pagination API extension."""
+"""Offset Pagination API extension."""
 
 from typing import List, Optional
 

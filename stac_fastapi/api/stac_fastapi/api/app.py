@@ -138,12 +138,8 @@ class StacApi:
                 return ext
         return None
 
-    def register_landing_page(self):
-        """Register landing page (GET /).
-
-        Returns:
-            None
-        """
+    def register_landing_page(self) -> None:
+        """Register landing page (GET /)."""
         self.router.add_api_route(
             name="Landing Page",
             path="/",
@@ -165,12 +161,8 @@ class StacApi:
             endpoint=create_async_endpoint(self.client.landing_page, EmptyRequest),
         )
 
-    def register_conformance_classes(self):
-        """Register conformance classes (GET /conformance).
-
-        Returns:
-            None
-        """
+    def register_conformance_classes(self) -> None:
+        """Register conformance classes (GET /conformance)."""
         self.router.add_api_route(
             name="Conformance Classes",
             path="/conformance",
@@ -192,12 +184,8 @@ class StacApi:
             endpoint=create_async_endpoint(self.client.conformance, EmptyRequest),
         )
 
-    def register_get_item(self):
-        """Register get item endpoint (GET /collections/{collection_id}/items/{item_id}).
-
-        Returns:
-            None
-        """
+    def register_get_item(self) -> None:
+        """Register get item endpoint (GET /collections/{collection_id}/items/{item_id})."""  # noqa: E501
         self.router.add_api_route(
             name="Get Item",
             path="/collections/{collection_id}/items/{item_id}",
@@ -219,12 +207,8 @@ class StacApi:
             ),
         )
 
-    def register_post_search(self):
-        """Register search endpoint (POST /search).
-
-        Returns:
-            None
-        """
+    def register_post_search(self) -> None:
+        """Register search endpoint (POST /search)."""
         self.router.add_api_route(
             name="Search",
             path="/search",
@@ -248,12 +232,8 @@ class StacApi:
             ),
         )
 
-    def register_get_search(self):
-        """Register search endpoint (GET /search).
-
-        Returns:
-            None
-        """
+    def register_get_search(self) -> None:
+        """Register search endpoint (GET /search)."""
         self.router.add_api_route(
             name="Search",
             path="/search",
@@ -277,12 +257,8 @@ class StacApi:
             ),
         )
 
-    def register_get_collections(self):
-        """Register get collections endpoint (GET /collections).
-
-        Returns:
-            None
-        """
+    def register_get_collections(self) -> None:
+        """Register get collections endpoint (GET /collections)."""
         self.router.add_api_route(
             name="Get Collections",
             path="/collections",
@@ -306,12 +282,8 @@ class StacApi:
             ),
         )
 
-    def register_get_collection(self):
-        """Register get collection endpoint (GET /collection/{collection_id}).
-
-        Returns:
-            None
-        """
+    def register_get_collection(self) -> None:
+        """Register get collection endpoint (GET /collection/{collection_id})."""
         self.router.add_api_route(
             name="Get Collection",
             path="/collections/{collection_id}",
@@ -335,12 +307,8 @@ class StacApi:
             ),
         )
 
-    def register_get_item_collection(self):
-        """Register get item collection endpoint (GET /collection/{collection_id}/items).
-
-        Returns:
-            None
-        """
+    def register_get_item_collection(self) -> None:
+        """Register get item collection endpoint (GET /collection/{collection_id}/items)."""  # noqa: E501
         self.router.add_api_route(
             name="Get ItemCollection",
             path="/collections/{collection_id}/items",
@@ -364,7 +332,7 @@ class StacApi:
             ),
         )
 
-    def register_core(self):
+    def register_core(self) -> None:
         """Register core STAC endpoints.
 
             GET /
@@ -378,8 +346,6 @@ class StacApi:
 
         Injects application logic (StacApi.client) into the API layer.
 
-        Returns:
-            None
         """
         self.register_landing_page()
         self.register_conformance_classes()
@@ -390,7 +356,7 @@ class StacApi:
         self.register_get_collection()
         self.register_get_item_collection()
 
-    def add_health_check(self):
+    def add_health_check(self) -> None:
         """Add a health check."""
         mgmt_router = APIRouter(prefix=self.app.state.router_prefix)
 
@@ -407,24 +373,20 @@ class StacApi:
         """Add custom dependencies to routes.
 
         Args:
-            scopes: list of scopes. Each scope should be a dict with a `path`
-                and `method` property.
-            dependencies: list of [FastAPI
-                dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/)
+            scopes: list of Scope.
+                Each scope should be a dict with a `path` and `method` property.
+            dependencies: list of fastapi.Depends
+                [FastAPI dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/)
                 to apply to each scope.
 
-        Returns:
-            None
         """
         return add_route_dependencies(self.app.router.routes, scopes, dependencies)
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         """Post-init hook.
 
         Responsible for setting up the application upon instantiation of the class.
 
-        Returns:
-            None
         """
         # inject settings
         self.client.extensions = self.extensions
