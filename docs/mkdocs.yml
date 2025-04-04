@@ -30,24 +30,39 @@ nav:
           - models: api/stac_fastapi/api/models.md
           - openapi: api/stac_fastapi/api/openapi.md
           - routes: api/stac_fastapi/api/routes.md
-          - version: api/stac_fastapi/api/version.md
       - stac_fastapi.extensions:
           - module: api/stac_fastapi/extensions/index.md
           - core:
               - module: api/stac_fastapi/extensions/core/index.md
-              - context: api/stac_fastapi/extensions/core/context.md
-              - free_text:
-                - module: api/stac_fastapi/extensions/core/free_text/index.md
-                - free_text: api/stac_fastapi/extensions/core/free_text/free_text.md
-                - request: api/stac_fastapi/extensions/core/free_text/request.md
-              - filter:
-                  - module: api/stac_fastapi/extensions/core/filter/index.md
-                  - filter: api/stac_fastapi/extensions/core/filter/filter.md
-                  - request: api/stac_fastapi/extensions/core/filter/request.md
+              - aggregation:
+                - module: api/stac_fastapi/extensions/core/aggregation/index.md
+                - aggregation: api/stac_fastapi/extensions/core/aggregation/aggregation.md
+                - client: api/stac_fastapi/extensions/core/aggregation/client.md
+                - request: api/stac_fastapi/extensions/core/aggregation/request.md
+                - types: api/stac_fastapi/extensions/core/aggregation/types.md
+              - collection_search:
+                - module: api/stac_fastapi/extensions/core/collection_search/index.md
+                - collection_search: api/stac_fastapi/extensions/core/collection_search/collection_search.md
+                - client: api/stac_fastapi/extensions/core/collection_search/client.md
+                - request: api/stac_fastapi/extensions/core/collection_search/request.md
               - fields:
                   - module: api/stac_fastapi/extensions/core/fields/index.md
                   - fields: api/stac_fastapi/extensions/core/fields/fields.md
                   - request: api/stac_fastapi/extensions/core/fields/request.md
+              - filter:
+                  - module: api/stac_fastapi/extensions/core/filter/index.md
+                  - filter: api/stac_fastapi/extensions/core/filter/filter.md
+                  - request: api/stac_fastapi/extensions/core/filter/request.md
+              - free_text:
+                - module: api/stac_fastapi/extensions/core/free_text/index.md
+                - free_text: api/stac_fastapi/extensions/core/free_text/free_text.md
+                - request: api/stac_fastapi/extensions/core/free_text/request.md
+              - pagination:
+                  - module: api/stac_fastapi/extensions/core/pagination/index.md
+                  - pagination: api/stac_fastapi/extensions/core/pagination/pagination.md
+                  - offset_pagination: api/stac_fastapi/extensions/core/pagination/offset_pagination.md
+                  - token_pagination: api/stac_fastapi/extensions/core/pagination/token_pagination.md
+                  - request: api/stac_fastapi/extensions/core/pagination/request.md
               - query:
                   - module: api/stac_fastapi/extensions/core/query/index.md
                   - query: api/stac_fastapi/extensions/core/query/query.md
@@ -57,14 +72,9 @@ nav:
                   - request: api/stac_fastapi/extensions/core/sort/request.md
                   - sort: api/stac_fastapi/extensions/core/sort/sort.md
               - transaction: api/stac_fastapi/extensions/core/transaction.md
-              - pagination:
-                  - module: api/stac_fastapi/extensions/core/pagination/index.md
-                  - pagination: api/stac_fastapi/extensions/core/pagination/pagination.md
-                  - token_pagination: api/stac_fastapi/extensions/core/pagination/token_pagination.md
-              - version: api/stac_fastapi/extensions/version.md
           - third_party:
+              - module: api/stac_fastapi/extensions/third_party/index.md
               - bulk_transactions: api/stac_fastapi/extensions/third_party/bulk_transactions.md
-              - index: api/stac_fastapi/extensions/third_party/index.md
       - stac_fastapi.types:
           - module: api/stac_fastapi/types/index.md
           - config: api/stac_fastapi/types/config.md
@@ -77,7 +87,6 @@ nav:
           - rfc3339: api/stac_fastapi/types/rfc3339.md
           - search: api/stac_fastapi/types/search.md
           - stac: api/stac_fastapi/types/stac.md
-          - version: api/stac_fastapi/types/version.md
   - Migration Guides:
     - v2.5 -> v3.0: migrations/v3.0.0.md
     - v3.0 -> v4.0: migrations/v4.0.0.md
@@ -87,6 +96,29 @@ nav:
 
 plugins:
   - search
+  - mkdocstrings:
+      enable_inventory: true
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_section_style: list
+            docstring_style: google
+            line_length: 100
+            separate_signature: true
+            show_root_heading: true
+            show_signature_annotations: true
+            show_source: false
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            extensions:
+              - griffe_inherited_docstrings
+          inventories:
+            - https://docs.python.org/3/objects.inv
+            - https://docs.pydantic.dev/latest/objects.inv
+            - https://fastapi.tiangolo.com/objects.inv
+            - https://www.starlette.io/objects.inv
+            - https://www.attrs.org/en/stable/objects.inv
 
 # Theme
 theme:

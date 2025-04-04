@@ -33,13 +33,5 @@ jobs:
             stac_fastapi/api[docs] \
             stac_fastapi/extensions[docs] \
 
-      - name: update API docs
-        run: |
-          pdocs as_markdown \
-            --output_dir docs/src/api/ \
-            --exclude_source \
-            --overwrite \
-            stac_fastapi
-
       - name: Deploy docs
         run: mkdocs gh-deploy --force -f docs/mkdocs.yml
