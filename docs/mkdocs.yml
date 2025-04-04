@@ -87,6 +87,8 @@ nav:
 
 plugins:
   - search
+  - mkdocstrings:
+      enable_inventory: true
 
 # Theme
 theme:
