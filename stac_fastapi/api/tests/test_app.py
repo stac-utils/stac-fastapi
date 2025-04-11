@@ -108,6 +108,31 @@ def test_client_invalid_response_type(validate, TestCoreClient, item_dict):
         assert item.status_code == 200, item.text
 
 
+def test_client_response_by_pass(TestCoreClient, item_dict):
+    """Check with `enable_direct_response` option."""
+
+    class InValidResponseClient(TestCoreClient):
+        def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
+            item_dict.pop("bbox", None)
+            item_dict.pop("geometry", None)
+            return item_dict
+
+    test_app = app.StacApi(
+        settings=ApiSettings(
+            enable_response_models=False,
+            enable_direct_response=True,
+        ),
+        client=InValidResponseClient(),
+    )
+
+    with TestClient(test_app.app) as client:
+        item = client.get("/collections/test/items/test")
+
+    assert item.json()
+    assert item.status_code == 200
+    assert item.headers["content-type"] == "application/geo+json"
+
+
 def test_client_openapi(TestCoreClient):
     """Test if response models are all documented with OpenAPI."""
 

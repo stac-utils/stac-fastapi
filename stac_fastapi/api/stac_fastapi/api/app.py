@@ -25,7 +25,12 @@ from stac_fastapi.api.models import (
     ItemUri,
 )
 from stac_fastapi.api.openapi import update_openapi
-from stac_fastapi.api.routes import Scope, add_route_dependencies, create_async_endpoint
+from stac_fastapi.api.routes import (
+    Scope,
+    add_direct_response,
+    add_route_dependencies,
+    create_async_endpoint,
+)
 from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
@@ -425,3 +430,6 @@ class StacApi:
         # customize route dependencies
         for scopes, dependencies in self.route_dependencies:
             self.add_route_dependencies(scopes=scopes, dependencies=dependencies)
+
+        if self.app.state.settings.enable_direct_response:
+            add_direct_response(self.app)
