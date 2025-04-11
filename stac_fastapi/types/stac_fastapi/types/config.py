@@ -2,7 +2,9 @@
 
 from typing import Optional
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing_extensions import Self
 
 
 class ApiSettings(BaseSettings):
@@ -27,13 +29,28 @@ class ApiSettings(BaseSettings):
     app_host: str = "0.0.0.0"
     app_port: int = 8000
     reload: bool = True
+
+    # Enable Pydantic validation for output Response
     enable_response_models: bool = False
+
+    # Enable direct `Response` from endpoint, skipping validation and serialization
+    enable_direct_response: bool = False
 
     openapi_url: str = "/api"
     docs_url: str = "/api.html"
     root_path: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", extra="allow")
+
+    @model_validator(mode="after")
+    def check_incompatible_options(self) -> Self:
+        """Check for incompatible options."""
+        if self.enable_response_models and self.enable_direct_response:
+            raise ValueError(
+                "`enable_reponse_models` and `enable_direct_response` options are incompatible"  # noqa: E501
+            )
+
+        return self
 
 
 class Settings:

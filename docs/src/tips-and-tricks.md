@@ -2,6 +2,14 @@
 
 This page contains a few 'tips and tricks' for getting **stac-fastapi** working in various situations.
 
+## Avoid FastAPI (slow) serialization
+
+When not using Pydantic validation for responses, FastAPI will still use a complex (slow) [serialization process](https://github.com/fastapi/fastapi/discussions/8165).
+
+Starting with stac-fastapi `5.2.0`, we've added `ENABLE_DIRECT_RESPONSE` option to by-pass the default FastAPI serialization by wrapping the endpoint responses into `starlette.Response` classes.
+
+Ref: https://github.com/stac-utils/stac-fastapi-elasticsearch-opensearch/issues/347
+
 ## Application Middlewares
 
 By default the `StacApi` class will enable 3 Middlewares (`BrotliMiddleware`, `CORSMiddleware` and `ProxyHeaderMiddleware`). You may want to overwrite the defaults configuration by editing your backend's `app.py`:

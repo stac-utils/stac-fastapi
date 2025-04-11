@@ -51,7 +51,6 @@ To turn on response validation, set `ENABLE_RESPONSE_MODELS` to `True`. Either a
 
 With the introduction of Pydantic 2, the extra [time it takes to validate models became negatable](https://github.com/stac-utils/stac-fastapi/pull/625#issuecomment-2045824578). While `ENABLE_RESPONSE_MODELS` still defaults to `False` there should be no penalty for users to turn on this feature but users discretion is advised.
 
-
 ## Installation
 
 ```bash
