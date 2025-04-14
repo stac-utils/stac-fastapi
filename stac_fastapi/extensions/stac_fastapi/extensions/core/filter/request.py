@@ -23,8 +23,11 @@ class FilterExtensionGetRequest(APIRequest):
             description="""A CQL filter expression for filtering items.\n
 Supports `CQL-JSON` as defined in https://portal.ogc.org/files/96288\n
 Remember to URL encode the CQL-JSON if using GET""",
-            json_schema_extra={
-                "example": "id='LC08_L1TP_060247_20180905_20180912_01_T1_L1TP' AND collection='landsat8_l1tp'",  # noqa: E501
+            openapi_examples={
+                "user-provided": {"value": None},
+                "landsat8-item": {
+                    "value": "id='LC08_L1TP_060247_20180905_20180912_01_T1_L1TP' AND collection='landsat8_l1tp'"  # noqa: E501
+                },
             },
         ),
     ] = attr.ib(default=None)
@@ -51,19 +54,25 @@ class FilterExtensionPostRequest(BaseModel):
         default=None,
         alias="filter",
         description="A CQL filter expression for filtering items.",
-        json_schema_extra={
-            "example": {
-                "op": "and",
-                "args": [
-                    {
-                        "op": "=",
-                        "args": [
-                            {"property": "id"},
-                            "LC08_L1TP_060247_20180905_20180912_01_T1_L1TP",
-                        ],
-                    },
-                    {"op": "=", "args": [{"property": "collection"}, "landsat8_l1tp"]},
-                ],
+        openapi_examples={
+            "user-provided": {"value": None},
+            "landsat8-item": {
+                "value": {
+                    "op": "and",
+                    "args": [
+                        {
+                            "op": "=",
+                            "args": [
+                                {"property": "id"},
+                                "LC08_L1TP_060247_20180905_20180912_01_T1_L1TP",
+                            ],
+                        },
+                        {
+                            "op": "=",
+                            "args": [{"property": "collection"}, "landsat8_l1tp"],
+                        },
+                    ],
+                },
             },
         },
     )

@@ -46,8 +46,10 @@ def _collection_converter(
         Optional[str],
         Query(
             description="Array of collection Ids to search for items.",
-            json_schema_extra={
-                "example": "collection1,collection2",
+            openapi_examples={
+                "user-provided": {"value": None},
+                "single-collection": {"value": "collection1"},
+                "multi-collections": {"value": "collection1,collection2"},
             },
         ),
     ] = None,
@@ -60,8 +62,10 @@ def _ids_converter(
         Optional[str],
         Query(
             description="Array of Item ids to return.",
-            json_schema_extra={
-                "example": "item1,item2",
+            openapi_examples={
+                "user-provided": {"value": None},
+                "single-item": {"value": "item1"},
+                "multi-items": {"value": "item1,item2"},
             },
         ),
     ] = None,
@@ -74,8 +78,9 @@ def _bbox_converter(
         Optional[str],
         Query(
             description="Only return items intersecting this bounding box. Mutually exclusive with **intersects**.",  # noqa: E501
-            json_schema_extra={
-                "example": "-175.05,-85.05,175.05,85.05",
+            openapi_examples={
+                "user-provided": {"value": None},
+                "Montreal": {"value": "-73.896103,45.364690,-73.413734,45.674283"},
             },
         ),
     ] = None,
@@ -99,6 +104,7 @@ DateTimeQueryType = Annotated[
         description="""Only return items that have a temporal property that intersects this value.\n
 Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
         openapi_examples={
+            "user-provided": {"value": None},
             "datetime": {"value": "2018-02-12T23:20:50Z"},
             "closed-interval": {"value": "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"},
             "open-interval-from": {"value": "2018-02-12T00:00:00Z/.."},
@@ -162,6 +168,7 @@ class BaseSearchGetRequest(APIRequest, DatetimeMixin):
             description="""Only return items intersecting this GeoJSON Geometry. Mutually exclusive with **bbox**. \n
 *Remember to URL encode the GeoJSON geometry when using GET request*.""",  # noqa: E501
             openapi_examples={
+                "user-provided": {"value": None},
                 "madrid": {
                     "value": {
                         "type": "Feature",
