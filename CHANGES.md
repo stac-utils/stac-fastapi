@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- add `enable_direct_response` settings to by-pass Pydantic validation and FastAPI serialization for responses
+
 ## [5.1.1] - 2025-03-17
 
 ### Fixed
