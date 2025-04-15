@@ -41,6 +41,7 @@ class SortExtensionPostRequest(BaseModel):
         None,
         description="An array of property (field) names, and direction in form of '{'field': '<property_name>', 'direction':'<direction>'}'",  # noqa: E501
         openapi_examples={
+            "user-provided": {"value": None},
             "creation-time": {
                 "value": [
                     {
@@ -48,6 +49,6 @@ class SortExtensionPostRequest(BaseModel):
                         "direction": "asc",
                     }
                 ],
-            }
+            },
         },
     )
