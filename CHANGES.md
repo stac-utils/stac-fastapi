@@ -6,6 +6,10 @@
 
 - Remove defaults in OpenAPI schemas
 
+### Added
+
+- add `enable_direct_response` settings to by-pass Pydantic validation and FastAPI serialization for responses
+
 ## [5.1.1] - 2025-03-17
 
 ### Fixed
@@ -373,7 +377,7 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 ### Added
 
 * Nginx service as second docker-compose stack to demonstrate proxy ([#503](https://github.com/stac-utils/stac-fastapi/pull/503))
-* Validation checks in CI using [stac-api-validator](github.com/stac-utils/stac-api-validator) ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
+* Validation checks in CI using [stac-api-validator](https://github.com/stac-utils/stac-api-validator) ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
 * Required links to the sqlalchemy ItemCollection endpoint ([#508](https://github.com/stac-utils/stac-fastapi/pull/508))
 * Publication of docker images to GHCR ([#525](https://github.com/stac-utils/stac-fastapi/pull/525))
 
