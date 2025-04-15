@@ -373,7 +373,7 @@ class StacApi:
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
 
     def add_route_dependencies(
-        self, scopes: List[Scope], dependencies=List[Depends]
+        self, scopes: List[Scope], dependencies: List[Depends]
     ) -> None:
         """Add custom dependencies to routes.
 
