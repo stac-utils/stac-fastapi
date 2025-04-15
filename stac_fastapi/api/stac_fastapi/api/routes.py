@@ -88,7 +88,7 @@ class Scope(TypedDict, total=False):
 
 
 def add_route_dependencies(
-    routes: List[BaseRoute], scopes: List[Scope], dependencies=List[params.Depends]
+    routes: List[BaseRoute], scopes: List[Scope], dependencies: List[params.Depends]
 ) -> None:
     """Add dependencies to routes.
 
