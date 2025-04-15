@@ -1,4 +1,4 @@
-FROM python:3.11-slim as base
+FROM python:3.12-slim AS base
 
 # Any python libraries that require system libraries to be installed will likely
 # need the following packages in order to build
@@ -10,12 +10,13 @@ RUN apt-get update && \
 
 ENV CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
-FROM base as builder
+FROM base AS builder
 
 WORKDIR /app
 
 COPY . /app
 
-RUN python -m pip install -e ./stac_fastapi/types[dev] && \
-    python -m pip install -e ./stac_fastapi/api[dev] && \
-    python -m pip install -e ./stac_fastapi/extensions[dev]
+RUN python -m pip install \
+    -e ./stac_fastapi/types[dev] \
+    -e ./stac_fastapi/api[dev] \
+    -e ./stac_fastapi/extensions[dev]
