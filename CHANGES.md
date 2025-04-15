@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Remove defaults in OpenAPI schemas
+
 ### Added
 
 - add `enable_direct_response` settings to by-pass Pydantic validation and FastAPI serialization for responses

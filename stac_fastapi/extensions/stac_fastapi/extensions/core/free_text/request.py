@@ -15,8 +15,9 @@ def _ft_converter(
         Optional[str],
         Query(
             description="Parameter to perform free-text queries against STAC metadata",
-            json_schema_extra={
-                "example": "ocean,coast",
+            openapi_examples={
+                "user-provided": {"value": None},
+                "Coastal": {"value": "ocean,coast"},
             },
         ),
     ] = None,
@@ -48,8 +49,9 @@ class FreeTextAdvancedExtensionGetRequest(APIRequest):
         Optional[str],
         Query(
             description="Parameter to perform free-text queries against STAC metadata",
-            json_schema_extra={
-                "example": "ocean,coast",
+            openapi_examples={
+                "user-provided": {"value": None},
+                "Coastal": {"value": "ocean,coast"},
             },
         ),
     ] = attr.ib(default=None)
