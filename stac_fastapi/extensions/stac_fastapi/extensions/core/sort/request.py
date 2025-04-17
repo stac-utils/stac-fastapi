@@ -37,7 +37,7 @@ class SortExtensionGetRequest(APIRequest):
 class SortExtensionPostRequest(BaseModel):
     """Sortby parameter for POST requests."""
 
-    sortby: Optional[List[PostSortModel]] = Field(  # type: ignore
+    sortby: Optional[List[PostSortModel]] = Field(
         None,
         description="An array of property (field) names, and direction in form of '{'field': '<property_name>', 'direction':'<direction>'}'",  # noqa: E501
         openapi_examples={

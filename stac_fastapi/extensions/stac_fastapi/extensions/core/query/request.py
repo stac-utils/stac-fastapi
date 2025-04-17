@@ -29,7 +29,7 @@ class QueryExtensionGetRequest(APIRequest):
 class QueryExtensionPostRequest(BaseModel):
     """Query Extension POST request model."""
 
-    query: Optional[Dict[str, Dict[str, Any]]] = Field(  # type: ignore
+    query: Optional[Dict[str, Dict[str, Any]]] = Field(
         None,
         description="Allows additional filtering based on the properties of Item objects",  # noqa: E501
         openapi_examples={
