@@ -1,7 +1,7 @@
 """Fastapi app creation."""
 
 
-from typing import Dict, List, Optional, Tuple, Type, Union
+from typing import Awaitable, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import attr
 from brotli_asgi import BrotliMiddleware
@@ -67,6 +67,10 @@ class StacApi:
             specified routes. This is useful
             for applying custom auth requirements to routes defined elsewhere in
             the application.
+        health_check:
+            A Callable which return application's `health` information.
+            Defaults to `def health: return {"status": "UP"}`
+
     """
 
     settings: ApiSettings = attr.ib()
@@ -128,6 +132,9 @@ class StacApi:
         )
     )
     route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
+    health_check: Union[Callable[[], [Dict]], Callable[[], Awaitable[Dict]]] = attr.ib(
+        default=lambda: {"status": "UP"}
+    )
 
     def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
         """Get an extension.
@@ -363,14 +370,44 @@ class StacApi:
 
     def add_health_check(self) -> None:
         """Add a health check."""
-        mgmt_router = APIRouter(prefix=self.app.state.router_prefix)
 
-        @mgmt_router.get("/_mgmt/ping")
         async def ping():
-            """Liveliness/readiness probe."""
+            """Liveliness probe."""
             return {"message": "PONG"}
 
-        self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
+        self.app.router.add_api_route(
+            name="Ping",
+            path="/_mgmt/ping",
+            response_model=Dict,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                },
+            },
+            response_class=self.response_class,
+            methods=["GET"],
+            endpoint=ping,
+            tags=["Liveliness/Readiness"],
+        )
+
+        self.app.router.add_api_route(
+            name="Health",
+            path="/_mgmt/health",
+            response_model=Dict,
+            responses={
+                200: {
+                    "content": {
+                        MimeTypes.json.value: {},
+                    },
+                },
+            },
+            response_class=self.response_class,
+            methods=["GET"],
+            endpoint=self.health_check,
+            tags=["Liveliness/Readiness"],
+        )
 
     def add_route_dependencies(
         self, scopes: List[Scope], dependencies: List[Depends]

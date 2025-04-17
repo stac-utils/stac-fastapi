@@ -9,6 +9,7 @@
 ### Added
 
 - add `enable_direct_response` settings to by-pass Pydantic validation and FastAPI serialization for responses
+- add `/_mgmt/health` endpoint (`readiness`) and `health_check: Callable[[], [Dict]` optional attribute in `StacApi` class
 
 ## [5.1.1] - 2025-03-17
 
