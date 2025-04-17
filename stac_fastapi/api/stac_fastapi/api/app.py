@@ -371,11 +371,13 @@ class StacApi:
     def add_health_check(self) -> None:
         """Add a health check."""
 
+        mgmt_router = APIRouter(prefix=self.app.state.router_prefix)
+
         async def ping():
             """Liveliness probe."""
             return {"message": "PONG"}
 
-        self.app.router.add_api_route(
+        mgmt_router.add_api_route(
             name="Ping",
             path="/_mgmt/ping",
             response_model=Dict,
@@ -389,10 +391,9 @@ class StacApi:
             response_class=self.response_class,
             methods=["GET"],
             endpoint=ping,
-            tags=["Liveliness/Readiness"],
         )
 
-        self.app.router.add_api_route(
+        mgmt_router.add_api_route(
             name="Health",
             path="/_mgmt/health",
             response_model=Dict,
@@ -406,8 +407,8 @@ class StacApi:
             response_class=self.response_class,
             methods=["GET"],
             endpoint=self.health_check,
-            tags=["Liveliness/Readiness"],
         )
+        self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
 
     def add_route_dependencies(
         self, scopes: List[Scope], dependencies: List[Depends]

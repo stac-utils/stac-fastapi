@@ -34,6 +34,9 @@ def test_api_prefix(TestCoreClient, prefix):
     )
 
     with TestClient(api.app, base_url="http://stac.io") as client:
+        ping = client.get(f"{prefix}/_mgmt/ping")
+        assert ping.status_code == 200, ping.json() == {"message": "PONG"}
+
         landing = client.get(f"{prefix}/")
         assert landing.status_code == 200, landing.json()
 
