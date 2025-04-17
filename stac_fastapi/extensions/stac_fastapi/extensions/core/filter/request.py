@@ -50,7 +50,7 @@ Remember to URL encode the CQL-JSON if using GET""",
 class FilterExtensionPostRequest(BaseModel):
     """Filter extension POST request model."""
 
-    filter_expr: Optional[Dict[str, Any]] = Field(
+    filter_expr: Optional[Dict[str, Any]] = Field(  # type: ignore
         default=None,
         alias="filter",
         description="A CQL filter expression for filtering items.",

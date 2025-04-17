@@ -37,7 +37,7 @@ class BaseCollectionSearchGetRequest(APIRequest, DatetimeMixin):
 class BaseCollectionSearchPostRequest(BaseModel):
     """Collection-Search POST model."""
 
-    bbox: Optional[BBox] = Field(
+    bbox: Optional[BBox] = Field(  # type: ignore
         default=None,
         description="Only return items intersecting this bounding box. Mutually exclusive with **intersects**.",  # noqa: E501
         openapi_examples={
@@ -45,7 +45,7 @@ class BaseCollectionSearchPostRequest(BaseModel):
             "Montreal": {"value": "-73.896103,45.364690,-73.413734,45.674283"},
         },
     )
-    datetime: Optional[str] = Field(
+    datetime: Optional[str] = Field(  # type: ignore
         default=None,
         description="""Only return items that have a temporal property that intersects this value.\n
 Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501

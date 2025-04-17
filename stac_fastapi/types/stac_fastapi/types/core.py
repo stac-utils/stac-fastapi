@@ -533,7 +533,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         bbox: Optional[BBox] = None,
         datetime: Optional[str] = None,
         limit: int = 10,
-        token: str = None,
+        token: Optional[str] = None,
         **kwargs,
     ) -> stac.ItemCollection:
         """Get all items from a specific collection.
@@ -744,7 +744,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         bbox: Optional[BBox] = None,
         datetime: Optional[str] = None,
         limit: int = 10,
-        token: str = None,
+        token: Optional[str] = None,
         **kwargs,
     ) -> stac.ItemCollection:
         """Get all items from a specific collection.

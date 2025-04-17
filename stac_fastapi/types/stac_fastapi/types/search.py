@@ -31,14 +31,11 @@ def str2list(x: str) -> Optional[List[str]]:
     return None
 
 
-def str2bbox(x: str) -> Optional[BBox]:
+def str2bbox(x: str) -> BBox:
     """Convert string to BBox based on , delimiter."""
-    if x:
-        t = tuple(float(v) for v in str2list(x))
-        assert len(t) in [4, 6], f"BBox '{x}' must have 4 or 6 values."
-        return t
-
-    return None
+    t = tuple(float(v) for v in x.split(","))
+    assert len(t) in [4, 6], f"BBox '{x}' must have 4 or 6 values."
+    return t
 
 
 def _collection_converter(
@@ -54,7 +51,9 @@ def _collection_converter(
         ),
     ] = None,
 ) -> Optional[List[str]]:
-    return str2list(val)
+    if val:
+        return val.split(",")
+    return None
 
 
 def _ids_converter(
@@ -70,7 +69,9 @@ def _ids_converter(
         ),
     ] = None,
 ) -> Optional[List[str]]:
-    return str2list(val)
+    if val:
+        return val.split(",")
+    return None
 
 
 def _bbox_converter(
@@ -85,7 +86,9 @@ def _bbox_converter(
         ),
     ] = None,
 ) -> Optional[BBox]:
-    return str2bbox(val)
+    if val:
+        return str2bbox(val)
+    return None
 
 
 def _validate_datetime(instance, attribute, value):

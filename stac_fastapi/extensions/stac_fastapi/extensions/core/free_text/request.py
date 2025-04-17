@@ -7,7 +7,7 @@ from fastapi import Query
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
-from stac_fastapi.types.search import APIRequest, str2list
+from stac_fastapi.types.search import APIRequest
 
 
 def _ft_converter(
@@ -22,7 +22,9 @@ def _ft_converter(
         ),
     ] = None,
 ) -> Optional[List[str]]:
-    return str2list(val)
+    if val:
+        return val.split(",")
+    return None
 
 
 @attr.s

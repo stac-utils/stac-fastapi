@@ -15,7 +15,7 @@ class ApiExtension(abc.ABC):
     GET = None
     POST = None
 
-    def get_request_model(self, verb: Optional[str] = "GET") -> Optional[BaseModel]:
+    def get_request_model(self, verb: str = "GET") -> Optional[BaseModel]:
         """Return the request model for the extension.method.
 
         The model can differ based on HTTP verb
