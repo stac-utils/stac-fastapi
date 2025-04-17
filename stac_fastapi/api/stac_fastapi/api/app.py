@@ -132,7 +132,7 @@ class StacApi:
         )
     )
     route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
-    health_check: Union[Callable[[], [Dict]], Callable[[], Awaitable[Dict]]] = attr.ib(
+    health_check: Union[Callable[[], Dict], Callable[[], Awaitable[Dict]]] = attr.ib(
         default=lambda: {"status": "UP"}
     )
 
