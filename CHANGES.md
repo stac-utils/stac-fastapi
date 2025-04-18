@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.2.0] - 2025-04-18
+
 ### Fixed
 
 - Remove defaults in OpenAPI schemas
