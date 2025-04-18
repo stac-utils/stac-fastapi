@@ -31,11 +31,14 @@ def str2list(x: str) -> Optional[List[str]]:
     return None
 
 
-def str2bbox(x: str) -> BBox:
+def str2bbox(x: str) -> Optional[BBox]:
     """Convert string to BBox based on , delimiter."""
-    t = tuple(float(v) for v in x.split(","))
-    assert len(t) in [4, 6], f"BBox '{x}' must have 4 or 6 values."
-    return t
+    if x:
+        t = tuple(float(v) for v in x.split(","))
+        assert len(t) in [4, 6], f"BBox '{x}' must have 4 or 6 values."
+        return t
+
+    return None
 
 
 def _collection_converter(
