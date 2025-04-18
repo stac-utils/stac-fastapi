@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.2.0] - 2025-04-18
+
 ### Fixed
 
 - Remove defaults in OpenAPI schemas
@@ -613,7 +615,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/5.1.1..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.0..main>
+[5.2.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.1.1..5.2.0>
 [5.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.1.0..5.1.1>
 [5.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.3..5.1.0>
 [5.0.3]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.2..5.0.3>
