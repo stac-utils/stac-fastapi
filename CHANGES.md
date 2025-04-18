@@ -5,6 +5,7 @@
 ### Fixed
 
 - Remove defaults in OpenAPI schemas
+- Type Hints for TypedDict
 
 ### Added
 
