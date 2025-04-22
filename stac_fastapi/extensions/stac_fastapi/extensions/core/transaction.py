@@ -205,10 +205,10 @@ class TransactionExtension(ApiExtension):
                             },
                         },
                         "application/merge-patch+json": {
-                            "schema": TypeAdapter(PartialItem).json_schema(),
+                            "schema": PartialItem.model_json_schema(),
                         },
                         "application/json": {
-                            "schema": TypeAdapter(PartialItem).json_schema(),
+                            "schema": PartialItem.model_json_schema(),
                         },
                     },
                     "required": True,
