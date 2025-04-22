@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Add Item and Collection `PATCH` endpoints with support for [RFC 6902](https://tools.ietf.org/html/rfc6902) and [RFC 7396](https://tools.ietf.org/html/rfc7386)
+
 ## [5.2.0] - 2025-04-18
 
 ### Fixed
@@ -151,8 +153,7 @@
 
 ## [3.0.0] - 2024-07-29
 
-Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#changelog
-
+Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#changelog 
 **Changes since 3.0.0b3:**
 
 ### Changed
