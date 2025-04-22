@@ -7,7 +7,7 @@ with open("README.md") as f:
 
 install_requires = [
     "brotli_asgi",
-    "stac-fastapi.types~=5.0",
+    "stac-fastapi.types~=5.2",
 ]
 
 extra_reqs = {
@@ -22,7 +22,14 @@ extra_reqs = {
     "benchmark": [
         "pytest-benchmark",
     ],
-    "docs": ["mkdocs", "mkdocs-material", "pdocs"],
+    "docs": [
+        "black>=23.10.1",
+        "mkdocs>=1.4.3",
+        "mkdocs-jupyter>=0.24.5",
+        "mkdocs-material[imaging]>=9.5",
+        "griffe-inherited-docstrings>=1.0.0",
+        "mkdocstrings[python]>=0.25.1",
+    ],
 }
 
 

@@ -82,7 +82,7 @@ class ProxyHeaderMiddleware:
 
         await self.app(scope, receive, send)
 
-    def _get_forwarded_url_parts(self, scope: Scope) -> Tuple[str]:
+    def _get_forwarded_url_parts(self, scope: Scope) -> Tuple[str, str, str]:
         proto = scope.get("scheme", "http")
         header_host = self._get_header_value_by_name(scope, "host")
         if header_host is None:
@@ -127,7 +127,7 @@ class ProxyHeaderMiddleware:
     @staticmethod
     def _replace_header_value_by_name(
         scope: Scope, header_name: str, new_value: str
-    ) -> List[Tuple[str]]:
+    ) -> List[Tuple[str, str]]:
         return [
             (name, value)
             for name, value in scope["headers"]

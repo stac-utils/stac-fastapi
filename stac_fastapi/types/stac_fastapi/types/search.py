@@ -34,7 +34,7 @@ def str2list(x: str) -> Optional[List[str]]:
 def str2bbox(x: str) -> Optional[BBox]:
     """Convert string to BBox based on , delimiter."""
     if x:
-        t = tuple(float(v) for v in str2list(x))
+        t = tuple(float(v) for v in x.split(","))
         assert len(t) in [4, 6], f"BBox '{x}' must have 4 or 6 values."
         return t
 
@@ -46,13 +46,17 @@ def _collection_converter(
         Optional[str],
         Query(
             description="Array of collection Ids to search for items.",
-            json_schema_extra={
-                "example": "collection1,collection2",
+            openapi_examples={
+                "user-provided": {"value": None},
+                "single-collection": {"value": "collection1"},
+                "multi-collections": {"value": "collection1,collection2"},
             },
         ),
     ] = None,
 ) -> Optional[List[str]]:
-    return str2list(val)
+    if val:
+        return val.split(",")
+    return None
 
 
 def _ids_converter(
@@ -60,13 +64,17 @@ def _ids_converter(
         Optional[str],
         Query(
             description="Array of Item ids to return.",
-            json_schema_extra={
-                "example": "item1,item2",
+            openapi_examples={
+                "user-provided": {"value": None},
+                "single-item": {"value": "item1"},
+                "multi-items": {"value": "item1,item2"},
             },
         ),
     ] = None,
 ) -> Optional[List[str]]:
-    return str2list(val)
+    if val:
+        return val.split(",")
+    return None
 
 
 def _bbox_converter(
@@ -74,13 +82,16 @@ def _bbox_converter(
         Optional[str],
         Query(
             description="Only return items intersecting this bounding box. Mutually exclusive with **intersects**.",  # noqa: E501
-            json_schema_extra={
-                "example": "-175.05,-85.05,175.05,85.05",
+            openapi_examples={
+                "user-provided": {"value": None},
+                "Montreal": {"value": "-73.896103,45.364690,-73.413734,45.674283"},
             },
         ),
     ] = None,
 ) -> Optional[BBox]:
-    return str2bbox(val)
+    if val:
+        return str2bbox(val)
+    return None
 
 
 def _validate_datetime(instance, attribute, value):
@@ -99,6 +110,7 @@ DateTimeQueryType = Annotated[
         description="""Only return items that have a temporal property that intersects this value.\n
 Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
         openapi_examples={
+            "user-provided": {"value": None},
             "datetime": {"value": "2018-02-12T23:20:50Z"},
             "closed-interval": {"value": "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"},
             "open-interval-from": {"value": "2018-02-12T00:00:00Z/.."},
@@ -162,6 +174,7 @@ class BaseSearchGetRequest(APIRequest, DatetimeMixin):
             description="""Only return items intersecting this GeoJSON Geometry. Mutually exclusive with **bbox**. \n
 *Remember to URL encode the GeoJSON geometry when using GET request*.""",  # noqa: E501
             openapi_examples={
+                "user-provided": {"value": None},
                 "madrid": {
                     "value": {
                         "type": "Feature",

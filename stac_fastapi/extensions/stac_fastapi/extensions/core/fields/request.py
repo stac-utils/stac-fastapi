@@ -49,8 +49,9 @@ def _fields_converter(
         Optional[str],
         Query(
             description="Include or exclude fields from items body.",
-            json_schema_extra={
-                "example": "properties.datetime",
+            openapi_examples={
+                "user-provided": {"value": None},
+                "datetime": {"value": "properties.datetime"},
             },
         ),
     ] = None,

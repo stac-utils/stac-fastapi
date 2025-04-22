@@ -7,7 +7,7 @@ from fastapi import Query
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
-from stac_fastapi.types.search import APIRequest, str2list
+from stac_fastapi.types.search import APIRequest
 
 
 def _ft_converter(
@@ -15,13 +15,16 @@ def _ft_converter(
         Optional[str],
         Query(
             description="Parameter to perform free-text queries against STAC metadata",
-            json_schema_extra={
-                "example": "ocean,coast",
+            openapi_examples={
+                "user-provided": {"value": None},
+                "Coastal": {"value": "ocean,coast"},
             },
         ),
     ] = None,
 ) -> Optional[List[str]]:
-    return str2list(val)
+    if val:
+        return val.split(",")
+    return None
 
 
 @attr.s
@@ -48,8 +51,9 @@ class FreeTextAdvancedExtensionGetRequest(APIRequest):
         Optional[str],
         Query(
             description="Parameter to perform free-text queries against STAC metadata",
-            json_schema_extra={
-                "example": "ocean,coast",
+            openapi_examples={
+                "user-provided": {"value": None},
+                "Coastal": {"value": "ocean,coast"},
             },
         ),
     ] = attr.ib(default=None)

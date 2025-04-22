@@ -145,7 +145,7 @@ def str_to_interval(interval: Optional[str]) -> Optional[DateTimeType]:
             status_code=400, detail="Start datetime cannot be before end datetime."
         )
 
-    return start, end
+    return start, end  # type: ignore
 
 
 def now_in_utc() -> datetime:

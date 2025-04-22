@@ -18,8 +18,9 @@ class QueryExtensionGetRequest(APIRequest):
         Optional[str],
         Query(
             description="Allows additional filtering based on the properties of Item objects",  # noqa: E501
-            json_schema_extra={
-                "example": '{"eo:cloud_cover": {"gte": 95}}',
+            openapi_examples={
+                "user-provided": {"value": None},
+                "cloudy": {"value": '{"eo:cloud_cover": {"gte": 95}}'},
             },
         ),
     ] = attr.ib(default=None)
@@ -31,7 +32,8 @@ class QueryExtensionPostRequest(BaseModel):
     query: Optional[Dict[str, Dict[str, Any]]] = Field(
         None,
         description="Allows additional filtering based on the properties of Item objects",  # noqa: E501
-        json_schema_extra={
-            "example": {"eo:cloud_cover": {"gte": 95}},
+        openapi_examples={
+            "user-provided": {"value": None},
+            "cloudy": {"value": '{"eo:cloud_cover": {"gte": 95}}'},
         },
     )

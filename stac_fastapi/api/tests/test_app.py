@@ -6,6 +6,7 @@ from fastapi import Path, Query
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 from stac_pydantic import api
+from starlette.requests import Request
 from typing_extensions import Annotated
 
 from stac_fastapi.api import app
@@ -106,6 +107,31 @@ def test_client_invalid_response_type(validate, TestCoreClient, item_dict):
         assert item.status_code == 500, item.text
     else:
         assert item.status_code == 200, item.text
+
+
+def test_client_response_by_pass(TestCoreClient, item_dict):
+    """Check with `enable_direct_response` option."""
+
+    class InValidResponseClient(TestCoreClient):
+        def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
+            item_dict.pop("bbox", None)
+            item_dict.pop("geometry", None)
+            return item_dict
+
+    test_app = app.StacApi(
+        settings=ApiSettings(
+            enable_response_models=False,
+            enable_direct_response=True,
+        ),
+        client=InValidResponseClient(),
+    )
+
+    with TestClient(test_app.app) as client:
+        item = client.get("/collections/test/items/test")
+
+    assert item.json()
+    assert item.status_code == 200
+    assert item.headers["content-type"] == "application/geo+json"
 
 
 def test_client_openapi(TestCoreClient):
@@ -504,3 +530,51 @@ def test_client_datetime_input_params():
     assert post_search.json() == "2020-01-01T00:00:00.00001Z"
     assert post_search_zero.status_code == 200, post_search_zero.text
     assert post_search_zero.json() == "2020-01-01T00:00:00.0000Z"
+
+
+def test_mgmt_endpoints(AsyncTestCoreClient):
+    """Test ping/health endpoints."""
+
+    test_app = app.StacApi(
+        settings=ApiSettings(),
+        client=AsyncTestCoreClient(),
+    )
+
+    with TestClient(test_app.app) as client:
+        resp = client.get("/_mgmt/ping")
+        assert resp.status_code == 200
+        assert resp.json() == {"message": "PONG"}
+
+        resp = client.get("/_mgmt/health")
+        assert resp.status_code == 200
+        assert resp.json() == {"status": "UP"}
+
+    def health_check(request: Request):
+        return {
+            "status": "UP",
+            "database": {
+                "status": "UP",
+                "version": "0.1.0",
+            },
+        }
+
+    test_app = app.StacApi(
+        settings=ApiSettings(),
+        client=AsyncTestCoreClient(),
+        health_check=health_check,
+    )
+
+    with TestClient(test_app.app) as client:
+        resp = client.get("/_mgmt/ping")
+        assert resp.status_code == 200
+        assert resp.json() == {"message": "PONG"}
+
+        resp = client.get("/_mgmt/health")
+        assert resp.status_code == 200
+        assert resp.json() == {
+            "status": "UP",
+            "database": {
+                "status": "UP",
+                "version": "0.1.0",
+            },
+        }

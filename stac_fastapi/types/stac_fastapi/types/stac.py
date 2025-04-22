@@ -5,24 +5,24 @@ from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import ConfigDict, Field
 from stac_pydantic.shared import BBox, StacBaseModel
-from typing_extensions import TypedDict
+from typing_extensions import NotRequired, TypedDict
 
 NumType = Union[float, int]
 
 
-class Catalog(TypedDict, total=False):
+class Catalog(TypedDict):
     """STAC Catalog."""
 
     type: str
     stac_version: str
-    stac_extensions: Optional[List[str]]
+    stac_extensions: NotRequired[List[str]]
     id: str
-    title: Optional[str]
+    title: NotRequired[str]
     description: str
     links: List[Dict[str, Any]]
 
 
-class LandingPage(Catalog, total=False):
+class LandingPage(Catalog):
     """STAC Landing Page."""
 
     conformsTo: List[str]
@@ -34,7 +34,7 @@ class Conformance(TypedDict):
     conformsTo: List[str]
 
 
-class Collection(Catalog, total=False):
+class Collection(Catalog):
     """STAC Collection."""
 
     keywords: List[str]
@@ -45,12 +45,12 @@ class Collection(Catalog, total=False):
     assets: Dict[str, Any]
 
 
-class Item(TypedDict, total=False):
+class Item(TypedDict):
     """STAC Item."""
 
     type: Literal["Feature"]
     stac_version: str
-    stac_extensions: Optional[List[str]]
+    stac_extensions: NotRequired[List[str]]
     id: str
     geometry: Dict[str, Any]
     bbox: BBox
@@ -60,25 +60,25 @@ class Item(TypedDict, total=False):
     collection: str
 
 
-class ItemCollection(TypedDict, total=False):
+class ItemCollection(TypedDict):
     """STAC Item Collection."""
 
     type: Literal["FeatureCollection"]
     features: List[Item]
     links: List[Dict[str, Any]]
-    numberMatched: Optional[int]
-    numberReturned: Optional[int]
+    numberMatched: NotRequired[int]
+    numberReturned: NotRequired[int]
 
 
-class Collections(TypedDict, total=False):
+class Collections(TypedDict):
     """All collections endpoint.
     https://github.com/radiantearth/stac-api-spec/tree/master/collections
     """
 
     collections: List[Collection]
     links: List[Dict[str, Any]]
-    numberMatched: Optional[int] = None
-    numberReturned: Optional[int] = None
+    numberMatched: NotRequired[int]
+    numberReturned: NotRequired[int]
 
 
 class PatchAddReplaceTest(StacBaseModel):
@@ -206,7 +206,7 @@ class PartialCollection(BasePartial):
     id: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
-    links: List[Dict[str, Any]] = None
+    links: Optional[Dict[str, Any]] = None
     keywords: Optional[List[str]] = None
     license: Optional[str] = None
     providers: Optional[List[Dict[str, Any]]] = None
@@ -230,3 +230,5 @@ class PartialItem(BasePartial):
     links: Optional[List[Dict[str, Any]]] = None
     assets: Optional[Dict[str, Any]] = None
     collection: Optional[str] = None
+    numberMatched: Optional[int] = None
+    numberReturned: Optional[int] = None

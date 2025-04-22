@@ -5,13 +5,15 @@ import functools
 import inspect
 from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
 
-from fastapi import Depends, params
-from fastapi.dependencies.utils import get_parameterless_sub_dependant
+from fastapi import Depends, FastAPI, params
+from fastapi.datastructures import DefaultPlaceholder
+from fastapi.dependencies.utils import get_dependant, get_parameterless_sub_dependant
+from fastapi.routing import APIRoute
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette.routing import BaseRoute, Match
+from starlette.routing import BaseRoute, Match, request_response
 from starlette.status import HTTP_204_NO_CONTENT
 
 from stac_fastapi.api.models import APIRequest
@@ -86,7 +88,7 @@ class Scope(TypedDict, total=False):
 
 
 def add_route_dependencies(
-    routes: List[BaseRoute], scopes: List[Scope], dependencies=List[params.Depends]
+    routes: List[BaseRoute], scopes: List[Scope], dependencies: List[params.Depends]
 ) -> None:
     """Add dependencies to routes.
 
@@ -131,3 +133,33 @@ def add_route_dependencies(
             # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/applications.py#L337-L360
             # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/routing.py#L677-L678
             route.dependencies.extend(dependencies)
+
+
+def add_direct_response(app: FastAPI) -> None:
+    """
+    Setup FastAPI application's endpoints to return Response Object directly, avoiding
+    Pydantic validation and FastAPI (slow) serialization.
+
+    ref: https://gist.github.com/Zaczero/00f3a2679ebc0a25eb938ed82bc63553
+    """
+
+    def wrap_endpoint(endpoint: Callable, cls: Type[Response]):
+        @functools.wraps(endpoint)
+        async def wrapper(*args, **kwargs):
+            content = await endpoint(*args, **kwargs)
+            return content if isinstance(content, Response) else cls(content)
+
+        return wrapper
+
+    for route in app.routes:
+        if not isinstance(route, APIRoute):
+            continue
+
+        response_class = route.response_class
+        if isinstance(response_class, DefaultPlaceholder):
+            response_class = response_class.value
+
+        if issubclass(response_class, Response):
+            route.endpoint = wrap_endpoint(route.endpoint, response_class)
+            route.dependant = get_dependant(path=route.path_format, call=route.endpoint)
+            route.app = request_response(route.get_route_handler())

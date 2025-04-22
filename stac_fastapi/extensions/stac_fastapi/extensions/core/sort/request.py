@@ -16,8 +16,10 @@ def _sort_converter(
         Optional[str],
         Query(
             description="An array of property names, prefixed by either '+' for ascending or '-' for descending. If no prefix is provided, '+' is assumed.",  # noqa: E501
-            json_schema_extra={
-                "example": "-gsd,-datetime",
+            openapi_examples={
+                "user-provided": {"value": None},
+                "resolution": {"value": "-gsd"},
+                "resolution-and-dates": {"value": "-gsd,-datetime"},
             },
         ),
     ],
@@ -38,12 +40,15 @@ class SortExtensionPostRequest(BaseModel):
     sortby: Optional[List[PostSortModel]] = Field(
         None,
         description="An array of property (field) names, and direction in form of '{'field': '<property_name>', 'direction':'<direction>'}'",  # noqa: E501
-        json_schema_extra={
-            "example": [
-                {
-                    "field": "properties.created",
-                    "direction": "asc",
-                }
-            ],
+        openapi_examples={
+            "user-provided": {"value": None},
+            "creation-time": {
+                "value": [
+                    {
+                        "field": "properties.created",
+                        "direction": "asc",
+                    }
+                ],
+            },
         },
     )
