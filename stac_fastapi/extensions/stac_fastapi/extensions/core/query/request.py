@@ -32,8 +32,12 @@ class QueryExtensionPostRequest(BaseModel):
     query: Optional[Dict[str, Dict[str, Any]]] = Field(
         None,
         description="Allows additional filtering based on the properties of Item objects",  # noqa: E501
-        openapi_examples={
-            "user-provided": {"value": None},
-            "cloudy": {"value": '{"eo:cloud_cover": {"gte": 95}}'},
+        json_schema_extra={
+            "examples": [
+                # user-provided
+                None,
+                # cloudy
+                '{"eo:cloud_cover": {"gte": 95}}',
+            ],
         },
     )
