@@ -40,15 +40,17 @@ class SortExtensionPostRequest(BaseModel):
     sortby: Optional[List[PostSortModel]] = Field(
         None,
         description="An array of property (field) names, and direction in form of '{'field': '<property_name>', 'direction':'<direction>'}'",  # noqa: E501
-        openapi_examples={
-            "user-provided": {"value": None},
-            "creation-time": {
-                "value": [
+        json_schema_extra={
+            "examples": [
+                # user-provided
+                None,
+                # creation-time
+                [
                     {
                         "field": "properties.created",
                         "direction": "asc",
                     }
                 ],
-            },
+            ],
         },
     )

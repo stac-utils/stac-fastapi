@@ -51,13 +51,15 @@ class FilterExtensionPostRequest(BaseModel):
     """Filter extension POST request model."""
 
     filter_expr: Optional[Dict[str, Any]] = Field(
-        default=None,
+        None,
         alias="filter",
         description="A CQL filter expression for filtering items.",
-        openapi_examples={
-            "user-provided": {"value": None},
-            "landsat8-item": {
-                "value": {
+        json_schema_extra={
+            "examples": [
+                # user-provided
+                None,
+                # landsat8-item
+                {
                     "op": "and",
                     "args": [
                         {
@@ -73,16 +75,16 @@ class FilterExtensionPostRequest(BaseModel):
                         },
                     ],
                 },
-            },
+            ],
         },
     )
     filter_crs: Optional[str] = Field(
+        None,
         alias="filter-crs",
-        default=None,
         description="The coordinate reference system (CRS) used by spatial literals in the 'filter' value. Default is `http://www.opengis.net/def/crs/OGC/1.3/CRS84`",  # noqa: E501
     )
     filter_lang: Optional[Literal["cql-json", "cql2-json"]] = Field(
+        "cql2-json",
         alias="filter-lang",
-        default="cql2-json",
         description="The CQL filter encoding that the 'filter' value uses.",
     )
