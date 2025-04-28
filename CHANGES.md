@@ -5,6 +5,7 @@
 ### Fixed
 
 - avoid future deprecation for pydantic.Field and use `json_schema_extra` instead of `openapi_examples`
+- use `orjson` based JSONResponse when available
 
 ## [5.2.0] - 2025-04-18
 

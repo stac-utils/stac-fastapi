@@ -7,10 +7,10 @@ import attr
 from fastapi import APIRouter, Body, FastAPI
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.shared import MimeTypes
-from starlette.responses import JSONResponse, Response
+from starlette.responses import Response
 from typing_extensions import Annotated
 
-from stac_fastapi.api.models import CollectionUri, ItemUri
+from stac_fastapi.api.models import CollectionUri, ItemUri, JSONResponse
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
