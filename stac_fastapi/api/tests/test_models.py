@@ -43,7 +43,10 @@ def test_create_get_request_model():
     model = request_model(bbox="0,0,0,1,1,1")
     assert model.bbox == (0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(HTTPException):
+        request_model(bbox="a,b")
+
+    with pytest.raises(HTTPException):
         request_model(bbox="0,0,0,1,1")
 
     model = request_model(
