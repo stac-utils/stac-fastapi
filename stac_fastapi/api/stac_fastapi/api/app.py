@@ -12,7 +12,7 @@ from stac_pydantic.api.collections import Collections
 from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 from starlette.middleware import Middleware
-from starlette.responses import JSONResponse, Response
+from starlette.responses import Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
 from stac_fastapi.api.middleware import CORSMiddleware, ProxyHeaderMiddleware
@@ -23,6 +23,7 @@ from stac_fastapi.api.models import (
     GeoJSONResponse,
     ItemCollectionUri,
     ItemUri,
+    JSONResponse,
 )
 from stac_fastapi.api.openapi import update_openapi
 from stac_fastapi.api.routes import (

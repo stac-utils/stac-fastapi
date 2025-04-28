@@ -8,8 +8,8 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from starlette import status
 from starlette.requests import Request
-from starlette.responses import JSONResponse
 
+from stac_fastapi.api.models import JSONResponse
 from stac_fastapi.types.errors import (
     ConflictError,
     DatabaseError,
