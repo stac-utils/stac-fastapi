@@ -1,6 +1,6 @@
 """Api request/response models."""
 
-from typing import List, Optional, Type, Union
+from typing import List, Literal, Optional, Type, Union
 
 import attr
 from fastapi import Path, Query
@@ -135,3 +135,9 @@ class JSONSchemaResponse(JSONResponse):
     """JSON with custom, vendor content-type."""
 
     media_type = "application/schema+json"
+
+
+class HealthCheck(BaseModel, extra="allow"):
+    """health check response model."""
+
+    status: Literal["UP", "DOWN"]
