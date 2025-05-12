@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.2.1] - 2025-04-18
+
 ### Fixed
 
 - avoid future deprecation for pydantic.Field and use `json_schema_extra` instead of `openapi_examples`
@@ -626,7 +628,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.1..main>
+[5.2.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.0..5.2.1>
 [5.2.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.1.1..5.2.0>
 [5.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.1.0..5.1.1>
 [5.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.3..5.1.0>
