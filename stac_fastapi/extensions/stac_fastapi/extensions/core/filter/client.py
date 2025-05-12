@@ -23,7 +23,7 @@ class AsyncBaseFiltersClient(abc.ABC):
         https://github.com/radiantearth/stac-api-spec/tree/master/fragments/filter#queryables
         """
         return {
-            "$schema": "https://json-schema.org/draft/2019-09/schema",
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
             "$id": "https://example.org/queryables",
             "type": "object",
             "title": "Queryables for Example STAC API",
@@ -49,7 +49,7 @@ class BaseFiltersClient(abc.ABC):
         https://github.com/stac-api-extensions/filter#queryables
         """
         return {
-            "$schema": "https://json-schema.org/draft/2019-09/schema",
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
             "$id": "https://example.org/queryables",
             "type": "object",
             "title": "Queryables for Example STAC API",
