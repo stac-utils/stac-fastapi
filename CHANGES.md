@@ -7,6 +7,7 @@
 - avoid future deprecation for pydantic.Field and use `json_schema_extra` instead of `openapi_examples`
 - use `orjson` based JSONResponse when available
 - changed from `AssertionError` to `HTTPException` for **bbox** parsing exceptions
+- update `$schema` in Filter's extension client responses to match OGC Feature specification
 
 ### Added
 
