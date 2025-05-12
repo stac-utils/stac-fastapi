@@ -6,6 +6,11 @@
 
 - avoid future deprecation for pydantic.Field and use `json_schema_extra` instead of `openapi_examples`
 - use `orjson` based JSONResponse when available
+- changed from `AssertionError` to `HTTPException` for **bbox** parsing exceptions
+
+### Added
+
+- add response model for `/_mgmt/health` endpoint
 
 ## [5.2.0] - 2025-04-18
 

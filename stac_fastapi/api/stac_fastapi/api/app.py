@@ -21,6 +21,7 @@ from stac_fastapi.api.models import (
     CollectionUri,
     EmptyRequest,
     GeoJSONResponse,
+    HealthCheck,
     ItemCollectionUri,
     ItemUri,
     JSONResponse,
@@ -397,12 +398,15 @@ class StacApi:
         mgmt_router.add_api_route(
             name="Health",
             path="/_mgmt/health",
-            response_model=Dict,
+            response_model=(
+                HealthCheck if self.settings.enable_response_models else None
+            ),
             responses={
                 200: {
                     "content": {
                         MimeTypes.json.value: {},
                     },
+                    "model": HealthCheck,
                 },
             },
             response_class=self.response_class,

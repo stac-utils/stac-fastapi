@@ -5,7 +5,7 @@ from datetime import datetime as dt
 from typing import Dict, List, Optional, Union
 
 import attr
-from fastapi import Query
+from fastapi import HTTPException, Query
 from pydantic import Field, PositiveInt
 from pydantic.functional_validators import AfterValidator
 from stac_pydantic.api import Search
@@ -34,8 +34,16 @@ def str2list(x: str) -> Optional[List[str]]:
 def str2bbox(x: str) -> Optional[BBox]:
     """Convert string to BBox based on , delimiter."""
     if x:
-        t = tuple(float(v) for v in x.split(","))
-        assert len(t) in [4, 6], f"BBox '{x}' must have 4 or 6 values."
+        try:
+            t = tuple(float(v) for v in x.split(","))
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"invalid bbox: {x}")
+
+        if len(t) not in (4, 6):
+            raise HTTPException(
+                status_code=400, detail=f"BBox '{x}' must have 4 or 6 values."
+            )
+
         return t
 
     return None
