@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- remove support of `cql-json` in Filter extension
+
 ## [5.2.1] - 2025-04-18
 
 ### Fixed

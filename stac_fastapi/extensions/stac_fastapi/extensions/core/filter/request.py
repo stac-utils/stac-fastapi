@@ -9,7 +9,7 @@ from typing_extensions import Annotated
 
 from stac_fastapi.types.search import APIRequest
 
-FilterLang = Literal["cql-json", "cql2-json", "cql2-text"]
+FilterLang = Literal["cql2-json", "cql2-text"]
 
 
 @attr.s
@@ -20,9 +20,9 @@ class FilterExtensionGetRequest(APIRequest):
         Optional[str],
         Query(
             alias="filter",
-            description="""A CQL filter expression for filtering items.\n
-Supports `CQL-JSON` as defined in https://portal.ogc.org/files/96288\n
-Remember to URL encode the CQL-JSON if using GET""",
+            description="""A CQL2 filter expression for filtering items.\n
+Supports `CQL2-JSON` as defined in https://docs.ogc.org/is/21-065r2/21-065r2.htmln
+Remember to URL encode the CQL2-JSON if using GET""",
             openapi_examples={
                 "user-provided": {"value": None},
                 "landsat8-item": {
@@ -83,7 +83,7 @@ class FilterExtensionPostRequest(BaseModel):
         alias="filter-crs",
         description="The coordinate reference system (CRS) used by spatial literals in the 'filter' value. Default is `http://www.opengis.net/def/crs/OGC/1.3/CRS84`",  # noqa: E501
     )
-    filter_lang: Optional[Literal["cql-json", "cql2-json"]] = Field(
+    filter_lang: Optional[Literal["cql2-json"]] = Field(
         "cql2-json",
         alias="filter-lang",
         description="The CQL filter encoding that the 'filter' value uses.",
