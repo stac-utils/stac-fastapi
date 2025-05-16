@@ -21,7 +21,7 @@ class FilterExtensionGetRequest(APIRequest):
         Query(
             alias="filter",
             description="""A CQL2 filter expression for filtering items.\n
-Supports `CQL2-JSON` as defined in https://portal.ogc.org/files/96288\n
+Supports `CQL2-JSON` as defined in https://docs.ogc.org/is/21-065r2/21-065r2.htmln
 Remember to URL encode the CQL2-JSON if using GET""",
             openapi_examples={
                 "user-provided": {"value": None},
