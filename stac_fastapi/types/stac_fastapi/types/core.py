@@ -13,12 +13,12 @@ from stac_pydantic.shared import BBox, MimeTypes
 from stac_pydantic.version import STAC_VERSION
 from starlette.responses import Response
 
-from stac_fastapi.types import stac
-from stac_fastapi.types.config import ApiSettings
-from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
-from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.requests import get_base_url
-from stac_fastapi.types.search import BaseSearchPostRequest
+from . import stac
+from .config import ApiSettings
+from .conformance import BASE_CONFORMANCE_CLASSES
+from .extension import ApiExtension
+from .requests import get_base_url
+from .search import BaseSearchPostRequest
 
 __all__ = [
     "NumType",
