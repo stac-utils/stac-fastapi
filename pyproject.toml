@@ -23,6 +23,12 @@ section-order = ["future", "standard-library", "third-party", "first-party", "lo
 [tool.ruff.format]
 quote-style = "double"
 
+[tool.mypy]
+ignore_missing_imports = true
+namespace_packages = true
+explicit_package_bases = true
+exclude = ["tests", ".venv"]
+
 [tool.bumpversion]
 current_version = "5.2.1"
 parse = """(?x)

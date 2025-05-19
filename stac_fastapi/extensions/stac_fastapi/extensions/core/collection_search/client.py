@@ -4,7 +4,7 @@ import abc
 
 import attr
 
-from stac_fastapi.types import stac
+from stac_fastapi.types.stac import ItemCollection
 
 from .request import BaseCollectionSearchPostRequest
 
@@ -18,7 +18,7 @@ class AsyncBaseCollectionSearchClient(abc.ABC):
         self,
         search_request: BaseCollectionSearchPostRequest,
         **kwargs,
-    ) -> stac.ItemCollection:
+    ) -> ItemCollection:
         """Get all available collections.
 
         Called with `POST /collections`.
@@ -37,7 +37,7 @@ class BaseCollectionSearchClient(abc.ABC):
     @abc.abstractmethod
     def post_all_collections(
         self, search_request: BaseCollectionSearchPostRequest, **kwargs
-    ) -> stac.ItemCollection:
+    ) -> ItemCollection:
         """Get all available collections.
 
         Called with `POST /collections`.
