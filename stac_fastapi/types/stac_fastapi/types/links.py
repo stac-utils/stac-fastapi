@@ -3,7 +3,7 @@
 from typing import Any, Dict, List
 from urllib.parse import urljoin
 
-import attr
+import attrs
 from stac_pydantic.links import Relations
 from stac_pydantic.shared import MimeTypes
 
@@ -26,19 +26,19 @@ def resolve_links(links: list, base_url: str) -> List[Dict]:
     return filtered_links
 
 
-@attr.s
+@attrs.define
 class BaseLinks:
     """Create inferred links common to collections and items."""
 
-    collection_id: str = attr.ib()
-    base_url: str = attr.ib()
+    collection_id: str = attrs.field()
+    base_url: str = attrs.field()
 
     def root(self) -> Dict[str, Any]:
         """Return the catalog root."""
         return dict(rel=Relations.root, type=MimeTypes.json, href=self.base_url)
 
 
-@attr.s
+@attrs.define
 class CollectionLinks(BaseLinks):
     """Create inferred links specific to collections."""
 
@@ -67,11 +67,11 @@ class CollectionLinks(BaseLinks):
         return [self.self(), self.parent(), self.items(), self.root()]
 
 
-@attr.s
+@attrs.define
 class ItemLinks(BaseLinks):
     """Create inferred links specific to items."""
 
-    item_id: str = attr.ib()
+    item_id: str = attrs.field()
 
     def self(self) -> Dict[str, Any]:
         """Create the `self` link."""

@@ -2,7 +2,7 @@
 
 from typing import List, Literal, Optional, Type, Union
 
-import attr
+import attrs
 from fastapi import Path, Query
 from pydantic import BaseModel, create_model
 from stac_pydantic.shared import BBox
@@ -49,14 +49,19 @@ def create_request_model(
 
     # Handle GET requests
     if all([issubclass(m, APIRequest) for m in models]):
-        return attr.make_class(model_name, attrs={}, bases=tuple(models))
+        return attrs.make_class(
+            model_name,
+            attrs={**{}},
+            bases=tuple(models),
+        )
 
     # Handle POST requests
     elif all([issubclass(m, BaseModel) for m in models]):
         for model in models:
             for k, field_info in model.model_fields.items():
                 fields[k] = (field_info.annotation, field_info)
-        return create_model(model_name, **fields, __base__=base_model)
+
+        return create_model(model_name, **fields, __base__=base_model)  # type: ignore
 
     raise TypeError("Mixed Request Model types. Check extension request types.")
 
@@ -88,41 +93,41 @@ def create_post_request_model(
     )
 
 
-@attr.s
+@attrs.define
 class CollectionUri(APIRequest):
     """Get or delete collection."""
 
-    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
+    collection_id: Annotated[str, Path(description="Collection ID")] = attrs.field()
 
 
-@attr.s
+@attrs.define
 class ItemUri(APIRequest):
     """Get or delete item."""
 
-    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
-    item_id: Annotated[str, Path(description="Item ID")] = attr.ib()
+    collection_id: Annotated[str, Path(description="Collection ID")] = attrs.field()
+    item_id: Annotated[str, Path(description="Item ID")] = attrs.field()
 
 
-@attr.s
+@attrs.define
 class EmptyRequest(APIRequest):
     """Empty request."""
 
     ...
 
 
-@attr.s
+@attrs.define
 class ItemCollectionUri(APIRequest, DatetimeMixin):
     """Get item collection."""
 
-    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
+    collection_id: Annotated[str, Path(description="Collection ID")] = attrs.field()
     limit: Annotated[
         Optional[Limit],
         Query(
             description="Limits the number of results that are included in each page of the response (capped to 10_000)."  # noqa: E501
         ),
-    ] = attr.ib(default=10)
-    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
-    datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
+    ] = attrs.field(default=10)
+    bbox: Optional[BBox] = attrs.field(default=None, converter=_bbox_converter)
+    datetime: DateTimeQueryType = attrs.field(default=None, validator=_validate_datetime)
 
 
 class GeoJSONResponse(JSONResponse):

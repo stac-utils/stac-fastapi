@@ -3,7 +3,7 @@
 import copy
 import functools
 import inspect
-from typing import Any, Callable, Dict, List, Optional, Type, TypedDict, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Type, TypedDict, Union
 
 from fastapi import Depends, FastAPI, params
 from fastapi.datastructures import DefaultPlaceholder
@@ -48,30 +48,26 @@ def create_async_endpoint(
     if not inspect.iscoroutinefunction(func):
         func = sync_to_async(func)
 
-    if issubclass(request_model, APIRequest):
+    _endpoint: Callable[[Any, Any], Awaitable[Any]]
+
+    if isinstance(request_model, dict):
 
         async def _endpoint(
             request: Request,
-            request_data: request_model = Depends(),  # type:ignore
+            request_data: Dict[str, Any],
         ):
+            """Endpoint."""
+            return _wrap_response(await func(request_data, request=request))
+
+    elif issubclass(request_model, APIRequest):
+
+        async def _endpoint(request: Request, request_data=Depends(request_model)):
             """Endpoint."""
             return _wrap_response(await func(request=request, **request_data.kwargs()))
 
     elif issubclass(request_model, BaseModel):
 
-        async def _endpoint(
-            request: Request,
-            request_data: request_model,  # type:ignore
-        ):
-            """Endpoint."""
-            return _wrap_response(await func(request_data, request=request))
-
-    else:
-
-        async def _endpoint(
-            request: Request,
-            request_data: Dict[str, Any],  # type:ignore
-        ):
+        async def _endpoint(request: Request, request_data: request_model):  # type: ignore
             """Endpoint."""
             return _wrap_response(await func(request_data, request=request))
 

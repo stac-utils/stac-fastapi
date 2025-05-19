@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import List, Type, Union
 
-import attr
+import attrs
 from fastapi import APIRouter, FastAPI
 from starlette.responses import Response
 
@@ -48,7 +48,7 @@ class FilterConformanceClasses(str, Enum):
     )
 
 
-@attr.s
+@attrs.define
 class FilterExtension(ApiExtension):
     """Filter Extension.
 
@@ -68,21 +68,21 @@ class FilterExtension(ApiExtension):
     GET = FilterExtensionGetRequest
     POST = FilterExtensionPostRequest
 
-    client: Union[AsyncBaseFiltersClient, BaseFiltersClient] = attr.ib(
+    client: Union[AsyncBaseFiltersClient, BaseFiltersClient] = attrs.field(
         factory=BaseFiltersClient
     )
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: List[str] = attrs.field(
         default=[
-            FilterConformanceClasses.FILTER,
-            FilterConformanceClasses.SEARCH,
-            FilterConformanceClasses.ITEMS,
-            FilterConformanceClasses.BASIC_CQL2,
-            FilterConformanceClasses.CQL2_JSON,
-            FilterConformanceClasses.CQL2_TEXT,
+            FilterConformanceClasses.FILTER.value,
+            FilterConformanceClasses.SEARCH.value,
+            FilterConformanceClasses.ITEMS.value,
+            FilterConformanceClasses.BASIC_CQL2.value,
+            FilterConformanceClasses.CQL2_JSON.value,
+            FilterConformanceClasses.CQL2_TEXT.value,
         ]
     )
-    router: APIRouter = attr.ib(factory=APIRouter)
-    response_class: Type[Response] = attr.ib(default=JSONSchemaResponse)
+    router: APIRouter = attrs.field(factory=APIRouter)
+    response_class: Type[Response] = attrs.field(default=JSONSchemaResponse)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -127,17 +127,17 @@ class FilterExtension(ApiExtension):
         app.include_router(self.router, tags=["Filter Extension"])
 
 
-@attr.s
+@attrs.define
 class SearchFilterExtension(FilterExtension):
     """Item Search Filter Extension."""
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: List[str] = attrs.field(
         default=[
-            FilterConformanceClasses.FILTER,
-            FilterConformanceClasses.SEARCH,
-            FilterConformanceClasses.BASIC_CQL2,
-            FilterConformanceClasses.CQL2_JSON,
-            FilterConformanceClasses.CQL2_TEXT,
+            FilterConformanceClasses.FILTER.value,
+            FilterConformanceClasses.SEARCH.value,
+            FilterConformanceClasses.BASIC_CQL2.value,
+            FilterConformanceClasses.CQL2_JSON.value,
+            FilterConformanceClasses.CQL2_TEXT.value,
         ]
     )
 
@@ -169,17 +169,17 @@ class SearchFilterExtension(FilterExtension):
         app.include_router(self.router, tags=["Filter Extension"])
 
 
-@attr.s
+@attrs.define
 class ItemCollectionFilterExtension(FilterExtension):
     """Item Collection Filter Extension."""
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: List[str] = attrs.field(
         default=[
-            FilterConformanceClasses.FILTER,
-            FilterConformanceClasses.ITEMS,
-            FilterConformanceClasses.BASIC_CQL2,
-            FilterConformanceClasses.CQL2_JSON,
-            FilterConformanceClasses.CQL2_TEXT,
+            FilterConformanceClasses.FILTER.value,
+            FilterConformanceClasses.ITEMS.value,
+            FilterConformanceClasses.BASIC_CQL2.value,
+            FilterConformanceClasses.CQL2_JSON.value,
+            FilterConformanceClasses.CQL2_TEXT.value,
         ]
     )
 
@@ -211,17 +211,17 @@ class ItemCollectionFilterExtension(FilterExtension):
         app.include_router(self.router, tags=["Filter Extension"])
 
 
-@attr.s
+@attrs.define
 class CollectionSearchFilterExtension(FilterExtension):
     """Collection Search Filter Extension."""
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: List[str] = attrs.field(
         default=[
-            FilterConformanceClasses.FILTER,
-            FilterConformanceClasses.COLLECTIONS,
-            FilterConformanceClasses.BASIC_CQL2,
-            FilterConformanceClasses.CQL2_JSON,
-            FilterConformanceClasses.CQL2_TEXT,
+            FilterConformanceClasses.FILTER.value,
+            FilterConformanceClasses.COLLECTIONS.value,
+            FilterConformanceClasses.BASIC_CQL2.value,
+            FilterConformanceClasses.CQL2_JSON.value,
+            FilterConformanceClasses.CQL2_TEXT.value,
         ]
     )
 

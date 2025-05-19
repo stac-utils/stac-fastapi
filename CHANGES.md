@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
+### Changed
+
+- switched from `attr.s` to `attrs.define` for dataclasses definition.
+- Extension's classes now HAVE TO be defined with `@define(slots=False)`
+- switched from `attr.id` to `attrs.field` for dataclasses's attributes definition
 - remove support of `cql-json` in Filter extension
+
+### Added
+
+- `py.typed` files for each sub-modules
+- type checking in `pre-commit`
 
 ## [5.2.1] - 2025-04-18
 

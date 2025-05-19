@@ -45,37 +45,36 @@ class DummyCoreClient(BaseCoreClient):
         return args, kwargs
 
 
-collections_get_request_model = create_request_model(
-    model_name="CollectionsGetRequest",
-    base_model=EmptyRequest,
-    mixins=[
-        OffsetPaginationExtension().GET,
-    ],
-    request_type="GET",
-)
-
-items_get_request_model = create_request_model(
-    model_name="ItemsGetRequest",
-    base_model=EmptyRequest,
-    mixins=[
-        PaginationExtension().GET,
-    ],
-    request_type="GET",
-)
-
-search_get_request_model = create_request_model(
-    model_name="SearchGetRequest",
-    base_model=BaseSearchGetRequest,
-    mixins=[
-        TokenPaginationExtension().GET,
-    ],
-    request_type="GET",
-)
-
-
 @pytest.fixture
 def client() -> Iterator[TestClient]:
     settings = ApiSettings()
+
+    collections_get_request_model = create_request_model(
+        model_name="CollectionsGetRequest",
+        base_model=EmptyRequest,
+        mixins=[
+            OffsetPaginationExtension().GET,
+        ],
+        request_type="GET",
+    )
+
+    items_get_request_model = create_request_model(
+        model_name="ItemsGetRequest",
+        base_model=EmptyRequest,
+        mixins=[
+            PaginationExtension().GET,
+        ],
+        request_type="GET",
+    )
+
+    search_get_request_model = create_request_model(
+        model_name="SearchGetRequest",
+        base_model=BaseSearchGetRequest,
+        mixins=[
+            TokenPaginationExtension().GET,
+        ],
+        request_type="GET",
+    )
 
     api = StacApi(
         settings=settings,

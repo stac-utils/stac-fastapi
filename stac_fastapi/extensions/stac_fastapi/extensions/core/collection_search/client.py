@@ -2,14 +2,14 @@
 
 import abc
 
-import attr
+import attrs
 
-from stac_fastapi.types import stac
+from stac_fastapi.types.stac import ItemCollection
 
 from .request import BaseCollectionSearchPostRequest
 
 
-@attr.s
+@attrs.define
 class AsyncBaseCollectionSearchClient(abc.ABC):
     """Defines a pattern for implementing the STAC collection-search POST extension."""
 
@@ -18,7 +18,7 @@ class AsyncBaseCollectionSearchClient(abc.ABC):
         self,
         search_request: BaseCollectionSearchPostRequest,
         **kwargs,
-    ) -> stac.ItemCollection:
+    ) -> ItemCollection:
         """Get all available collections.
 
         Called with `POST /collections`.
@@ -30,14 +30,14 @@ class AsyncBaseCollectionSearchClient(abc.ABC):
         ...
 
 
-@attr.s
+@attrs.define
 class BaseCollectionSearchClient(abc.ABC):
     """Defines a pattern for implementing the STAC collection-search POST extension."""
 
     @abc.abstractmethod
     def post_all_collections(
         self, search_request: BaseCollectionSearchPostRequest, **kwargs
-    ) -> stac.ItemCollection:
+    ) -> ItemCollection:
         """Get all available collections.
 
         Called with `POST /collections`.

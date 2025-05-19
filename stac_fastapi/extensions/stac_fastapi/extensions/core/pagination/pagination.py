@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-import attr
+import attrs
 from fastapi import FastAPI
 
 from stac_fastapi.types.extension import ApiExtension
@@ -10,7 +10,7 @@ from stac_fastapi.types.extension import ApiExtension
 from .request import GETPagination, POSTPagination
 
 
-@attr.s
+@attrs.define
 class PaginationExtension(ApiExtension):
     """Token Pagination.
 
@@ -23,8 +23,8 @@ class PaginationExtension(ApiExtension):
     GET = GETPagination
     POST = POSTPagination
 
-    conformance_classes: List[str] = attr.ib(factory=list)
-    schema_href: Optional[str] = attr.ib(default=None)
+    conformance_classes: List[str] = attrs.field(factory=list)
+    schema_href: Optional[str] = attrs.field(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

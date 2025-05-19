@@ -4,7 +4,7 @@ import abc
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
-import attr
+import attrs
 from fastapi import Request
 from geojson_pydantic.geometries import Geometry
 from stac_pydantic import Collection, Item, ItemCollection
@@ -13,12 +13,12 @@ from stac_pydantic.shared import BBox, MimeTypes
 from stac_pydantic.version import STAC_VERSION
 from starlette.responses import Response
 
-from stac_fastapi.types import stac
-from stac_fastapi.types.config import ApiSettings
-from stac_fastapi.types.conformance import BASE_CONFORMANCE_CLASSES
-from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.requests import get_base_url
-from stac_fastapi.types.search import BaseSearchPostRequest
+from . import stac
+from .config import ApiSettings
+from .conformance import BASE_CONFORMANCE_CLASSES
+from .extension import ApiExtension
+from .requests import get_base_url
+from .search import BaseSearchPostRequest
 
 __all__ = [
     "NumType",
@@ -36,7 +36,7 @@ StacType = Dict[str, Any]
 api_settings = ApiSettings()
 
 
-@attr.s  # type:ignore
+@attrs.define  # type:ignore
 class BaseTransactionsClient(abc.ABC):
     """Defines a pattern for implementing the STAC API Transaction Extension."""
 
@@ -150,7 +150,7 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
 
-@attr.s  # type:ignore
+@attrs.define  # type:ignore
 class AsyncBaseTransactionsClient(abc.ABC):
     """Defines a pattern for implementing the STAC transaction extension."""
 
@@ -263,14 +263,14 @@ class AsyncBaseTransactionsClient(abc.ABC):
         ...
 
 
-@attr.s
+@attrs.define
 class LandingPageMixin(abc.ABC):
     """Create a STAC landing page (GET /)."""
 
-    stac_version: str = attr.ib(default=STAC_VERSION)
-    landing_page_id: str = attr.ib(default=api_settings.stac_fastapi_landing_id)
-    title: str = attr.ib(default=api_settings.stac_fastapi_title)
-    description: str = attr.ib(default=api_settings.stac_fastapi_description)
+    stac_version: str = attrs.field(default=STAC_VERSION)
+    landing_page_id: str = attrs.field(default=api_settings.stac_fastapi_landing_id)
+    title: str = attrs.field(default=api_settings.stac_fastapi_title)
+    description: str = attrs.field(default=api_settings.stac_fastapi_description)
 
     def _landing_page(
         self,
@@ -331,7 +331,7 @@ class LandingPageMixin(abc.ABC):
         return landing_page
 
 
-@attr.s  # type:ignore
+@attrs.define  # type:ignore
 class BaseCoreClient(LandingPageMixin, abc.ABC):
     """Defines a pattern for implementing STAC api core endpoints.
 
@@ -339,10 +339,10 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         extensions: list of registered api extensions.
     """
 
-    base_conformance_classes: List[str] = attr.ib(
+    base_conformance_classes: List[str] = attrs.field(
         factory=lambda: BASE_CONFORMANCE_CLASSES
     )
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
+    extensions: List[ApiExtension] = attrs.field(default=attrs.Factory(list))
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base
@@ -551,7 +551,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         ...
 
 
-@attr.s  # type:ignore
+@attrs.define  # type:ignore
 class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     """Defines a pattern for implementing STAC api core endpoints.
 
@@ -559,10 +559,10 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         extensions: list of registered api extensions.
     """
 
-    base_conformance_classes: List[str] = attr.ib(
+    base_conformance_classes: List[str] = attrs.field(
         factory=lambda: BASE_CONFORMANCE_CLASSES
     )
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
+    extensions: List[ApiExtension] = attrs.field(default=attrs.Factory(list))
 
     def conformance_classes(self) -> List[str]:
         """Generate conformance classes by adding extension conformance to base

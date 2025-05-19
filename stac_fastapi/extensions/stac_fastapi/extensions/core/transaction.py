@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import List, Optional, Type, Union
 
-import attr
+import attrs
 from fastapi import APIRouter, Body, FastAPI
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.shared import MimeTypes
@@ -28,28 +28,28 @@ class TransactionConformanceClasses(str, Enum):
     COLLECTIONS = "https://api.stacspec.org/v1.0.0/collections/extensions/transaction"
 
 
-@attr.s
+@attrs.define
 class PostItem(CollectionUri):
     """Create Item."""
 
-    item: Annotated[Union[Item, ItemCollection], Body()] = attr.ib(default=None)
+    item: Annotated[Union[Item, ItemCollection], Body()] = attrs.field(default=None)
 
 
-@attr.s
+@attrs.define
 class PutItem(ItemUri):
     """Update Item."""
 
-    item: Annotated[Item, Body()] = attr.ib(default=None)
+    item: Annotated[Item, Body()] = attrs.field(default=None)
 
 
-@attr.s
+@attrs.define
 class PutCollection(CollectionUri):
     """Update Collection."""
 
-    collection: Annotated[Collection, Body()] = attr.ib(default=None)
+    collection: Annotated[Collection, Body()] = attrs.field(default=None)
 
 
-@attr.s
+@attrs.define
 class TransactionExtension(ApiExtension):
     """Transaction Extension.
 
@@ -70,17 +70,17 @@ class TransactionExtension(ApiExtension):
 
     """
 
-    client: Union[AsyncBaseTransactionsClient, BaseTransactionsClient] = attr.ib()
-    settings: ApiSettings = attr.ib()
-    conformance_classes: List[str] = attr.ib(
+    client: Union[AsyncBaseTransactionsClient, BaseTransactionsClient] = attrs.field()
+    settings: ApiSettings = attrs.field()
+    conformance_classes: List[str] = attrs.field(
         factory=lambda: [
             TransactionConformanceClasses.ITEMS,
             TransactionConformanceClasses.COLLECTIONS,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
-    router: APIRouter = attr.ib(factory=APIRouter)
-    response_class: Type[Response] = attr.ib(default=JSONResponse)
+    schema_href: Optional[str] = attrs.field(default=None)
+    router: APIRouter = attrs.field(factory=APIRouter)
+    response_class: Type[Response] = attrs.field(default=JSONResponse)
 
     def register_create_item(self):
         """Register create item endpoint (POST /collections/{collection_id}/items)."""

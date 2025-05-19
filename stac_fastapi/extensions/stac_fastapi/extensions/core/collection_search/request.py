@@ -3,7 +3,7 @@
 from datetime import datetime as dt
 from typing import List, Optional, Tuple, cast
 
-import attr
+import attrs
 from fastapi import Query
 from pydantic import BaseModel, Field, PrivateAttr, ValidationInfo, field_validator
 from stac_pydantic.api.search import SearchDatetime
@@ -20,18 +20,18 @@ from stac_fastapi.types.search import (
 )
 
 
-@attr.s
+@attrs.define(slots=False)
 class BaseCollectionSearchGetRequest(APIRequest, DatetimeMixin):
     """Basics additional Collection-Search parameters for the GET request."""
 
-    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
-    datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
+    bbox: Optional[BBox] = attrs.field(default=None, converter=_bbox_converter)
+    datetime: DateTimeQueryType = attrs.field(default=None, validator=_validate_datetime)
     limit: Annotated[
         Optional[Limit],
         Query(
             description="Limits the number of results that are included in each page of the response."  # noqa: E501
         ),
-    ] = attr.ib(default=10)
+    ] = attrs.field(default=10)
 
 
 class BaseCollectionSearchPostRequest(BaseModel):

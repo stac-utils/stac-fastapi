@@ -2,7 +2,7 @@
 
 from typing import Dict, List, Optional, Set
 
-import attr
+import attrs
 from fastapi import Query
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
@@ -59,11 +59,11 @@ def _fields_converter(
     return str2list(val)
 
 
-@attr.s
+@attrs.define(slots=False)
 class FieldsExtensionGetRequest(APIRequest):
     """Additional fields for the GET request."""
 
-    fields: Optional[List[str]] = attr.ib(default=None, converter=_fields_converter)
+    fields: Optional[List[str]] = attrs.field(default=None, converter=_fields_converter)
 
 
 class FieldsExtensionPostRequest(BaseModel):

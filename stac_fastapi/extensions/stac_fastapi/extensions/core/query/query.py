@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import List, Optional
 
-import attr
+import attrs
 from fastapi import FastAPI
 
 from stac_fastapi.types.extension import ApiExtension
@@ -22,7 +22,7 @@ class QueryConformanceClasses(str, Enum):
     COLLECTIONS = "https://api.stacspec.org/v1.0.0-rc.1/collection-search#query"
 
 
-@attr.s
+@attrs.define(slots=False)
 class QueryExtension(ApiExtension):
     """Query Extension.
 
@@ -35,12 +35,12 @@ class QueryExtension(ApiExtension):
     GET = QueryExtensionGetRequest
     POST = QueryExtensionPostRequest
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: List[str] = attrs.field(
         factory=lambda: [
-            QueryConformanceClasses.SEARCH,
+            QueryConformanceClasses.SEARCH.value,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
+    schema_href: Optional[str] = attrs.field(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

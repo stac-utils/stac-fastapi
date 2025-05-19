@@ -3,7 +3,7 @@
 import abc
 from typing import List, Optional, Union
 
-import attr
+import attrs
 from geojson_pydantic.geometries import Geometry
 from stac_pydantic.shared import BBox
 
@@ -12,7 +12,7 @@ from stac_fastapi.types.rfc3339 import DateTimeType
 from .types import Aggregation, AggregationCollection
 
 
-@attr.s
+@attrs.define
 class BaseAggregationClient(abc.ABC):
     """Defines a pattern for implementing the STAC aggregation extension."""
 
@@ -67,7 +67,7 @@ class BaseAggregationClient(abc.ABC):
         )
 
 
-@attr.s
+@attrs.define
 class AsyncBaseAggregationClient(abc.ABC):
     """Defines an async pattern for implementing the STAC aggregation extension."""
 

@@ -3,12 +3,12 @@
 import abc
 from typing import List, Optional
 
-import attr
+import attrs
 from fastapi import FastAPI
 from pydantic import BaseModel
 
 
-@attr.s
+@attrs.define
 class ApiExtension(abc.ABC):
     """Abstract base class for defining API extensions."""
 
@@ -22,8 +22,8 @@ class ApiExtension(abc.ABC):
         """
         return getattr(self, verb)
 
-    conformance_classes: List[str] = attr.ib(factory=list)
-    schema_href: Optional[str] = attr.ib(default=None)
+    conformance_classes: List[str] = attrs.field(factory=list)
+    schema_href: Optional[str] = attrs.field(default=None)
 
     @abc.abstractmethod
     def register(self, app: FastAPI) -> None:

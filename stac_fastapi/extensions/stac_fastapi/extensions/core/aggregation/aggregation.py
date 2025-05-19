@@ -2,7 +2,7 @@
 from enum import Enum
 from typing import List, Union
 
-import attr
+import attrs
 from fastapi import APIRouter, FastAPI
 
 from stac_fastapi.api.models import CollectionUri, EmptyRequest
@@ -23,7 +23,7 @@ class AggregationConformanceClasses(str, Enum):
     AGGREGATION = "https://api.stacspec.org/v0.3.0/aggregation"
 
 
-@attr.s
+@attrs.define
 class AggregationExtension(ApiExtension):
     """Aggregation Extension.
 
@@ -53,14 +53,14 @@ class AggregationExtension(ApiExtension):
     GET = AggregationExtensionGetRequest
     POST = AggregationExtensionPostRequest
 
-    client: Union[AsyncBaseAggregationClient, BaseAggregationClient] = attr.ib(
+    client: Union[AsyncBaseAggregationClient, BaseAggregationClient] = attrs.field(
         factory=BaseAggregationClient
     )
 
-    conformance_classes: List[str] = attr.ib(
-        default=[AggregationConformanceClasses.AGGREGATION]
+    conformance_classes: List[str] = attrs.field(
+        default=[AggregationConformanceClasses.AGGREGATION.value]
     )
-    router: APIRouter = attr.ib(factory=APIRouter)
+    router: APIRouter = attrs.field(factory=APIRouter)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

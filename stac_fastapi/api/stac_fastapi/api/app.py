@@ -3,7 +3,7 @@
 
 from typing import Awaitable, Callable, Dict, List, Optional, Tuple, Type, Union
 
-import attr
+import attrs
 from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.params import Depends
@@ -39,7 +39,7 @@ from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 
 
-@attr.s
+@attrs.define
 class StacApi:
     """StacApi factory.
 
@@ -75,30 +75,30 @@ class StacApi:
 
     """
 
-    settings: ApiSettings = attr.ib()
-    client: Union[AsyncBaseCoreClient, BaseCoreClient] = attr.ib()
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    exceptions: Dict[Type[Exception], int] = attr.ib(
-        default=attr.Factory(lambda: DEFAULT_STATUS_CODES)
+    settings: ApiSettings = attrs.field()
+    client: Union[AsyncBaseCoreClient, BaseCoreClient] = attrs.field()
+    extensions: List[ApiExtension] = attrs.field(factory=list)
+    exceptions: Dict[Type[Exception], int] = attrs.field(
+        factory=lambda: DEFAULT_STATUS_CODES
     )
-    title: str = attr.ib(
-        default=attr.Factory(
+    title: str = attrs.field(
+        default=attrs.Factory(
             lambda self: self.settings.stac_fastapi_title, takes_self=True
         )
     )
-    api_version: str = attr.ib(
-        default=attr.Factory(
+    api_version: str = attrs.field(
+        default=attrs.Factory(
             lambda self: self.settings.stac_fastapi_version, takes_self=True
         )
     )
-    stac_version: str = attr.ib(default=STAC_VERSION)
-    description: str = attr.ib(
-        default=attr.Factory(
+    stac_version: str = attrs.field(default=STAC_VERSION)
+    description: str = attrs.field(
+        default=attrs.Factory(
             lambda self: self.settings.stac_fastapi_description, takes_self=True
         )
     )
-    app: FastAPI = attr.ib(
-        default=attr.Factory(
+    app: FastAPI = attrs.field(
+        default=attrs.Factory(
             lambda self: FastAPI(
                 openapi_url=self.settings.openapi_url,
                 docs_url=self.settings.docs_url,
@@ -112,20 +112,20 @@ class StacApi:
         ),
         converter=update_openapi,
     )
-    router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
-    search_get_request_model: Type[BaseSearchGetRequest] = attr.ib(
+    router: APIRouter = attrs.field(default=attrs.Factory(APIRouter))
+    search_get_request_model: Type[BaseSearchGetRequest] = attrs.field(
         default=BaseSearchGetRequest
     )
-    search_post_request_model: Type[BaseSearchPostRequest] = attr.ib(
+    search_post_request_model: Type[BaseSearchPostRequest] = attrs.field(
         default=BaseSearchPostRequest
     )
-    collections_get_request_model: Type[APIRequest] = attr.ib(default=EmptyRequest)
-    collection_get_request_model: Type[APIRequest] = attr.ib(default=CollectionUri)
-    items_get_request_model: Type[APIRequest] = attr.ib(default=ItemCollectionUri)
-    item_get_request_model: Type[APIRequest] = attr.ib(default=ItemUri)
-    response_class: Type[Response] = attr.ib(default=JSONResponse)
-    middlewares: List[Middleware] = attr.ib(
-        default=attr.Factory(
+    collections_get_request_model: Type[APIRequest] = attrs.field(default=EmptyRequest)
+    collection_get_request_model: Type[APIRequest] = attrs.field(default=CollectionUri)
+    items_get_request_model: Type[APIRequest] = attrs.field(default=ItemCollectionUri)
+    item_get_request_model: Type[APIRequest] = attrs.field(default=ItemUri)
+    response_class: Type[Response] = attrs.field(default=JSONResponse)
+    middlewares: List[Middleware] = attrs.field(
+        default=attrs.Factory(
             lambda: [
                 Middleware(BrotliMiddleware),
                 Middleware(CORSMiddleware),
@@ -133,8 +133,8 @@ class StacApi:
             ]
         )
     )
-    route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
-    health_check: Union[Callable[[], Dict], Callable[[], Awaitable[Dict]]] = attr.ib(
+    route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attrs.field(default=[])
+    health_check: Union[Callable[[], Dict], Callable[[], Awaitable[Dict]]] = attrs.field(
         default=lambda: {"status": "UP"}
     )
 

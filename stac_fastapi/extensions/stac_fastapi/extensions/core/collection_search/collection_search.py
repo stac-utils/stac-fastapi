@@ -1,9 +1,9 @@
 """Collection-Search extension."""
 
 from enum import Enum
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Sequence, Union
 
-import attr
+import attrs
 from fastapi import APIRouter, FastAPI
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.shared import MimeTypes
@@ -28,7 +28,7 @@ class CollectionSearchConformanceClasses(str, Enum):
     BASIS = "http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query"
 
 
-@attr.s
+@attrs.define
 class CollectionSearchExtension(ApiExtension):
     """Collection-Search Extension.
 
@@ -47,16 +47,18 @@ class CollectionSearchExtension(ApiExtension):
             the extension
     """
 
-    GET: BaseCollectionSearchGetRequest = attr.ib(default=BaseCollectionSearchGetRequest)
-    POST = None
+    GET: BaseCollectionSearchGetRequest = attrs.field(
+        default=BaseCollectionSearchGetRequest
+    )
+    POST = attrs.field(default=None, init=False)
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: Sequence[str] = attrs.field(
         default=[
-            CollectionSearchConformanceClasses.COLLECTIONSEARCH,
-            CollectionSearchConformanceClasses.BASIS,
+            CollectionSearchConformanceClasses.COLLECTIONSEARCH.value,
+            CollectionSearchConformanceClasses.BASIS.value,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
+    schema_href: Optional[str] = attrs.field(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -73,13 +75,15 @@ class CollectionSearchExtension(ApiExtension):
     def from_extensions(
         cls,
         extensions: List[ApiExtension],
+        *,
         schema_href: Optional[str] = None,
+        **kwargs: Any,
     ) -> "CollectionSearchExtension":
         """Create CollectionSearchExtension object from extensions."""
 
         conformance_classes = [
-            CollectionSearchConformanceClasses.COLLECTIONSEARCH,
-            CollectionSearchConformanceClasses.BASIS,
+            CollectionSearchConformanceClasses.COLLECTIONSEARCH.value,
+            CollectionSearchConformanceClasses.BASIS.value,
         ]
         for ext in extensions:
             conformance_classes.extend(ext.conformance_classes)
@@ -98,7 +102,7 @@ class CollectionSearchExtension(ApiExtension):
         )
 
 
-@attr.s
+@attrs.define
 class CollectionSearchPostExtension(CollectionSearchExtension):
     """Collection-Search Extension.
 
@@ -115,19 +119,23 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
             the extension
     """
 
-    client: Union[AsyncBaseCollectionSearchClient, BaseCollectionSearchClient] = attr.ib()
-    settings: ApiSettings = attr.ib()
-    conformance_classes: List[str] = attr.ib(
+    client: Union[
+        AsyncBaseCollectionSearchClient, BaseCollectionSearchClient
+    ] = attrs.field()
+    settings: ApiSettings = attrs.field()
+    conformance_classes: Sequence[str] = attrs.field(
         default=[
-            CollectionSearchConformanceClasses.COLLECTIONSEARCH,
-            CollectionSearchConformanceClasses.BASIS,
+            CollectionSearchConformanceClasses.COLLECTIONSEARCH.value,
+            CollectionSearchConformanceClasses.BASIS.value,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
-    router: APIRouter = attr.ib(factory=APIRouter)
+    schema_href: Optional[str] = attrs.field(default=None)
+    router: APIRouter = attrs.field(factory=APIRouter)
 
-    GET: BaseCollectionSearchGetRequest = attr.ib(default=BaseCollectionSearchGetRequest)
-    POST: BaseCollectionSearchPostRequest = attr.ib(
+    GET: BaseCollectionSearchGetRequest = attrs.field(
+        default=BaseCollectionSearchGetRequest
+    )
+    POST: BaseCollectionSearchPostRequest = attrs.field(
         default=BaseCollectionSearchPostRequest
     )
 
@@ -163,19 +171,19 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
         app.include_router(self.router)
 
     @classmethod
-    def from_extensions(
+    def from_extensions(  # type: ignore
         cls,
         extensions: List[ApiExtension],
         *,
+        schema_href: Optional[str] = None,
         client: Union[AsyncBaseCollectionSearchClient, BaseCollectionSearchClient],
         settings: ApiSettings,
-        schema_href: Optional[str] = None,
         router: Optional[APIRouter] = None,
     ) -> "CollectionSearchPostExtension":
         """Create CollectionSearchPostExtension object from extensions."""
         conformance_classes = [
-            CollectionSearchConformanceClasses.COLLECTIONSEARCH,
-            CollectionSearchConformanceClasses.BASIS,
+            CollectionSearchConformanceClasses.COLLECTIONSEARCH.value,
+            CollectionSearchConformanceClasses.BASIS.value,
         ]
         for ext in extensions:
             conformance_classes.extend(ext.conformance_classes)

@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, Optional
 
-import attr
+import attrs
 from fastapi import Query
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
@@ -10,7 +10,7 @@ from typing_extensions import Annotated
 from stac_fastapi.types.search import APIRequest
 
 
-@attr.s
+@attrs.define
 class QueryExtensionGetRequest(APIRequest):
     """Query Extension GET request model."""
 
@@ -23,7 +23,7 @@ class QueryExtensionGetRequest(APIRequest):
                 "cloudy": {"value": '{"eo:cloud_cover": {"gte": 95}}'},
             },
         ),
-    ] = attr.ib(default=None)
+    ] = attrs.field(default=None)
 
 
 class QueryExtensionPostRequest(BaseModel):

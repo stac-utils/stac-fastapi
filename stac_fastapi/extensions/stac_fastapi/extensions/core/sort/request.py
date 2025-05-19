@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-import attr
+import attrs
 from fastapi import Query
 from pydantic import BaseModel, Field
 from stac_pydantic.api.extensions.sort import SortExtension as PostSortModel
@@ -27,11 +27,11 @@ def _sort_converter(
     return str2list(val)
 
 
-@attr.s
+@attrs.define(slots=False)
 class SortExtensionGetRequest(APIRequest):
     """Sortby Parameter for GET requests."""
 
-    sortby: Optional[List[str]] = attr.ib(default=None, converter=_sort_converter)
+    sortby: Optional[List[str]] = attrs.field(default=None, converter=_sort_converter)
 
 
 class SortExtensionPostRequest(BaseModel):

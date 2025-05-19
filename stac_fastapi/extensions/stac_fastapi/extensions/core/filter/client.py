@@ -3,10 +3,10 @@
 import abc
 from typing import Any, Dict, Optional
 
-import attr
+import attrs
 
 
-@attr.s
+@attrs.define
 class AsyncBaseFiltersClient(abc.ABC):
     """Defines a pattern for implementing the STAC filter extension."""
 
@@ -32,7 +32,7 @@ class AsyncBaseFiltersClient(abc.ABC):
         }
 
 
-@attr.s
+@attrs.define
 class BaseFiltersClient(abc.ABC):
     """Defines a pattern for implementing the STAC filter extension."""
 

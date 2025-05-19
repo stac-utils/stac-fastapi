@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, Literal, Optional
 
-import attr
+import attrs
 from fastapi import Query
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
@@ -12,7 +12,7 @@ from stac_fastapi.types.search import APIRequest
 FilterLang = Literal["cql2-json", "cql2-text"]
 
 
-@attr.s
+@attrs.define(slots=False)
 class FilterExtensionGetRequest(APIRequest):
     """Filter extension GET request model."""
 
@@ -30,21 +30,21 @@ Remember to URL encode the CQL2-JSON if using GET""",
                 },
             },
         ),
-    ] = attr.ib(default=None)
+    ] = attrs.field(default=None)
     filter_crs: Annotated[
         Optional[str],
         Query(
             alias="filter-crs",
             description="The coordinate reference system (CRS) used by spatial literals in the 'filter' value. Default is `http://www.opengis.net/def/crs/OGC/1.3/CRS84`",  # noqa: E501
         ),
-    ] = attr.ib(default=None)
+    ] = attrs.field(default=None)
     filter_lang: Annotated[
         Optional[FilterLang],
         Query(
             alias="filter-lang",
             description="The CQL filter encoding that the 'filter' value uses.",
         ),
-    ] = attr.ib(default="cql2-text")
+    ] = attrs.field(default="cql2-text")
 
 
 class FilterExtensionPostRequest(BaseModel):

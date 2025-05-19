@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-import attr
+import attrs
 from fastapi import Query
 from pydantic import Field
 from typing_extensions import Annotated
@@ -23,11 +23,13 @@ def _agg_converter(
     return str2list(val)
 
 
-@attr.s
+@attrs.define(slots=False)
 class AggregationExtensionGetRequest(BaseSearchGetRequest):
     """Aggregation Extension GET request model."""
 
-    aggregations: Optional[List[str]] = attr.ib(default=None, converter=_agg_converter)
+    aggregations: Optional[List[str]] = attrs.field(
+        default=None, converter=_agg_converter
+    )
 
 
 class AggregationExtensionPostRequest(BaseSearchPostRequest):

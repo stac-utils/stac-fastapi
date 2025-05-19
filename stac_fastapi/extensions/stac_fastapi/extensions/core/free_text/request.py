@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-import attr
+import attrs
 from fastapi import Query
 from pydantic import BaseModel, Field
 from typing_extensions import Annotated
@@ -27,11 +27,11 @@ def _ft_converter(
     return None
 
 
-@attr.s
+@attrs.define(slots=False)
 class FreeTextExtensionGetRequest(APIRequest):
     """Free-text Extension GET request model."""
 
-    q: Optional[List[str]] = attr.ib(default=None, converter=_ft_converter)
+    q: Optional[List[str]] = attrs.field(default=None, converter=_ft_converter)
 
 
 class FreeTextExtensionPostRequest(BaseModel):
@@ -43,7 +43,7 @@ class FreeTextExtensionPostRequest(BaseModel):
     )
 
 
-@attr.s
+@attrs.define(slots=False)
 class FreeTextAdvancedExtensionGetRequest(APIRequest):
     """Free-text Extension GET request model."""
 
@@ -56,7 +56,7 @@ class FreeTextAdvancedExtensionGetRequest(APIRequest):
                 "Coastal": {"value": "ocean,coast"},
             },
         ),
-    ] = attr.ib(default=None)
+    ] = attrs.field(default=None)
 
 
 class FreeTextAdvancedExtensionPostRequest(BaseModel):

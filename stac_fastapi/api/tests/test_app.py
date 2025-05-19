@@ -1,6 +1,6 @@
 from typing import List, Optional, Union
 
-import attr
+import attrs
 import pytest
 from fastapi import Path, Query
 from fastapi.testclient import TestClient
@@ -385,25 +385,25 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
 def test_request_model(AsyncTestCoreClient):
     """Test if request models are passed correctly."""
 
-    @attr.s
+    @attrs.define
     class CollectionsRequest(APIRequest):
-        user: Annotated[str, Query(...)] = attr.ib()
+        user: Annotated[str, Query(...)] = attrs.field()
 
-    @attr.s
+    @attrs.define
     class CollectionRequest(APIRequest):
-        collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
-        user: Annotated[str, Query(...)] = attr.ib()
+        collection_id: Annotated[str, Path(description="Collection ID")] = attrs.field()
+        user: Annotated[str, Query(...)] = attrs.field()
 
-    @attr.s
+    @attrs.define
     class ItemsRequest(APIRequest):
-        collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
-        user: Annotated[str, Query(...)] = attr.ib()
+        collection_id: Annotated[str, Path(description="Collection ID")] = attrs.field()
+        user: Annotated[str, Query(...)] = attrs.field()
 
-    @attr.s
+    @attrs.define
     class ItemRequest(APIRequest):
-        collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
-        item_id: Annotated[str, Path(description="Item ID")] = attr.ib()
-        user: Annotated[str, Query(...)] = attr.ib()
+        collection_id: Annotated[str, Path(description="Collection ID")] = attrs.field()
+        item_id: Annotated[str, Path(description="Item ID")] = attrs.field()
+        user: Annotated[str, Query(...)] = attrs.field()
 
     test_app = app.StacApi(
         settings=ApiSettings(),

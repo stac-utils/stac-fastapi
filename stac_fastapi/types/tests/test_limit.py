@@ -1,4 +1,5 @@
 import pytest
+from attrs import asdict
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
@@ -31,7 +32,7 @@ def test_limit_get_request():
 
     @app.get("/test")
     def route(model=Depends(BaseSearchGetRequest)):
-        return model
+        return asdict(model)
 
     with TestClient(app) as client:
         resp = client.get(

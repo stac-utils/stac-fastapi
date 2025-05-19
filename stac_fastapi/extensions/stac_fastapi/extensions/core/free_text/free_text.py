@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import List, Optional
 
-import attr
+import attrs
 from fastapi import FastAPI
 
 from stac_fastapi.types.extension import ApiExtension
@@ -40,7 +40,7 @@ class FreeTextConformanceClasses(str, Enum):
     )
 
 
-@attr.s
+@attrs.define
 class FreeTextExtension(ApiExtension):
     """Free-text Extension.
 
@@ -54,12 +54,12 @@ class FreeTextExtension(ApiExtension):
     GET = FreeTextExtensionGetRequest
     POST = FreeTextExtensionPostRequest
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: List[str] = attrs.field(
         default=[
-            FreeTextConformanceClasses.SEARCH,
+            FreeTextConformanceClasses.SEARCH.value,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
+    schema_href: Optional[str] = attrs.field(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -73,7 +73,7 @@ class FreeTextExtension(ApiExtension):
         pass
 
 
-@attr.s
+@attrs.define
 class FreeTextAdvancedExtension(ApiExtension):
     """Free-text Extension.
 
@@ -87,12 +87,12 @@ class FreeTextAdvancedExtension(ApiExtension):
     GET = FreeTextAdvancedExtensionGetRequest
     POST = FreeTextAdvancedExtensionPostRequest
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: List[str] = attrs.field(
         default=[
-            FreeTextConformanceClasses.SEARCH_ADVANCED,
+            FreeTextConformanceClasses.SEARCH_ADVANCED.value,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
+    schema_href: Optional[str] = attrs.field(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

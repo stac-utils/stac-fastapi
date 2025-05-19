@@ -4,7 +4,7 @@ import abc
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-import attr
+import attrs
 from fastapi import APIRouter, FastAPI
 from pydantic import BaseModel
 
@@ -31,7 +31,7 @@ class Items(BaseModel):
         return iter(self.items.values())
 
 
-@attr.s  # type: ignore
+@attrs.define
 class BaseBulkTransactionsClient(abc.ABC):
     """BulkTransactionsClient."""
 
@@ -63,7 +63,7 @@ class BaseBulkTransactionsClient(abc.ABC):
         raise NotImplementedError
 
 
-@attr.s  # type: ignore
+@attrs.define
 class AsyncBaseBulkTransactionsClient(abc.ABC):
     """BulkTransactionsClient."""
 
@@ -84,7 +84,7 @@ class AsyncBaseBulkTransactionsClient(abc.ABC):
         raise NotImplementedError
 
 
-@attr.s
+@attrs.define
 class BulkTransactionExtension(ApiExtension):
     """Bulk Transaction Extension.
 
@@ -110,9 +110,11 @@ class BulkTransactionExtension(ApiExtension):
         }
     """
 
-    client: Union[AsyncBaseBulkTransactionsClient, BaseBulkTransactionsClient] = attr.ib()
-    conformance_classes: List[str] = attr.ib(default=list())
-    schema_href: Optional[str] = attr.ib(default=None)
+    client: Union[
+        AsyncBaseBulkTransactionsClient, BaseBulkTransactionsClient
+    ] = attrs.field()
+    conformance_classes: List[str] = attrs.field(default=list())
+    schema_href: Optional[str] = attrs.field(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

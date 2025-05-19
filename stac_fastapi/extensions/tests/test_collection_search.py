@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timezone
 from urllib.parse import quote_plus
 
-import attr
+import attrs
 import pytest
 from starlette.testclient import TestClient
 
@@ -80,7 +80,7 @@ class DummyCoreClient(BaseCoreClient):
         raise NotImplementedError
 
 
-@attr.s
+@attrs.define
 class DummyPostClient(BaseCollectionSearchClient):
     def post_all_collections(
         self, search_request: BaseCollectionSearchPostRequest, **kwargs

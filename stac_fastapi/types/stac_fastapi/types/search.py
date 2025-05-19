@@ -4,7 +4,7 @@
 from datetime import datetime as dt
 from typing import Dict, List, Optional, Union
 
-import attr
+import attrs
 from fastapi import HTTPException, Query
 from pydantic import Field, PositiveInt
 from pydantic.functional_validators import AfterValidator
@@ -12,7 +12,7 @@ from stac_pydantic.api import Search
 from stac_pydantic.shared import BBox
 from typing_extensions import Annotated
 
-from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
+from .rfc3339 import DateTimeType, str_to_interval
 
 
 def crop(v: PositiveInt) -> PositiveInt:
@@ -128,21 +128,21 @@ Either a date-time or an interval, open or closed. Date and time expressions adh
 ]
 
 
-@attr.s
+@attrs.define(slots=False)
 class APIRequest:
     """Generic API Request base class."""
 
     def kwargs(self) -> Dict:
         """Transform api request params into format which matches the signature of the
         endpoint."""
-        return self.__dict__
+        return attrs.asdict(self)
 
 
-@attr.s
+@attrs.define(slots=False)
 class DatetimeMixin:
     """Datetime Mixin."""
 
-    datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
+    datetime: DateTimeQueryType = attrs.field(default=None, validator=_validate_datetime)
 
     def parse_datetime(self) -> Optional[DateTimeType]:
         """Return Datetime objects."""
@@ -167,15 +167,15 @@ class DatetimeMixin:
         return parsed[1] if isinstance(parsed, tuple) else None
 
 
-@attr.s
+@attrs.define(slots=False)
 class BaseSearchGetRequest(APIRequest, DatetimeMixin):
     """Base arguments for GET Request."""
 
-    collections: Optional[List[str]] = attr.ib(
+    collections: Optional[List[str]] = attrs.field(
         default=None, converter=_collection_converter
     )
-    ids: Optional[List[str]] = attr.ib(default=None, converter=_ids_converter)
-    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
+    ids: Optional[List[str]] = attrs.field(default=None, converter=_ids_converter)
+    bbox: Optional[BBox] = attrs.field(default=None, converter=_bbox_converter)
     intersects: Annotated[
         Optional[str],
         Query(
@@ -221,14 +221,14 @@ class BaseSearchGetRequest(APIRequest, DatetimeMixin):
                 },
             },
         ),
-    ] = attr.ib(default=None)
-    datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
+    ] = attrs.field(default=None)
+    datetime: DateTimeQueryType = attrs.field(default=None, validator=_validate_datetime)
     limit: Annotated[
         Optional[Limit],
         Query(
             description="Limits the number of results that are included in each page of the response (capped to 10_000)."  # noqa: E501
         ),
-    ] = attr.ib(default=10)
+    ] = attrs.field(default=10)
 
 
 class BaseSearchPostRequest(Search):
