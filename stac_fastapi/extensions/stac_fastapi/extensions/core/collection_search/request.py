@@ -24,7 +24,7 @@ from stac_fastapi.types.search import (
 class BaseCollectionSearchGetRequest(APIRequest, DatetimeMixin):
     """Basics additional Collection-Search parameters for the GET request."""
 
-    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
+    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)  # type: ignore
     datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
     limit: Annotated[
         Optional[Limit],

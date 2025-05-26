@@ -56,7 +56,8 @@ def create_request_model(
         for model in models:
             for k, field_info in model.model_fields.items():
                 fields[k] = (field_info.annotation, field_info)
-        return create_model(model_name, **fields, __base__=base_model)
+
+        return create_model(model_name, **fields, __base__=base_model)  # type: ignore
 
     raise TypeError("Mixed Request Model types. Check extension request types.")
 
@@ -121,7 +122,7 @@ class ItemCollectionUri(APIRequest, DatetimeMixin):
             description="Limits the number of results that are included in each page of the response (capped to 10_000)."  # noqa: E501
         ),
     ] = attr.ib(default=10)
-    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
+    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)  # type: ignore
     datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
 
 

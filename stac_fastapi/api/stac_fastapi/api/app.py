@@ -110,7 +110,7 @@ class StacApi:
             ),
             takes_self=True,
         ),
-        converter=update_openapi,
+        converter=update_openapi,  # type: ignore
     )
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
     search_get_request_model: Type[BaseSearchGetRequest] = attr.ib(
