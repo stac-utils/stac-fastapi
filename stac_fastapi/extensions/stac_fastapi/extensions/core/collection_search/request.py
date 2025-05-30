@@ -6,8 +6,15 @@ from typing import List, Optional, Tuple, cast
 import attr
 from fastapi import Query
 from pydantic import BaseModel, Field, PrivateAttr, ValidationInfo, field_validator
-from stac_pydantic.api.search import SearchDatetime
 from stac_pydantic.shared import BBox
+
+try:
+    # the import path changed recently in stac_pydantic v3.3.0
+    # to make sure both older and newer versions are supported, we try both paths
+    from stac_pydantic.shared import SearchDatetime
+except ImportError:
+    from stac_pydantic.api.search import SearchDatetime
+
 from typing_extensions import Annotated
 
 from stac_fastapi.types.search import (
