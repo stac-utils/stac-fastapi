@@ -6,8 +6,7 @@ from typing import List, Optional, Tuple, cast
 import attr
 from fastapi import Query
 from pydantic import BaseModel, Field, PrivateAttr, ValidationInfo, field_validator
-from stac_pydantic.api.search import SearchDatetime
-from stac_pydantic.shared import BBox
+from stac_pydantic.shared import BBox, SearchDatetime
 from typing_extensions import Annotated
 
 from stac_fastapi.types.search import (

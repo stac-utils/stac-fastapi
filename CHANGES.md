@@ -10,6 +10,7 @@
 
 - add `py.typed` to package distributions ([#842](https://github.com/stac-utils/stac-fastapi/pull/842))
 - update/fix type informations ([#842](https://github.com/stac-utils/stac-fastapi/pull/842))
+- pin `stac_pydantic` to `>=3.3.0` for the correct import path of `stac_pydantic.shared.SearchDatetime` ([#844](https://github.com/stac-utils/stac-fastapi/pull/844))
 
 ## [5.2.1] - 2025-04-18
 
