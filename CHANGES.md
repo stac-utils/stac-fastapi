@@ -4,7 +4,7 @@
 
 ### Changed
 
-* Add Item and Collection `PATCH` endpoints with support for [RFC 6902](https://tools.ietf.org/html/rfc6902) and [RFC 7396](https://tools.ietf.org/html/rfc7386)
+* Add Item and Collection `PATCH` endpoints with support for [RFC 6902](https://tools.ietf.org/html/rfc6902) and [RFC 7396](https://tools.ietf.org/html/rfc7386) in the `TransactionExtension`
 - remove support of `cql-json` in Filter extension ([#840](https://github.com/stac-utils/stac-fastapi/pull/840))
 
 ### Fixed
