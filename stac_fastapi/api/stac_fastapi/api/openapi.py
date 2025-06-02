@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
+from starlette.responses import Response
 from starlette.routing import Route, request_response
 
 
@@ -22,7 +22,7 @@ def update_openapi(app: FastAPI) -> FastAPI:
     # Create a patched endpoint function that modifies the content type of the response
     async def patched_openapi_endpoint(req: Request) -> Response:
         # Get the response from the old endpoint function
-        response: JSONResponse = await old_endpoint(req)
+        response = await old_endpoint(req)
         # Update the content type header in place
         response.headers["content-type"] = "application/vnd.oai.openapi+json;version=3.0"
         # Return the updated response

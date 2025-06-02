@@ -2,7 +2,29 @@
 
 ## [Unreleased]
 
+### Changed
+
 * Add Item and Collection `PATCH` endpoints with support for [RFC 6902](https://tools.ietf.org/html/rfc6902) and [RFC 7396](https://tools.ietf.org/html/rfc7386)
+- remove support of `cql-json` in Filter extension ([#840](https://github.com/stac-utils/stac-fastapi/pull/840))
+
+### Fixed
+
+- add `py.typed` to package distributions ([#842](https://github.com/stac-utils/stac-fastapi/pull/842))
+- update/fix type informations ([#842](https://github.com/stac-utils/stac-fastapi/pull/842))
+- pin `stac_pydantic` to `>=3.3.0` for the correct import path of `stac_pydantic.shared.SearchDatetime` ([#844](https://github.com/stac-utils/stac-fastapi/pull/844))
+
+## [5.2.1] - 2025-04-18
+
+### Fixed
+
+- avoid future deprecation for pydantic.Field and use `json_schema_extra` instead of `openapi_examples`
+- use `orjson` based JSONResponse when available
+- changed from `AssertionError` to `HTTPException` for **bbox** parsing exceptions
+- update `$schema` in Filter's extension client responses to match OGC Feature specification
+
+### Added
+
+- add response model for `/_mgmt/health` endpoint
 
 ## [5.2.0] - 2025-04-18
 
@@ -153,7 +175,7 @@
 
 ## [3.0.0] - 2024-07-29
 
-Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#changelog 
+Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#changelog
 **Changes since 3.0.0b3:**
 
 ### Changed
@@ -616,7 +638,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.1..main>
+[5.2.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.0..5.2.1>
 [5.2.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.1.1..5.2.0>
 [5.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.1.0..5.1.1>
 [5.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.0.3..5.1.0>

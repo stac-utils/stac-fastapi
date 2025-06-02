@@ -123,26 +123,6 @@ def test_search_filter_post_filter_lang_default(client_name, request):
 
 
 @pytest.mark.parametrize("client_name", ["client", "client_multit_ext"])
-def test_search_filter_post_filter_lang_non_default(client_name, request):
-    """Test search POST endpoint with filter ext."""
-    client = request.getfixturevalue(client_name)
-
-    filter_lang_value = "cql-json"
-    response = client.post(
-        "/search",
-        json={
-            "collections": ["test"],
-            "filter": {"eq": [{"property": "test_property"}, "test-value"]},
-            "filter-lang": filter_lang_value,
-        },
-    )
-    assert response.is_success, response.json()
-    response_dict = response.json()
-    assert response_dict["filter_expr"]
-    assert response_dict["filter_lang"] == filter_lang_value
-
-
-@pytest.mark.parametrize("client_name", ["client", "client_multit_ext"])
 def test_search_filter_get(client_name, request):
     """Test search GET endpoint with filter ext."""
     client = request.getfixturevalue(client_name)

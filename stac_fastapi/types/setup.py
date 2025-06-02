@@ -9,7 +9,7 @@ install_requires = [
     "fastapi>=0.109.0",
     "attrs>=23.2.0",
     "pydantic-settings>=2",
-    "stac_pydantic>=3.1.3,<4.0",
+    "stac_pydantic>=3.3.0,<4.0",
     "iso8601>=1.0.2,<2.2.0",
 ]
 
