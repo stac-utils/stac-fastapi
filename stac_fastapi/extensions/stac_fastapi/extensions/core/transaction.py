@@ -71,6 +71,85 @@ class PatchCollection(CollectionUri):
     ] = attr.ib(default=None)
 
 
+_patch_item_schema = TypeAdapter(List[PatchOperation]).json_schema() | {
+    "examples": [
+        [
+            {
+                "op": "add",
+                "path": "/properties/foo",
+                "value": "bar",
+            },
+            {
+                "op": "replace",
+                "path": "/properties/foo",
+                "value": "bar",
+            },
+            {
+                "op": "test",
+                "path": "/properties/foo",
+                "value": "bar",
+            },
+            {
+                "op": "copy",
+                "path": "/properties/foo",
+                "from": "/properties/bar",
+            },
+            {
+                "op": "move",
+                "path": "/properties/foo",
+                "from": "/properties/bar",
+            },
+            {
+                "op": "remove",
+                "path": "/properties/foo",
+            },
+        ]
+    ]
+}
+# ref: https://github.com/pydantic/pydantic/issues/889
+_patch_item_schema["items"]["anyOf"] = list(_patch_item_schema["$defs"].values())
+
+_patch_collection_schema = TypeAdapter(List[PatchOperation]).json_schema() | {
+    "examples": [
+        [
+            {
+                "op": "add",
+                "path": "/summeries/foo",
+                "value": "bar",
+            },
+            {
+                "op": "replace",
+                "path": "/summeries/foo",
+                "value": "bar",
+            },
+            {
+                "op": "test",
+                "path": "/summeries/foo",
+                "value": "bar",
+            },
+            {
+                "op": "copy",
+                "path": "/summeries/foo",
+                "from": "/summeries/bar",
+            },
+            {
+                "op": "move",
+                "path": "/summeries/foo",
+                "from": "/summeries/bar",
+            },
+            {
+                "op": "remove",
+                "path": "/summeries/foo",
+            },
+        ]
+    ]
+}
+# ref: https://github.com/pydantic/pydantic/issues/889
+_patch_collection_schema["items"]["anyOf"] = list(
+    _patch_collection_schema["$defs"].values()
+)
+
+
 @attr.s
 class TransactionExtension(ApiExtension):
     """Transaction Extension.
@@ -167,42 +246,7 @@ class TransactionExtension(ApiExtension):
                 "requestBody": {
                     "content": {
                         "application/json-patch+json": {
-                            "schema": TypeAdapter(List[PatchOperation]).json_schema()
-                            | {
-                                "examples": [
-                                    [
-                                        {
-                                            "op": "add",
-                                            "path": "/properties/foo",
-                                            "value": "bar",
-                                        },
-                                        {
-                                            "op": "replace",
-                                            "path": "/properties/foo",
-                                            "value": "bar",
-                                        },
-                                        {
-                                            "op": "test",
-                                            "path": "/properties/foo",
-                                            "value": "bar",
-                                        },
-                                        {
-                                            "op": "copy",
-                                            "path": "/properties/foo",
-                                            "from": "/properties/bar",
-                                        },
-                                        {
-                                            "op": "move",
-                                            "path": "/properties/foo",
-                                            "from": "/properties/bar",
-                                        },
-                                        {
-                                            "op": "remove",
-                                            "path": "/properties/foo",
-                                        },
-                                    ]
-                                ]
-                            },
+                            "schema": _patch_item_schema,
                         },
                         "application/merge-patch+json": {
                             "schema": PartialItem.model_json_schema(),
@@ -307,48 +351,13 @@ class TransactionExtension(ApiExtension):
                 "requestBody": {
                     "content": {
                         "application/json-patch+json": {
-                            "schema": TypeAdapter(List[PatchOperation]).json_schema()
-                            | {
-                                "examples": [
-                                    [
-                                        {
-                                            "op": "add",
-                                            "path": "/summeries/foo",
-                                            "value": "bar",
-                                        },
-                                        {
-                                            "op": "replace",
-                                            "path": "/summeries/foo",
-                                            "value": "bar",
-                                        },
-                                        {
-                                            "op": "test",
-                                            "path": "/summeries/foo",
-                                            "value": "bar",
-                                        },
-                                        {
-                                            "op": "copy",
-                                            "path": "/summeries/foo",
-                                            "from": "/summeries/bar",
-                                        },
-                                        {
-                                            "op": "move",
-                                            "path": "/summeries/foo",
-                                            "from": "/summeries/bar",
-                                        },
-                                        {
-                                            "op": "remove",
-                                            "path": "/summeries/foo",
-                                        },
-                                    ]
-                                ]
-                            },
+                            "schema": _patch_collection_schema,
                         },
                         "application/merge-patch+json": {
-                            "schema": TypeAdapter(PartialCollection).json_schema(),
+                            "schema": PartialCollection.model_json_schema(),
                         },
                         "application/json": {
-                            "schema": TypeAdapter(PartialCollection).json_schema(),
+                            "schema": PartialCollection.model_json_schema(),
                         },
                     },
                     "required": True,
