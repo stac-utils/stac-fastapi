@@ -213,8 +213,6 @@ class PartialCollection(BasePartial):
     extent: Optional[Dict[str, Any]] = None
     summaries: Optional[Dict[str, Any]] = None
     assets: Optional[Dict[str, Any]] = None
-    numberMatched: Optional[int] = None
-    numberReturned: Optional[int] = None
 
 
 class PartialItem(BasePartial):
@@ -230,5 +228,3 @@ class PartialItem(BasePartial):
     links: Optional[List[Dict[str, Any]]] = None
     assets: Optional[Dict[str, Any]] = None
     collection: Optional[str] = None
-    numberMatched: Optional[int] = None
-    numberReturned: Optional[int] = None
