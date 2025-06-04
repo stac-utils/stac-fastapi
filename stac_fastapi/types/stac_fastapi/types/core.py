@@ -81,6 +81,37 @@ class BaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
+    def patch_item(
+        self,
+        collection_id: str,
+        item_id: str,
+        patch: Union[stac.PartialItem, List[stac.PatchOperation]],
+        **kwargs,
+    ) -> Optional[Union[stac.Item, Response]]:
+        """Update an item from a collection.
+
+        Called with `PATCH /collections/{collection_id}/items/{item_id}`
+
+        example:
+            # convert merge patch item to list of operations
+            if isinstance(patch, PartialItem):
+                patch = patch.operations()
+
+            item = backend.patch_item(collection_id, item_id, patch)
+
+            return item
+
+        Args:
+            item_id: id of the item.
+            collection_id: id of the collection.
+            patch: either the partial item or list of patch operations.
+
+        Returns:
+            The patched item.
+        """
+        ...
+
+    @abc.abstractmethod
     def delete_item(
         self, item_id: str, collection_id: str, **kwargs
     ) -> Optional[Union[stac.Item, Response]]:
@@ -130,6 +161,35 @@ class BaseTransactionsClient(abc.ABC):
 
         Returns:
             The updated collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    def patch_collection(
+        self,
+        collection_id: str,
+        patch: Union[stac.PartialCollection, List[stac.PatchOperation]],
+        **kwargs,
+    ) -> Optional[Union[stac.Collection, Response]]:
+        """Update a collection.
+
+        Called with `PATCH /collections/{collection_id}`
+
+        example:
+            # convert merge patch item to list of operations
+            if isinstance(patch, PartialCollection):
+                patch = patch.operations()
+
+            collection = backend.patch_collection(collection_id, patch)
+
+            return collection
+
+        Args:
+            collection_id: id of the collection.
+            patch: either the partial collection or list of patch operations.
+
+        Returns:
+            The patched collection.
         """
         ...
 
@@ -194,6 +254,37 @@ class AsyncBaseTransactionsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
+    async def patch_item(
+        self,
+        collection_id: str,
+        item_id: str,
+        patch: Union[stac.PartialItem, List[stac.PatchOperation]],
+        **kwargs,
+    ) -> Optional[Union[stac.Item, Response]]:
+        """Update an item from a collection.
+
+        Called with `PATCH /collections/{collection_id}/items/{item_id}`
+
+        example:
+            # convert merge patch item to list of operations
+            if isinstance(patch, PartialItem):
+                patch = patch.operations()
+
+            item = backend.patch_item(collection_id, item_id, patch)
+
+            return item
+
+        Args:
+            item_id: id of the item.
+            collection_id: id of the collection.
+            patch: either the partial item or list of patch operations.
+
+        Returns:
+            The patched item.
+        """
+        ...
+
+    @abc.abstractmethod
     async def delete_item(
         self, item_id: str, collection_id: str, **kwargs
     ) -> Optional[Union[stac.Item, Response]]:
@@ -243,6 +334,35 @@ class AsyncBaseTransactionsClient(abc.ABC):
 
         Returns:
             The updated collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def patch_collection(
+        self,
+        collection_id: str,
+        patch: Union[stac.PartialCollection, List[stac.PatchOperation]],
+        **kwargs,
+    ) -> Optional[Union[stac.Collection, Response]]:
+        """Update a collection.
+
+        Called with `PATCH /collections/{collection_id}`
+
+        example:
+            # convert merge patch item to list of operations
+            if isinstance(patch, PartialCollection):
+                patch = patch.operations()
+
+            collection = backend.patch_collection(collection_id, patch)
+
+            return collection
+
+        Args:
+            collection_id: id of the collection.
+            patch: either the partial collection or list of patch operations.
+
+        Returns:
+            The patched collection.
         """
         ...
 
