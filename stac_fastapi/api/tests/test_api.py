@@ -4,6 +4,7 @@ from starlette.testclient import TestClient
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import ItemCollectionUri, create_request_model
 from stac_fastapi.extensions.core import TokenPaginationExtension, TransactionExtension
+from stac_fastapi.extensions.core.transaction import BaseTransactionsClient
 from stac_fastapi.types import config, core
 
 
@@ -418,7 +419,7 @@ class DummyCoreClient(core.BaseCoreClient):
         ...
 
 
-class DummyTransactionsClient(core.BaseTransactionsClient):
+class DummyTransactionsClient(BaseTransactionsClient):
     """Defines a pattern for implementing the STAC transaction extension."""
 
     def create_item(self, *args, **kwargs):
