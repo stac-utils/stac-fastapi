@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1748864108600,
+  "lastUpdate": 1749023533607,
   "repoUrl": "https://github.com/stac-utils/stac-fastapi",
   "entries": {
     "STAC FastAPI Benchmarks": [
@@ -19050,6 +19050,156 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.0002500765115579234",
             "extra": "mean: 1.6978001775904872 msec\nrounds: 473"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "34507919+rhysrevans3@users.noreply.github.com",
+            "name": "rhysrevans3",
+            "username": "rhysrevans3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "423b5871280f46a91b76a008bdbff19373db3d13",
+          "message": "Patch endpoints (#744)\n\n* Adding patch endpoints.\n\n* Adding annotated from main.\n\n* Fixing and adding tests.\n\n* Updating changelog.\n\n* Fixing ruff errors.\n\n* Ruff format.\n\n* Switching to List for python 3.8.\n\n* Updating docs make file.\n\n* Switching from Item/Collection to Dict to allow partial updates.\n\n* Ruff format fix.\n\n* Fixing broken tests.\n\n* Adding missing asyncs for patchs.\n\n* Moving request to kwargs for patch item and collection.\n\n* Switching to TypedDict.\n\n* Adding hearder parameter to the input models.\n\n* Removing print statement.\nAdding default for content_type.\n\n* Removing basemodel from patch types.\nMoving transaction types back to extensions.transaction.\nAdding literals for content_type.\nRemoving sys check for TypedDict import.\n\n* Fixing imports.\n\n* Moving models to correct locations.\n\n* Switching from attrs to basemodel for patch operations.\n\n* Switching to stac.PartialItem etc.\n\n* Updating PatchMoveCopy model.\n\n* Updating type for 3.8.\n\n* Switching to StacBaseModels for patch operations.\n\n* pre-commits.\n\n* Add json dump of operation value.\n\n* remove computed field decorator.\n\n* Adding default \"not implemented\" for JSON Patch.\n\n* pre-commit.\n\n* Add default raise not implement to collection JSON Patch.\n\n* removing json merge and patch.\n\n* content_type None default.\n\n* Fixing test.\n\n* back to PartialItem & PatchOperation\n\n* using openapi_extra for Content-Type.\n\n* PartialCollection not PartialItem.\n\n* Adding merge to operations.\n\n* Adding example code for patch.\n\n* Adding default None to partials.\n\n* patch not update for backend.\n\n* patch_collection not patch_item.\n\n* Add tests for merge to operations.\n\n* Switch to model_json_schema for patch schema.\n\n* update from main\n\n* update changelog\n\n* Removing numberMatched & numberReturned.\n\n* fix openapi schemas\n\n---------\n\nCo-authored-by: vincentsarago <vincent.sarago@gmail.com>",
+          "timestamp": "2025-06-04T09:50:44+02:00",
+          "tree_id": "e92fd0fd36219f8ec6c42249be44a3b4e505626f",
+          "url": "https://github.com/stac-utils/stac-fastapi/commit/423b5871280f46a91b76a008bdbff19373db3d13"
+        },
+        "date": 1749023532463,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "Items With Model validation (1)",
+            "value": 707.9206192377196,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00008374017877015223",
+            "extra": "mean: 1.4125877574759553 msec\nrounds: 301"
+          },
+          {
+            "name": "Items With Model validation (10)",
+            "value": 528.6270893307037,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00023669882256854009",
+            "extra": "mean: 1.891692688821723 msec\nrounds: 331"
+          },
+          {
+            "name": "Items With Model validation (50)",
+            "value": 223.85495740873682,
+            "unit": "iter/sec",
+            "range": "stddev: 0.002228122336504528",
+            "extra": "mean: 4.467178263888521 msec\nrounds: 216"
+          },
+          {
+            "name": "Items With Model validation (100)",
+            "value": 140.35325488794737,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0021605490943172943",
+            "extra": "mean: 7.124879296873887 msec\nrounds: 128"
+          },
+          {
+            "name": "Items With Model validation (200)",
+            "value": 76.56575762899728,
+            "unit": "iter/sec",
+            "range": "stddev: 0.004127501702879519",
+            "extra": "mean: 13.060668776315696 msec\nrounds: 76"
+          },
+          {
+            "name": "Items With Model validation (250)",
+            "value": 62.50620729889625,
+            "unit": "iter/sec",
+            "range": "stddev: 0.004684011431634428",
+            "extra": "mean: 15.99841108928806 msec\nrounds: 56"
+          },
+          {
+            "name": "Items With Model validation (1000)",
+            "value": 16.04392060165779,
+            "unit": "iter/sec",
+            "range": "stddev: 0.011601375160414722",
+            "extra": "mean: 62.328904812497754 msec\nrounds: 16"
+          },
+          {
+            "name": "Items Limit: (1)",
+            "value": 787.0362062395242,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00010887205379301882",
+            "extra": "mean: 1.2705895765304385 msec\nrounds: 588"
+          },
+          {
+            "name": "Items Limit: (10)",
+            "value": 552.1014032148447,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00009327020114054486",
+            "extra": "mean: 1.8112614714925115 msec\nrounds: 456"
+          },
+          {
+            "name": "Items Limit: (50)",
+            "value": 235.5953141941893,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00027114069182056753",
+            "extra": "mean: 4.244566592592544 msec\nrounds: 216"
+          },
+          {
+            "name": "Items Limit: (100)",
+            "value": 138.53736345496836,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000518144467194352",
+            "extra": "mean: 7.2182693178295585 msec\nrounds: 129"
+          },
+          {
+            "name": "Items Limit: (200)",
+            "value": 72.68465477741817,
+            "unit": "iter/sec",
+            "range": "stddev: 0.003868489684464269",
+            "extra": "mean: 13.758062180556466 msec\nrounds: 72"
+          },
+          {
+            "name": "Items Limit: (250)",
+            "value": 62.15373184837079,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0003652078500545215",
+            "extra": "mean: 16.089138499995197 msec\nrounds: 60"
+          },
+          {
+            "name": "Items Limit: (1000)",
+            "value": 16.169393934087438,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0072217883593659275",
+            "extra": "mean: 61.845237 msec\nrounds: 17"
+          },
+          {
+            "name": "Collection With Model validation",
+            "value": 907.6063953403475,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00011102649503321511",
+            "extra": "mean: 1.1017991996684922 msec\nrounds: 606"
+          },
+          {
+            "name": "Collection",
+            "value": 880.5022743498033,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00007128244788461049",
+            "extra": "mean: 1.1357154082747127 msec\nrounds: 725"
+          },
+          {
+            "name": "Collections With Model validation",
+            "value": 678.6948074158267,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0000857737703810969",
+            "extra": "mean: 1.473416311828822 msec\nrounds: 186"
+          },
+          {
+            "name": "Collections",
+            "value": 561.5969573903925,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00008529931095933283",
+            "extra": "mean: 1.7806364276736153 msec\nrounds: 477"
           }
         ]
       }
