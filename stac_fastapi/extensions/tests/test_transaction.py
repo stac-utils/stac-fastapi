@@ -9,9 +9,14 @@ from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import TransactionExtension
+from stac_fastapi.extensions.core.transaction import BaseTransactionsClient
+from stac_fastapi.extensions.core.transaction.request import (
+    PartialCollection,
+    PartialItem,
+    PatchOperation,
+)
 from stac_fastapi.types.config import ApiSettings
-from stac_fastapi.types.core import BaseCoreClient, BaseTransactionsClient
-from stac_fastapi.types.stac import PartialCollection, PartialItem, PatchOperation
+from stac_fastapi.types.core import BaseCoreClient
 
 
 class DummyCoreClient(BaseCoreClient):
