@@ -30,7 +30,7 @@ explicit_package_bases = true
 exclude = ["tests", ".venv"]
 
 [tool.bumpversion]
-current_version = "5.2.1"
+current_version = "6.0.0"
 parse = """(?x)
     (?P<major>\\d+)\\.
     (?P<minor>\\d+)\\.
