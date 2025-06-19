@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [6.0.0] - 2025-06-19
+
 ### Changed
 
 - move `transaction` clients and models to `stac_fastapi.extension` sub-module
@@ -651,7 +653,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.1..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.0.0..main>
+[6.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.1..6.0.0>
 [5.2.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.0..5.2.1>
 [5.2.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.1.1..5.2.0>
 [5.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.1.0..5.1.1>
