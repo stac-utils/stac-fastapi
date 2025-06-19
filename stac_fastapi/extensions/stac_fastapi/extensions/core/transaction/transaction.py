@@ -14,9 +14,10 @@ from typing_extensions import Annotated
 from stac_fastapi.api.models import CollectionUri, ItemUri, JSONResponse
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.config import ApiSettings
-from stac_fastapi.types.core import AsyncBaseTransactionsClient, BaseTransactionsClient
 from stac_fastapi.types.extension import ApiExtension
-from stac_fastapi.types.stac import PartialCollection, PartialItem, PatchOperation
+
+from .client import AsyncBaseTransactionsClient, BaseTransactionsClient
+from .request import PartialCollection, PartialItem, PatchOperation
 
 
 class TransactionConformanceClasses(str, Enum):
