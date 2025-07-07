@@ -48,7 +48,7 @@ class FreeTextAdvancedExtensionGetRequest(APIRequest):
     """Free-text Extension GET request model."""
 
     q: Annotated[
-        Optional[str],
+        Optional[List[str]],
         Query(
             description="Parameter to perform free-text queries against STAC metadata",
             openapi_examples={
@@ -56,7 +56,7 @@ class FreeTextAdvancedExtensionGetRequest(APIRequest):
                 "Coastal": {"value": "ocean,coast"},
             },
         ),
-    ] = attr.ib(default=None)
+    ] = attr.ib(default=None, converter=_ft_converter)
 
 
 class FreeTextAdvancedExtensionPostRequest(BaseModel):
