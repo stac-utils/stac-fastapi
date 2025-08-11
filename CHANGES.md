@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- improved documentation how to run tests ([#851](https://github.com/stac-utils/stac-fastapi/pull/851))
+
 ## [6.0.0] - 2025-06-19
 
 ### Changed

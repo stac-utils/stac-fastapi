@@ -78,16 +78,13 @@ Other backends may be available from other sources, search [PyPI](https://pypi.o
 Install the packages in editable mode:
 
 ```shell
-python -m pip install \
-  -e 'stac_fastapi/types[dev]' \
-  -e 'stac_fastapi/api[dev]' \
-  -e 'stac_fastapi/extensions[dev]'
+make install
 ```
 
-To run the tests:
+To run the tests (after the packages have been installed):
 
 ```shell
-python -m pytest
+make test
 ```
 
 ## Releasing
