@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- fixed typing of base_model and mixins parameters ([#852](https://github.com/stac-utils/stac-fastapi/pull/852))
+
 ## [6.0.0] - 2025-06-19
 
 ### Changed

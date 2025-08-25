@@ -29,9 +29,9 @@ except ImportError:  # pragma: nocover
 
 def create_request_model(
     model_name="SearchGetRequest",
-    base_model: Union[Type[BaseModel], APIRequest] = BaseSearchGetRequest,
+    base_model: Union[Type[BaseModel], Type[APIRequest]] = BaseSearchGetRequest,
     extensions: Optional[List[ApiExtension]] = None,
-    mixins: Optional[Union[List[BaseModel], List[APIRequest]]] = None,
+    mixins: Optional[Union[List[Type[BaseModel]], List[Type[APIRequest]]]] = None,
     request_type: Optional[str] = "GET",
 ) -> Union[Type[BaseModel], APIRequest]:
     """Create a pydantic model for validating request bodies."""
