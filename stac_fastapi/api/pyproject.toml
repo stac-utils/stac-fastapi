@@ -1,0 +1,65 @@
+[project]
+name = "stac-fastapi-api"
+description = "An implementation of STAC API based on the FastAPI framework."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [
+  { name = "ArturoAI", email = "engineering@arturo.ai" },
+]
+maintainers = [
+  { name = "Vincent Sarago", email = "vincent@developmentseed.org" },
+  { name = "Jonathan Healy", email = "jonathan.d.healy@gmail.com" },
+  { name = "Pete Gadomski", email = "pete.gadomski@gmail.com" },
+  { name = "Jeff Albrecht", email = "geospatialjeff@gmail.com" },
+  { name = "Nathan Zimmerman", email = "npzimmerman@gmail.com" },
+]
+keywords = [
+    "STAC",
+    "STAC-API",
+    "FastAPI",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+]
+dynamic = ["version"]
+dependencies = [
+    "brotli_asgi",
+    "stac-fastapi.types~=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+        "httpx",
+        "pytest",
+        "pytest-cov",
+        "pytest-asyncio",
+]
+benchmark = [
+    "pytest-benchmark",
+]
+
+[project.urls]
+Homepage = 'https://github.com/stac-utils/stac-fastapi'
+
+[tool.hatch.version]
+path = "stac_fastapi/api/version.py"
+
+[tool.hatch.build.targets.sdist]
+exclude = ["tests/"]
+
+[tool.hatch.build.targets.wheel]
+only-include = ["stac_fastapi"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+

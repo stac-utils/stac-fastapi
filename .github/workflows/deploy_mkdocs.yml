@@ -20,18 +20,22 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v5
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: 3.11
+          version: "0.9.*" 
+          enable-cache: true
+    
+      - name: Set up Python3
+        run: uv python install 3
+      
+      - name: Install dependencies
+        run: |
+          uv sync --all-extras
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install \
-            stac_fastapi/types[docs] \
-            stac_fastapi/api[docs] \
-            stac_fastapi/extensions[docs] \
+          uv run pip install -r requirements/requirements-docs.txt
 
       - name: Deploy docs
-        run: mkdocs gh-deploy --force -f docs/mkdocs.yml
+        run: uv run mkdocs gh-deploy --force -f docs/mkdocs.yml

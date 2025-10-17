@@ -60,11 +60,8 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     for PACKAGE_DIR in "${SUBPACKAGE_DIRS[@]}"
     do
         echo ${PACKAGE_DIR}
-        pushd ./${PACKAGE_DIR}
         rm -rf dist
-        python setup.py sdist bdist_wheel
-        twine upload ${TEST_PYPI} dist/*
-        popd
-
+        uv build --package PACKAGE_DIR
+        uv publish --publish-url ${TEST_PYPI}
     done
 fi

@@ -1,3 +1,39 @@
+[project]
+name = "stac-fastapi"
+version = "6.0.0"
+description = "Python library for building a STAC-compliant FastAPI application."
+requires-python = ">=3.9"
+readme = "README.md"
+dependencies = []
+
+[tool.uv.sources]
+stac_fastapi_types = { workspace = true }
+stac_fastapi_extensions = { workspace = true }
+stac_fastapi_api = { workspace = true }
+
+[tool.uv.workspace]
+members = [
+  "stac_fastapi/*"
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+    "pytest-benchmark",
+    "pre-commit",
+    "bump-my-version",
+    "httpx",
+    "requests",
+    # These are added as dev dependencies because they should be available
+    #  when developing the project.
+    "stac_fastapi_types",
+    "stac_fastapi_api",
+    "stac_fastapi_extensions",
+]
+package = false
+
 [tool.ruff]
 target-version = "py39" # minimum supported version
 line-length = 90
@@ -60,6 +96,11 @@ commit = true
 filename = "VERSION"
 search = "{current_version}"
 replace = "{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "stac_fastapi/pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
 
 [[tool.bumpversion.files]]
 filename = "stac_fastapi/api/stac_fastapi/api/version.py"

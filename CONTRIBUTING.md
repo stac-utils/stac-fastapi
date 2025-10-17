@@ -7,7 +7,7 @@ Issues and pull requests are more than welcome.
 ```bash
 git clone https://github.com/stac-utils/stac-fastapi.git
 cd stac-fastapi
-python -m pip install -e stac_fastapi/api[dev]
+uv sync --dev
 ```
 
 **pre-commit**
@@ -15,7 +15,7 @@ python -m pip install -e stac_fastapi/api[dev]
 This repo is set to use `pre-commit` to run *ruff*, *pydocstring* and mypy when committing new code.
 
 ```bash
-pre-commit install
+uv run pre-commit install 
 ```
 
 ### Docs
@@ -23,13 +23,13 @@ pre-commit install
 ```bash
 git clone https://github.com/stac-utils/stac-fastapi.git
 cd stac-fastapi
-python pip install -e stac_fastapi/api["docs"]
+uv pip instal -r requirements/requirements-docs.txt
 ```
 
 Hot-reloading docs:
 
 ```bash
-$ mkdocs serve -f docs/mkdocs.yml
+uv run mkdocs serve -f docs/mkdocs.yml
 ```
 
 To manually deploy docs (note you should never need to do this because GitHub
@@ -37,5 +37,5 @@ Actions deploys automatically for new commits.):
 
 ```bash
 # deploy
-$ mkdocs gh-deploy -f docs/mkdocs.yml
+uv run mkdocs gh-deploy -f docs/mkdocs.yml
 ```
