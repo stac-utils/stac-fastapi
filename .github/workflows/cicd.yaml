@@ -46,7 +46,18 @@ jobs:
   test-docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout main
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.9.*" 
+          enable-cache: true
+    
+      - name: Set up Python3
+        run: uv python install 3
+      
       - name: Test generating docs
         run: make docs
 

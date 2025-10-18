@@ -4,21 +4,17 @@ image:
 
 .PHONY: install
 install:
-	python -m pip install wheel && \
-	python -m pip install -e ./stac_fastapi/types[dev] && \
-	python -m pip install -e ./stac_fastapi/api[dev] && \
-	python -m pip install -e ./stac_fastapi/extensions[dev]
-
-.PHONY: docs-image
-docs-image:
-	docker compose -f compose.docs.yml \
-		build
-
-.PHONY: docs
-docs: docs-image
-	docker compose -f compose.docs.yml \
-		run docs
+	uv sync --all-extras
 
 .PHONY: test
-test: image
-	python -m pytest .
+test: install
+	uv run pytest
+
+.PHONY: docs
+docs: install
+	uv run pip install -r requirements/requirements-docs.txt && \
+	uv run mkdocs build -f docs/mkdocs.yml
+
+.PHONY: benchmark
+benchmark: install
+	uv run pytest stac_fastapi/api/tests/benchmarks.py --benchmark-only --benchmark-columns 'min, max, mean, median' 

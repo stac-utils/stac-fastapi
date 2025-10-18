@@ -17,6 +17,6 @@ WORKDIR /app
 COPY . /app
 
 RUN python -m pip install \
-    -e ./stac_fastapi/types[dev] \
-    -e ./stac_fastapi/api[dev] \
-    -e ./stac_fastapi/extensions[dev]
+    -e ./stac_fastapi/types \
+    -e ./stac_fastapi/api \
+    -e ./stac_fastapi/extensions

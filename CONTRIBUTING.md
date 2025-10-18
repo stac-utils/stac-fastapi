@@ -16,6 +16,9 @@ This repo is set to use `pre-commit` to run *ruff*, *pydocstring* and mypy when 
 
 ```bash
 uv run pre-commit install 
+
+# If needed, you can run pre-commit script manually 
+uv run pre-commit run --all-files 
 ```
 
 ### Docs
