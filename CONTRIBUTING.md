@@ -26,13 +26,14 @@ uv run pre-commit run --all-files
 ```bash
 git clone https://github.com/stac-utils/stac-fastapi.git
 cd stac-fastapi
-uv pip instal -r requirements/requirements-docs.txt
+# Build docs
+uvx --with-requirements requirements/requirements-docs.txt mkdocs build -f docs/mkdocs.yml
 ```
 
 Hot-reloading docs:
 
 ```bash
-uv run mkdocs serve -f docs/mkdocs.yml
+uvx --with-requirements requirements/requirements-docs.txt mkdocs serve -f docs/mkdocs.yml --livereload
 ```
 
 To manually deploy docs (note you should never need to do this because GitHub
@@ -40,5 +41,5 @@ Actions deploys automatically for new commits.):
 
 ```bash
 # deploy
-uv run mkdocs gh-deploy -f docs/mkdocs.yml
+uvx --with-requirements requirements/requirements-docs.txt mkdocs gh-deploy -f docs/mkdocs.yml
 ```

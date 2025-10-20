@@ -29,13 +29,5 @@ jobs:
       - name: Set up Python3
         run: uv python install 3
       
-      - name: Install dependencies
-        run: |
-          uv sync --all-extras
-
-      - name: Install dependencies
-        run: |
-          uv run pip install -r requirements/requirements-docs.txt
-
       - name: Deploy docs
-        run: uv run mkdocs gh-deploy --force -f docs/mkdocs.yml
+        run: uvx --with-requirements requirements/requirements-docs.txt mkdocs gh-deploy --force -f docs/mkdocs.yml

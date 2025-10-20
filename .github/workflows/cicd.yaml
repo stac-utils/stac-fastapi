@@ -58,8 +58,9 @@ jobs:
       - name: Set up Python3
         run: uv python install 3
       
-      - name: Test generating docs
-        run: make docs
+      - name: Test docs
+        run: |
+          uvx --with-requirements requirements/requirements-docs.txt mkdocs build --strict -f docs/mkdocs.yml 
 
   benchmark:
     needs: [test]

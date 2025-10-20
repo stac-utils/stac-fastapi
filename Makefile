@@ -11,9 +11,8 @@ test: install
 	uv run pytest
 
 .PHONY: docs
-docs: install
-	uv run pip install -r requirements/requirements-docs.txt && \
-	uv run mkdocs build -f docs/mkdocs.yml
+docs:
+	uvx --with-requirements requirements/requirements-docs.txt mkdocs build -f docs/mkdocs.yml
 
 .PHONY: benchmark
 benchmark: install
