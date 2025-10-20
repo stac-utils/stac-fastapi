@@ -36,14 +36,12 @@ dependencies = [
     "stac-fastapi.types~=6.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
-        "httpx",
-        "pytest",
-        "pytest-cov",
-        "pytest-asyncio",
-]
-benchmark = [
+    "httpx",
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
     "pytest-benchmark",
 ]
 

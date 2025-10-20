@@ -37,7 +37,7 @@ dependencies = [
     "stac-fastapi.api~=6.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
         "pytest",
         "pytest-cov",

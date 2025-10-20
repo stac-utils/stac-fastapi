@@ -12,7 +12,7 @@ test: install
 
 .PHONY: docs
 docs:
-	uvx --with-requirements requirements/requirements-docs.txt mkdocs build -f docs/mkdocs.yml
+	uv run --group docs mkdocs build -f docs/mkdocs.yml
 
 .PHONY: benchmark
 benchmark: install

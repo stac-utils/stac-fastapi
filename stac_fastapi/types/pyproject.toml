@@ -42,7 +42,7 @@ packages = [
   { include = "stac_fastapi.*" },
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
         "pytest",
         "pytest-cov",

@@ -4,15 +4,19 @@ version = "6.0.0"
 description = "Python library for building a STAC-compliant FastAPI application."
 requires-python = ">=3.9"
 readme = "README.md"
-dependencies = []
+dependencies = [
+    "stac-fastapi-api",
+    "stac-fastapi-types",
+    "stac-fastapi-extensions",
+]
 
 [tool.uv]
 package = false
 
 [tool.uv.sources]
-stac_fastapi_types = { workspace = true }
-stac_fastapi_extensions = { workspace = true }
-stac_fastapi_api = { workspace = true }
+stac-fastapi-types = { workspace = true }
+stac-fastapi-extensions = { workspace = true }
+stac-fastapi-api = { workspace = true }
 
 [tool.uv.workspace]
 members = [
@@ -29,11 +33,14 @@ dev = [
     "bump-my-version",
     "httpx",
     "requests",
-    # These are added as dev dependencies because they should be available
-    #  when developing the project.
-    "stac_fastapi_types",
-    "stac_fastapi_api",
-    "stac_fastapi_extensions",
+]
+docs = [
+    "black>=23.10.1",
+    "mkdocs>=1.4.3",
+    "mkdocs-jupyter>=0.24.5",
+    "mkdocs-material[imaging]>=9.5",
+    "griffe-inherited-docstrings>=1.0.0",
+    "mkdocstrings[python]>=0.25.1",
 ]
 
 [tool.ruff]
