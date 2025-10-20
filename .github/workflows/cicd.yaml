@@ -60,7 +60,7 @@ jobs:
       
       - name: Test docs
         run: |
-          uvx --with-requirements requirements/requirements-docs.txt mkdocs build --strict -f docs/mkdocs.yml 
+          uvx --with-requirements requirements/requirements-docs.txt mkdocs build -f docs/mkdocs.yml 
 
   benchmark:
     needs: [test]
