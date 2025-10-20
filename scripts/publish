@@ -8,9 +8,9 @@ fi
 
 # Import shared variables
 SUBPACKAGE_DIRS=(
-    "stac_fastapi/types"
-    "stac_fastapi/extensions"
-    "stac_fastapi/api"
+    "stac-fastapi-types"
+    "stac-fastapi-extensions"
+    "stac-fastapi-api"
 )
 
 function usage() {
