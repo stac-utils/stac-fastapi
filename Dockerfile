@@ -1,4 +1,6 @@
-FROM python:3.12-slim AS base
+ARG PYTHON_VERSION=3.14
+
+FROM python:${PYTHON_VERSION}-slim AS base
 
 # Any python libraries that require system libraries to be installed will likely
 # need the following packages in order to build

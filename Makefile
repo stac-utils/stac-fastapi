@@ -4,7 +4,7 @@ image:
 
 .PHONY: install
 install:
-	uv sync --all-extras
+	uv sync --dev
 
 .PHONY: test
 test: install

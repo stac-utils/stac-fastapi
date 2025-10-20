@@ -31,7 +31,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --all-extras
+          uv sync --dev
 
       - name: Lint code
         if: ${{ matrix.python-version == env.LATEST_PY_VERSION }}
@@ -80,7 +80,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --all-extras
+          uv sync --dev
 
       - name: Run Benchmark
         run: uv run pytest stac_fastapi/api/tests/benchmarks.py --benchmark-only --benchmark-columns 'min, max, mean, median' --benchmark-json output.json

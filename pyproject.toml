@@ -6,6 +6,9 @@ requires-python = ">=3.9"
 readme = "README.md"
 dependencies = []
 
+[tool.uv]
+package = false
+
 [tool.uv.sources]
 stac_fastapi_types = { workspace = true }
 stac_fastapi_extensions = { workspace = true }
@@ -16,8 +19,8 @@ members = [
   "stac_fastapi/*"
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pytest",
     "pytest-cov",
     "pytest-asyncio",
@@ -32,7 +35,6 @@ dev-dependencies = [
     "stac_fastapi_api",
     "stac_fastapi_extensions",
 ]
-package = false
 
 [tool.ruff]
 target-version = "py39" # minimum supported version
