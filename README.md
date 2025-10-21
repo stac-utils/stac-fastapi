@@ -77,6 +77,10 @@ Other backends may be available from other sources, search [PyPI](https://pypi.o
 
 Install the packages in editable mode:
 
+We recommand using [`uv`](https://docs.astral.sh/uv) as project manager for development.
+
+See https://docs.astral.sh/uv/getting-started/installation/ for installation 
+
 ```shell
 uv sync --dev
 ```
