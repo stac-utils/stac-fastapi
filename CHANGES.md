@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Changed 
+
+- switch to pyproject.toml for package metadata
+- use `uv` for project managment
+- add python 3.14 support
+
 ## [6.0.0] - 2025-06-19
 
 ### Changed
