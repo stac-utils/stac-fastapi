@@ -1,3 +1,48 @@
+[project]
+name = "stac-fastapi"
+version = "6.0.0"
+description = "Python library for building a STAC-compliant FastAPI application."
+requires-python = ">=3.9"
+readme = "README.md"
+dependencies = [
+    "stac-fastapi-api",
+    "stac-fastapi-types",
+    "stac-fastapi-extensions",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+stac-fastapi-types = { workspace = true }
+stac-fastapi-extensions = { workspace = true }
+stac-fastapi-api = { workspace = true }
+
+[tool.uv.workspace]
+members = [
+  "stac_fastapi/*"
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+    "pytest-benchmark",
+    "pre-commit",
+    "bump-my-version",
+    "httpx",
+    "requests",
+]
+docs = [
+    "black>=23.10.1",
+    "mkdocs>=1.4.3",
+    "mkdocs-jupyter>=0.24.5",
+    "mkdocs-material[imaging]>=9.5",
+    "griffe-inherited-docstrings>=1.0.0",
+    "mkdocstrings[python]>=0.25.1",
+]
+
 [tool.ruff]
 target-version = "py39" # minimum supported version
 line-length = 90
@@ -60,6 +105,11 @@ commit = true
 filename = "VERSION"
 search = "{current_version}"
 replace = "{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "stac_fastapi/pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
 
 [[tool.bumpversion.files]]
 filename = "stac_fastapi/api/stac_fastapi/api/version.py"

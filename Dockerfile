@@ -1,22 +1,16 @@
-FROM python:3.12-slim AS base
-
-# Any python libraries that require system libraries to be installed will likely
-# need the following packages in order to build
-RUN apt-get update && \
-    apt-get -y upgrade && \
-    apt-get install -y build-essential git && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-ENV CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-
-FROM base AS builder
+FROM ghcr.io/astral-sh/uv:python3.14-bookworm-slim
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y gcc
 COPY . /app
 
-RUN python -m pip install \
-    -e ./stac_fastapi/types[dev] \
-    -e ./stac_fastapi/api[dev] \
-    -e ./stac_fastapi/extensions[dev]
+ENV CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+ENV UV_TOOL_BIN_DIR=/usr/local/bin
+RUN --mount=type=cache,target=/root/.cache/uv \
+  --mount=type=bind,source=uv.lock,target=uv.lock \
+  uv sync --locked --no-dev
+
+ENV PATH="/app/.venv/bin:$PATH"

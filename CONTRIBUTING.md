@@ -2,12 +2,16 @@
 
 Issues and pull requests are more than welcome.
 
+We recommand using [`uv`](https://docs.astral.sh/uv) as project manager for development.
+
+See https://docs.astral.sh/uv/getting-started/installation/ for installation 
+
 **dev install**
 
 ```bash
 git clone https://github.com/stac-utils/stac-fastapi.git
 cd stac-fastapi
-python -m pip install -e stac_fastapi/api[dev]
+uv sync --dev
 ```
 
 **pre-commit**
@@ -15,7 +19,10 @@ python -m pip install -e stac_fastapi/api[dev]
 This repo is set to use `pre-commit` to run *ruff*, *pydocstring* and mypy when committing new code.
 
 ```bash
-pre-commit install
+uv run pre-commit install 
+
+# If needed, you can run pre-commit script manually 
+uv run pre-commit run --all-files 
 ```
 
 ### Docs
@@ -23,13 +30,14 @@ pre-commit install
 ```bash
 git clone https://github.com/stac-utils/stac-fastapi.git
 cd stac-fastapi
-python pip install -e stac_fastapi/api["docs"]
+# Build docs
+uv run --group docs mkdocs build -f docs/mkdocs.yml
 ```
 
 Hot-reloading docs:
 
 ```bash
-$ mkdocs serve -f docs/mkdocs.yml
+uv run --group docs mkdocs serve -f docs/mkdocs.yml --livereload
 ```
 
 To manually deploy docs (note you should never need to do this because GitHub
@@ -37,5 +45,5 @@ Actions deploys automatically for new commits.):
 
 ```bash
 # deploy
-$ mkdocs gh-deploy -f docs/mkdocs.yml
+uv run --group docs mkdocs gh-deploy -f docs/mkdocs.yml
 ```

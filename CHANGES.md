@@ -6,6 +6,12 @@
 
 - fixed typing of base_model and mixins parameters ([#852](https://github.com/stac-utils/stac-fastapi/pull/852))
 
+### Changed 
+
+- switch to pyproject.toml for package metadata
+- use `uv` for project managment
+- add python 3.14 support
+
 ## [6.0.0] - 2025-06-19
 
 ### Changed
