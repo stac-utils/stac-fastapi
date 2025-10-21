@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- fixed typing of base_model and mixins parameters ([#852](https://github.com/stac-utils/stac-fastapi/pull/852))
+
 ### Changed 
 
 - switch to pyproject.toml for package metadata
