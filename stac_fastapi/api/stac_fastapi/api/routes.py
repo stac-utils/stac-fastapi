@@ -8,12 +8,12 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional, Type, TypedDi
 from fastapi import Depends, FastAPI, params
 from fastapi.datastructures import DefaultPlaceholder
 from fastapi.dependencies.utils import get_dependant, get_parameterless_sub_dependant
-from fastapi.routing import APIRoute
+from fastapi.routing import APIRoute, request_response
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette.routing import BaseRoute, Match, request_response
+from starlette.routing import BaseRoute, Match
 from starlette.status import HTTP_204_NO_CONTENT
 
 from stac_fastapi.api.models import APIRequest
