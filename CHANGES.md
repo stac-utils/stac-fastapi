@@ -5,6 +5,7 @@
 ### Fixed
 
 - fixed typing of base_model and mixins parameters ([#852](https://github.com/stac-utils/stac-fastapi/pull/852))
+- fixed FastAPI 0.119.0+ compatibility by updating `request_response` import from starlette to fastapi and removing upper version constraint ([#856](https://github.com/stac-utils/stac-fastapi/issues/856))
 
 ### Changed 
 

@@ -1,9 +1,10 @@
 """openapi."""
 
 from fastapi import FastAPI
+from fastapi.routing import request_response
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette.routing import Route, request_response
+from starlette.routing import Route
 
 
 def update_openapi(app: FastAPI) -> FastAPI:
