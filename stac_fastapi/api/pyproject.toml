@@ -34,7 +34,7 @@ classifiers = [
 dynamic = ["version"]
 dependencies = [
     "brotli_asgi",
-    "stac-fastapi.types~=6.0",
+    "stac-fastapi.types~=6.1",
 ]
 
 [dependency-groups]
