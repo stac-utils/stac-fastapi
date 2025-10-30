@@ -2837,7 +2837,7 @@ wheels = [
 
 [[package]]
 name = "stac-fastapi"
-version = "6.0.0"
+version = "6.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "stac-fastapi-api" },

@@ -1,6 +1,6 @@
 [project]
 name = "stac-fastapi"
-version = "6.0.0"
+version = "6.1.0"
 description = "Python library for building a STAC-compliant FastAPI application."
 requires-python = ">=3.9"
 readme = "README.md"
@@ -75,7 +75,7 @@ explicit_package_bases = true
 exclude = ["tests", ".venv"]
 
 [tool.bumpversion]
-current_version = "6.0.0"
+current_version = "6.1.0"
 parse = """(?x)
     (?P<major>\\d+)\\.
     (?P<minor>\\d+)\\.
@@ -107,7 +107,7 @@ search = "{current_version}"
 replace = "{new_version}"
 
 [[tool.bumpversion.files]]
-filename = "stac_fastapi/pyproject.toml"
+filename = "pyproject.toml"
 search = 'version = "{current_version}"'
 replace = 'version = "{new_version}"'
 

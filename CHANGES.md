@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [6.1.0] - 2025-10-30
+
 ### Fixed
 
 - fixed typing of base_model and mixins parameters ([#852](https://github.com/stac-utils/stac-fastapi/pull/852))
@@ -664,7 +666,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.0.0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.0..main>
+[6.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/6.0.0..6.1.0>
 [6.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.1..6.0.0>
 [5.2.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.0..5.2.1>
 [5.2.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.1.1..5.2.0>
