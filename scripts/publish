@@ -38,7 +38,7 @@ do
         ;;
 
         --test)
-        TEST_PYPI="--repository testpypi"
+        TEST_PYPI="--index testpypi"
         shift
         ;;
 
@@ -61,7 +61,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
     do
         echo ${PACKAGE_DIR}
         rm -rf dist
-        uv build --package PACKAGE_DIR
-        uv publish --publish-url ${TEST_PYPI}
+        uv build --package ${PACKAGE_DIR}
+        uv publish ${TEST_PYPI}
     done
 fi
