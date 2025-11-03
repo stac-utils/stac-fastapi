@@ -2,7 +2,7 @@
 name = "stac-fastapi"
 version = "6.1.0"
 description = "Python library for building a STAC-compliant FastAPI application."
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 readme = "README.md"
 dependencies = [
     "stac-fastapi-api",
