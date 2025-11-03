@@ -91,6 +91,10 @@ To run the tests:
 uv run pytest
 ```
 
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md). for detailed contribution instructions.
+
 ## Releasing
 
 See [RELEASING.md](./RELEASING.md).

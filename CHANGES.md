@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Removed
+
+- support for python 3.9 and 3.10
+
 ## [6.1.0] - 2025-10-30
 
 ### Fixed
