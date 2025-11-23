@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Optional, Union
 
 import attr
@@ -562,6 +563,37 @@ def test_mgmt_endpoints(AsyncTestCoreClient):
         settings=ApiSettings(),
         client=AsyncTestCoreClient(),
         health_check=health_check,
+    )
+
+    with TestClient(test_app.app) as client:
+        resp = client.get("/_mgmt/ping")
+        assert resp.status_code == 200
+        assert resp.json() == {"message": "PONG"}
+
+        resp = client.get("/_mgmt/health")
+        assert resp.status_code == 200
+        assert resp.json() == {
+            "status": "UP",
+            "database": {
+                "status": "UP",
+                "version": "0.1.0",
+            },
+        }
+
+    async def async_health_check(request: Request):
+        await asyncio.sleep(1)
+        return {
+            "status": "UP",
+            "database": {
+                "status": "UP",
+                "version": "0.1.0",
+            },
+        }
+
+    test_app = app.StacApi(
+        settings=ApiSettings(),
+        client=AsyncTestCoreClient(),
+        health_check=async_health_check,
     )
 
     with TestClient(test_app.app) as client:
