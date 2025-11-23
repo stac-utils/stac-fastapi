@@ -1,9 +1,9 @@
 name: stac-fastapi
 on:
   push:
-    branches: [main]
+    branches: [main, maint-6.1.x]
   pull_request:
-    branches: [main]
+    branches: [main, maint-6.1.x]
 
 env:
   LATEST_PY_VERSION: '3.14'
