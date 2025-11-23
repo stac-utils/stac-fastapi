@@ -1,6 +1,7 @@
 """Fastapi app creation."""
 
 
+import inspect
 from typing import Awaitable, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import attr
@@ -8,7 +9,6 @@ from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.params import Depends
 from stac_pydantic import api
-from stac_pydantic.api.collections import Collections
 from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 from starlette.middleware import Middleware
@@ -32,6 +32,7 @@ from stac_fastapi.api.routes import (
     add_direct_response,
     add_route_dependencies,
     create_async_endpoint,
+    sync_to_async,
 )
 from stac_fastapi.types.config import ApiSettings, Settings
 from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
@@ -277,14 +278,14 @@ class StacApi:
             name="Get Collections",
             path="/collections",
             response_model=(
-                Collections if self.settings.enable_response_models else None
+                api.Collections if self.settings.enable_response_models else None
             ),
             responses={
                 200: {
                     "content": {
                         MimeTypes.json.value: {},
                     },
-                    "model": Collections,
+                    "model": api.Collections,
                 },
             },
             response_class=self.response_class,
@@ -411,7 +412,9 @@ class StacApi:
             },
             response_class=self.response_class,
             methods=["GET"],
-            endpoint=self.health_check,
+            endpoint=self.health_check
+            if inspect.iscoroutinefunction(self.health_check)
+            else sync_to_async(self.health_check),
         )
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
 
