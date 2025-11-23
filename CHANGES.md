@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
-### Fixed 
-
-- better support async/sync health check functions
-
 ### Removed
 
 - support for python 3.9 and 3.10
+
+## [6.1.1] - 2025-11-23
+
+### Fixed 
+
+- better support async/sync health check functions
 
 ## [6.1.0] - 2025-10-30
 
@@ -674,7 +676,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.1..main>
+[6.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.0..6.1.1>
 [6.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/6.0.0..6.1.0>
 [6.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.1..6.0.0>
 [5.2.1]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.0..5.2.1>
