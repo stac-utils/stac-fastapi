@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed 
+
+- better support async/sync health check functions
+
 ### Removed
 
 - support for python 3.9 and 3.10
