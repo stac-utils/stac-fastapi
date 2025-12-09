@@ -86,7 +86,7 @@ class ProxyHeaderMiddleware:
         proto = scope.get("scheme", "http")
         header_host = self._get_header_value_by_name(scope, "host")
         if header_host is None:
-            domain, port = scope.get("server")
+            domain, port = scope["server"]
         else:
             header_host_parts = header_host.split(":")
             if len(header_host_parts) == 2:

@@ -23,7 +23,7 @@ def crop(v: PositiveInt) -> PositiveInt:
     return v
 
 
-def str2list(x: str) -> Optional[List[str]]:
+def str2list(x: Optional[str]) -> Optional[List[str]]:
     """Convert string to list base on , delimiter."""
     if x:
         return x.split(",")
@@ -44,7 +44,7 @@ def str2bbox(x: str) -> Optional[BBox]:
                 status_code=400, detail=f"BBox '{x}' must have 4 or 6 values."
             )
 
-        return t
+        return t  # type: ignore
 
     return None
 

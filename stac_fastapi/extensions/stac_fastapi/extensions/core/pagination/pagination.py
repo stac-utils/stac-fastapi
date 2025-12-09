@@ -1,11 +1,13 @@
 """Pagination API extension."""
 
-from typing import List, Optional
+from typing import List, Optional, Type
 
 import attr
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.search import APIRequest
 
 from .request import GETPagination, POSTPagination
 
@@ -20,8 +22,8 @@ class PaginationExtension(ApiExtension):
     request model for OpenAPI generation.
     """
 
-    GET = GETPagination
-    POST = POSTPagination
+    GET: Type[APIRequest] = GETPagination
+    POST: Type[BaseModel] = POSTPagination
 
     conformance_classes: List[str] = attr.ib(factory=list)
     schema_href: Optional[str] = attr.ib(default=None)
