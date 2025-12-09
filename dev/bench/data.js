@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1765271597537,
+  "lastUpdate": 1765275715979,
   "repoUrl": "https://github.com/stac-utils/stac-fastapi",
   "entries": {
     "STAC FastAPI Benchmarks": [
@@ -21000,6 +21000,156 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.0001076143871800671",
             "extra": "mean: 1.7524894905663744 msec\nrounds: 424"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent.sarago@gmail.com",
+            "name": "vincentsarago",
+            "username": "vincentsarago"
+          },
+          "committer": {
+            "email": "vincent.sarago@gmail.com",
+            "name": "vincentsarago",
+            "username": "vincentsarago"
+          },
+          "distinct": true,
+          "id": "accd0791d3b8b5660832ff38530bd419620186ac",
+          "message": "update changelog",
+          "timestamp": "2025-12-09T11:20:14+01:00",
+          "tree_id": "5b942ace16511e5e69502994d3cc70da2ec8fdae",
+          "url": "https://github.com/stac-utils/stac-fastapi/commit/accd0791d3b8b5660832ff38530bd419620186ac"
+        },
+        "date": 1765275715352,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "Items With Model validation (1)",
+            "value": 726.0119903731857,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00032352008234331684",
+            "extra": "mean: 1.3773877198446525 msec\nrounds: 257"
+          },
+          {
+            "name": "Items With Model validation (10)",
+            "value": 564.895230498498,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00135626378296033",
+            "extra": "mean: 1.7702397648454902 msec\nrounds: 421"
+          },
+          {
+            "name": "Items With Model validation (50)",
+            "value": 248.291462033169,
+            "unit": "iter/sec",
+            "range": "stddev: 0.002651195926525994",
+            "extra": "mean: 4.027524715555508 msec\nrounds: 225"
+          },
+          {
+            "name": "Items With Model validation (100)",
+            "value": 134.06448528555163,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00494453100961505",
+            "extra": "mean: 7.459096999999983 msec\nrounds: 129"
+          },
+          {
+            "name": "Items With Model validation (200)",
+            "value": 77.87066395082641,
+            "unit": "iter/sec",
+            "range": "stddev: 0.006931495516767795",
+            "extra": "mean: 12.841806519480528 msec\nrounds: 77"
+          },
+          {
+            "name": "Items With Model validation (250)",
+            "value": 63.526562626948916,
+            "unit": "iter/sec",
+            "range": "stddev: 0.007453912818667817",
+            "extra": "mean: 15.741446705882133 msec\nrounds: 68"
+          },
+          {
+            "name": "Items With Model validation (1000)",
+            "value": 16.686496976926502,
+            "unit": "iter/sec",
+            "range": "stddev: 0.013868170627739857",
+            "extra": "mean: 59.92869572222167 msec\nrounds: 18"
+          },
+          {
+            "name": "Items Limit: (1)",
+            "value": 859.7540774109805,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00008114615258686012",
+            "extra": "mean: 1.1631233003411265 msec\nrounds: 293"
+          },
+          {
+            "name": "Items Limit: (10)",
+            "value": 557.208305258757,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00006758414440848744",
+            "extra": "mean: 1.794660974293301 msec\nrounds: 389"
+          },
+          {
+            "name": "Items Limit: (50)",
+            "value": 217.83059982698157,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00006585104060688403",
+            "extra": "mean: 4.590723253731476 msec\nrounds: 201"
+          },
+          {
+            "name": "Items Limit: (100)",
+            "value": 120.5265165645311,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0035719777033805275",
+            "extra": "mean: 8.29692941025629 msec\nrounds: 117"
+          },
+          {
+            "name": "Items Limit: (200)",
+            "value": 66.10470045866117,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0033243406113505182",
+            "extra": "mean: 15.12751730302982 msec\nrounds: 66"
+          },
+          {
+            "name": "Items Limit: (250)",
+            "value": 53.800183908111734,
+            "unit": "iter/sec",
+            "range": "stddev: 0.003774082944910302",
+            "extra": "mean: 18.587297056604015 msec\nrounds: 53"
+          },
+          {
+            "name": "Items Limit: (1000)",
+            "value": 14.291988577591104,
+            "unit": "iter/sec",
+            "range": "stddev: 0.007441147577940337",
+            "extra": "mean: 69.9692694666671 msec\nrounds: 15"
+          },
+          {
+            "name": "Collection With Model validation",
+            "value": 992.8318896342452,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00008450643426419433",
+            "extra": "mean: 1.0072198631415792 msec\nrounds: 643"
+          },
+          {
+            "name": "Collection",
+            "value": 983.6624969989492,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00006989746753541056",
+            "extra": "mean: 1.0166088501400579 msec\nrounds: 714"
+          },
+          {
+            "name": "Collections With Model validation",
+            "value": 723.0419467038341,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0001004199079108709",
+            "extra": "mean: 1.3830456235060051 msec\nrounds: 502"
+          },
+          {
+            "name": "Collections",
+            "value": 543.7310779265493,
+            "unit": "iter/sec",
+            "range": "stddev: 0.001844686947874764",
+            "extra": "mean: 1.8391444605546097 msec\nrounds: 469"
           }
         ]
       }
