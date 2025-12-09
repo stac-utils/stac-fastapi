@@ -1,12 +1,14 @@
 """Free-text extension."""
 
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Type
 
 import attr
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.search import APIRequest
 
 from .request import (
     FreeTextAdvancedExtensionGetRequest,
@@ -51,8 +53,8 @@ class FreeTextExtension(ApiExtension):
 
     """
 
-    GET = FreeTextExtensionGetRequest
-    POST = FreeTextExtensionPostRequest
+    GET: Type[APIRequest] = FreeTextExtensionGetRequest
+    POST: Type[BaseModel] = FreeTextExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
         default=[
@@ -84,8 +86,8 @@ class FreeTextAdvancedExtension(ApiExtension):
 
     """
 
-    GET = FreeTextAdvancedExtensionGetRequest
-    POST = FreeTextAdvancedExtensionPostRequest
+    GET: Type[APIRequest] = FreeTextAdvancedExtensionGetRequest
+    POST: Type[BaseModel] = FreeTextAdvancedExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
         default=[

@@ -1,12 +1,14 @@
 """Sort extension."""
 
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Type
 
 import attr
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.search import APIRequest
 
 from .request import SortExtensionGetRequest, SortExtensionPostRequest
 
@@ -32,8 +34,8 @@ class SortExtension(ApiExtension):
     https://github.com/stac-api-extensions/sort
     """
 
-    GET = SortExtensionGetRequest
-    POST = SortExtensionPostRequest
+    GET: Type[APIRequest] = SortExtensionGetRequest
+    POST: Type[BaseModel] = SortExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
         factory=lambda: [

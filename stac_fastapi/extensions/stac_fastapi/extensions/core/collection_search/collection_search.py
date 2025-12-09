@@ -1,10 +1,11 @@
 """Collection-Search extension."""
 
 from enum import Enum
-from typing import List, Optional, Union
+from typing import List, Optional, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
+from pydantic import BaseModel
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.shared import MimeTypes
 
@@ -12,6 +13,7 @@ from stac_fastapi.api.models import GeoJSONResponse, create_request_model
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.search import APIRequest
 
 from .client import AsyncBaseCollectionSearchClient, BaseCollectionSearchClient
 from .request import BaseCollectionSearchGetRequest, BaseCollectionSearchPostRequest
@@ -47,8 +49,8 @@ class CollectionSearchExtension(ApiExtension):
             the extension
     """
 
-    GET: BaseCollectionSearchGetRequest = attr.ib(default=BaseCollectionSearchGetRequest)  # type: ignore
-    POST = attr.ib(init=False)
+    GET: Type[APIRequest] = attr.ib(default=BaseCollectionSearchGetRequest)
+    POST: Optional[Type[BaseModel]] = attr.ib(init=False)
 
     conformance_classes: List[str] = attr.ib(
         default=[
@@ -93,7 +95,7 @@ class CollectionSearchExtension(ApiExtension):
         )
 
         return cls(
-            GET=get_request_model,
+            GET=get_request_model,  # type: ignore
             conformance_classes=conformance_classes,
             schema_href=schema_href,
         )
@@ -127,10 +129,8 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
     schema_href: Optional[str] = attr.ib(default=None)
     router: APIRouter = attr.ib(factory=APIRouter)
 
-    GET: BaseCollectionSearchGetRequest = attr.ib(default=BaseCollectionSearchGetRequest)  # type: ignore
-    POST: BaseCollectionSearchPostRequest = attr.ib(  # type: ignore
-        default=BaseCollectionSearchPostRequest
-    )
+    GET: Type[APIRequest] = attr.ib(default=BaseCollectionSearchGetRequest)
+    POST: Type[BaseModel] = attr.ib(default=BaseCollectionSearchPostRequest)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -198,8 +198,8 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
         return cls(
             client=client,
             settings=settings,
-            GET=get_request_model,
-            POST=post_request_model,
+            GET=get_request_model,  # type: ignore
+            POST=post_request_model,  # type: ignore
             conformance_classes=conformance_classes,
             router=router or APIRouter(),
             schema_href=schema_href,

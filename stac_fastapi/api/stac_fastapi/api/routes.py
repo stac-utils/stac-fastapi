@@ -16,7 +16,7 @@ from starlette.responses import Response
 from starlette.routing import BaseRoute, Match
 from starlette.status import HTTP_204_NO_CONTENT
 
-from stac_fastapi.api.models import APIRequest
+from stac_fastapi.types.search import APIRequest
 
 
 def _wrap_response(resp: Any) -> Any:
@@ -58,7 +58,7 @@ def create_async_endpoint(
 
     elif issubclass(request_model, APIRequest):
 
-        async def _endpoint(request: Request, request_data=Depends(request_model)):
+        async def _endpoint(request: Request, request_data=Depends(request_model)):  # type: ignore
             """Endpoint."""
             return _wrap_response(await func(request=request, **request_data.kwargs()))
 
@@ -100,10 +100,14 @@ def add_route_dependencies(
         _scope = copy.deepcopy(scope)
         for route in routes:
             if scope["path"] == "*":
-                _scope["path"] = route.path
+                # NOTE: ignore type, because BaseRoute has no "path" attribute
+                # but APIRoute does.
+                _scope["path"] = route.path  # type: ignore
 
+            # NOTE: ignore type, because BaseRoute has no "method" attribute
+            # but APIRoute does.
             if scope["method"] == "*":
-                _scope["method"] = list(route.methods)[0]
+                _scope["method"] = list(route.methods)[0]  # type: ignore
 
             match, _ = route.matches({"type": "http", **_scope})
             if match != Match.FULL:
@@ -119,7 +123,10 @@ def add_route_dependencies(
                 route.dependant.dependencies.insert(
                     0,
                     get_parameterless_sub_dependant(
-                        depends=depends, path=route.path_format
+                        # NOTE: ignore type, because BaseRoute has no "path_format"
+                        # attribute but APIRoute does.
+                        depends=depends,
+                        path=route.path_format,  # type: ignore
                     ),
                 )
 
@@ -128,7 +135,9 @@ def add_route_dependencies(
             # app.include_router(router))
             # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/applications.py#L337-L360
             # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/routing.py#L677-L678
-            route.dependencies.extend(dependencies)
+            # NOTE: ignore type, because BaseRoute has no "dependencies" attribute
+            # but APIRoute does.
+            route.dependencies.extend(dependencies)  # type: ignore
 
 
 def add_direct_response(app: FastAPI) -> None:

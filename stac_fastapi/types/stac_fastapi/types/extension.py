@@ -1,21 +1,25 @@
 """Base api extension."""
 
 import abc
-from typing import List, Optional
+from typing import List, Optional, Type, Union
 
 import attr
 from fastapi import FastAPI
 from pydantic import BaseModel
+
+from stac_fastapi.types.search import APIRequest
 
 
 @attr.s
 class ApiExtension(abc.ABC):
     """Abstract base class for defining API extensions."""
 
-    GET = None
-    POST = None
+    GET: Optional[Type[APIRequest]] = None
+    POST: Optional[Type[BaseModel]] = None
 
-    def get_request_model(self, verb: str = "GET") -> Optional[BaseModel]:
+    def get_request_model(
+        self, verb: str = "GET"
+    ) -> Optional[Union[Type[BaseModel], Type[APIRequest]]]:
         """Return the request model for the extension.method.
 
         The model can differ based on HTTP verb
