@@ -1,6 +1,6 @@
 [project]
 name = "stac-fastapi"
-version = "6.1.1"
+version = "6.1.3"
 description = "Python library for building a STAC-compliant FastAPI application."
 requires-python = ">=3.11"
 readme = "README.md"
@@ -81,7 +81,7 @@ explicit_package_bases = true
 exclude = ["tests", ".venv"]
 
 [tool.bumpversion]
-current_version = "6.1.1"
+current_version = "6.1.3"
 parse = """(?x)
     (?P<major>\\d+)\\.
     (?P<minor>\\d+)\\.

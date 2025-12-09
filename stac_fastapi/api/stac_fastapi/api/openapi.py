@@ -14,8 +14,11 @@ def update_openapi(app: FastAPI) -> FastAPI:
     content-type response header.
     """
     # Find the route for the openapi_url in the app
+    # TODO: Type info is Route, while it shoukd maybe be APIRoute? Check FastAPI source.
     openapi_route: Route = next(
-        route for route in app.router.routes if route.path == app.openapi_url
+        route
+        for route in app.router.routes
+        if route.path == app.openapi_url  # type: ignore
     )
     # Store the old endpoint function so we can call it from the patched function
     old_endpoint = openapi_route.endpoint

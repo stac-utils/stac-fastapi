@@ -1,12 +1,14 @@
 """Fields extension."""
 
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Type
 
 import attr
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.search import APIRequest
 
 from .request import FieldsExtensionGetRequest, FieldsExtensionPostRequest
 
@@ -42,8 +44,8 @@ class FieldsExtension(ApiExtension):
             the extension
     """
 
-    GET = FieldsExtensionGetRequest
-    POST = FieldsExtensionPostRequest
+    GET: Type[APIRequest] = FieldsExtensionGetRequest
+    POST: Type[BaseModel] = FieldsExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
         factory=lambda: [

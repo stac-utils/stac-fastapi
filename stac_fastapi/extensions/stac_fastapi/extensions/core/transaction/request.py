@@ -94,7 +94,7 @@ class BasePartial(StacBaseModel):
         Returns:
             List: list of RF6902 operations.
         """
-        operations = []
+        operations: List[PatchOperation] = []
 
         for key, value in data.copy().items():
             if value is None:
