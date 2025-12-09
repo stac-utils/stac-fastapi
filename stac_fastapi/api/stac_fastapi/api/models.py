@@ -33,7 +33,7 @@ def create_request_model(
     extensions: Optional[List[ApiExtension]] = None,
     mixins: Optional[Union[List[Type[BaseModel]], List[Type[APIRequest]]]] = None,
     request_type: Optional[str] = "GET",
-) -> Union[Type[BaseModel], APIRequest]:
+) -> Union[Type[BaseModel], Type[APIRequest]]:
     """Create a pydantic model for validating request bodies."""
     fields = {}
     extension_models = []
@@ -65,7 +65,7 @@ def create_request_model(
 def create_get_request_model(
     extensions: Optional[List[ApiExtension]],
     base_model: BaseSearchGetRequest = BaseSearchGetRequest,
-) -> APIRequest:
+) -> Type[APIRequest]:
     """Wrap create_request_model to create the GET request model."""
 
     return create_request_model(

@@ -6,6 +6,10 @@
 
 - support for python 3.9 and 3.10
 
+### Fixed 
+
+- fixed output type for `api.models.create_request_model` and `api.models.create_get_request_model` methods
+
 ## [6.1.1] - 2025-11-23
 
 ### Fixed 
