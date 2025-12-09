@@ -10,6 +10,12 @@
 
 - fixed output type for `api.models.create_request_model` and `api.models.create_get_request_model` methods
 
+## [6.1.2] - 2025-12-09
+
+### Fixed
+
+- fixed output type for `api.models.create_request_model` and `api.models.create_get_request_model` methods **backported**
+
 ## [6.1.1] - 2025-11-23
 
 ### Fixed 
@@ -680,7 +686,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.1..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.2..main>
+[6.1.2]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.1..6.1.2>
 [6.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.0..6.1.1>
 [6.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/6.0.0..6.1.0>
 [6.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/5.2.1..6.0.0>
