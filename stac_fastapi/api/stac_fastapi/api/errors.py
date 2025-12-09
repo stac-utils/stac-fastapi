@@ -93,6 +93,8 @@ def add_exception_handlers(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
+    # TODO: Argument 2 to "add_exception_handler" of "Starlette" has incompatible type
     app.add_exception_handler(
-        RequestValidationError, request_validation_exception_handler
+        RequestValidationError,
+        request_validation_exception_handler,  # type: ignore
     )

@@ -35,6 +35,7 @@ jobs:
         if: ${{ matrix.python-version == env.LATEST_PY_VERSION }}
         run: |
           uv run pre-commit run --all-files
+          uv run --with mypy --with types-attrs mypy -p stac_fastapi
 
       - name: Run tests
         run: uv run pytest -svvv

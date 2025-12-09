@@ -24,7 +24,7 @@ try:
     import orjson  # noqa
     from fastapi.responses import ORJSONResponse as JSONResponse
 except ImportError:  # pragma: nocover
-    from starlette.responses import JSONResponse
+    from starlette.responses import JSONResponse  # type: ignore
 
 
 def create_request_model(
@@ -32,11 +32,11 @@ def create_request_model(
     base_model: Union[Type[BaseModel], Type[APIRequest]] = BaseSearchGetRequest,
     extensions: Optional[List[ApiExtension]] = None,
     mixins: Optional[Union[List[Type[BaseModel]], List[Type[APIRequest]]]] = None,
-    request_type: Optional[str] = "GET",
+    request_type: str = "GET",
 ) -> Union[Type[BaseModel], Type[APIRequest]]:
     """Create a pydantic model for validating request bodies."""
     fields = {}
-    extension_models = []
+    extension_models: List[Union[Type[BaseModel], Type[APIRequest]]] = []
 
     # Check extensions for additional parameters to search
     for extension in extensions or []:
@@ -54,7 +54,7 @@ def create_request_model(
     # Handle POST requests
     elif all([issubclass(m, BaseModel) for m in models]):
         for model in models:
-            for k, field_info in model.model_fields.items():
+            for k, field_info in model.model_fields.items():  # type: ignore
                 fields[k] = (field_info.annotation, field_info)
 
         return create_model(model_name, **fields, __base__=base_model)  # type: ignore
@@ -64,11 +64,10 @@ def create_request_model(
 
 def create_get_request_model(
     extensions: Optional[List[ApiExtension]],
-    base_model: BaseSearchGetRequest = BaseSearchGetRequest,
+    base_model: Type[BaseSearchGetRequest] = BaseSearchGetRequest,
 ) -> Type[APIRequest]:
     """Wrap create_request_model to create the GET request model."""
-
-    return create_request_model(
+    return create_request_model(  # type: ignore
         "SearchGetRequest",
         base_model=base_model,
         extensions=extensions,
@@ -78,10 +77,10 @@ def create_get_request_model(
 
 def create_post_request_model(
     extensions: Optional[List[ApiExtension]],
-    base_model: BaseSearchPostRequest = BaseSearchPostRequest,
+    base_model: Type[BaseSearchPostRequest] = BaseSearchPostRequest,
 ) -> Type[BaseModel]:
     """Wrap create_request_model to create the POST request model."""
-    return create_request_model(
+    return create_request_model(  # type: ignore
         "SearchPostRequest",
         base_model=base_model,
         extensions=extensions,

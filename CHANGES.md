@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [6.1.3] - 2025-12-09
+
+### Fixed 
+
+- fixed type hints
+
 ## [6.1.2] - 2025-12-09
 
 ### Fixed 

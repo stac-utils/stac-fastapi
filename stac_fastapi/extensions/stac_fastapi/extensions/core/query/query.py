@@ -1,12 +1,14 @@
 """Query extension."""
 
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Type
 
 import attr
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.search import APIRequest
 
 from .request import QueryExtensionGetRequest, QueryExtensionPostRequest
 
@@ -32,8 +34,8 @@ class QueryExtension(ApiExtension):
     https://github.com/stac-api-extensions/query
     """
 
-    GET = QueryExtensionGetRequest
-    POST = QueryExtensionPostRequest
+    GET: Type[APIRequest] = QueryExtensionGetRequest
+    POST: Type[BaseModel] = QueryExtensionPostRequest
 
     conformance_classes: List[str] = attr.ib(
         factory=lambda: [
