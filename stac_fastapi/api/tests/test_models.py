@@ -3,11 +3,15 @@ import json
 import pytest
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.testclient import TestClient
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from stac_fastapi.api.models import create_get_request_model, create_post_request_model
 from stac_fastapi.extensions.core import FieldsExtension, FilterExtension, SortExtension
-from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
+from stac_fastapi.types.search import (
+    APIRequest,
+    BaseSearchGetRequest,
+    BaseSearchPostRequest,
+)
 
 
 def test_create_get_request_model():
@@ -15,6 +19,8 @@ def test_create_get_request_model():
         extensions=[FilterExtension(), FieldsExtension()],
         base_model=BaseSearchGetRequest,
     )
+    assert type(request_model) is type
+    assert issubclass(request_model, APIRequest)
 
     model = request_model(
         collections="test1,test2",
@@ -96,6 +102,7 @@ def test_create_post_request_model(filter_val, passes):
         extensions=[FilterExtension(), FieldsExtension()],
         base_model=BaseSearchPostRequest,
     )
+    assert issubclass(request_model, BaseModel)
 
     if not passes:
         with pytest.raises(ValidationError):
