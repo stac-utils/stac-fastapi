@@ -692,7 +692,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.3..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.4..main>
+[6.1.4]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.3..6.1.4>
 [6.1.3]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.2..6.1.3>
 [6.1.2]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.1..6.1.2>
 [6.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.0..6.1.1>
