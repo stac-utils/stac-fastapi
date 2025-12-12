@@ -31,7 +31,7 @@ class Items(BaseModel):
         return iter(self.items.values())
 
 
-@attr.s  # type: ignore
+@attr.s
 class BaseBulkTransactionsClient(abc.ABC):
     """BulkTransactionsClient."""
 
@@ -63,7 +63,7 @@ class BaseBulkTransactionsClient(abc.ABC):
         raise NotImplementedError
 
 
-@attr.s  # type: ignore
+@attr.s
 class AsyncBaseBulkTransactionsClient(abc.ABC):
     """BulkTransactionsClient."""
 

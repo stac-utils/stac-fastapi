@@ -2,7 +2,7 @@
 
 """
 from datetime import datetime as dt
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, cast
 
 import attr
 from fastapi import HTTPException, Query
@@ -44,7 +44,7 @@ def str2bbox(x: str) -> Optional[BBox]:
                 status_code=400, detail=f"BBox '{x}' must have 4 or 6 values."
             )
 
-        return t  # type: ignore
+        return cast(BBox, t)
 
     return None
 

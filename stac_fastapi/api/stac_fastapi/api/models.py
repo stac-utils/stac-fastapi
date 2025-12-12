@@ -1,6 +1,6 @@
 """Api request/response models."""
 
-from typing import List, Literal, Optional, Type, Union
+from typing import List, Literal, Optional, Type, Union, cast
 
 import attr
 from fastapi import Path, Query
@@ -24,7 +24,7 @@ try:
     import orjson  # noqa
     from fastapi.responses import ORJSONResponse as JSONResponse
 except ImportError:  # pragma: nocover
-    from starlette.responses import JSONResponse  # type: ignore
+    from starlette.responses import JSONResponse  # type: ignore [assignment]
 
 
 def create_request_model(
@@ -49,7 +49,8 @@ def create_request_model(
 
     # Handle GET requests
     if all([issubclass(m, APIRequest) for m in models]):
-        return attr.make_class(model_name, attrs={}, bases=tuple(models))
+        get_model = attr.make_class(model_name, attrs={}, bases=tuple(models))
+        return cast(Type[APIRequest], get_model)
 
     # Handle POST requests
     elif all([issubclass(m, BaseModel) for m in models]):
@@ -57,35 +58,38 @@ def create_request_model(
             for k, field_info in model.model_fields.items():  # type: ignore
                 fields[k] = (field_info.annotation, field_info)
 
-        return create_model(model_name, **fields, __base__=base_model)  # type: ignore
+        post_model = create_model(model_name, **fields, __base__=base_model)  # type: ignore
+        return cast(Type[BaseModel], post_model)
 
     raise TypeError("Mixed Request Model types. Check extension request types.")
 
 
 def create_get_request_model(
     extensions: Optional[List[ApiExtension]],
-    base_model: Type[BaseSearchGetRequest] = BaseSearchGetRequest,
+    base_model: Type[APIRequest] = BaseSearchGetRequest,
 ) -> Type[APIRequest]:
     """Wrap create_request_model to create the GET request model."""
-    return create_request_model(  # type: ignore
+    model = create_request_model(
         "SearchGetRequest",
         base_model=base_model,
         extensions=extensions,
         request_type="GET",
     )
+    return cast(Type[APIRequest], model)
 
 
 def create_post_request_model(
     extensions: Optional[List[ApiExtension]],
-    base_model: Type[BaseSearchPostRequest] = BaseSearchPostRequest,
+    base_model: Type[BaseModel] = BaseSearchPostRequest,
 ) -> Type[BaseModel]:
     """Wrap create_request_model to create the POST request model."""
-    return create_request_model(  # type: ignore
+    model = create_request_model(
         "SearchPostRequest",
         base_model=base_model,
         extensions=extensions,
         request_type="POST",
     )
+    return cast(Type[BaseModel], model)
 
 
 @attr.s
@@ -121,7 +125,7 @@ class ItemCollectionUri(APIRequest, DatetimeMixin):
             description="Limits the number of results that are included in each page of the response (capped to 10_000)."  # noqa: E501
         ),
     ] = attr.ib(default=10)
-    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)  # type: ignore
+    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)  # type: ignore [misc]
     datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
 
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [6.1.4] - 2025-12-12
+
+### Fixed 
+
+- improve type hints
+  - `api.app.StacAPI.search_get_request_model` now defined as `Type[APIRequest]`
+  - `api.app.StacAPI.search_post_request_model` now defined as `Type[BaseModel]`
+
 ## [6.1.3] - 2025-12-09
 
 ### Fixed 
