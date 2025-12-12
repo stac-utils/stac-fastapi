@@ -96,5 +96,5 @@ def add_exception_handlers(
     # TODO: Argument 2 to "add_exception_handler" of "Starlette" has incompatible type
     app.add_exception_handler(
         RequestValidationError,
-        request_validation_exception_handler,  # type: ignore
+        request_validation_exception_handler,  # type: ignore [arg-type]
     )

@@ -140,6 +140,7 @@ def str_to_interval(interval: Optional[str]) -> Optional[DateTimeType]:
         raise HTTPException(
             status_code=400, detail="Double open-ended intervals are not allowed."
         )
+
     if start is not None and end is not None and start > end:
         raise HTTPException(
             status_code=400, detail="Start datetime cannot be before end datetime."
