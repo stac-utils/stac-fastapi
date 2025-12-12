@@ -8,6 +8,7 @@ import attr
 from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.params import Depends
+from pydantic import BaseModel
 from stac_pydantic import api
 from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
@@ -114,12 +115,8 @@ class StacApi:
         converter=update_openapi,  # type: ignore
     )
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
-    search_get_request_model: Type[BaseSearchGetRequest] = attr.ib(
-        default=BaseSearchGetRequest
-    )
-    search_post_request_model: Type[BaseSearchPostRequest] = attr.ib(
-        default=BaseSearchPostRequest
-    )
+    search_get_request_model: Type[APIRequest] = attr.ib(default=BaseSearchGetRequest)
+    search_post_request_model: Type[BaseModel] = attr.ib(default=BaseSearchPostRequest)
     collections_get_request_model: Type[APIRequest] = attr.ib(default=EmptyRequest)
     collection_get_request_model: Type[APIRequest] = attr.ib(default=CollectionUri)
     items_get_request_model: Type[APIRequest] = attr.ib(default=ItemCollectionUri)

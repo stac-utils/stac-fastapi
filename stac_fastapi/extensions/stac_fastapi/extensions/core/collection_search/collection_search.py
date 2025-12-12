@@ -1,7 +1,7 @@
 """Collection-Search extension."""
 
 from enum import Enum
-from typing import List, Optional, Type, Union
+from typing import List, Optional, Type, Union, cast
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -87,11 +87,14 @@ class CollectionSearchExtension(ApiExtension):
         for ext in extensions:
             conformance_classes.extend(ext.conformance_classes)
 
-        get_request_model = create_request_model(
-            model_name="CollectionsGetRequest",
-            base_model=BaseCollectionSearchGetRequest,
-            extensions=extensions,
-            request_type="GET",
+        get_request_model = cast(
+            Type[APIRequest],
+            create_request_model(
+                model_name="CollectionsGetRequest",
+                base_model=BaseCollectionSearchGetRequest,
+                extensions=extensions,
+                request_type="GET",
+            ),
         )
 
         return cls(
@@ -164,7 +167,7 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
         app.include_router(self.router)
 
     @classmethod
-    def from_extensions(  # type: ignore
+    def from_extensions(  # type: ignore [override]
         cls,
         extensions: List[ApiExtension],
         *,
@@ -181,18 +184,24 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
         for ext in extensions:
             conformance_classes.extend(ext.conformance_classes)
 
-        get_request_model = create_request_model(
-            model_name="CollectionsGetRequest",
-            base_model=BaseCollectionSearchGetRequest,
-            extensions=extensions,
-            request_type="GET",
+        get_request_model = cast(
+            Type[APIRequest],
+            create_request_model(
+                model_name="CollectionsGetRequest",
+                base_model=BaseCollectionSearchGetRequest,
+                extensions=extensions,
+                request_type="GET",
+            ),
         )
 
-        post_request_model = create_request_model(
-            model_name="CollectionsPostRequest",
-            base_model=BaseCollectionSearchPostRequest,
-            extensions=extensions,
-            request_type="POST",
+        post_request_model = cast(
+            Type[BaseModel],
+            create_request_model(
+                model_name="CollectionsPostRequest",
+                base_model=BaseCollectionSearchPostRequest,
+                extensions=extensions,
+                request_type="POST",
+            ),
         )
 
         return cls(
