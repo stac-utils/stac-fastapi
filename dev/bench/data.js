@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1765275715979,
+  "lastUpdate": 1765533470993,
   "repoUrl": "https://github.com/stac-utils/stac-fastapi",
   "entries": {
     "STAC FastAPI Benchmarks": [
@@ -21150,6 +21150,156 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.001844686947874764",
             "extra": "mean: 1.8391444605546097 msec\nrounds: 469"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "vincent.sarago@gmail.com",
+            "name": "vincentsarago",
+            "username": "vincentsarago"
+          },
+          "committer": {
+            "email": "vincent.sarago@gmail.com",
+            "name": "vincentsarago",
+            "username": "vincentsarago"
+          },
+          "distinct": true,
+          "id": "3b24f86bc538b8c1d6b86008845d5541f4f481e8",
+          "message": "refresh lock",
+          "timestamp": "2025-12-12T10:56:11+01:00",
+          "tree_id": "ce1203d6c29c004b9d7833d9d9fb8c076aa258dd",
+          "url": "https://github.com/stac-utils/stac-fastapi/commit/3b24f86bc538b8c1d6b86008845d5541f4f481e8"
+        },
+        "date": 1765533469848,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "Items With Model validation (1)",
+            "value": 749.4658846080488,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00007673892988074915",
+            "extra": "mean: 1.3342835485073132 msec\nrounds: 268"
+          },
+          {
+            "name": "Items With Model validation (10)",
+            "value": 555.8448882599524,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0016398143894561425",
+            "extra": "mean: 1.7990630500002533 msec\nrounds: 260"
+          },
+          {
+            "name": "Items With Model validation (50)",
+            "value": 247.5897193223683,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0031617074965781264",
+            "extra": "mean: 4.038939915344279 msec\nrounds: 189"
+          },
+          {
+            "name": "Items With Model validation (100)",
+            "value": 136.8109320390765,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00454901888482074",
+            "extra": "mean: 7.309357410958766 msec\nrounds: 146"
+          },
+          {
+            "name": "Items With Model validation (200)",
+            "value": 74.30883608160875,
+            "unit": "iter/sec",
+            "range": "stddev: 0.008065502804486688",
+            "extra": "mean: 13.457349794871805 msec\nrounds: 78"
+          },
+          {
+            "name": "Items With Model validation (250)",
+            "value": 61.2888914895897,
+            "unit": "iter/sec",
+            "range": "stddev: 0.008710030037532752",
+            "extra": "mean: 16.316170446154278 msec\nrounds: 65"
+          },
+          {
+            "name": "Items With Model validation (1000)",
+            "value": 15.880843053854312,
+            "unit": "iter/sec",
+            "range": "stddev: 0.016358713940011683",
+            "extra": "mean: 62.96894923077136 msec\nrounds: 13"
+          },
+          {
+            "name": "Items Limit: (1)",
+            "value": 881.7400726114867,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00007094237518122632",
+            "extra": "mean: 1.134121076110625 msec\nrounds: 473"
+          },
+          {
+            "name": "Items Limit: (10)",
+            "value": 519.2334174369493,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0017199226348640836",
+            "extra": "mean: 1.9259161032743632 msec\nrounds: 397"
+          },
+          {
+            "name": "Items Limit: (50)",
+            "value": 217.27625537135145,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00007767623334251524",
+            "extra": "mean: 4.602435725389683 msec\nrounds: 193"
+          },
+          {
+            "name": "Items Limit: (100)",
+            "value": 124.21017246151223,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00009404671630722812",
+            "extra": "mean: 8.050870393162525 msec\nrounds: 117"
+          },
+          {
+            "name": "Items Limit: (200)",
+            "value": 64.82854858584165,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00445020660530552",
+            "extra": "mean: 15.425302923076655 msec\nrounds: 65"
+          },
+          {
+            "name": "Items Limit: (250)",
+            "value": 53.86587517487654,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0035780147583788446",
+            "extra": "mean: 18.564629215685848 msec\nrounds: 51"
+          },
+          {
+            "name": "Items Limit: (1000)",
+            "value": 13.94005526800718,
+            "unit": "iter/sec",
+            "range": "stddev: 0.008333561700199242",
+            "extra": "mean: 71.73572706666582 msec\nrounds: 15"
+          },
+          {
+            "name": "Collection With Model validation",
+            "value": 972.4147907546211,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0012274328451997122",
+            "extra": "mean: 1.0283677392689308 msec\nrounds: 629"
+          },
+          {
+            "name": "Collection",
+            "value": 1022.7471812207181,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00009654147209686336",
+            "extra": "mean: 977.7587446454089 usec\nrounds: 607"
+          },
+          {
+            "name": "Collections With Model validation",
+            "value": 723.1228364794522,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00007631559777317657",
+            "extra": "mean: 1.3828909136219976 msec\nrounds: 301"
+          },
+          {
+            "name": "Collections",
+            "value": 589.407344320594,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0000918382365187312",
+            "extra": "mean: 1.6966195104892925 msec\nrounds: 429"
           }
         ]
       }
