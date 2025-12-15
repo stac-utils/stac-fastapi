@@ -75,8 +75,8 @@ def test_replace_header_value_by_name(
     "scope,expected",
     [
         (
-            {"scheme": "https", "server": ["testserver", 80], "headers": []},
-            ("https", "testserver", 80),
+            {"scheme": "https", "server": ["testserver", 8000], "headers": []},
+            ("https", "testserver", 8000),
         ),
         (
             {
@@ -92,7 +92,7 @@ def test_replace_header_value_by_name(
                 "server": ["testserver", 80],
                 "headers": [(b"host", b"testserver")],
             },
-            ("http", "testserver", None),
+            ("http", "testserver", 80),
         ),
         (
             {
@@ -108,7 +108,7 @@ def test_replace_header_value_by_name(
                 "server": ["testserver", 80],
                 "headers": [(b"forwarded", b"proto=https;host=test:not-an-integer")],
             },
-            ("https", "test", 80),
+            ("https", "test", 443),
         ),
         (
             {
@@ -124,7 +124,7 @@ def test_replace_header_value_by_name(
                 "server": ["testserver", 80],
                 "headers": [(b"x-forwarded-proto", b"https")],
             },
-            ("https", "testserver", 80),
+            ("https", "testserver", 443),
         ),
         (
             {
@@ -191,11 +191,90 @@ def test_replace_header_value_by_name(
                     (
                         b"forwarded",
                         # proto is set, but no host
-                        b'for="85.193.181.55";proto=https,for="85.193.181.55";proto=https',
+                        b'for="85.193.181.55";proto=https',
                     )
                 ],
             },
-            ("https", "testserver", 80),
+            ("https", "testserver", 443),
+        ),
+        (
+            {
+                "scheme": "http",
+                "server": ["testserver", 8080],
+                "headers": [
+                    (b"host", b"example.com:8080"),
+                    (
+                        b"forwarded",
+                        # Forwarded header with proto and host but no port
+                        # Should use default port for https (443), not the original host
+                        # port (8080)
+                        b"proto=https;host=myproxy.com",
+                    ),
+                ],
+            },
+            ("https", "myproxy.com", 443),
+        ),
+        (
+            {
+                "scheme": "http",
+                "server": ["testserver", 8080],
+                "headers": [
+                    (b"host", b"example.com:8080"),
+                    (
+                        b"forwarded",
+                        # Forwarded header with proto and host but no port
+                        # Should use default port for http (80), not the original host
+                        # port (8080)
+                        b"proto=http;host=myproxy.com",
+                    ),
+                ],
+            },
+            ("http", "myproxy.com", 80),
+        ),
+        (
+            {
+                "scheme": "http",
+                "server": ["testserver", 8080],
+                "headers": [
+                    (b"host", b"example.com:8080"),
+                    (b"x-forwarded-proto", b"https"),
+                    (b"x-forwarded-host", b"myproxy.com"),
+                    # No x-forwarded-port header
+                    # Should use default port for https (443), not the original host
+                    # port (8080)
+                ],
+            },
+            ("https", "myproxy.com", 443),
+        ),
+        (
+            {
+                "scheme": "http",
+                "server": ["testserver", 8080],
+                "headers": [
+                    (b"host", b"example.com:8080"),
+                    (b"x-forwarded-proto", b"http"),
+                    (b"x-forwarded-host", b"myproxy.com"),
+                    # No x-forwarded-port header
+                    # Should use default port for http (80), not the original host port
+                    # (8080)
+                ],
+            },
+            ("http", "myproxy.com", 80),
+        ),
+        (
+            {
+                "scheme": "http",
+                "server": ["testserver", 80],
+                "headers": [
+                    (b"host", b"testserver"),
+                    (b"x-forwarded-proto", b"https"),
+                    # No x-forwarded-host (domain stays the same)
+                    # No x-forwarded-port header
+                    # Should use default port for https (443), not the original port (80)
+                    # because the protocol changed
+                ],
+            },
+            ("https", "testserver", 443),
         ),
     ],
 )
