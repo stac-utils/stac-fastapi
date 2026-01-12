@@ -6,6 +6,10 @@
 
 - support for python 3.9 and 3.10
 
+### Fixed 
+
+- default port handling in ProxyHeaderMiddleware for forwarded headers ([#852](https://github.com/stac-utils/stac-fastapi/pull/852))
+
 ## [6.1.4] - 2025-12-12
 
 ### Fixed 
