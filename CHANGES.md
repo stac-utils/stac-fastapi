@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [6.1.5] - 2026-01-12
+
+### Fixed 
+
+- default port handling in ProxyHeaderMiddleware for forwarded headers ([#852](https://github.com/stac-utils/stac-fastapi/pull/852))
+
 ## [6.1.4] - 2025-12-12
 
 ### Fixed 
