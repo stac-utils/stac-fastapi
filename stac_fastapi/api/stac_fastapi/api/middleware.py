@@ -82,20 +82,33 @@ class ProxyHeaderMiddleware:
 
         await self.app(scope, receive, send)
 
-    def _get_forwarded_url_parts(self, scope: Scope) -> Tuple[str, str, str]:
+    def _get_forwarded_url_parts(self, scope: Scope) -> Tuple[str, str, int]:
         proto = scope.get("scheme", "http")
-        header_host = self._get_header_value_by_name(scope, "host")
-        if header_host is None:
-            domain, port = scope["server"]
-        else:
-            header_host_parts = header_host.split(":")
-            if len(header_host_parts) == 2:
-                domain, port = header_host_parts
-            else:
-                domain = header_host_parts[0]
-                port = None
+        # Assume default port based on protocol, can be overridden later
+        port = 443 if proto == "https" else 80
 
-        port_str = None  # make sure it is defined in all paths since we access it later
+        if header_host := self._get_header_value_by_name(scope, "host"):
+            header_host_parts = header_host.split(":")
+            domain = header_host_parts[0]
+            if len(header_host_parts) == 2:
+                with contextlib.suppress(ValueError):
+                    port = int(header_host_parts[1])
+        else:
+            # Not sure when we would not have a host header, but fallback to server info
+            domain, port = scope["server"]
+            port = int(port)
+
+        forwarded_port: Optional[str] = None
+        forwarding_occurred = any(
+            key
+            in [
+                b"forwarded",
+                b"x-forwarded-proto",
+                b"x-forwarded-host",
+                b"x-forwarded-port",
+            ]
+            for key, _ in scope["headers"]
+        )
 
         if forwarded := self._get_header_value_by_name(scope, "forwarded"):
             for proxy in forwarded.split(","):
@@ -103,15 +116,21 @@ class ProxyHeaderMiddleware:
                     proto = proto_expr.group("proto")
                 if host_expr := _HOST_HEADER_REGEX.search(proxy):
                     domain = host_expr.group("host")
-                    port_str = host_expr.group("port")  # None if not present in the match
+                    forwarded_port = host_expr.group("port")  # None if not present
 
         else:
-            domain = self._get_header_value_by_name(scope, "x-forwarded-host", domain)
-            proto = self._get_header_value_by_name(scope, "x-forwarded-proto", proto)
-            port_str = self._get_header_value_by_name(scope, "x-forwarded-port", port)
+            domain = self._get_header_value_by_name(scope, "x-forwarded-host") or domain
+            proto = self._get_header_value_by_name(scope, "x-forwarded-proto") or proto
+            forwarded_port = self._get_header_value_by_name(scope, "x-forwarded-port")
 
-        with contextlib.suppress(ValueError):  # ignore ports that are not valid integers
-            port = int(port_str) if port_str is not None else port
+        if forwarding_occurred and not forwarded_port:
+            # If forwarding occurred but no port was specified, use protocol default
+            forwarded_port = "443" if proto == "https" else "80"
+
+        if forwarded_port:
+            # ignore ports that are not valid integers
+            with contextlib.suppress(ValueError):
+                port = int(forwarded_port)
 
         return (proto, domain, port)
 
