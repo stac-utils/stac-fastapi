@@ -36,7 +36,6 @@ dev = [
     "pytest-asyncio",
     "pytest-benchmark",
     "pre-commit",
-    "bump-my-version",
     "httpx",
     "requests",
 ]
