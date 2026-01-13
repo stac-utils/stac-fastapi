@@ -8,7 +8,7 @@ This is a checklist for releasing a new version of **stac-fastapi**.
 
     Note: You can use [`bump-my-version`](https://github.com/callowayproject/bump-my-version) CLI
     ```
-    uv run bump-my-version bump --new-version 3.1.0
+    uv run --with bump-my-version bump-my-version bump --new-version 3.1.0
     ```
 
 4. Update [CHANGES.md](./CHANGES.md) for the new version. Add the appropriate header, and update the links at the bottom of the file.
