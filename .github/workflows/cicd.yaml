@@ -70,13 +70,9 @@ jobs:
         with:
           version: "0.9.*" 
           enable-cache: true
-    
-      - name: Install dependencies
-        run: |
-          uv sync 
 
       - name: Run Benchmark
-        run: uv run pytest stac_fastapi/api/tests/benchmarks.py --benchmark-only --benchmark-columns 'min, max, mean, median' --benchmark-json output.json
+        run: uv run --frozen pytest stac_fastapi/api/tests/benchmarks.py --benchmark-only --benchmark-columns 'min, max, mean, median' --benchmark-json output.json
 
       - name: Store and benchmark result
         if: github.repository == 'stac-utils/stac-fastapi'
