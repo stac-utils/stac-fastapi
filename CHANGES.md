@@ -2,9 +2,17 @@
 
 ## [Unreleased]
 
+## [6.2.0] - 2026-01-13
+
 ### Removed
 
 - support for python 3.9 and 3.10
+
+## [6.1.5] - 2026-01-12
+
+### Fixed 
+
+- default port handling in ProxyHeaderMiddleware for forwarded headers ([#852](https://github.com/stac-utils/stac-fastapi/pull/852))
 
 ## [6.1.4] - 2025-12-12
 
@@ -24,7 +32,7 @@
 
 ### Fixed
 
-- fixed output type for `api.models.create_request_model` and `api.models.create_get_request_model` methods **backported**
+- fixed output type for `api.models.create_request_model` and `api.models.create_get_request_model` methods
 
 ## [6.1.1] - 2025-11-23
 
@@ -696,7 +704,9 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.4..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.2.0..main>
+[6.2.0]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.5..6.2.0>
+[6.1.5]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.4..6.1.5>
 [6.1.4]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.3..6.1.4>
 [6.1.3]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.2..6.1.3>
 [6.1.2]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.1..6.1.2>
