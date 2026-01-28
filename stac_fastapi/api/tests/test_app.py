@@ -610,3 +610,29 @@ def test_mgmt_endpoints(AsyncTestCoreClient):
                 "version": "0.1.0",
             },
         }
+
+
+def test_client_datetime(TestCoreClientDatetime):
+    """Check valid items with missing datetime."""
+
+    test_app = app.StacApi(
+        settings=ApiSettings(
+            enable_direct_response=False,
+            enable_response_models=False,
+        ),
+        client=TestCoreClientDatetime(),
+    )
+    with TestClient(test_app.app) as client:
+        item = client.get("/collections/test/items/test_item_datetime")
+        assert "datetime" in item.json()["properties"]
+
+    test_app = app.StacApi(
+        settings=ApiSettings(
+            enable_direct_response=False,
+            enable_response_models=True,
+        ),
+        client=TestCoreClientDatetime(),
+    )
+    with TestClient(test_app.app) as client:
+        item = client.get("/collections/test/items/test_item_datetime")
+        assert "datetime" in item.json()["properties"]
