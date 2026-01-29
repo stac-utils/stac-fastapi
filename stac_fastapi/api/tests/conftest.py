@@ -54,6 +54,23 @@ def _item():
 
 
 @pytest.fixture
+def _item_start_end():
+    return Item(
+        id="test_item_datetime",
+        type="Feature",
+        geometry={"type": "Point", "coordinates": [0, 0]},
+        bbox=[-180, -90, 180, 90],
+        properties={
+            "datetime": None,
+            "start_datetime": "2000-01-01T00:00:00Z",
+            "end_datetime": "2000-01-02T00:00:00Z",
+        },
+        links=item_links,
+        assets={},
+    )
+
+
+@pytest.fixture
 def item(_item: Item):
     return _item.model_dump_json()
 
@@ -114,6 +131,71 @@ def TestCoreClient(collection_dict, item_dict):
         ) -> stac.ItemCollection:
             return stac.ItemCollection(
                 type="FeatureCollection", features=[stac.Item(**item_dict)]
+            )
+
+    return CoreClient
+
+
+@pytest.fixture
+def TestCoreClientDatetime(collection_dict, _item_start_end):
+    class CoreClient(core.BaseCoreClient):
+        def post_search(
+            self, search_request: BaseSearchPostRequest, **kwargs
+        ) -> stac.ItemCollection:
+            return stac.ItemCollection(
+                type="FeatureCollection",
+                features=[
+                    _item_start_end.model_dump(),
+                ],
+            )
+
+        def get_search(
+            self,
+            collections: Optional[List[str]] = None,
+            ids: Optional[List[str]] = None,
+            bbox: Optional[List[NumType]] = None,
+            intersects: Optional[str] = None,
+            datetime: Optional[Union[str, datetime]] = None,
+            limit: Optional[int] = 10,
+            **kwargs,
+        ) -> stac.ItemCollection:
+            return stac.ItemCollection(
+                type="FeatureCollection",
+                features=[
+                    _item_start_end.model_dump(),
+                ],
+            )
+
+        def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
+            return stac.Item(**_item_start_end.model_dump())
+
+        def all_collections(self, **kwargs) -> stac.Collections:
+            return stac.Collections(
+                collections=[stac.Collection(**collection_dict)],
+                links=[
+                    {"href": "test", "rel": "root"},
+                    {"href": "test", "rel": "self"},
+                    {"href": "test", "rel": "parent"},
+                ],
+            )
+
+        def get_collection(self, collection_id: str, **kwargs) -> stac.Collection:
+            return stac.Collection(**collection_dict)
+
+        def item_collection(
+            self,
+            collection_id: str,
+            bbox: Optional[List[Union[float, int]]] = None,
+            datetime: Optional[Union[str, datetime]] = None,
+            limit: int = 10,
+            token: str = None,
+            **kwargs,
+        ) -> stac.ItemCollection:
+            return stac.ItemCollection(
+                type="FeatureCollection",
+                features=[
+                    _item_start_end.model_dump(),
+                ],
             )
 
     return CoreClient
