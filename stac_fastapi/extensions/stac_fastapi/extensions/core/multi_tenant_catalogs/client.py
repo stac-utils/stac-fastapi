@@ -1,0 +1,543 @@
+"""Catalogs extension clients."""
+
+import abc
+from typing import Literal, Optional
+
+import attr
+from stac_pydantic.api.collections import Collections
+from stac_pydantic.catalog import Catalog
+from stac_pydantic.collection import Collection
+from stac_pydantic.item import Item
+from stac_pydantic.item_collection import ItemCollection
+
+from .types import Catalogs, Children
+
+
+@attr.s
+class AsyncBaseCatalogsClient(abc.ABC):
+    """Defines an async pattern for implementing the STAC catalogs extension."""
+
+    @abc.abstractmethod
+    async def get_catalogs(
+        self,
+        limit: Optional[int] = None,
+        token: Optional[str] = None,
+        **kwargs,
+    ) -> Catalogs:
+        """Get all catalogs with pagination support.
+
+        Args:
+            limit: The maximum number of catalogs to return.
+            token: Pagination token for the next page of results.
+
+        Returns:
+            Catalogs object containing catalogs and pagination links.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def create_catalog(self, catalog: Catalog, **kwargs) -> Catalog:
+        """Create a new catalog.
+
+        Args:
+            catalog: The catalog to create.
+
+        Returns:
+            The created catalog.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_catalog(self, catalog_id: str, **kwargs) -> Catalog:
+        """Get a specific catalog by ID.
+
+        Args:
+            catalog_id: The ID of the catalog to retrieve.
+
+        Returns:
+            The requested catalog.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def update_catalog(
+        self, catalog_id: str, catalog: Catalog, **kwargs
+    ) -> Catalog:
+        """Update an existing catalog.
+
+        Args:
+            catalog_id: The ID of the catalog to update.
+            catalog: The updated catalog data.
+
+        Returns:
+            The updated catalog.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def delete_catalog(self, catalog_id: str, **kwargs) -> None:
+        """Delete a catalog.
+
+        Args:
+            catalog_id: The ID of the catalog to delete.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_catalog_collections(
+        self, catalog_id: str, **kwargs
+    ) -> Collections:
+        """Get collections linked from a specific catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+
+        Returns:
+            Collections object containing collections linked from the catalog.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_sub_catalogs(
+        self,
+        catalog_id: str,
+        limit: Optional[int] = None,
+        token: Optional[str] = None,
+        **kwargs,
+    ) -> Catalogs:
+        """Get all sub-catalogs of a specific catalog with pagination support.
+
+        Args:
+            catalog_id: The ID of the parent catalog.
+            limit: Maximum number of results to return.
+            token: Pagination token for cursor-based pagination.
+
+        Returns:
+            A Catalogs response containing sub-catalogs with pagination links.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def create_sub_catalog(
+        self, catalog_id: str, catalog: Catalog, **kwargs
+    ) -> Catalog:
+        """Create a new catalog or link an existing catalog as a sub-catalog.
+
+        Supports two modes:
+        - Mode A (Creation): Full Catalog JSON body with id that doesn't exist → creates new catalog
+        - Mode B (Linking): Minimal body with just id of existing catalog → links as sub-catalog
+
+        Args:
+            catalog_id: The ID of the parent catalog.
+            catalog: The catalog to create or link.
+
+        Returns:
+            The created or linked catalog.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def create_catalog_collection(
+        self, catalog_id: str, collection: Collection, **kwargs
+    ) -> Collection:
+        """Create a new collection or link an existing collection to a specific catalog.
+
+        Supports two modes:
+        - Mode A (Creation): Full Collection JSON body with id that doesn't exist → creates new collection
+        - Mode B (Linking): Minimal body with just id of existing collection → links to catalog
+
+        Args:
+            catalog_id: The ID of the catalog to link the collection to.
+            collection: The collection to create or link.
+
+        Returns:
+            The created or linked collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_catalog_collection(
+        self, catalog_id: str, collection_id: str, **kwargs
+    ) -> Collection:
+        """Get a specific collection from a catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+            collection_id: The ID of the collection.
+
+        Returns:
+            The requested collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def unlink_catalog_collection(
+        self, catalog_id: str, collection_id: str, **kwargs
+    ) -> None:
+        """Unlink a collection from a catalog.
+
+        Removes the link between the catalog and collection.
+        The Collection data is NOT deleted.
+
+        Args:
+            catalog_id: The ID of the catalog.
+            collection_id: The ID of the collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_catalog_collection_items(
+        self,
+        catalog_id: str,
+        collection_id: str,
+        **kwargs,
+    ) -> ItemCollection:
+        """Get items from a collection in a catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+            collection_id: The ID of the collection.
+
+        Returns:
+            ItemCollection containing items from the collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_catalog_collection_item(
+        self, catalog_id: str, collection_id: str, item_id: str, **kwargs
+    ) -> Item:
+        """Get a specific item from a collection in a catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+            collection_id: The ID of the collection.
+            item_id: The ID of the item.
+
+        Returns:
+            The requested item.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_catalog_children(
+        self,
+        catalog_id: str,
+        limit: Optional[int] = None,
+        token: Optional[str] = None,
+        type: Optional[Literal["Catalog", "Collection"]] = None,
+        **kwargs,
+    ) -> Children:
+        """Get all children (Catalogs and Collections) of a specific catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+            limit: Maximum number of results to return.
+            token: Pagination token.
+            type: Filter by resource type (Catalog or Collection).
+
+        Returns:
+            Dictionary containing children and pagination links.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_catalog_conformance(self, catalog_id: str, **kwargs) -> dict:
+        """Get conformance classes specific to this sub-catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+
+        Returns:
+            Dictionary containing conformance classes.
+        """
+        ...
+
+    @abc.abstractmethod
+    async def get_catalog_queryables(self, catalog_id: str, **kwargs) -> dict:
+        """Get queryable fields available for filtering in this sub-catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+
+        Returns:
+            Dictionary containing queryable fields (Filter Extension).
+        """
+        ...
+
+    @abc.abstractmethod
+    async def unlink_sub_catalog(
+        self, catalog_id: str, sub_catalog_id: str, **kwargs
+    ) -> None:
+        """Unlink a sub-catalog from its parent.
+
+        Args:
+            catalog_id: The ID of the parent catalog.
+            sub_catalog_id: The ID of the sub-catalog to unlink.
+        """
+        ...
+
+
+@attr.s
+class BaseCatalogsClient(abc.ABC):
+    """Defines a synchronous pattern for implementing the STAC catalogs extension."""
+
+    @abc.abstractmethod
+    def get_catalogs(
+        self,
+        limit: Optional[int] = None,
+        token: Optional[str] = None,
+        **kwargs,
+    ) -> Catalogs:
+        """Get all catalogs with pagination support.
+
+        Args:
+            limit: The maximum number of catalogs to return.
+            token: Pagination token for the next page of results.
+
+        Returns:
+            Catalogs object containing catalogs and pagination links.
+        """
+        ...
+
+    @abc.abstractmethod
+    def create_catalog(self, catalog: Catalog, **kwargs) -> Catalog:
+        """Create a new catalog.
+
+        Args:
+            catalog: The catalog to create.
+
+        Returns:
+            The created catalog.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_catalog(self, catalog_id: str, **kwargs) -> Catalog:
+        """Get a specific catalog by ID.
+
+        Args:
+            catalog_id: The ID of the catalog to retrieve.
+
+        Returns:
+            The requested catalog.
+        """
+        ...
+
+    @abc.abstractmethod
+    def update_catalog(
+        self, catalog_id: str, catalog: Catalog, **kwargs
+    ) -> Catalog:
+        """Update an existing catalog.
+
+        Args:
+            catalog_id: The ID of the catalog to update.
+            catalog: The updated catalog data.
+
+        Returns:
+            The updated catalog.
+        """
+        ...
+
+    @abc.abstractmethod
+    def delete_catalog(self, catalog_id: str, **kwargs) -> None:
+        """Delete a catalog.
+
+        Args:
+            catalog_id: The ID of the catalog to delete.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_catalog_collections(
+        self, catalog_id: str, **kwargs
+    ) -> Collections:
+        """Get collections linked from a specific catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+
+        Returns:
+            Collections object containing collections linked from the catalog.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_sub_catalogs(
+        self,
+        catalog_id: str,
+        limit: Optional[int] = None,
+        token: Optional[str] = None,
+        **kwargs,
+    ) -> Catalogs:
+        """Get all sub-catalogs of a specific catalog with pagination support.
+
+        Args:
+            catalog_id: The ID of the parent catalog.
+            limit: Maximum number of results to return.
+            token: Pagination token for cursor-based pagination.
+
+        Returns:
+            A Catalogs response containing sub-catalogs with pagination links.
+        """
+        ...
+
+    @abc.abstractmethod
+    def create_sub_catalog(
+        self, catalog_id: str, catalog: Catalog, **kwargs
+    ) -> Catalog:
+        """Create a new catalog or link an existing catalog as a sub-catalog.
+
+        Supports two modes:
+        - Mode A (Creation): Full Catalog JSON body with id that doesn't exist → creates new catalog
+        - Mode B (Linking): Minimal body with just id of existing catalog → links as sub-catalog
+
+        Args:
+            catalog_id: The ID of the parent catalog.
+            catalog: The catalog to create or link.
+
+        Returns:
+            The created or linked catalog.
+        """
+        ...
+
+    @abc.abstractmethod
+    def create_catalog_collection(
+        self, catalog_id: str, collection: Collection, **kwargs
+    ) -> Collection:
+        """Create a new collection or link an existing collection to a specific catalog.
+
+        Supports two modes:
+        - Mode A (Creation): Full Collection JSON body with id that doesn't exist → creates new collection
+        - Mode B (Linking): Minimal body with just id of existing collection → links to catalog
+
+        Args:
+            catalog_id: The ID of the catalog to link the collection to.
+            collection: The collection to create or link.
+
+        Returns:
+            The created or linked collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_catalog_collection(
+        self, catalog_id: str, collection_id: str, **kwargs
+    ) -> Collection:
+        """Get a specific collection from a catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+            collection_id: The ID of the collection.
+
+        Returns:
+            The requested collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    def unlink_catalog_collection(
+        self, catalog_id: str, collection_id: str, **kwargs
+    ) -> None:
+        """Unlink a collection from a catalog.
+
+        Removes the link between the catalog and collection.
+        The Collection data is NOT deleted.
+
+        Args:
+            catalog_id: The ID of the catalog.
+            collection_id: The ID of the collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_catalog_collection_items(
+        self,
+        catalog_id: str,
+        collection_id: str,
+        **kwargs,
+    ) -> ItemCollection:
+        """Get items from a collection in a catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+            collection_id: The ID of the collection.
+
+        Returns:
+            ItemCollection containing items from the collection.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_catalog_collection_item(
+        self, catalog_id: str, collection_id: str, item_id: str, **kwargs
+    ) -> Item:
+        """Get a specific item from a collection in a catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+            collection_id: The ID of the collection.
+            item_id: The ID of the item.
+
+        Returns:
+            The requested item.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_catalog_children(
+        self,
+        catalog_id: str,
+        limit: Optional[int] = None,
+        token: Optional[str] = None,
+        type: Optional[Literal["Catalog", "Collection"]] = None,
+        **kwargs,
+    ) -> Children:
+        """Get all children (Catalogs and Collections) of a specific catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+            limit: Maximum number of results to return.
+            token: Pagination token.
+            type: Filter by resource type (Catalog or Collection).
+
+        Returns:
+            Dictionary containing children and pagination links.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_catalog_conformance(self, catalog_id: str, **kwargs) -> dict:
+        """Get conformance classes specific to this sub-catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+
+        Returns:
+            Dictionary containing conformance classes.
+        """
+        ...
+
+    @abc.abstractmethod
+    def get_catalog_queryables(self, catalog_id: str, **kwargs) -> dict:
+        """Get queryable fields available for filtering in this sub-catalog.
+
+        Args:
+            catalog_id: The ID of the catalog.
+
+        Returns:
+            Dictionary containing queryable fields (Filter Extension).
+        """
+        ...
+
+    @abc.abstractmethod
+    def unlink_sub_catalog(
+        self, catalog_id: str, sub_catalog_id: str, **kwargs
+    ) -> None:
+        """Unlink a sub-catalog from its parent.
+
+        Args:
+            catalog_id: The ID of the parent catalog.
+            sub_catalog_id: The ID of the sub-catalog to unlink.
+        """
+        ...
