@@ -11,6 +11,7 @@ from stac_pydantic.collection import Collection
 from stac_pydantic.item import Item
 from stac_pydantic.item_collection import ItemCollection
 from starlette.responses import Response
+from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from stac_fastapi.types.extension import ApiExtension
 
@@ -77,7 +78,7 @@ class CatalogsExtension(ApiExtension):
             methods=["POST"],
             response_model=Catalog,
             response_class=self.response_class,
-            status_code=201,
+            status_code=HTTP_201_CREATED,
             summary="Create Catalog",
             description="Create a new STAC catalog.",
             tags=["Catalogs"],
@@ -110,7 +111,7 @@ class CatalogsExtension(ApiExtension):
             endpoint=self.client.delete_catalog,
             methods=["DELETE"],
             response_class=self.response_class,
-            status_code=204,
+            status_code=HTTP_204_NO_CONTENT,
             summary="Delete Catalog",
             description="Delete a catalog.",
             tags=["Catalogs"],
@@ -133,7 +134,7 @@ class CatalogsExtension(ApiExtension):
             methods=["POST"],
             response_model=Collection,
             response_class=self.response_class,
-            status_code=201,
+            status_code=HTTP_201_CREATED,
             summary="Create Catalog Collection",
             description="Create a new collection and link it to a specific catalog.",
             tags=["Catalogs"],
@@ -155,7 +156,7 @@ class CatalogsExtension(ApiExtension):
             endpoint=self.client.unlink_catalog_collection,
             methods=["DELETE"],
             response_class=self.response_class,
-            status_code=204,
+            status_code=HTTP_204_NO_CONTENT,
             summary="Unlink Collection from Catalog",
             description=(
                 "Removes the link between the catalog and collection. "
@@ -203,7 +204,7 @@ class CatalogsExtension(ApiExtension):
             methods=["POST"],
             response_model=Catalog,
             response_class=self.response_class,
-            status_code=201,
+            status_code=HTTP_201_CREATED,
             summary="Create Catalog Sub-Catalog",
             description=(
                 "Create a new catalog and link it as a sub-catalog "
@@ -233,7 +234,7 @@ class CatalogsExtension(ApiExtension):
             summary="Get Catalog Conformance",
             description="Get conformance classes specific to this sub-catalog.",
             tags=["Catalogs"],
-            responses={200: {"description": "Conformance classes for the catalog"}},
+            responses={HTTP_200_OK: {"description": "Conformance classes for the catalog"}},
         )
 
         self.router.add_api_route(
@@ -247,7 +248,7 @@ class CatalogsExtension(ApiExtension):
                 "sub-catalog (Filter Extension)."
             ),
             tags=["Catalogs"],
-            responses={200: {"description": "Queryable fields for the catalog"}},
+            responses={HTTP_200_OK: {"description": "Queryable fields for the catalog"}},
         )
 
         self.router.add_api_route(
@@ -255,7 +256,7 @@ class CatalogsExtension(ApiExtension):
             endpoint=self.client.unlink_sub_catalog,
             methods=["DELETE"],
             response_class=self.response_class,
-            status_code=204,
+            status_code=HTTP_204_NO_CONTENT,
             summary="Unlink Sub-Catalog",
             description=(
                 "Unlink a sub-catalog from its parent. "
