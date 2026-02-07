@@ -1,17 +1,17 @@
 """Catalogs extension."""
 
-from typing import List, Optional, Type
+from typing import List, Type
 
 import attr
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import JSONResponse
-from starlette.responses import Response
-
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.catalog import Catalog
 from stac_pydantic.collection import Collection
 from stac_pydantic.item import Item
 from stac_pydantic.item_collection import ItemCollection
+from starlette.responses import Response
+
 from stac_fastapi.types.extension import ApiExtension
 
 from .client import AsyncBaseCatalogsClient
@@ -155,7 +155,10 @@ class CatalogsExtension(ApiExtension):
             response_class=self.response_class,
             status_code=204,
             summary="Unlink Collection from Catalog",
-            description="Removes the link between the catalog and collection. The Collection data is NOT deleted.",
+            description=(
+                "Removes the link between the catalog and collection. "
+                "The Collection data is NOT deleted."
+            ),
             tags=["Catalogs"],
         )
 
@@ -200,7 +203,10 @@ class CatalogsExtension(ApiExtension):
             response_class=self.response_class,
             status_code=201,
             summary="Create Catalog Sub-Catalog",
-            description="Create a new catalog and link it as a sub-catalog of a specific catalog.",
+            description=(
+                "Create a new catalog and link it as a sub-catalog "
+                "of a specific catalog."
+            ),
             tags=["Catalogs"],
         )
 
@@ -211,7 +217,9 @@ class CatalogsExtension(ApiExtension):
             response_model=Children,
             response_class=self.response_class,
             summary="Get Catalog Children",
-            description="Retrieve all children (Catalogs and Collections) of this catalog.",
+            description=(
+                "Retrieve all children (Catalogs and Collections) " "of this catalog."
+            ),
             tags=["Catalogs"],
         )
 
@@ -231,7 +239,10 @@ class CatalogsExtension(ApiExtension):
             methods=["GET"],
             response_class=self.response_class,
             summary="Get Catalog Queryables",
-            description="Get queryable fields available for filtering in this sub-catalog (Filter Extension).",
+            description=(
+                "Get queryable fields available for filtering in this "
+                "sub-catalog (Filter Extension)."
+            ),
             tags=["Catalogs"],
         )
 
@@ -242,7 +253,10 @@ class CatalogsExtension(ApiExtension):
             response_class=self.response_class,
             status_code=204,
             summary="Unlink Sub-Catalog",
-            description="Unlink a sub-catalog from its parent. Does not delete the sub-catalog.",
+            description=(
+                "Unlink a sub-catalog from its parent. "
+                "Does not delete the sub-catalog."
+            ),
             tags=["Catalogs"],
         )
 
