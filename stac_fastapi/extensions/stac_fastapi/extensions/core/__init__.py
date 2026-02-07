@@ -1,7 +1,6 @@
 """stac_api.extensions.core module."""
 
 from .aggregation import AggregationExtension
-from .multi_tenant_catalogs import CatalogsExtension
 from .collection_search import CollectionSearchExtension, CollectionSearchPostExtension
 from .fields import FieldsExtension
 from .filter import (
@@ -11,6 +10,7 @@ from .filter import (
     SearchFilterExtension,
 )
 from .free_text import FreeTextAdvancedExtension, FreeTextExtension
+from .multi_tenant_catalogs import CatalogsExtension
 from .pagination import (
     OffsetPaginationExtension,
     PaginationExtension,
