@@ -46,7 +46,7 @@ class CatalogsExtension(ApiExtension):
     conformance_classes: List[str] = attr.ib(
         default=attr.Factory(lambda: CATALOGS_CONFORMANCE_CLASSES)
     )
-    router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
+    router: APIRouter = attr.ib(factory=APIRouter)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
 
     def register(self, app: FastAPI, settings=None) -> None:
@@ -234,7 +234,9 @@ class CatalogsExtension(ApiExtension):
             summary="Get Catalog Conformance",
             description="Get conformance classes specific to this sub-catalog.",
             tags=["Catalogs"],
-            responses={HTTP_200_OK: {"description": "Conformance classes for the catalog"}},
+            responses={
+                HTTP_200_OK: {"description": "Conformance classes for the catalog"}
+            },
         )
 
         self.router.add_api_route(
