@@ -98,14 +98,14 @@ class AsyncBaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_sub_catalogs(
+    async def get_catalog_catalogs(
         self,
         catalog_id: str,
         limit: Optional[int] = None,
         token: Optional[str] = None,
         **kwargs,
     ) -> Catalogs:
-        """Get all sub-catalogs of a specific catalog with pagination support.
+        """Get all sub-catalogs of a specific catalog with pagination.
 
         Args:
             catalog_id: The ID of the parent catalog.
@@ -118,7 +118,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def create_sub_catalog(
+    async def create_catalog_catalog(
         self, catalog_id: str, catalog: Catalog, **kwargs
     ) -> Catalog:
         """Create a new catalog or link an existing catalog as a sub-catalog.
@@ -126,6 +126,12 @@ class AsyncBaseCatalogsClient(abc.ABC):
         Supports two modes:
         - Mode A (Creation): Full Catalog JSON body with id that doesn't exist → creates new catalog
         - Mode B (Linking): Minimal body with just id of existing catalog → links as sub-catalog
+
+        Logic:
+        1. Verifies the parent catalog exists.
+        2. If the sub-catalog already exists: Appends the parent ID to its parent_ids
+           (enabling poly-hierarchy - a catalog can have multiple parents).
+        3. If the sub-catalog is new: Creates it with parent_ids initialized to [catalog_id].
 
         Args:
             catalog_id: The ID of the parent catalog.
@@ -363,14 +369,14 @@ class BaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_sub_catalogs(
+    def get_catalog_catalogs(
         self,
         catalog_id: str,
         limit: Optional[int] = None,
         token: Optional[str] = None,
         **kwargs,
     ) -> Catalogs:
-        """Get all sub-catalogs of a specific catalog with pagination support.
+        """Get all sub-catalogs of a specific catalog with pagination.
 
         Args:
             catalog_id: The ID of the parent catalog.
@@ -383,7 +389,7 @@ class BaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def create_sub_catalog(
+    def create_catalog_catalog(
         self, catalog_id: str, catalog: Catalog, **kwargs
     ) -> Catalog:
         """Create a new catalog or link an existing catalog as a sub-catalog.

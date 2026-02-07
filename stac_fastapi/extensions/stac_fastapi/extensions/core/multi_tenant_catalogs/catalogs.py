@@ -3,10 +3,11 @@
 from typing import List, Optional, Type
 
 import attr
-from fastapi import APIRouter, FastAPI, Query
+from fastapi import APIRouter, FastAPI
 from fastapi.responses import JSONResponse
 from starlette.responses import Response
 
+from stac_pydantic.api.collections import Collections
 from stac_pydantic.catalog import Catalog
 from stac_pydantic.collection import Collection
 from stac_pydantic.item import Item
@@ -14,7 +15,7 @@ from stac_pydantic.item_collection import ItemCollection
 from stac_fastapi.types.extension import ApiExtension
 
 from .client import AsyncBaseCatalogsClient
-from .types import Catalogs, Children, Collections
+from .types import Catalogs, Children
 
 CATALOGS_CONFORMANCE_CLASSES = [
     "https://api.stacspec.org/v1.0.0/core",
