@@ -40,7 +40,7 @@ class CatalogsExtension(ApiExtension):
         response_class: Response class for the extension.
     """
 
-    client: AsyncBaseCatalogsClient = attr.ib(default=None)
+    client: AsyncBaseCatalogsClient = attr.ib()
     settings: dict = attr.ib(default=attr.Factory(dict))
     conformance_classes: List[str] = attr.ib(
         default=attr.Factory(lambda: CATALOGS_CONFORMANCE_CLASSES)
@@ -55,6 +55,8 @@ class CatalogsExtension(ApiExtension):
             app: target FastAPI application.
             settings: extension settings.
         """
+        if self.client is None:
+            raise ValueError("CatalogsExtension requires a client to be set")
         self.settings = settings or {}
         self.router = APIRouter()
 
@@ -231,6 +233,7 @@ class CatalogsExtension(ApiExtension):
             summary="Get Catalog Conformance",
             description="Get conformance classes specific to this sub-catalog.",
             tags=["Catalogs"],
+            responses={200: {"description": "Conformance classes for the catalog"}},
         )
 
         self.router.add_api_route(
@@ -244,6 +247,7 @@ class CatalogsExtension(ApiExtension):
                 "sub-catalog (Filter Extension)."
             ),
             tags=["Catalogs"],
+            responses={200: {"description": "Queryable fields for the catalog"}},
         )
 
         self.router.add_api_route(

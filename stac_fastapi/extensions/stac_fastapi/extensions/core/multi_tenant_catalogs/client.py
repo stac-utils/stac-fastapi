@@ -247,7 +247,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
             type: Filter by resource type (Catalog or Collection).
 
         Returns:
-            Dictionary containing children and pagination links.
+            Children object containing children and pagination links.
         """
         ...
 
@@ -398,6 +398,14 @@ class BaseCatalogsClient(abc.ABC):
         - Mode B (Linking): Minimal body with just id of existing catalog
           → links as sub-catalog
 
+        Logic:
+        1. Verifies the parent catalog exists.
+        2. If the sub-catalog already exists: Appends the parent ID to its
+           parent_ids (enabling poly-hierarchy - a catalog can have multiple
+           parents).
+        3. If the sub-catalog is new: Creates it with parent_ids initialized
+           to [catalog_id].
+
         Args:
             catalog_id: The ID of the parent catalog.
             catalog: The catalog to create or link.
@@ -510,7 +518,7 @@ class BaseCatalogsClient(abc.ABC):
             type: Filter by resource type (Catalog or Collection).
 
         Returns:
-            Dictionary containing children and pagination links.
+            Children object containing children and pagination links.
         """
         ...
 
