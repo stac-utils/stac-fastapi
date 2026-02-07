@@ -32,6 +32,7 @@ classifiers = [
 dynamic = ["version"]
 dependencies = [
   "fastapi>=0.109.0",
+  "starlette>=0.51.0",
   "attrs>=23.2.0",
   "pydantic-settings>=2",
   "stac_pydantic>=3.3.0,<4.0",

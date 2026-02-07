@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- fix `CORSMiddleware` signature to align with `starlette>=0.51.0` and pin this minimum requirement ([#879](https://github.com/stac-utils/stac-fastapi/pull/879))
+
 ## [6.2.0] - 2026-01-13
 
 ### Removed

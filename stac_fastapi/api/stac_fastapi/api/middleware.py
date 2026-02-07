@@ -29,6 +29,7 @@ class CORSMiddleware(_CORSMiddleware):
         allow_headers: typing.Sequence[str] = ("Content-Type",),
         allow_credentials: bool = False,
         allow_origin_regex: typing.Optional[str] = None,
+        allow_private_network: bool = False,
         expose_headers: typing.Sequence[str] = (),
         max_age: int = 600,
     ) -> None:
@@ -40,6 +41,7 @@ class CORSMiddleware(_CORSMiddleware):
             allow_headers,
             allow_credentials,
             allow_origin_regex,
+            allow_private_network,
             expose_headers,
             max_age,
         )
