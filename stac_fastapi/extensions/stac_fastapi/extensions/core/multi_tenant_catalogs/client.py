@@ -84,9 +84,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_catalog_collections(
-        self, catalog_id: str, **kwargs
-    ) -> Collections:
+    async def get_catalog_collections(self, catalog_id: str, **kwargs) -> Collections:
         """Get collections linked from a specific catalog.
 
         Args:
@@ -98,7 +96,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def get_catalog_catalogs(
+    async def get_sub_catalogs(
         self,
         catalog_id: str,
         limit: Optional[int] = None,
@@ -118,20 +116,24 @@ class AsyncBaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def create_catalog_catalog(
+    async def create_sub_catalog(
         self, catalog_id: str, catalog: Catalog, **kwargs
     ) -> Catalog:
         """Create a new catalog or link an existing catalog as a sub-catalog.
 
         Supports two modes:
-        - Mode A (Creation): Full Catalog JSON body with id that doesn't exist → creates new catalog
-        - Mode B (Linking): Minimal body with just id of existing catalog → links as sub-catalog
+        - Mode A (Creation): Full Catalog JSON body with id that doesn't exist
+          → creates new catalog
+        - Mode B (Linking): Minimal body with just id of existing catalog
+          → links as sub-catalog
 
         Logic:
         1. Verifies the parent catalog exists.
-        2. If the sub-catalog already exists: Appends the parent ID to its parent_ids
-           (enabling poly-hierarchy - a catalog can have multiple parents).
-        3. If the sub-catalog is new: Creates it with parent_ids initialized to [catalog_id].
+        2. If the sub-catalog already exists: Appends the parent ID to its
+           parent_ids (enabling poly-hierarchy - a catalog can have multiple
+           parents).
+        3. If the sub-catalog is new: Creates it with parent_ids initialized
+           to [catalog_id].
 
         Args:
             catalog_id: The ID of the parent catalog.
@@ -146,11 +148,13 @@ class AsyncBaseCatalogsClient(abc.ABC):
     async def create_catalog_collection(
         self, catalog_id: str, collection: Collection, **kwargs
     ) -> Collection:
-        """Create a new collection or link an existing collection to a specific catalog.
+        """Create a new collection or link an existing collection to catalog.
 
         Supports two modes:
-        - Mode A (Creation): Full Collection JSON body with id that doesn't exist → creates new collection
-        - Mode B (Linking): Minimal body with just id of existing collection → links to catalog
+        - Mode A (Creation): Full Collection JSON body with id that doesn't
+          exist → creates new collection
+        - Mode B (Linking): Minimal body with just id of existing collection
+          → links to catalog
 
         Args:
             catalog_id: The ID of the catalog to link the collection to.
@@ -331,9 +335,7 @@ class BaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def update_catalog(
-        self, catalog_id: str, catalog: Catalog, **kwargs
-    ) -> Catalog:
+    def update_catalog(self, catalog_id: str, catalog: Catalog, **kwargs) -> Catalog:
         """Update an existing catalog.
 
         Args:
@@ -355,9 +357,7 @@ class BaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_catalog_collections(
-        self, catalog_id: str, **kwargs
-    ) -> Collections:
+    def get_catalog_collections(self, catalog_id: str, **kwargs) -> Collections:
         """Get collections linked from a specific catalog.
 
         Args:
@@ -369,7 +369,7 @@ class BaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def get_catalog_catalogs(
+    def get_sub_catalogs(
         self,
         catalog_id: str,
         limit: Optional[int] = None,
@@ -389,14 +389,14 @@ class BaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def create_catalog_catalog(
-        self, catalog_id: str, catalog: Catalog, **kwargs
-    ) -> Catalog:
+    def create_sub_catalog(self, catalog_id: str, catalog: Catalog, **kwargs) -> Catalog:
         """Create a new catalog or link an existing catalog as a sub-catalog.
 
         Supports two modes:
-        - Mode A (Creation): Full Catalog JSON body with id that doesn't exist → creates new catalog
-        - Mode B (Linking): Minimal body with just id of existing catalog → links as sub-catalog
+        - Mode A (Creation): Full Catalog JSON body with id that doesn't exist
+          → creates new catalog
+        - Mode B (Linking): Minimal body with just id of existing catalog
+          → links as sub-catalog
 
         Args:
             catalog_id: The ID of the parent catalog.
@@ -411,11 +411,13 @@ class BaseCatalogsClient(abc.ABC):
     def create_catalog_collection(
         self, catalog_id: str, collection: Collection, **kwargs
     ) -> Collection:
-        """Create a new collection or link an existing collection to a specific catalog.
+        """Create a new collection or link an existing collection to catalog.
 
         Supports two modes:
-        - Mode A (Creation): Full Collection JSON body with id that doesn't exist → creates new collection
-        - Mode B (Linking): Minimal body with just id of existing collection → links to catalog
+        - Mode A (Creation): Full Collection JSON body with id that doesn't
+          exist → creates new collection
+        - Mode B (Linking): Minimal body with just id of existing collection
+          → links to catalog
 
         Args:
             catalog_id: The ID of the catalog to link the collection to.
@@ -537,9 +539,7 @@ class BaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def unlink_sub_catalog(
-        self, catalog_id: str, sub_catalog_id: str, **kwargs
-    ) -> None:
+    def unlink_sub_catalog(self, catalog_id: str, sub_catalog_id: str, **kwargs) -> None:
         """Unlink a sub-catalog from its parent.
 
         Args:
