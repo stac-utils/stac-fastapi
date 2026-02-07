@@ -41,7 +41,7 @@ class CatalogsExtension(ApiExtension):
         response_class: Response class for the extension.
     """
 
-    client: AsyncBaseCatalogsClient = attr.ib()
+    client: AsyncBaseCatalogsClient = attr.ib(default=None)
     settings: dict = attr.ib(default=attr.Factory(dict))
     conformance_classes: List[str] = attr.ib(
         default=attr.Factory(lambda: CATALOGS_CONFORMANCE_CLASSES)
