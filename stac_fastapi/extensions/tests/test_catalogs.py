@@ -218,22 +218,30 @@ class DummyCatalogsClient(BaseCatalogsClient):
     def get_catalog_children(
         self, catalog_id: str, limit: int = None, token: str = None, type: str = None
     ):
+        all_children = [
+            {
+                "id": f"{catalog_id}-child-1",
+                "type": "Catalog",
+                "description": "Child catalog",
+            },
+            {
+                "id": "collection-1",
+                "type": "Collection",
+                "description": "Child collection",
+            },
+        ]
+
+        # Filter by type if provided
+        if type:
+            filtered_children = [child for child in all_children if child["type"] == type]
+        else:
+            filtered_children = all_children
+
         return Children(
-            children=[
-                {
-                    "id": f"{catalog_id}-child-1",
-                    "type": "Catalog",
-                    "description": "Child catalog",
-                },
-                {
-                    "id": "collection-1",
-                    "type": "Collection",
-                    "description": "Child collection",
-                },
-            ],
+            children=filtered_children,
             links=[],
-            numberMatched=2,
-            numberReturned=2,
+            numberMatched=len(filtered_children),
+            numberReturned=len(filtered_children),
         )
 
     def get_catalog_conformance(self, catalog_id: str):
@@ -447,6 +455,10 @@ def test_get_catalog_children_with_type_filter(client: TestClient) -> None:
     assert response.status_code == 200, response.text
     data = response.json()
     assert "children" in data
+    assert len(data["children"]) == 1
+    assert data["children"][0]["type"] == "Catalog"
+    assert data["numberMatched"] == 1
+    assert data["numberReturned"] == 1
 
 
 def test_get_catalog_conformance(client: TestClient) -> None:
