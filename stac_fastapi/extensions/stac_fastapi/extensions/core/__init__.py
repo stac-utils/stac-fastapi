@@ -10,6 +10,7 @@ from .filter import (
     SearchFilterExtension,
 )
 from .free_text import FreeTextAdvancedExtension, FreeTextExtension
+from .multi_tenant_catalogs import CatalogsExtension
 from .pagination import (
     OffsetPaginationExtension,
     PaginationExtension,
@@ -21,6 +22,7 @@ from .transaction import TransactionExtension
 
 __all__ = (
     "AggregationExtension",
+    "CatalogsExtension",
     "FieldsExtension",
     "FilterExtension",
     "FreeTextExtension",
