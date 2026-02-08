@@ -1,6 +1,6 @@
 """Catalogs extension."""
 
-from typing import List, Type
+from typing import Any, Dict, List, Optional, Type
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -49,7 +49,7 @@ class CatalogsExtension(ApiExtension):
     router: APIRouter = attr.ib(factory=APIRouter)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
 
-    def register(self, app: FastAPI, settings=None) -> None:
+    def register(self, app: FastAPI, settings: Optional[Dict[str, Any]] = None) -> None:
         """Register the extension with a FastAPI application.
 
         Args:
