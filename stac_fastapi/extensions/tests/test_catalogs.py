@@ -1,9 +1,8 @@
 """Tests for the Catalogs extension."""
 
-from typing import Iterator, List
+from typing import Iterator
 
 import pytest
-from stac_pydantic.api.collections import Collections
 from stac_pydantic.catalog import Catalog
 from stac_pydantic.collection import Collection
 from stac_pydantic.item import Item
@@ -112,13 +111,21 @@ class DummyCatalogsClient(BaseCatalogsClient):
                     "license": "proprietary",
                     "links": [
                         {"rel": "root", "href": "/", "type": "application/json"},
-                        {"rel": "self", "href": f"/catalogs/{catalog_id}/collections/test-collection", "type": "application/json"},
+                        {
+                            "rel": "self",
+                            "href": f"/catalogs/{catalog_id}/collections/test-collection",
+                            "type": "application/json",
+                        },
                     ],
                 }
             ],
             "links": [
                 {"rel": "root", "href": "/", "type": "application/json"},
-                {"rel": "self", "href": f"/catalogs/{catalog_id}/collections", "type": "application/json"},
+                {
+                    "rel": "self",
+                    "href": f"/catalogs/{catalog_id}/collections",
+                    "type": "application/json",
+                },
             ],
         }
 
@@ -147,9 +154,7 @@ class DummyCatalogsClient(BaseCatalogsClient):
             links=[],
         )
 
-    def create_catalog_collection(
-        self, catalog_id: str, collection: Collection
-    ):
+    def create_catalog_collection(self, catalog_id: str, collection: Collection):
         return Collection(
             type="Collection",
             id=collection.id,
@@ -162,9 +167,7 @@ class DummyCatalogsClient(BaseCatalogsClient):
             links=[],
         )
 
-    def get_catalog_collection(
-        self, catalog_id: str, collection_id: str
-    ):
+    def get_catalog_collection(self, catalog_id: str, collection_id: str):
         return Collection(
             type="Collection",
             id=collection_id,
@@ -177,14 +180,10 @@ class DummyCatalogsClient(BaseCatalogsClient):
             links=[],
         )
 
-    def unlink_catalog_collection(
-        self, catalog_id: str, collection_id: str
-    ):
+    def unlink_catalog_collection(self, catalog_id: str, collection_id: str):
         return None
 
-    def get_catalog_collection_items(
-        self, catalog_id: str, collection_id: str
-    ):
+    def get_catalog_collection_items(self, catalog_id: str, collection_id: str):
         return ItemCollection(
             type="FeatureCollection",
             features=[
@@ -367,9 +366,7 @@ def test_create_catalog_collection(client: TestClient) -> None:
         "license": "proprietary",
         "links": [],
     }
-    response = client.post(
-        "/catalogs/test-catalog-1/collections", json=collection_data
-    )
+    response = client.post("/catalogs/test-catalog-1/collections", json=collection_data)
     assert response.status_code == 201, response.text
     data = response.json()
     assert data["id"] == "new-collection"
@@ -385,17 +382,13 @@ def test_get_catalog_collection(client: TestClient) -> None:
 
 def test_unlink_catalog_collection(client: TestClient) -> None:
     """Test DELETE /catalogs/{catalog_id}/collections/{collection_id} endpoint."""
-    response = client.delete(
-        "/catalogs/test-catalog-1/collections/test-collection"
-    )
+    response = client.delete("/catalogs/test-catalog-1/collections/test-collection")
     assert response.status_code == 204, response.text
 
 
 def test_get_catalog_collection_items(client: TestClient) -> None:
     """Test GET /catalogs/{catalog_id}/collections/{collection_id}/items endpoint."""
-    response = client.get(
-        "/catalogs/test-catalog-1/collections/test-collection/items"
-    )
+    response = client.get("/catalogs/test-catalog-1/collections/test-collection/items")
     assert response.status_code == 200, response.text
     data = response.json()
     assert data["type"] == "FeatureCollection"
@@ -404,7 +397,7 @@ def test_get_catalog_collection_items(client: TestClient) -> None:
 
 
 def test_get_catalog_collection_item(client: TestClient) -> None:
-    """Test GET /catalogs/{catalog_id}/collections/{collection_id}/items/{item_id} endpoint."""
+    """Test GET /catalogs/{catalog_id}/collections/{collection_id}/items/{item_id}."""
     response = client.get(
         "/catalogs/test-catalog-1/collections/test-collection/items/test-item"
     )
