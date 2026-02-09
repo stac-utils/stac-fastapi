@@ -64,7 +64,12 @@ class CatalogsExtension(ApiExtension):
         token: Optional[str] = Query(None, description="Pagination token"),
     ) -> ItemCollection:
         """Get items from a collection in a catalog with search support."""
-        bbox_list = list(str2bbox(bbox)) if bbox else None
+        # Fix 1: Convert Tuple to List explicitly for mypy
+        bbox_list: Optional[List[float]] = None
+        if bbox:
+            bbox_tuple = str2bbox(bbox)
+            if bbox_tuple:
+                bbox_list = list(bbox_tuple)
 
         return await self.client.get_catalog_collection_items(
             catalog_id=catalog_id,
@@ -77,39 +82,36 @@ class CatalogsExtension(ApiExtension):
         )
 
     # --- WRAPPERS ---
+    # Fix 2: Use Request type directly in Depends signature to satisfy mypy strict mode
 
     async def _get_catalogs_wrapper(
         self,
+        request: Request,
         limit: Optional[int] = None,
         token: Optional[str] = None,
-        request: Request = None,
     ) -> Catalogs:
         return await self.client.get_catalogs(limit=limit, token=token, request=request)
 
     async def _create_catalog_wrapper(
-        self, catalog: Catalog, request: Request = None
+        self, catalog: Catalog, request: Request
     ) -> Catalog:
         return await self.client.create_catalog(catalog=catalog, request=request)
 
-    async def _get_catalog_wrapper(
-        self, catalog_id: str, request: Request = None
-    ) -> Catalog:
+    async def _get_catalog_wrapper(self, catalog_id: str, request: Request) -> Catalog:
         return await self.client.get_catalog(catalog_id=catalog_id, request=request)
 
     async def _update_catalog_wrapper(
-        self, catalog_id: str, catalog: Catalog, request: Request = None
+        self, catalog_id: str, catalog: Catalog, request: Request
     ) -> Catalog:
         return await self.client.update_catalog(
             catalog_id=catalog_id, catalog=catalog, request=request
         )
 
-    async def _delete_catalog_wrapper(
-        self, catalog_id: str, request: Request = None
-    ) -> None:
+    async def _delete_catalog_wrapper(self, catalog_id: str, request: Request) -> None:
         return await self.client.delete_catalog(catalog_id=catalog_id, request=request)
 
     async def _get_catalog_collections_wrapper(
-        self, catalog_id: str, request: Request = None
+        self, catalog_id: str, request: Request
     ) -> Collections:
         return await self.client.get_catalog_collections(
             catalog_id=catalog_id, request=request
@@ -118,22 +120,19 @@ class CatalogsExtension(ApiExtension):
     async def _get_sub_catalogs_wrapper(
         self,
         catalog_id: str,
+        request: Request,
         limit: Optional[int] = None,
         token: Optional[str] = None,
-        request: Request = None,
     ) -> Catalogs:
         return await self.client.get_sub_catalogs(
-            catalog_id=catalog_id,
-            limit=limit,
-            token=token,
-            request=request,
+            catalog_id=catalog_id, limit=limit, token=token, request=request
         )
 
     async def _create_sub_catalog_wrapper(
         self,
         catalog_id: str,
         catalog: Union[Catalog, ObjectUri],
-        request: Request = None,
+        request: Request,
     ) -> Catalog:
         return await self.client.create_sub_catalog(
             catalog_id=catalog_id, catalog=catalog, request=request
@@ -143,44 +142,28 @@ class CatalogsExtension(ApiExtension):
         self,
         catalog_id: str,
         collection: Union[Collection, ObjectUri],
-        request: Request = None,
+        request: Request,
     ) -> Collection:
         return await self.client.create_catalog_collection(
-            catalog_id=catalog_id,
-            collection=collection,
-            request=request,
+            catalog_id=catalog_id, collection=collection, request=request
         )
 
     async def _get_catalog_collection_wrapper(
-        self,
-        catalog_id: str,
-        collection_id: str,
-        request: Request = None,
+        self, catalog_id: str, collection_id: str, request: Request
     ) -> Collection:
         return await self.client.get_catalog_collection(
-            catalog_id=catalog_id,
-            collection_id=collection_id,
-            request=request,
+            catalog_id=catalog_id, collection_id=collection_id, request=request
         )
 
     async def _unlink_catalog_collection_wrapper(
-        self,
-        catalog_id: str,
-        collection_id: str,
-        request: Request = None,
+        self, catalog_id: str, collection_id: str, request: Request
     ) -> None:
         return await self.client.unlink_catalog_collection(
-            catalog_id=catalog_id,
-            collection_id=collection_id,
-            request=request,
+            catalog_id=catalog_id, collection_id=collection_id, request=request
         )
 
     async def _get_catalog_collection_item_wrapper(
-        self,
-        catalog_id: str,
-        collection_id: str,
-        item_id: str,
-        request: Request = None,
+        self, catalog_id: str, collection_id: str, item_id: str, request: Request
     ) -> Item:
         return await self.client.get_catalog_collection_item(
             catalog_id=catalog_id,
@@ -192,10 +175,10 @@ class CatalogsExtension(ApiExtension):
     async def _get_catalog_children_wrapper(
         self,
         catalog_id: str,
+        request: Request,
         limit: Optional[int] = None,
         token: Optional[str] = None,
         type: Optional[Literal["Catalog", "Collection"]] = None,
-        request: Request = None,
     ) -> Children:
         return await self.client.get_catalog_children(
             catalog_id=catalog_id,
@@ -206,29 +189,24 @@ class CatalogsExtension(ApiExtension):
         )
 
     async def _get_catalog_conformance_wrapper(
-        self, catalog_id: str, request: Request = None
+        self, catalog_id: str, request: Request
     ) -> dict:
         return await self.client.get_catalog_conformance(
             catalog_id=catalog_id, request=request
         )
 
     async def _get_catalog_queryables_wrapper(
-        self, catalog_id: str, request: Request = None
+        self, catalog_id: str, request: Request
     ) -> dict:
         return await self.client.get_catalog_queryables(
             catalog_id=catalog_id, request=request
         )
 
     async def _unlink_sub_catalog_wrapper(
-        self,
-        catalog_id: str,
-        sub_catalog_id: str,
-        request: Request = None,
+        self, catalog_id: str, sub_catalog_id: str, request: Request
     ) -> None:
         return await self.client.unlink_sub_catalog(
-            catalog_id=catalog_id,
-            sub_catalog_id=sub_catalog_id,
-            request=request,
+            catalog_id=catalog_id, sub_catalog_id=sub_catalog_id, request=request
         )
 
     def register(self, app: FastAPI, settings: Optional[Dict[str, Any]] = None) -> None:
