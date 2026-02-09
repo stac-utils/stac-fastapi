@@ -13,7 +13,7 @@ from starlette.testclient import TestClient
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.core import CatalogsExtension
 from stac_fastapi.extensions.core.multi_tenant_catalogs.client import (
-    BaseCatalogsClient,
+    AsyncBaseCatalogsClient,
 )
 from stac_fastapi.extensions.core.multi_tenant_catalogs.types import (
     Catalogs,
@@ -46,10 +46,10 @@ class DummyCoreClient(BaseCoreClient):
         raise NotImplementedError
 
 
-class DummyCatalogsClient(BaseCatalogsClient):
+class DummyCatalogsClient(AsyncBaseCatalogsClient):
     """Dummy catalogs client for testing."""
 
-    def get_catalogs(self, limit: int = None, token: str = None):
+    async def get_catalogs(self, limit: int = None, token: str = None, **kwargs):
         return Catalogs(
             catalogs=[
                 Catalog(
@@ -72,7 +72,7 @@ class DummyCatalogsClient(BaseCatalogsClient):
             numberReturned=2,
         )
 
-    def create_catalog(self, catalog: Catalog):
+    async def create_catalog(self, catalog: Catalog, **kwargs):
         return Catalog(
             type="Catalog",
             id=catalog.id,
@@ -81,7 +81,7 @@ class DummyCatalogsClient(BaseCatalogsClient):
             links=[],
         )
 
-    def get_catalog(self, catalog_id: str):
+    async def get_catalog(self, catalog_id: str, **kwargs):
         return Catalog(
             type="Catalog",
             id=catalog_id,
@@ -90,7 +90,7 @@ class DummyCatalogsClient(BaseCatalogsClient):
             links=[],
         )
 
-    def update_catalog(self, catalog_id: str, catalog: Catalog):
+    async def update_catalog(self, catalog_id: str, catalog: Catalog, **kwargs):
         return Catalog(
             type="Catalog",
             id=catalog_id,
@@ -99,10 +99,10 @@ class DummyCatalogsClient(BaseCatalogsClient):
             links=[],
         )
 
-    def delete_catalog(self, catalog_id: str):
+    async def delete_catalog(self, catalog_id: str, **kwargs):
         return None
 
-    def get_catalog_collections(self, catalog_id: str):
+    async def get_catalog_collections(self, catalog_id: str, **kwargs):
         return {
             "collections": [
                 {
@@ -134,7 +134,9 @@ class DummyCatalogsClient(BaseCatalogsClient):
             ],
         }
 
-    def get_sub_catalogs(self, catalog_id: str, limit: int = None, token: str = None):
+    async def get_sub_catalogs(
+        self, catalog_id: str, limit: int = None, token: str = None, **kwargs
+    ):
         return Catalogs(
             catalogs=[
                 Catalog(
@@ -150,7 +152,9 @@ class DummyCatalogsClient(BaseCatalogsClient):
             numberReturned=1,
         )
 
-    def create_sub_catalog(self, catalog_id: str, catalog: Union[Catalog, ObjectUri]):
+    async def create_sub_catalog(
+        self, catalog_id: str, catalog: Union[Catalog, ObjectUri], **kwargs
+    ):
         catalog_id_val = catalog.id
 
         description = None
@@ -167,8 +171,8 @@ class DummyCatalogsClient(BaseCatalogsClient):
             links=[],
         )
 
-    def create_catalog_collection(
-        self, catalog_id: str, collection: Union[Collection, ObjectUri]
+    async def create_catalog_collection(
+        self, catalog_id: str, collection: Union[Collection, ObjectUri], **kwargs
     ):
         collection_id_val = collection.id
 
@@ -190,7 +194,7 @@ class DummyCatalogsClient(BaseCatalogsClient):
             links=[],
         )
 
-    def get_catalog_collection(self, catalog_id: str, collection_id: str):
+    async def get_catalog_collection(self, catalog_id: str, collection_id: str, **kwargs):
         return Collection(
             type="Collection",
             id=collection_id,
@@ -203,7 +207,9 @@ class DummyCatalogsClient(BaseCatalogsClient):
             links=[],
         )
 
-    def unlink_catalog_collection(self, catalog_id: str, collection_id: str):
+    async def unlink_catalog_collection(
+        self, catalog_id: str, collection_id: str, **kwargs
+    ):
         return None
 
     async def get_catalog_collection_items(
@@ -247,8 +253,8 @@ class DummyCatalogsClient(BaseCatalogsClient):
             links=[],
         )
 
-    def get_catalog_collection_item(
-        self, catalog_id: str, collection_id: str, item_id: str
+    async def get_catalog_collection_item(
+        self, catalog_id: str, collection_id: str, item_id: str, **kwargs
     ):
         return Item(
             type="Feature",
@@ -261,9 +267,14 @@ class DummyCatalogsClient(BaseCatalogsClient):
             assets={},
         )
 
-    def get_catalog_children(
-        self, catalog_id: str, limit: int = None, token: str = None, type: str = None
-    ):
+    async def get_catalog_children(
+        self,
+        catalog_id: str,
+        limit: int = None,
+        token: str = None,
+        type: str = None,
+        **kwargs,
+    ) -> Children:
         all_children = [
             {
                 "id": f"{catalog_id}-child-1",
@@ -290,7 +301,7 @@ class DummyCatalogsClient(BaseCatalogsClient):
             numberReturned=len(filtered_children),
         )
 
-    def get_catalog_conformance(self, catalog_id: str):
+    async def get_catalog_conformance(self, catalog_id: str, **kwargs):
         return {
             "conformsTo": [
                 "https://api.stacspec.org/v1.0.0/core",
@@ -298,7 +309,7 @@ class DummyCatalogsClient(BaseCatalogsClient):
             ]
         }
 
-    def get_catalog_queryables(self, catalog_id: str):
+    async def get_catalog_queryables(self, catalog_id: str, **kwargs):
         return {
             "queryables": [
                 {"name": "datetime", "type": "string"},
@@ -306,7 +317,7 @@ class DummyCatalogsClient(BaseCatalogsClient):
             ]
         }
 
-    def unlink_sub_catalog(self, catalog_id: str, sub_catalog_id: str):
+    async def unlink_sub_catalog(self, catalog_id: str, sub_catalog_id: str, **kwargs):
         return None
 
 

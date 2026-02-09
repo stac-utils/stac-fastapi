@@ -1,6 +1,6 @@
 """Catalogs extension."""
 
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Literal, Optional, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI, Query, Request
@@ -17,7 +17,7 @@ from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import str2bbox
 
 from .client import AsyncBaseCatalogsClient
-from .types import Catalogs, Children
+from .types import Catalogs, Children, ObjectUri
 
 CATALOGS_CONFORMANCE_CLASSES = [
     "https://api.stacspec.org/v1.0.0/core",
@@ -63,25 +63,7 @@ class CatalogsExtension(ApiExtension):
         limit: int = Query(10, ge=1, le=10000, description="Maximum number of items"),
         token: Optional[str] = Query(None, description="Pagination token"),
     ) -> ItemCollection:
-        """Get items from a collection in a catalog with search support.
-
-        Parses HTTP query parameters and delegates to the client for database queries.
-
-        Args:
-            catalog_id: The ID of the catalog.
-            collection_id: The ID of the collection.
-            request: The HTTP request object.
-            bbox: Bounding box string.
-            datetime: Datetime filter string.
-            limit: Maximum number of items to return.
-            token: Pagination token.
-
-        Returns:
-            ItemCollection containing items from the collection.
-
-        Raises:
-            HTTPException: If bbox format is invalid.
-        """
+        """Get items from a collection in a catalog with search support."""
         bbox_list = str2bbox(bbox) if bbox else None
 
         return await self.client.get_catalog_collection_items(
@@ -92,6 +74,134 @@ class CatalogsExtension(ApiExtension):
             limit=limit,
             token=token,
             request=request,
+        )
+
+    # --- WRAPPERS ---
+
+    async def _get_catalogs_wrapper(
+        self,
+        limit: Optional[int] = None,
+        token: Optional[str] = None,
+        request: Request = None,
+    ) -> Catalogs:
+        return await self.client.get_catalogs(limit=limit, token=token, request=request)
+
+    async def _create_catalog_wrapper(
+        self, catalog: Catalog, request: Request = None
+    ) -> Catalog:
+        return await self.client.create_catalog(catalog=catalog, request=request)
+
+    async def _get_catalog_wrapper(
+        self, catalog_id: str, request: Request = None
+    ) -> Catalog:
+        return await self.client.get_catalog(catalog_id=catalog_id, request=request)
+
+    async def _update_catalog_wrapper(
+        self, catalog_id: str, catalog: Catalog, request: Request = None
+    ) -> Catalog:
+        return await self.client.update_catalog(
+            catalog_id=catalog_id, catalog=catalog, request=request
+        )
+
+    async def _delete_catalog_wrapper(
+        self, catalog_id: str, request: Request = None
+    ) -> None:
+        return await self.client.delete_catalog(catalog_id=catalog_id, request=request)
+
+    async def _get_catalog_collections_wrapper(
+        self, catalog_id: str, request: Request = None
+    ) -> Collections:
+        return await self.client.get_catalog_collections(
+            catalog_id=catalog_id, request=request
+        )
+
+    async def _get_sub_catalogs_wrapper(
+        self,
+        catalog_id: str,
+        limit: Optional[int] = None,
+        token: Optional[str] = None,
+        request: Request = None,
+    ) -> Catalogs:
+        return await self.client.get_sub_catalogs(
+            catalog_id=catalog_id, limit=limit, token=token, request=request
+        )
+
+    async def _create_sub_catalog_wrapper(
+        self, catalog_id: str, catalog: Union[Catalog, ObjectUri], request: Request = None
+    ) -> Catalog:
+        return await self.client.create_sub_catalog(
+            catalog_id=catalog_id, catalog=catalog, request=request
+        )
+
+    async def _create_catalog_collection_wrapper(
+        self,
+        catalog_id: str,
+        collection: Union[Collection, ObjectUri],
+        request: Request = None,
+    ) -> Collection:
+        return await self.client.create_catalog_collection(
+            catalog_id=catalog_id, collection=collection, request=request
+        )
+
+    async def _get_catalog_collection_wrapper(
+        self, catalog_id: str, collection_id: str, request: Request = None
+    ) -> Collection:
+        return await self.client.get_catalog_collection(
+            catalog_id=catalog_id, collection_id=collection_id, request=request
+        )
+
+    async def _unlink_catalog_collection_wrapper(
+        self, catalog_id: str, collection_id: str, request: Request = None
+    ) -> None:
+        return await self.client.unlink_catalog_collection(
+            catalog_id=catalog_id, collection_id=collection_id, request=request
+        )
+
+    async def _get_catalog_collection_item_wrapper(
+        self, catalog_id: str, collection_id: str, item_id: str, request: Request = None
+    ) -> Item:
+        return await self.client.get_catalog_collection_item(
+            catalog_id=catalog_id,
+            collection_id=collection_id,
+            item_id=item_id,
+            request=request,
+        )
+
+    async def _get_catalog_children_wrapper(
+        self,
+        catalog_id: str,
+        limit: Optional[int] = None,
+        token: Optional[str] = None,
+        type: Optional[Literal["Catalog", "Collection"]] = None,
+        request: Request = None,
+    ) -> Children:
+        return await self.client.get_catalog_children(
+            catalog_id=catalog_id,
+            limit=limit,
+            token=token,
+            type=type,
+            request=request,
+        )
+
+    async def _get_catalog_conformance_wrapper(
+        self, catalog_id: str, request: Request = None
+    ) -> dict:
+        return await self.client.get_catalog_conformance(
+            catalog_id=catalog_id, request=request
+        )
+
+    async def _get_catalog_queryables_wrapper(
+        self, catalog_id: str, request: Request = None
+    ) -> dict:
+        return await self.client.get_catalog_queryables(
+            catalog_id=catalog_id, request=request
+        )
+
+    async def _unlink_sub_catalog_wrapper(
+        self, catalog_id: str, sub_catalog_id: str, request: Request = None
+    ) -> None:
+        return await self.client.unlink_sub_catalog(
+            catalog_id=catalog_id, sub_catalog_id=sub_catalog_id, request=request
         )
 
     def register(self, app: FastAPI, settings: Optional[Dict[str, Any]] = None) -> None:
@@ -108,7 +218,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs",
-            endpoint=self.client.get_catalogs,
+            endpoint=self._get_catalogs_wrapper,
             methods=["GET"],
             response_model=Catalogs,
             response_class=self.response_class,
@@ -119,7 +229,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs",
-            endpoint=self.client.create_catalog,
+            endpoint=self._create_catalog_wrapper,
             methods=["POST"],
             response_model=Catalog,
             response_class=self.response_class,
@@ -131,7 +241,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}",
-            endpoint=self.client.get_catalog,
+            endpoint=self._get_catalog_wrapper,
             methods=["GET"],
             response_model=Catalog,
             response_class=self.response_class,
@@ -142,7 +252,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}",
-            endpoint=self.client.update_catalog,
+            endpoint=self._update_catalog_wrapper,
             methods=["PUT"],
             response_model=Catalog,
             response_class=self.response_class,
@@ -153,7 +263,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}",
-            endpoint=self.client.delete_catalog,
+            endpoint=self._delete_catalog_wrapper,
             methods=["DELETE"],
             response_class=self.response_class,
             status_code=HTTP_204_NO_CONTENT,
@@ -164,7 +274,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}/collections",
-            endpoint=self.client.get_catalog_collections,
+            endpoint=self._get_catalog_collections_wrapper,
             methods=["GET"],
             response_model=Collections,
             response_class=self.response_class,
@@ -175,7 +285,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}/collections",
-            endpoint=self.client.create_catalog_collection,
+            endpoint=self._create_catalog_collection_wrapper,
             methods=["POST"],
             response_model=Collection,
             response_class=self.response_class,
@@ -187,7 +297,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}/collections/{collection_id}",
-            endpoint=self.client.get_catalog_collection,
+            endpoint=self._get_catalog_collection_wrapper,
             methods=["GET"],
             response_model=Collection,
             response_class=self.response_class,
@@ -198,7 +308,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}/collections/{collection_id}",
-            endpoint=self.client.unlink_catalog_collection,
+            endpoint=self._unlink_catalog_collection_wrapper,
             methods=["DELETE"],
             response_class=self.response_class,
             status_code=HTTP_204_NO_CONTENT,
@@ -223,7 +333,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}/collections/{collection_id}/items/{item_id}",
-            endpoint=self.client.get_catalog_collection_item,
+            endpoint=self._get_catalog_collection_item_wrapper,
             methods=["GET"],
             response_model=Item,
             response_class=self.response_class,
@@ -234,7 +344,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}/catalogs",
-            endpoint=self.client.get_sub_catalogs,
+            endpoint=self._get_sub_catalogs_wrapper,
             methods=["GET"],
             response_model=Catalogs,
             response_class=self.response_class,
@@ -245,7 +355,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}/catalogs",
-            endpoint=self.client.create_sub_catalog,
+            endpoint=self._create_sub_catalog_wrapper,
             methods=["POST"],
             response_model=Catalog,
             response_class=self.response_class,
@@ -260,7 +370,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}/children",
-            endpoint=self.client.get_catalog_children,
+            endpoint=self._get_catalog_children_wrapper,
             methods=["GET"],
             response_model=Children,
             response_class=self.response_class,
@@ -273,7 +383,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}/conformance",
-            endpoint=self.client.get_catalog_conformance,
+            endpoint=self._get_catalog_conformance_wrapper,
             methods=["GET"],
             response_class=self.response_class,
             summary="Get Catalog Conformance",
@@ -286,7 +396,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}/queryables",
-            endpoint=self.client.get_catalog_queryables,
+            endpoint=self._get_catalog_queryables_wrapper,
             methods=["GET"],
             response_class=self.response_class,
             summary="Get Catalog Queryables",
@@ -300,7 +410,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}/catalogs/{sub_catalog_id}",
-            endpoint=self.client.unlink_sub_catalog,
+            endpoint=self._unlink_sub_catalog_wrapper,
             methods=["DELETE"],
             response_class=self.response_class,
             status_code=HTTP_204_NO_CONTENT,
