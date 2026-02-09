@@ -1,7 +1,8 @@
 """Catalogs extension clients."""
 
 import abc
-from typing import Literal, Optional
+from datetime import datetime
+from typing import List, Literal, Optional, Union
 
 import attr
 from stac_pydantic.api.collections import Collections
@@ -10,7 +11,7 @@ from stac_pydantic.collection import Collection
 from stac_pydantic.item import Item
 from stac_pydantic.item_collection import ItemCollection
 
-from .types import Catalogs, Children
+from .types import Catalogs, Children, ObjectUri
 
 
 @attr.s
@@ -117,7 +118,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
 
     @abc.abstractmethod
     async def create_sub_catalog(
-        self, catalog_id: str, catalog: Catalog, **kwargs
+        self, catalog_id: str, catalog: Union[Catalog, ObjectUri], **kwargs
     ) -> Catalog:
         """Create a new catalog or link an existing catalog as a sub-catalog.
 
@@ -137,7 +138,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
 
         Args:
             catalog_id: The ID of the parent catalog.
-            catalog: The catalog to create or link.
+            catalog: The catalog to create or link (full Catalog or ObjectUri with id).
 
         Returns:
             The created or linked catalog.
@@ -146,7 +147,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
 
     @abc.abstractmethod
     async def create_catalog_collection(
-        self, catalog_id: str, collection: Collection, **kwargs
+        self, catalog_id: str, collection: Union[Collection, ObjectUri], **kwargs
     ) -> Collection:
         """Create a new collection or link an existing collection to catalog.
 
@@ -158,7 +159,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
 
         Args:
             catalog_id: The ID of the catalog to link the collection to.
-            collection: The collection to create or link.
+            collection: Create or link (full Collection or ObjectUri with id).
 
         Returns:
             The created or linked collection.
@@ -200,13 +201,24 @@ class AsyncBaseCatalogsClient(abc.ABC):
         self,
         catalog_id: str,
         collection_id: str,
+        bbox: Optional[List[float]] = None,
+        datetime: Optional[Union[str, datetime]] = None,
+        limit: Optional[int] = 10,
+        token: Optional[str] = None,
         **kwargs,
     ) -> ItemCollection:
-        """Get items from a collection in a catalog.
+        """Get items from a collection in a catalog with search support.
+
+        Multiple filters are combined using AND logic. If both bbox and datetime
+        are provided, only items matching both criteria are returned.
 
         Args:
             catalog_id: The ID of the catalog.
             collection_id: The ID of the collection.
+            bbox: Bounding box to filter items [minx, miny, maxx, maxy].
+            datetime: Datetime or datetime range to filter items.
+            limit: Maximum number of items to return (default 10).
+            token: Pagination token for cursor-based pagination.
 
         Returns:
             ItemCollection containing items from the collection.
@@ -389,7 +401,9 @@ class BaseCatalogsClient(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def create_sub_catalog(self, catalog_id: str, catalog: Catalog, **kwargs) -> Catalog:
+    def create_sub_catalog(
+        self, catalog_id: str, catalog: Union[Catalog, ObjectUri], **kwargs
+    ) -> Catalog:
         """Create a new catalog or link an existing catalog as a sub-catalog.
 
         Supports two modes:
@@ -408,7 +422,7 @@ class BaseCatalogsClient(abc.ABC):
 
         Args:
             catalog_id: The ID of the parent catalog.
-            catalog: The catalog to create or link.
+            catalog: The catalog to create or link (full Catalog or ObjectUri with id).
 
         Returns:
             The created or linked catalog.
@@ -417,7 +431,7 @@ class BaseCatalogsClient(abc.ABC):
 
     @abc.abstractmethod
     def create_catalog_collection(
-        self, catalog_id: str, collection: Collection, **kwargs
+        self, catalog_id: str, collection: Union[Collection, ObjectUri], **kwargs
     ) -> Collection:
         """Create a new collection or link an existing collection to catalog.
 
@@ -429,7 +443,7 @@ class BaseCatalogsClient(abc.ABC):
 
         Args:
             catalog_id: The ID of the catalog to link the collection to.
-            collection: The collection to create or link.
+            collection: Create or link (full Collection or ObjectUri with id).
 
         Returns:
             The created or linked collection.
@@ -471,13 +485,24 @@ class BaseCatalogsClient(abc.ABC):
         self,
         catalog_id: str,
         collection_id: str,
+        bbox: Optional[List[float]] = None,
+        datetime: Optional[Union[str, datetime]] = None,
+        limit: Optional[int] = 10,
+        token: Optional[str] = None,
         **kwargs,
     ) -> ItemCollection:
-        """Get items from a collection in a catalog.
+        """Get items from a collection in a catalog with search support.
+
+        Multiple filters are combined using AND logic. If both bbox and datetime
+        are provided, only items matching both criteria are returned.
 
         Args:
             catalog_id: The ID of the catalog.
             collection_id: The ID of the collection.
+            bbox: Bounding box to filter items [minx, miny, maxx, maxy].
+            datetime: Datetime or datetime range to filter items.
+            limit: Maximum number of items to return (default 10).
+            token: Pagination token for cursor-based pagination.
 
         Returns:
             ItemCollection containing items from the collection.

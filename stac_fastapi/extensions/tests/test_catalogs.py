@@ -1,6 +1,7 @@
 """Tests for the Catalogs extension."""
 
-from typing import Iterator
+from datetime import datetime
+from typing import Iterator, List, Optional, Union
 
 import pytest
 from stac_pydantic.catalog import Catalog
@@ -14,7 +15,11 @@ from stac_fastapi.extensions.core import CatalogsExtension
 from stac_fastapi.extensions.core.multi_tenant_catalogs.client import (
     BaseCatalogsClient,
 )
-from stac_fastapi.extensions.core.multi_tenant_catalogs.types import Catalogs, Children
+from stac_fastapi.extensions.core.multi_tenant_catalogs.types import (
+    Catalogs,
+    Children,
+    ObjectUri,
+)
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseCoreClient
 
@@ -145,20 +150,38 @@ class DummyCatalogsClient(BaseCatalogsClient):
             numberReturned=1,
         )
 
-    def create_sub_catalog(self, catalog_id: str, catalog: Catalog):
+    def create_sub_catalog(self, catalog_id: str, catalog: Union[Catalog, ObjectUri]):
+        catalog_id_val = catalog.id
+
+        description = None
+        if isinstance(catalog, Catalog):
+            description = catalog.description or f"Sub-catalog of {catalog_id}"
+        else:
+            description = f"Sub-catalog of {catalog_id}"
+
         return Catalog(
             type="Catalog",
-            id=catalog.id,
-            description=catalog.description or f"Sub-catalog of {catalog_id}",
+            id=catalog_id_val,
+            description=description,
             stac_version="1.0.0",
             links=[],
         )
 
-    def create_catalog_collection(self, catalog_id: str, collection: Collection):
+    def create_catalog_collection(
+        self, catalog_id: str, collection: Union[Collection, ObjectUri]
+    ):
+        collection_id_val = collection.id
+
+        description = None
+        if isinstance(collection, Collection):
+            description = collection.description or f"Collection in {catalog_id}"
+        else:
+            description = f"Collection in {catalog_id}"
+
         return Collection(
             type="Collection",
-            id=collection.id,
-            description=collection.description or f"Collection in {catalog_id}",
+            id=collection_id_val,
+            description=description,
             extent={
                 "spatial": {"bbox": [[-180, -90, 180, 90]]},
                 "temporal": {"interval": [[None, None]]},
@@ -183,21 +206,43 @@ class DummyCatalogsClient(BaseCatalogsClient):
     def unlink_catalog_collection(self, catalog_id: str, collection_id: str):
         return None
 
-    def get_catalog_collection_items(self, catalog_id: str, collection_id: str):
+    def get_catalog_collection_items(
+        self,
+        catalog_id: str,
+        collection_id: str,
+        bbox: Optional[List[float]] = None,
+        datetime: Optional[Union[str, datetime]] = None,
+        limit: Optional[int] = 10,
+        token: Optional[str] = None,
+    ):
+        features = [
+            Item(
+                type="Feature",
+                id="test-item",
+                geometry={"type": "Point", "coordinates": [0, 0]},
+                bbox=[0, 0, 0, 0],
+                datetime="2024-01-01T00:00:00Z",
+                properties={"datetime": "2024-01-01T00:00:00Z"},
+                links=[],
+                assets={},
+            )
+        ]
+
+        if bbox is not None:
+            if not (bbox[0] <= 0 <= bbox[2] and bbox[1] <= 0 <= bbox[3]):
+                features = []
+
+        if datetime is not None:
+            if isinstance(datetime, str):
+                if "2024-01-01" not in datetime:
+                    features = []
+
+        if limit is not None and len(features) > limit:
+            features = features[:limit]
+
         return ItemCollection(
             type="FeatureCollection",
-            features=[
-                Item(
-                    type="Feature",
-                    id="test-item",
-                    geometry={"type": "Point", "coordinates": [0, 0]},
-                    bbox=[0, 0, 0, 0],
-                    datetime="2024-01-01T00:00:00Z",
-                    properties={"datetime": "2024-01-01T00:00:00Z"},
-                    links=[],
-                    assets={},
-                )
-            ],
+            features=features,
             links=[],
         )
 
@@ -437,6 +482,26 @@ def test_create_sub_catalog(client: TestClient) -> None:
     assert response.status_code == 201, response.text
     data = response.json()
     assert data["id"] == "new-sub-catalog"
+
+
+def test_create_sub_catalog_with_object_uri(client: TestClient) -> None:
+    """Test POST /catalogs/{catalog_id}/catalogs with ObjectUri (Mode B - linking)."""
+    object_uri_data = {"id": "existing-catalog"}
+    response = client.post("/catalogs/test-catalog-1/catalogs", json=object_uri_data)
+    assert response.status_code == 201, response.text
+    data = response.json()
+    assert data["id"] == "existing-catalog"
+    assert data["type"] == "Catalog"
+
+
+def test_create_catalog_collection_with_object_uri(client: TestClient) -> None:
+    """Test POST /catalogs/{catalog_id}/collections with ObjectUri (Mode B - linking)."""
+    object_uri_data = {"id": "existing-collection"}
+    response = client.post("/catalogs/test-catalog-1/collections", json=object_uri_data)
+    assert response.status_code == 201, response.text
+    data = response.json()
+    assert data["id"] == "existing-collection"
+    assert data["type"] == "Collection"
 
 
 def test_get_catalog_children(client: TestClient) -> None:

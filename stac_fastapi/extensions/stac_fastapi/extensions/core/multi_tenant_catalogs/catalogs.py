@@ -207,7 +207,7 @@ class CatalogsExtension(ApiExtension):
             status_code=HTTP_201_CREATED,
             summary="Create Catalog Sub-Catalog",
             description=(
-                "Create a new catalog and link it as a sub-catalog "
+                "Create a new catalog or link an existing catalog as a sub-catalog "
                 "of a specific catalog."
             ),
             tags=["Catalogs"],
@@ -221,7 +221,7 @@ class CatalogsExtension(ApiExtension):
             response_class=self.response_class,
             summary="Get Catalog Children",
             description=(
-                "Retrieve all children (Catalogs and Collections) " "of this catalog."
+                "Retrieve all children (Catalogs and Collections) of this catalog."
             ),
             tags=["Catalogs"],
         )
