@@ -57,11 +57,6 @@ nav:
                 - module: api/stac_fastapi/extensions/core/free_text/index.md
                 - free_text: api/stac_fastapi/extensions/core/free_text/free_text.md
                 - request: api/stac_fastapi/extensions/core/free_text/request.md
-              - multi_tenant_catalogs:
-                - module: api/stac_fastapi/extensions/core/multi_tenant_catalogs/index.md
-                - catalogs: api/stac_fastapi/extensions/core/multi_tenant_catalogs/catalogs.md
-                - client: api/stac_fastapi/extensions/core/multi_tenant_catalogs/client.md
-                - types: api/stac_fastapi/extensions/core/multi_tenant_catalogs/types.md
               - pagination:
                   - module: api/stac_fastapi/extensions/core/pagination/index.md
                   - pagination: api/stac_fastapi/extensions/core/pagination/pagination.md
@@ -79,7 +74,14 @@ nav:
               - transaction: api/stac_fastapi/extensions/core/transaction.md
           - third_party:
               - module: api/stac_fastapi/extensions/third_party/index.md
-              - bulk_transactions: api/stac_fastapi/extensions/third_party/bulk_transactions.md
+              - bulk_transactions:
+                  - module: api/stac_fastapi/extensions/third_party/bulk_transactions/index.md
+                  - bulk_transactions: api/stac_fastapi/extensions/third_party/bulk_transactions/bulk_transactions.md
+              - multi_tenant_catalogs:
+                  - module: api/stac_fastapi/extensions/third_party/multi_tenant_catalogs/index.md
+                  - catalogs: api/stac_fastapi/extensions/third_party/multi_tenant_catalogs/catalogs.md
+                  - client: api/stac_fastapi/extensions/third_party/multi_tenant_catalogs/client.md
+                  - types: api/stac_fastapi/extensions/third_party/multi_tenant_catalogs/types.md
       - stac_fastapi.types:
           - module: api/stac_fastapi/types/index.md
           - config: api/stac_fastapi/types/config.md

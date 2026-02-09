@@ -11,11 +11,11 @@ from stac_pydantic.item_collection import ItemCollection
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.extensions.core import CatalogsExtension
-from stac_fastapi.extensions.core.multi_tenant_catalogs.client import (
+from stac_fastapi.extensions.third_party import CatalogsExtension
+from stac_fastapi.extensions.third_party.multi_tenant_catalogs.client import (
     AsyncBaseCatalogsClient,
 )
-from stac_fastapi.extensions.core.multi_tenant_catalogs.types import (
+from stac_fastapi.extensions.third_party.multi_tenant_catalogs.types import (
     Catalogs,
     Children,
     ObjectUri,

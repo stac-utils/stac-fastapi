@@ -138,3 +138,12 @@ class BulkTransactionExtension(ApiExtension):
             ),
         )
         app.include_router(router, tags=["Bulk Transaction Extension"])
+
+
+__all__ = [
+    "BulkTransactionExtension",
+    "AsyncBaseBulkTransactionsClient",
+    "BaseBulkTransactionsClient",
+    "BulkTransactionMethod",
+    "Items",
+]
