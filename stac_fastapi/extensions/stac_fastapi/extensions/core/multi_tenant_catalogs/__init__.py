@@ -4,7 +4,7 @@ from stac_pydantic.api.collections import Collections
 
 from .catalogs import CATALOGS_CONFORMANCE_CLASSES, CatalogsExtension
 from .client import AsyncBaseCatalogsClient, BaseCatalogsClient
-from .types import Catalogs, Children
+from .types import Catalogs, Children, ObjectUri
 
 __all__ = [
     "CatalogsExtension",
@@ -13,5 +13,6 @@ __all__ = [
     "Catalogs",
     "Collections",
     "Children",
+    "ObjectUri",
     "CATALOGS_CONFORMANCE_CLASSES",
 ]

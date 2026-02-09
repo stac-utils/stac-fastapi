@@ -599,6 +599,17 @@ def test_unlink_sub_catalog(client: TestClient) -> None:
     assert response.status_code == 204, response.text
 
 
+def test_get_catalog_collection_items_invalid_bbox_string(client: TestClient) -> None:
+    """Test that a garbage bbox string returns 400 Bad Request."""
+    params = {"bbox": "not,a,bounding,box"}
+    response = client.get(
+        "/catalogs/test-catalog-1/collections/test-collection/items", params=params
+    )
+    # str2bbox raises HTTPException(400) internally on ValueError
+    assert response.status_code == 400
+    assert "invalid bbox" in response.json()["detail"]
+
+
 def test_landing_page_includes_catalogs_links(client: TestClient) -> None:
     """Test that landing page includes catalogs links."""
     response = client.get("/")

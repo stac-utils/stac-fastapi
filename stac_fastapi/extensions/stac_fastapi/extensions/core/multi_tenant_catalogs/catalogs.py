@@ -64,7 +64,6 @@ class CatalogsExtension(ApiExtension):
         token: Optional[str] = Query(None, description="Pagination token"),
     ) -> ItemCollection:
         """Get items from a collection in a catalog with search support."""
-        # Fix 1: Convert Tuple to List explicitly for mypy
         bbox_list: Optional[List[float]] = None
         if bbox:
             bbox_tuple = str2bbox(bbox)
@@ -82,7 +81,6 @@ class CatalogsExtension(ApiExtension):
         )
 
     # --- WRAPPERS ---
-    # Fix 2: Use Request type directly in Depends signature to satisfy mypy strict mode
 
     async def _get_catalogs_wrapper(
         self,
