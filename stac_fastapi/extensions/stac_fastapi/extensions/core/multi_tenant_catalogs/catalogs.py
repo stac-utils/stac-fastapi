@@ -64,7 +64,7 @@ class CatalogsExtension(ApiExtension):
         token: Optional[str] = Query(None, description="Pagination token"),
     ) -> ItemCollection:
         """Get items from a collection in a catalog with search support."""
-        bbox_list = str2bbox(bbox) if bbox else None
+        bbox_list = list(str2bbox(bbox)) if bbox else None
 
         return await self.client.get_catalog_collection_items(
             catalog_id=catalog_id,
@@ -123,11 +123,17 @@ class CatalogsExtension(ApiExtension):
         request: Request = None,
     ) -> Catalogs:
         return await self.client.get_sub_catalogs(
-            catalog_id=catalog_id, limit=limit, token=token, request=request
+            catalog_id=catalog_id,
+            limit=limit,
+            token=token,
+            request=request,
         )
 
     async def _create_sub_catalog_wrapper(
-        self, catalog_id: str, catalog: Union[Catalog, ObjectUri], request: Request = None
+        self,
+        catalog_id: str,
+        catalog: Union[Catalog, ObjectUri],
+        request: Request = None,
     ) -> Catalog:
         return await self.client.create_sub_catalog(
             catalog_id=catalog_id, catalog=catalog, request=request
@@ -140,25 +146,41 @@ class CatalogsExtension(ApiExtension):
         request: Request = None,
     ) -> Collection:
         return await self.client.create_catalog_collection(
-            catalog_id=catalog_id, collection=collection, request=request
+            catalog_id=catalog_id,
+            collection=collection,
+            request=request,
         )
 
     async def _get_catalog_collection_wrapper(
-        self, catalog_id: str, collection_id: str, request: Request = None
+        self,
+        catalog_id: str,
+        collection_id: str,
+        request: Request = None,
     ) -> Collection:
         return await self.client.get_catalog_collection(
-            catalog_id=catalog_id, collection_id=collection_id, request=request
+            catalog_id=catalog_id,
+            collection_id=collection_id,
+            request=request,
         )
 
     async def _unlink_catalog_collection_wrapper(
-        self, catalog_id: str, collection_id: str, request: Request = None
+        self,
+        catalog_id: str,
+        collection_id: str,
+        request: Request = None,
     ) -> None:
         return await self.client.unlink_catalog_collection(
-            catalog_id=catalog_id, collection_id=collection_id, request=request
+            catalog_id=catalog_id,
+            collection_id=collection_id,
+            request=request,
         )
 
     async def _get_catalog_collection_item_wrapper(
-        self, catalog_id: str, collection_id: str, item_id: str, request: Request = None
+        self,
+        catalog_id: str,
+        collection_id: str,
+        item_id: str,
+        request: Request = None,
     ) -> Item:
         return await self.client.get_catalog_collection_item(
             catalog_id=catalog_id,
@@ -198,10 +220,15 @@ class CatalogsExtension(ApiExtension):
         )
 
     async def _unlink_sub_catalog_wrapper(
-        self, catalog_id: str, sub_catalog_id: str, request: Request = None
+        self,
+        catalog_id: str,
+        sub_catalog_id: str,
+        request: Request = None,
     ) -> None:
         return await self.client.unlink_sub_catalog(
-            catalog_id=catalog_id, sub_catalog_id=sub_catalog_id, request=request
+            catalog_id=catalog_id,
+            sub_catalog_id=sub_catalog_id,
+            request=request,
         )
 
     def register(self, app: FastAPI, settings: Optional[Dict[str, Any]] = None) -> None:
