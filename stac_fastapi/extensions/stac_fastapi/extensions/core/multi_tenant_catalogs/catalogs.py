@@ -3,7 +3,7 @@
 from typing import Any, Dict, List, Optional, Type
 
 import attr
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Query, Request
 from fastapi.responses import JSONResponse
 from stac_pydantic.api.collections import Collections
 from stac_pydantic.catalog import Catalog
@@ -14,6 +14,7 @@ from starlette.responses import Response
 from starlette.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from stac_fastapi.types.extension import ApiExtension
+from stac_fastapi.types.search import str2bbox
 
 from .client import AsyncBaseCatalogsClient
 from .types import Catalogs, Children
@@ -48,6 +49,50 @@ class CatalogsExtension(ApiExtension):
     )
     router: APIRouter = attr.ib(factory=APIRouter)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
+
+    async def get_catalog_collection_items(
+        self,
+        catalog_id: str,
+        collection_id: str,
+        request: Request,
+        bbox: Optional[str] = Query(
+            None,
+            description="Bounding box to filter items.",
+        ),
+        datetime: Optional[str] = Query(None, description="Datetime to filter items"),
+        limit: int = Query(10, ge=1, le=10000, description="Maximum number of items"),
+        token: Optional[str] = Query(None, description="Pagination token"),
+    ) -> ItemCollection:
+        """Get items from a collection in a catalog with search support.
+
+        Parses HTTP query parameters and delegates to the client for database queries.
+
+        Args:
+            catalog_id: The ID of the catalog.
+            collection_id: The ID of the collection.
+            request: The HTTP request object.
+            bbox: Bounding box string.
+            datetime: Datetime filter string.
+            limit: Maximum number of items to return.
+            token: Pagination token.
+
+        Returns:
+            ItemCollection containing items from the collection.
+
+        Raises:
+            HTTPException: If bbox format is invalid.
+        """
+        bbox_list = str2bbox(bbox) if bbox else None
+
+        return await self.client.get_catalog_collection_items(
+            catalog_id=catalog_id,
+            collection_id=collection_id,
+            bbox=bbox_list,
+            datetime=datetime,
+            limit=limit,
+            token=token,
+            request=request,
+        )
 
     def register(self, app: FastAPI, settings: Optional[Dict[str, Any]] = None) -> None:
         """Register the extension with a FastAPI application.
@@ -167,7 +212,7 @@ class CatalogsExtension(ApiExtension):
 
         self.router.add_api_route(
             path="/catalogs/{catalog_id}/collections/{collection_id}/items",
-            endpoint=self.client.get_catalog_collection_items,
+            endpoint=self.get_catalog_collection_items,
             methods=["GET"],
             response_model=ItemCollection,
             response_class=self.response_class,

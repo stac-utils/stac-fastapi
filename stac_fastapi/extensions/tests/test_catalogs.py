@@ -206,7 +206,7 @@ class DummyCatalogsClient(BaseCatalogsClient):
     def unlink_catalog_collection(self, catalog_id: str, collection_id: str):
         return None
 
-    def get_catalog_collection_items(
+    async def get_catalog_collection_items(
         self,
         catalog_id: str,
         collection_id: str,
@@ -214,6 +214,7 @@ class DummyCatalogsClient(BaseCatalogsClient):
         datetime: Optional[Union[str, datetime]] = None,
         limit: Optional[int] = 10,
         token: Optional[str] = None,
+        **kwargs,
     ):
         features = [
             Item(
@@ -447,6 +448,43 @@ def test_get_catalog_collection_items(client: TestClient) -> None:
     assert data["type"] == "FeatureCollection"
     assert len(data["features"]) == 1
     assert data["features"][0]["id"] == "test-item"
+
+
+def test_get_catalog_collection_items_with_bbox(client: TestClient) -> None:
+    """Test GET .../items with bbox filter."""
+    params = {"bbox": "-1,-1,1,1"}
+    response = client.get(
+        "/catalogs/test-catalog-1/collections/test-collection/items", params=params
+    )
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert len(data["features"]) == 1
+    assert data["features"][0]["id"] == "test-item"
+
+    params_out = {"bbox": "10,10,20,20"}
+    response_out = client.get(
+        "/catalogs/test-catalog-1/collections/test-collection/items", params=params_out
+    )
+    assert response_out.status_code == 200, response_out.text
+    assert len(response_out.json()["features"]) == 0
+
+
+def test_get_catalog_collection_items_with_datetime(client: TestClient) -> None:
+    """Test GET .../items with datetime filter."""
+    params = {"datetime": "2024-01-01T00:00:00Z"}
+    response = client.get(
+        "/catalogs/test-catalog-1/collections/test-collection/items", params=params
+    )
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert len(data["features"]) == 1
+
+    params_out = {"datetime": "2023-01-01T00:00:00Z"}
+    response_out = client.get(
+        "/catalogs/test-catalog-1/collections/test-collection/items", params=params_out
+    )
+    assert response_out.status_code == 200, response_out.text
+    assert len(response_out.json()["features"]) == 0
 
 
 def test_get_catalog_collection_item(client: TestClient) -> None:
