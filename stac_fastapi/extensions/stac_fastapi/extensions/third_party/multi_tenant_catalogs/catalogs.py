@@ -1,6 +1,6 @@
 """Catalogs extension."""
 
-from typing import List, Literal, Optional, Type, Union
+from typing import List, Literal, Type
 
 import attr
 from fastapi import APIRouter, FastAPI, Query, Request
@@ -65,16 +65,16 @@ class CatalogsExtension(ApiExtension):
         catalog_id: str,
         collection_id: str,
         request: Request,
-        bbox: Optional[str] = Query(
+        bbox: str | None = Query(
             None,
             description="Bounding box to filter items.",
         ),
-        datetime: Optional[str] = Query(None, description="Datetime to filter items"),
+        datetime: str | None = Query(None, description="Datetime to filter items"),
         limit: int = Query(10, ge=1, le=10000, description="Maximum number of items"),
-        token: Optional[str] = Query(None, description="Pagination token"),
+        token: str | None = Query(None, description="Pagination token"),
     ) -> ItemCollection:
         """Get items from a collection in a catalog with search support."""
-        bbox_list: Optional[List[float]] = None
+        bbox_list: List[float] | None = None
         if bbox:
             bbox_tuple = str2bbox(bbox)
             if bbox_tuple:
@@ -95,8 +95,8 @@ class CatalogsExtension(ApiExtension):
     async def _get_catalogs_wrapper(
         self,
         request: Request,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
+        limit: int | None = None,
+        token: str | None = None,
     ) -> Catalogs:
         return await self.client.get_catalogs(limit=limit, token=token, request=request)
 
@@ -129,8 +129,8 @@ class CatalogsExtension(ApiExtension):
         self,
         catalog_id: str,
         request: Request,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
+        limit: int | None = None,
+        token: str | None = None,
     ) -> Catalogs:
         return await self.client.get_sub_catalogs(
             catalog_id=catalog_id, limit=limit, token=token, request=request
@@ -139,7 +139,7 @@ class CatalogsExtension(ApiExtension):
     async def _create_sub_catalog_wrapper(
         self,
         catalog_id: str,
-        catalog: Union[Catalog, ObjectUri],
+        catalog: Catalog | ObjectUri,
         request: Request,
     ) -> Catalog:
         return await self.client.create_sub_catalog(
@@ -149,7 +149,7 @@ class CatalogsExtension(ApiExtension):
     async def _create_catalog_collection_wrapper(
         self,
         catalog_id: str,
-        collection: Union[Collection, ObjectUri],
+        collection: Collection | ObjectUri,
         request: Request,
     ) -> Collection:
         return await self.client.create_catalog_collection(
@@ -184,9 +184,9 @@ class CatalogsExtension(ApiExtension):
         self,
         catalog_id: str,
         request: Request,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
-        type: Optional[Literal["Catalog", "Collection"]] = None,
+        limit: int | None = None,
+        token: str | None = None,
+        type: Literal["Catalog", "Collection"] | None = None,
     ) -> Children:
         return await self.client.get_catalog_children(
             catalog_id=catalog_id,

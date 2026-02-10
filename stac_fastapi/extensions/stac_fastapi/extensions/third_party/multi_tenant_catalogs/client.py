@@ -2,7 +2,7 @@
 
 import abc
 from datetime import datetime
-from typing import List, Literal, Optional, Union
+from typing import List, Literal
 
 import attr
 from fastapi import Request
@@ -22,9 +22,9 @@ class AsyncBaseCatalogsClient(abc.ABC):
     @abc.abstractmethod
     async def get_catalogs(
         self,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
-        request: Optional[Request] = None,
+        limit: int | None = None,
+        token: str | None = None,
+        request: Request | None = None,
         **kwargs,
     ) -> Catalogs:
         """Get all catalogs with pagination support.
@@ -41,7 +41,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
 
     @abc.abstractmethod
     async def create_catalog(
-        self, catalog: Catalog, request: Optional[Request] = None, **kwargs
+        self, catalog: Catalog, request: Request | None = None, **kwargs
     ) -> Catalog:
         """Create a new catalog.
 
@@ -56,7 +56,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
 
     @abc.abstractmethod
     async def get_catalog(
-        self, catalog_id: str, request: Optional[Request] = None, **kwargs
+        self, catalog_id: str, request: Request | None = None, **kwargs
     ) -> Catalog:
         """Get a specific catalog by ID.
 
@@ -74,7 +74,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         self,
         catalog_id: str,
         catalog: Catalog,
-        request: Optional[Request] = None,
+        request: Request | None = None,
         **kwargs,
     ) -> Catalog:
         """Update an existing catalog.
@@ -93,7 +93,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
     async def delete_catalog(
         self,
         catalog_id: str,
-        request: Optional[Request] = None,
+        request: Request | None = None,
         **kwargs,
     ) -> None:
         """Delete a catalog.
@@ -108,7 +108,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
     async def get_catalog_collections(
         self,
         catalog_id: str,
-        request: Optional[Request] = None,
+        request: Request | None = None,
         **kwargs,
     ) -> Collections:
         """Get collections linked from a specific catalog.
@@ -126,9 +126,9 @@ class AsyncBaseCatalogsClient(abc.ABC):
     async def get_sub_catalogs(
         self,
         catalog_id: str,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
-        request: Optional[Request] = None,
+        limit: int | None = None,
+        token: str | None = None,
+        request: Request | None = None,
         **kwargs,
     ) -> Catalogs:
         """Get all sub-catalogs of a specific catalog with pagination.
@@ -148,8 +148,8 @@ class AsyncBaseCatalogsClient(abc.ABC):
     async def create_sub_catalog(
         self,
         catalog_id: str,
-        catalog: Union[Catalog, ObjectUri],
-        request: Optional[Request] = None,
+        catalog: Catalog | ObjectUri,
+        request: Request | None = None,
         **kwargs,
     ) -> Catalog:
         """Create a new catalog or link an existing catalog as a sub-catalog.
@@ -182,8 +182,8 @@ class AsyncBaseCatalogsClient(abc.ABC):
     async def create_catalog_collection(
         self,
         catalog_id: str,
-        collection: Union[Collection, ObjectUri],
-        request: Optional[Request] = None,
+        collection: Collection | ObjectUri,
+        request: Request | None = None,
         **kwargs,
     ) -> Collection:
         """Create a new collection or link an existing collection to catalog.
@@ -209,7 +209,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         self,
         catalog_id: str,
         collection_id: str,
-        request: Optional[Request] = None,
+        request: Request | None = None,
         **kwargs,
     ) -> Collection:
         """Get a specific collection from a catalog.
@@ -229,7 +229,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         self,
         catalog_id: str,
         collection_id: str,
-        request: Optional[Request] = None,
+        request: Request | None = None,
         **kwargs,
     ) -> None:
         """Unlink a collection from a catalog.
@@ -249,11 +249,11 @@ class AsyncBaseCatalogsClient(abc.ABC):
         self,
         catalog_id: str,
         collection_id: str,
-        bbox: Optional[List[float]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
-        limit: Optional[int] = 10,
-        token: Optional[str] = None,
-        request: Optional[Request] = None,
+        bbox: List[float] | None = None,
+        datetime: str | datetime | None = None,
+        limit: int | None = 10,
+        token: str | None = None,
+        request: Request | None = None,
         **kwargs,
     ) -> ItemCollection:
         """Get items from a collection in a catalog with search support.
@@ -281,7 +281,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         catalog_id: str,
         collection_id: str,
         item_id: str,
-        request: Optional[Request] = None,
+        request: Request | None = None,
         **kwargs,
     ) -> Item:
         """Get a specific item from a collection in a catalog.
@@ -301,10 +301,10 @@ class AsyncBaseCatalogsClient(abc.ABC):
     async def get_catalog_children(
         self,
         catalog_id: str,
-        limit: Optional[int] = None,
-        token: Optional[str] = None,
-        type: Optional[Literal["Catalog", "Collection"]] = None,
-        request: Optional[Request] = None,
+        limit: int | None = None,
+        token: str | None = None,
+        type: Literal["Catalog", "Collection"] | None = None,
+        request: Request | None = None,
         **kwargs,
     ) -> Children:
         """Get all children (Catalogs and Collections) of a specific catalog.
@@ -323,7 +323,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
 
     @abc.abstractmethod
     async def get_catalog_conformance(
-        self, catalog_id: str, request: Optional[Request] = None, **kwargs
+        self, catalog_id: str, request: Request | None = None, **kwargs
     ) -> dict:
         """Get conformance classes specific to this sub-catalog.
 
@@ -338,7 +338,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
 
     @abc.abstractmethod
     async def get_catalog_queryables(
-        self, catalog_id: str, request: Optional[Request] = None, **kwargs
+        self, catalog_id: str, request: Request | None = None, **kwargs
     ) -> dict:
         """Get queryable fields available for filtering in this sub-catalog.
 
@@ -356,7 +356,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         self,
         catalog_id: str,
         sub_catalog_id: str,
-        request: Optional[Request] = None,
+        request: Request | None = None,
         **kwargs,
     ) -> None:
         """Unlink a sub-catalog from its parent.
