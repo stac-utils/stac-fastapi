@@ -1,6 +1,6 @@
 """Catalogs extension."""
 
-from typing import Any, Dict, List, Literal, Optional, Type, Union
+from typing import List, Literal, Optional, Type, Union
 
 import attr
 from fastapi import APIRouter, FastAPI, Query, Request
@@ -223,16 +223,14 @@ class CatalogsExtension(ApiExtension):
             catalog_id=catalog_id, sub_catalog_id=sub_catalog_id, request=request
         )
 
-    def register(self, app: FastAPI, settings: Optional[Dict[str, Any]] = None) -> None:
+    def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
 
         Args:
             app: target FastAPI application.
-            settings: extension settings.
         """
         if self.client is None:
             raise ValueError("CatalogsExtension requires a client to be set")
-        self.settings = settings or {}
         self.router = APIRouter()
 
         # --- READ-ONLY ROUTES (Always Registered) ---
