@@ -1,6 +1,6 @@
 """Catalogs extension types."""
 
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel
 from stac_pydantic.catalog import Catalog
@@ -20,15 +20,12 @@ class ObjectUri(BaseModel):
 
 
 class Catalogs(StacBaseModel):
-    """Catalogs endpoint response.
-
-    Similar to Collections but for catalogs.
-    """
+    """Catalogs endpoint response."""
 
     catalogs: List[Catalog]
     links: Links
-    numberMatched: Optional[int] = None
-    numberReturned: Optional[int] = None
+    numberMatched: int | None = None
+    numberReturned: int | None = None
 
 
 class Children(StacBaseModel):
@@ -39,5 +36,5 @@ class Children(StacBaseModel):
 
     children: List[Catalog | Collection]
     links: Links
-    numberMatched: Optional[int] = None
-    numberReturned: Optional[int] = None
+    numberMatched: int | None = None
+    numberReturned: int | None = None
