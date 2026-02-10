@@ -3,6 +3,7 @@
 import contextlib
 import re
 import typing
+import warnings
 from http.client import HTTP_PORT, HTTPS_PORT
 from typing import List, Optional, Tuple
 
@@ -31,17 +32,25 @@ class CORSMiddleware(_CORSMiddleware):
         allow_origin_regex: typing.Optional[str] = None,
         expose_headers: typing.Sequence[str] = (),
         max_age: int = 600,
+        **kwargs: typing.Any,
     ) -> None:
         """Create CORS middleware."""
+        warnings.warn(
+            """stac_fastapi.api.middleware.CORSMiddleware is deprecated and
+            will be removed in a future release.
+            Please use starlette.middleware.cors.CORSMiddleware instead.""",
+            DeprecationWarning,
+        )
         super().__init__(
             app,
-            allow_origins,
-            allow_methods,
-            allow_headers,
-            allow_credentials,
-            allow_origin_regex,
-            expose_headers,
-            max_age,
+            allow_origins=allow_origins,
+            allow_methods=allow_methods,
+            allow_headers=allow_headers,
+            allow_credentials=allow_credentials,
+            allow_origin_regex=allow_origin_regex,
+            expose_headers=expose_headers,
+            max_age=max_age,
+            **kwargs,
         )
 
 
