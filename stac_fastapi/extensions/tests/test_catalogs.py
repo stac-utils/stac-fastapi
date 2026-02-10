@@ -337,13 +337,30 @@ def catalogs_client() -> DummyCatalogsClient:
 def client(
     core_client: DummyCoreClient, catalogs_client: DummyCatalogsClient
 ) -> Iterator[TestClient]:
-    """Fixture for test client."""
+    """Fixture for test client with transactions enabled."""
     settings = ApiSettings()
     api = StacApi(
         settings=settings,
         client=core_client,
         extensions=[
-            CatalogsExtension(client=catalogs_client),
+            CatalogsExtension(client=catalogs_client, enable_transactions=True),
+        ],
+    )
+    with TestClient(api.app) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+def client_readonly(
+    core_client: DummyCoreClient, catalogs_client: DummyCatalogsClient
+) -> Iterator[TestClient]:
+    """Fixture for test client with transactions disabled (read-only)."""
+    settings = ApiSettings()
+    api = StacApi(
+        settings=settings,
+        client=core_client,
+        extensions=[
+            CatalogsExtension(client=catalogs_client, enable_transactions=False),
         ],
     )
     with TestClient(api.app) as test_client:
@@ -619,3 +636,123 @@ def test_landing_page_includes_catalogs_links(client: TestClient) -> None:
     # The catalogs extension should be registered and provide links
     # Check if any link exists (the exact catalogs link depends on extension registration)
     assert len(data["links"]) > 0
+
+
+# --- READ-ONLY MODE TESTS (enable_transactions=False) ---
+
+
+def test_readonly_get_catalogs(client_readonly: TestClient) -> None:
+    """Test GET /catalogs works in read-only mode."""
+    response = client_readonly.get("/catalogs")
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert "catalogs" in data
+
+
+def test_readonly_create_catalog_disabled(client_readonly: TestClient) -> None:
+    """Test POST /catalogs returns 405 in read-only mode."""
+    catalog_data = {
+        "type": "Catalog",
+        "id": "new-catalog",
+        "description": "A new test catalog",
+        "stac_version": "1.0.0",
+        "links": [],
+    }
+    response = client_readonly.post("/catalogs", json=catalog_data)
+    assert response.status_code == 405
+
+
+def test_readonly_update_catalog_disabled(client_readonly: TestClient) -> None:
+    """Test PUT /catalogs/{catalog_id} returns 405 in read-only mode."""
+    catalog_data = {
+        "type": "Catalog",
+        "id": "test-catalog-1",
+        "description": "Updated description",
+        "stac_version": "1.0.0",
+        "links": [],
+    }
+    response = client_readonly.put("/catalogs/test-catalog-1", json=catalog_data)
+    assert response.status_code == 405
+
+
+def test_readonly_delete_catalog_disabled(client_readonly: TestClient) -> None:
+    """Test DELETE /catalogs/{catalog_id} returns 405 in read-only mode."""
+    response = client_readonly.delete("/catalogs/test-catalog-1")
+    assert response.status_code == 405
+
+
+def test_readonly_create_collection_disabled(client_readonly: TestClient) -> None:
+    """Test POST /catalogs/{catalog_id}/collections returns 405 in read-only mode."""
+    collection_data = {
+        "type": "Collection",
+        "id": "new-collection",
+        "description": "A new collection",
+        "extent": {
+            "spatial": {"bbox": [[-180, -90, 180, 90]]},
+            "temporal": {"interval": [[None, None]]},
+        },
+        "license": "proprietary",
+        "links": [],
+    }
+    response = client_readonly.post(
+        "/catalogs/test-catalog-1/collections", json=collection_data
+    )
+    assert response.status_code == 405
+
+
+def test_readonly_unlink_collection_disabled(client_readonly: TestClient) -> None:
+    """Test DELETE /catalogs/{catalog_id}/collections/{collection_id} returns 405."""
+    response = client_readonly.delete(
+        "/catalogs/test-catalog-1/collections/test-collection"
+    )
+    assert response.status_code == 405
+
+
+def test_readonly_create_subcatalog_disabled(client_readonly: TestClient) -> None:
+    """Test POST /catalogs/{catalog_id}/catalogs returns 405 in read-only mode."""
+    catalog_data = {
+        "type": "Catalog",
+        "id": "new-sub-catalog",
+        "description": "A new sub-catalog",
+        "stac_version": "1.0.0",
+        "links": [],
+    }
+    response = client_readonly.post(
+        "/catalogs/test-catalog-1/catalogs", json=catalog_data
+    )
+    assert response.status_code == 405
+
+
+def test_readonly_unlink_subcatalog_disabled(client_readonly: TestClient) -> None:
+    """Test DELETE /catalogs/{catalog_id}/catalogs/{sub_catalog_id} is disabled."""
+    response = client_readonly.delete(
+        "/catalogs/test-catalog-1/catalogs/test-catalog-1-sub-1"
+    )
+    # Route is not registered, so we get 404 (Not Found)
+    assert response.status_code == 404
+
+
+def test_readonly_conformance_excludes_transaction_class(
+    client_readonly: TestClient,
+) -> None:
+    """Test that transaction conformance class is not present in read-only mode."""
+    response = client_readonly.get("/catalogs/test-catalog-1/conformance")
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert "conformsTo" in data
+    transaction_class = (
+        "https://api.stacspec.org/v1.0.0-beta.1/multi-tenant-catalogs/transaction"
+    )
+    assert transaction_class not in data["conformsTo"]
+
+
+def test_enabled_conformance_includes_transaction_class(client: TestClient) -> None:
+    """Test that transaction conformance class is present when enabled."""
+    response = client.get("/catalogs/test-catalog-1/conformance")
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert "conformsTo" in data
+    transaction_class = (
+        "https://api.stacspec.org/v1.0.0-beta.1/multi-tenant-catalogs/transaction"
+    )
+    assert transaction_class in data["conformsTo"]

@@ -26,6 +26,10 @@ CATALOGS_CONFORMANCE_CLASSES = [
     "https://api.stacspec.org/v1.0.0-rc.2/children#type-filter",
 ]
 
+CATALOGS_TRANSACTION_CONFORMANCE_CLASS = (
+    "https://api.stacspec.org/v1.0.0-beta.1/multi-tenant-catalogs/transaction"
+)
+
 
 @attr.s
 class CatalogsExtension(ApiExtension):
@@ -37,6 +41,7 @@ class CatalogsExtension(ApiExtension):
     Attributes:
         client: A client implementing the catalogs extension pattern.
         settings: Extension settings.
+        enable_transactions: Enable catalog transaction endpoints (POST, PUT, DELETE).
         conformance_classes: List of conformance classes for this extension.
         router: FastAPI router for the extension endpoints.
         response_class: Response class for the extension.
@@ -44,11 +49,16 @@ class CatalogsExtension(ApiExtension):
 
     client: AsyncBaseCatalogsClient = attr.ib(default=None)
     settings: dict = attr.ib(default=attr.Factory(dict))
-    conformance_classes: List[str] = attr.ib(
-        default=attr.Factory(lambda: CATALOGS_CONFORMANCE_CLASSES)
-    )
+    enable_transactions: bool = attr.ib(default=False)
+    conformance_classes: List[str] = attr.ib(factory=list)
     router: APIRouter = attr.ib(factory=APIRouter)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
+
+    def __attrs_post_init__(self):
+        """Initialize conformance classes based on settings."""
+        self.conformance_classes = CATALOGS_CONFORMANCE_CLASSES.copy()
+        if self.enable_transactions:
+            self.conformance_classes.append(CATALOGS_TRANSACTION_CONFORMANCE_CLASS)
 
     async def get_catalog_collection_items(
         self,
@@ -189,9 +199,15 @@ class CatalogsExtension(ApiExtension):
     async def _get_catalog_conformance_wrapper(
         self, catalog_id: str, request: Request
     ) -> dict:
-        return await self.client.get_catalog_conformance(
+        result = await self.client.get_catalog_conformance(
             catalog_id=catalog_id, request=request
         )
+        # Merge extension conformance classes with client response
+        if "conformsTo" in result:
+            result["conformsTo"].extend(self.conformance_classes)
+        else:
+            result["conformsTo"] = self.conformance_classes
+        return result
 
     async def _get_catalog_queryables_wrapper(
         self, catalog_id: str, request: Request
@@ -219,6 +235,7 @@ class CatalogsExtension(ApiExtension):
         self.settings = settings or {}
         self.router = APIRouter()
 
+        # --- READ-ONLY ROUTES (Always Registered) ---
         self.router.add_api_route(
             path="/catalogs",
             endpoint=self._get_catalogs_wrapper,
@@ -227,18 +244,6 @@ class CatalogsExtension(ApiExtension):
             response_class=self.response_class,
             summary="Get All Catalogs",
             description="Returns a list of all catalogs in the database.",
-            tags=["Catalogs"],
-        )
-
-        self.router.add_api_route(
-            path="/catalogs",
-            endpoint=self._create_catalog_wrapper,
-            methods=["POST"],
-            response_model=Catalog,
-            response_class=self.response_class,
-            status_code=HTTP_201_CREATED,
-            summary="Create Catalog",
-            description="Create a new STAC catalog.",
             tags=["Catalogs"],
         )
 
@@ -254,28 +259,6 @@ class CatalogsExtension(ApiExtension):
         )
 
         self.router.add_api_route(
-            path="/catalogs/{catalog_id}",
-            endpoint=self._update_catalog_wrapper,
-            methods=["PUT"],
-            response_model=Catalog,
-            response_class=self.response_class,
-            summary="Update Catalog",
-            description="Update an existing STAC catalog.",
-            tags=["Catalogs"],
-        )
-
-        self.router.add_api_route(
-            path="/catalogs/{catalog_id}",
-            endpoint=self._delete_catalog_wrapper,
-            methods=["DELETE"],
-            response_class=self.response_class,
-            status_code=HTTP_204_NO_CONTENT,
-            summary="Delete Catalog",
-            description="Delete a catalog.",
-            tags=["Catalogs"],
-        )
-
-        self.router.add_api_route(
             path="/catalogs/{catalog_id}/collections",
             endpoint=self._get_catalog_collections_wrapper,
             methods=["GET"],
@@ -287,18 +270,6 @@ class CatalogsExtension(ApiExtension):
         )
 
         self.router.add_api_route(
-            path="/catalogs/{catalog_id}/collections",
-            endpoint=self._create_catalog_collection_wrapper,
-            methods=["POST"],
-            response_model=Collection,
-            response_class=self.response_class,
-            status_code=HTTP_201_CREATED,
-            summary="Create Catalog Collection",
-            description="Create a new collection and link it to a specific catalog.",
-            tags=["Catalogs"],
-        )
-
-        self.router.add_api_route(
             path="/catalogs/{catalog_id}/collections/{collection_id}",
             endpoint=self._get_catalog_collection_wrapper,
             methods=["GET"],
@@ -306,20 +277,6 @@ class CatalogsExtension(ApiExtension):
             response_class=self.response_class,
             summary="Get Catalog Collection",
             description="Get a specific collection from a catalog.",
-            tags=["Catalogs"],
-        )
-
-        self.router.add_api_route(
-            path="/catalogs/{catalog_id}/collections/{collection_id}",
-            endpoint=self._unlink_catalog_collection_wrapper,
-            methods=["DELETE"],
-            response_class=self.response_class,
-            status_code=HTTP_204_NO_CONTENT,
-            summary="Unlink Collection from Catalog",
-            description=(
-                "Removes the link between the catalog and collection. "
-                "The Collection data is NOT deleted."
-            ),
             tags=["Catalogs"],
         )
 
@@ -353,21 +310,6 @@ class CatalogsExtension(ApiExtension):
             response_class=self.response_class,
             summary="Get Catalog Sub-Catalogs",
             description="Get sub-catalogs linked from a specific catalog.",
-            tags=["Catalogs"],
-        )
-
-        self.router.add_api_route(
-            path="/catalogs/{catalog_id}/catalogs",
-            endpoint=self._create_sub_catalog_wrapper,
-            methods=["POST"],
-            response_model=Catalog,
-            response_class=self.response_class,
-            status_code=HTTP_201_CREATED,
-            summary="Create Catalog Sub-Catalog",
-            description=(
-                "Create a new catalog or link an existing catalog as a sub-catalog "
-                "of a specific catalog."
-            ),
             tags=["Catalogs"],
         )
 
@@ -411,18 +353,95 @@ class CatalogsExtension(ApiExtension):
             responses={HTTP_200_OK: {"description": "Queryable fields for the catalog"}},
         )
 
-        self.router.add_api_route(
-            path="/catalogs/{catalog_id}/catalogs/{sub_catalog_id}",
-            endpoint=self._unlink_sub_catalog_wrapper,
-            methods=["DELETE"],
-            response_class=self.response_class,
-            status_code=HTTP_204_NO_CONTENT,
-            summary="Unlink Sub-Catalog",
-            description=(
-                "Unlink a sub-catalog from its parent. "
-                "Does not delete the sub-catalog."
-            ),
-            tags=["Catalogs"],
-        )
+        # --- TRANSACTION ROUTES (Conditionally Registered) ---
+        if self.enable_transactions:
+            self.router.add_api_route(
+                path="/catalogs",
+                endpoint=self._create_catalog_wrapper,
+                methods=["POST"],
+                response_model=Catalog,
+                response_class=self.response_class,
+                status_code=HTTP_201_CREATED,
+                summary="Create Catalog",
+                description="Create a new STAC catalog.",
+                tags=["Catalogs"],
+            )
+
+            self.router.add_api_route(
+                path="/catalogs/{catalog_id}",
+                endpoint=self._update_catalog_wrapper,
+                methods=["PUT"],
+                response_model=Catalog,
+                response_class=self.response_class,
+                summary="Update Catalog",
+                description="Update an existing STAC catalog.",
+                tags=["Catalogs"],
+            )
+
+            self.router.add_api_route(
+                path="/catalogs/{catalog_id}",
+                endpoint=self._delete_catalog_wrapper,
+                methods=["DELETE"],
+                response_class=self.response_class,
+                status_code=HTTP_204_NO_CONTENT,
+                summary="Delete Catalog",
+                description="Delete a catalog.",
+                tags=["Catalogs"],
+            )
+
+            self.router.add_api_route(
+                path="/catalogs/{catalog_id}/collections",
+                endpoint=self._create_catalog_collection_wrapper,
+                methods=["POST"],
+                response_model=Collection,
+                response_class=self.response_class,
+                status_code=HTTP_201_CREATED,
+                summary="Create Catalog Collection",
+                description="Create a new collection and link it to a specific catalog.",
+                tags=["Catalogs"],
+            )
+
+            self.router.add_api_route(
+                path="/catalogs/{catalog_id}/collections/{collection_id}",
+                endpoint=self._unlink_catalog_collection_wrapper,
+                methods=["DELETE"],
+                response_class=self.response_class,
+                status_code=HTTP_204_NO_CONTENT,
+                summary="Unlink Collection from Catalog",
+                description=(
+                    "Removes the link between the catalog and collection. "
+                    "The Collection data is NOT deleted."
+                ),
+                tags=["Catalogs"],
+            )
+
+            self.router.add_api_route(
+                path="/catalogs/{catalog_id}/catalogs",
+                endpoint=self._create_sub_catalog_wrapper,
+                methods=["POST"],
+                response_model=Catalog,
+                response_class=self.response_class,
+                status_code=HTTP_201_CREATED,
+                summary="Create Catalog Sub-Catalog",
+                description=(
+                    "Create a new catalog or link an existing catalog as a "
+                    "sub-catalog of a specific catalog."
+                ),
+                tags=["Catalogs"],
+            )
+
+            self.router.add_api_route(
+                path="/catalogs/{catalog_id}/catalogs/{sub_catalog_id}",
+                endpoint=self._unlink_sub_catalog_wrapper,
+                methods=["DELETE"],
+                response_class=self.response_class,
+                status_code=HTTP_204_NO_CONTENT,
+                summary="Unlink Sub-Catalog",
+                description=(
+                    "Unlink a sub-catalog from its parent. "
+                    "Does not delete the sub-catalog."
+                ),
+                tags=["Catalogs"],
+            )
 
         app.include_router(self.router, tags=["Catalogs"])
