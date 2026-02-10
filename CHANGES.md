@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [6.2.1] - 2026-02-10
+
 ### Fixed 
 
 - swap usage of vendored `CORSMiddleware` for the official one from starlette
@@ -709,7 +711,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.2.0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.2.1..main>
+[6.2.1]: <https://github.com/stac-utils/stac-fastapi/compare/6.2.0..6.2.1>
 [6.2.0]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.5..6.2.0>
 [6.1.5]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.4..6.1.5>
 [6.1.4]: <https://github.com/stac-utils/stac-fastapi/compare/6.1.3..6.1.4>
