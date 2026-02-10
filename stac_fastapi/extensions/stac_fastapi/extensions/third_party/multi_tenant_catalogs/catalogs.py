@@ -47,12 +47,12 @@ class CatalogsExtension(ApiExtension):
         response_class: Response class for the extension.
     """
 
-    client: AsyncBaseCatalogsClient = attr.ib(default=None)
-    settings: dict = attr.ib(default=attr.Factory(dict))
-    enable_transactions: bool = attr.ib(default=False)
-    conformance_classes: List[str] = attr.ib(factory=list)
-    router: APIRouter = attr.ib(factory=APIRouter)
-    response_class: Type[Response] = attr.ib(default=JSONResponse)
+    client: AsyncBaseCatalogsClient = attr.ib(kw_only=True)
+    enable_transactions: bool = attr.ib(default=False, kw_only=True)
+    settings: dict = attr.ib(default=attr.Factory(dict), kw_only=True)
+    conformance_classes: List[str] = attr.ib(factory=list, kw_only=True)
+    router: APIRouter = attr.ib(factory=APIRouter, kw_only=True)
+    response_class: Type[Response] = attr.ib(default=JSONResponse, kw_only=True)
 
     def __attrs_post_init__(self):
         """Initialize conformance classes based on settings."""
@@ -229,8 +229,6 @@ class CatalogsExtension(ApiExtension):
         Args:
             app: target FastAPI application.
         """
-        if self.client is None:
-            raise ValueError("CatalogsExtension requires a client to be set")
         self.router = APIRouter()
 
         # --- READ-ONLY ROUTES (Always Registered) ---
