@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Multi-tenant catalogs extension for managing multiple catalogs with support for catalog hierarchies, collections, items, and catalog-specific conformance and queryable endpoints ([#880](https://github.com/stac-utils/stac-fastapi/pull/880))
+
 ## [6.2.1] - 2026-02-10
 
 ### Fixed 

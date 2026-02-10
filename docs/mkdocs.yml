@@ -75,6 +75,11 @@ nav:
           - third_party:
               - module: api/stac_fastapi/extensions/third_party/index.md
               - bulk_transactions: api/stac_fastapi/extensions/third_party/bulk_transactions.md
+              - multi_tenant_catalogs:
+                  - module: api/stac_fastapi/extensions/third_party/multi_tenant_catalogs/index.md
+                  - catalogs: api/stac_fastapi/extensions/third_party/multi_tenant_catalogs/catalogs.md
+                  - client: api/stac_fastapi/extensions/third_party/multi_tenant_catalogs/client.md
+                  - types: api/stac_fastapi/extensions/third_party/multi_tenant_catalogs/types.md
       - stac_fastapi.types:
           - module: api/stac_fastapi/types/index.md
           - config: api/stac_fastapi/types/config.md
