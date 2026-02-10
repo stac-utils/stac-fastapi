@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed 
+
+- swap usage of vendored `CORSMiddleware` for the official one from starlette
+- add deprecatation warning for `stac_fastapi.api.middleware.CORSMiddleware`
+
 ## [6.2.0] - 2026-01-13
 
 ### Removed
