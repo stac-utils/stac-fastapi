@@ -13,10 +13,11 @@ from stac_pydantic import api
 from stac_pydantic.shared import MimeTypes
 from stac_pydantic.version import STAC_VERSION
 from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 
 from stac_fastapi.api.errors import DEFAULT_STATUS_CODES, add_exception_handlers
-from stac_fastapi.api.middleware import CORSMiddleware, ProxyHeaderMiddleware
+from stac_fastapi.api.middleware import ProxyHeaderMiddleware
 from stac_fastapi.api.models import (
     APIRequest,
     CollectionUri,
@@ -126,7 +127,14 @@ class StacApi:
         default=attr.Factory(
             lambda: [
                 Middleware(BrotliMiddleware),
-                Middleware(CORSMiddleware),
+                Middleware(
+                    CORSMiddleware,
+                    # Set CORS defaults to those recommended by the STAC API spec
+                    allow_origins=["*"],
+                    allow_methods=["OPTIONS", "POST", "GET"],
+                    allow_headers=["Content-Type"],
+                    max_age=600,
+                ),
                 Middleware(ProxyHeaderMiddleware),
             ]
         )
