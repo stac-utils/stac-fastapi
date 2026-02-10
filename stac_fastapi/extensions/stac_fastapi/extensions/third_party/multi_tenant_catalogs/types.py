@@ -1,9 +1,10 @@
 """Catalogs extension types."""
 
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 from stac_pydantic.catalog import Catalog
+from stac_pydantic.collection import Collection
 from stac_pydantic.links import Links
 from stac_pydantic.shared import StacBaseModel
 
@@ -36,7 +37,7 @@ class Children(StacBaseModel):
     Returns a mixed list of Catalogs and Collections as children.
     """
 
-    children: List[Dict[str, Any]]
+    children: List[Catalog | Collection]
     links: Links
     numberMatched: Optional[int] = None
     numberReturned: Optional[int] = None

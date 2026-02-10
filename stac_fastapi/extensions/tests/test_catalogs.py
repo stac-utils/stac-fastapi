@@ -276,21 +276,39 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
         **kwargs,
     ) -> Children:
         all_children = [
-            {
-                "id": f"{catalog_id}-child-1",
-                "type": "Catalog",
-                "description": "Child catalog",
-            },
-            {
-                "id": "collection-1",
-                "type": "Collection",
-                "description": "Child collection",
-            },
+            Catalog(
+                id=f"{catalog_id}-child-1",
+                type="Catalog",
+                description="Child catalog",
+                stac_version="1.0.0",
+                links=[],
+            ),
+            Collection(
+                id="collection-1",
+                type="Collection",
+                description="Child collection",
+                stac_version="1.0.0",
+                license="proprietary",
+                extent={
+                    "spatial": {"bbox": [[-180, -90, 180, 90]]},
+                    "temporal": {"interval": [[None, None]]},
+                },
+                links=[],
+            ),
         ]
 
         # Filter by type if provided
         if type:
-            filtered_children = [child for child in all_children if child["type"] == type]
+            filtered_children = [
+                child
+                for child in all_children
+                if (
+                    type == "Catalog"
+                    and isinstance(child, Catalog)
+                    and not isinstance(child, Collection)
+                )
+                or (type == "Collection" and isinstance(child, Collection))
+            ]
         else:
             filtered_children = all_children
 
