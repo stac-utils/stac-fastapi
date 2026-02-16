@@ -40,9 +40,9 @@ class TestRouteDependencies:
             for route in routes:
                 print(route)
                 response = getattr(client, route["method"].lower())(route["path"])
-                assert response.status_code == 401, (
-                    "Unauthenticated requests should be rejected"
-                )
+                assert (
+                    response.status_code == 401
+                ), "Unauthenticated requests should be rejected"
                 assert response.json() == {"detail": "Not authenticated"}
 
                 path = route["path"].format(
@@ -55,9 +55,9 @@ class TestRouteDependencies:
                     content=route["payload"],
                     headers={"content-type": "application/json"},
                 )
-                assert 200 <= response.status_code < 300, (
-                    "Authenticated requests should be accepted"
-                )
+                assert (
+                    200 <= response.status_code < 300
+                ), "Authenticated requests should be accepted"
                 assert response.json() == "dummy response"
 
     @staticmethod
@@ -74,9 +74,9 @@ class TestRouteDependencies:
                     headers={"content-type": "application/json"},
                 )
 
-                assert 200 <= response.status_code < 300, (
-                    "Unauthenticated requests should be accepted"
-                )
+                assert (
+                    200 <= response.status_code < 300
+                ), "Unauthenticated requests should be accepted"
                 assert response.json() == "dummy response"
 
     def test_openapi_content_type(self):
