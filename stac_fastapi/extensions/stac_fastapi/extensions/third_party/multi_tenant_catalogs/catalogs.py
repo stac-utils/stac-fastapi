@@ -27,6 +27,7 @@ from .types import (
     CatalogsUri,
     Children,
     CreateCatalogCollectionRequest,
+    CreateCatalogRequest,
     CreateSubCatalogRequest,
     SubCatalogsRequest,
     UnlinkSubCatalogRequest,
@@ -263,7 +264,9 @@ class CatalogsExtension(ApiExtension):
             path="/catalogs",
             methods=["POST"],
             status_code=HTTP_201_CREATED,
-            endpoint=create_async_endpoint(self.client.create_catalog, Catalog),
+            endpoint=create_async_endpoint(
+                self.client.create_catalog, CreateCatalogRequest
+            ),
             response_model=Catalog
             if self.settings.get("enable_response_models", True)
             else None,

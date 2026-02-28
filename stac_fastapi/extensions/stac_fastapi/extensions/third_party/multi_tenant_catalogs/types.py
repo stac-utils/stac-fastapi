@@ -68,7 +68,10 @@ class CatalogCollectionItemsRequest(CatalogCollectionUri):
     bbox: Annotated[
         BBox | None,
         Query(description="Bounding box to filter items [minx, miny, maxx, maxy]"),
-    ] = attr.ib(default=None, converter=lambda x: _bbox_converter(x))
+    ] = attr.ib(
+        default=None,
+        converter=lambda x: _bbox_converter(x) if x is not None else None,
+    )
     datetime: Annotated[
         str | None, Query(description="Datetime to filter items")
     ] = attr.ib(default=None)
@@ -115,34 +118,37 @@ class CatalogChildrenRequest(CatalogsUri):
 
 
 @attr.s
-class UpdateCatalogRequest(APIRequest):
-    """Update catalog with body."""
+class CreateCatalogRequest(APIRequest):
+    """Create catalog with body."""
 
-    catalog_id: Annotated[str, Path(description="Catalog ID")] = attr.ib()
     catalog: Annotated[Catalog, Body()] = attr.ib(default=None)
 
 
 @attr.s
-class CreateCatalogCollectionRequest(APIRequest):
+class UpdateCatalogRequest(CatalogsUri):
+    """Update catalog with body."""
+
+    catalog: Annotated[Catalog, Body()] = attr.ib(default=None)
+
+
+@attr.s
+class CreateCatalogCollectionRequest(CatalogsUri):
     """Create catalog collection with body."""
 
-    catalog_id: Annotated[str, Path(description="Catalog ID")] = attr.ib()
     collection: Annotated[Collection | ObjectUri, Body()] = attr.ib(default=None)
 
 
 @attr.s
-class CreateSubCatalogRequest(APIRequest):
+class CreateSubCatalogRequest(CatalogsUri):
     """Create sub-catalog with body."""
 
-    catalog_id: Annotated[str, Path(description="Catalog ID")] = attr.ib()
     catalog: Annotated[Catalog | ObjectUri, Body()] = attr.ib(default=None)
 
 
 @attr.s
-class UnlinkSubCatalogRequest(APIRequest):
+class UnlinkSubCatalogRequest(CatalogsUri):
     """Unlink sub-catalog request."""
 
-    catalog_id: Annotated[str, Path(description="Catalog ID")] = attr.ib()
     sub_catalog_id: Annotated[str, Path(description="Sub-Catalog ID")] = attr.ib()
 
 

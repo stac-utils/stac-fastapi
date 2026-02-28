@@ -11,6 +11,7 @@ from stac_pydantic.catalog import Catalog
 from stac_pydantic.collection import Collection
 from stac_pydantic.item import Item
 from stac_pydantic.item_collection import ItemCollection
+from starlette.responses import Response
 
 from .types import Catalogs, Children, ObjectUri
 
@@ -26,7 +27,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         token: str | None = None,
         request: Request | None = None,
         **kwargs,
-    ) -> Catalogs:
+    ) -> Catalogs | Response:
         """Get all catalogs with pagination support.
 
         Args:
@@ -42,7 +43,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
     @abc.abstractmethod
     async def create_catalog(
         self, catalog: Catalog, request: Request | None = None, **kwargs
-    ) -> Catalog:
+    ) -> Catalog | Response:
         """Create a new catalog.
 
         Args:
@@ -57,7 +58,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
     @abc.abstractmethod
     async def get_catalog(
         self, catalog_id: str, request: Request | None = None, **kwargs
-    ) -> Catalog:
+    ) -> Catalog | Response:
         """Get a specific catalog by ID.
 
         Args:
@@ -76,7 +77,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         catalog: Catalog,
         request: Request | None = None,
         **kwargs,
-    ) -> Catalog:
+    ) -> Catalog | Response:
         """Update an existing catalog.
 
         Args:
@@ -110,7 +111,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         catalog_id: str,
         request: Request | None = None,
         **kwargs,
-    ) -> Collections:
+    ) -> Collections | Response:
         """Get collections linked from a specific catalog.
 
         Args:
@@ -130,7 +131,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         token: str | None = None,
         request: Request | None = None,
         **kwargs,
-    ) -> Catalogs:
+    ) -> Catalogs | Response:
         """Get all sub-catalogs of a specific catalog with pagination.
 
         Args:
@@ -151,7 +152,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         catalog: Catalog | ObjectUri,
         request: Request | None = None,
         **kwargs,
-    ) -> Catalog:
+    ) -> Catalog | Response:
         """Create a new catalog or link an existing catalog as a sub-catalog.
 
         Supports two modes:
@@ -185,7 +186,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         collection: Collection | ObjectUri,
         request: Request | None = None,
         **kwargs,
-    ) -> Collection:
+    ) -> Collection | Response:
         """Create a new collection or link an existing collection to catalog.
 
         Supports two modes:
@@ -211,7 +212,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         collection_id: str,
         request: Request | None = None,
         **kwargs,
-    ) -> Collection:
+    ) -> Collection | Response:
         """Get a specific collection from a catalog.
 
         Args:
@@ -255,7 +256,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         token: str | None = None,
         request: Request | None = None,
         **kwargs,
-    ) -> ItemCollection:
+    ) -> ItemCollection | Response:
         """Get items from a collection in a catalog with search support.
 
         Multiple filters are combined using AND logic. If both bbox and datetime
@@ -283,7 +284,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         item_id: str,
         request: Request | None = None,
         **kwargs,
-    ) -> Item:
+    ) -> Item | Response:
         """Get a specific item from a collection in a catalog.
 
         Args:
@@ -306,7 +307,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         type: Literal["Catalog", "Collection"] | None = None,
         request: Request | None = None,
         **kwargs,
-    ) -> Children:
+    ) -> Children | Response:
         """Get all children (Catalogs and Collections) of a specific catalog.
 
         Args:
@@ -324,7 +325,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
     @abc.abstractmethod
     async def get_catalog_conformance(
         self, catalog_id: str, request: Request | None = None, **kwargs
-    ) -> dict:
+    ) -> dict | Response:
         """Get conformance classes specific to this sub-catalog.
 
         Args:
@@ -339,7 +340,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
     @abc.abstractmethod
     async def get_catalog_queryables(
         self, catalog_id: str, request: Request | None = None, **kwargs
-    ) -> dict:
+    ) -> dict | Response:
         """Get queryable fields available for filtering in this sub-catalog.
 
         Args:
@@ -367,3 +368,14 @@ class AsyncBaseCatalogsClient(abc.ABC):
             request: Optional FastAPI request object.
         """
         ...
+
+
+@attr.s
+class BaseCatalogsClient(abc.ABC):
+    """Defines a synchronous pattern for implementing the STAC catalogs extension.
+
+    This is the base class for synchronous catalog client implementations.
+    For async implementations, use AsyncBaseCatalogsClient instead.
+    """
+
+    pass
