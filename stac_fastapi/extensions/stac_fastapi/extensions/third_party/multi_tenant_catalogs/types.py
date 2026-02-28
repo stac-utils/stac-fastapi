@@ -1,6 +1,6 @@
 """Catalogs extension types."""
 
-from typing import List, Literal, Optional, Union
+from typing import Literal
 
 import attr
 from fastapi import Body, Path, Query
@@ -39,10 +39,10 @@ class CatalogsGetRequest(APIRequest):
     """Parameters for the root /catalogs endpoint."""
 
     limit: Annotated[
-        Optional[int],
+        int | None,
         Query(ge=1, le=1000, description="Maximum number of catalogs to return"),
     ] = attr.ib(default=10)
-    token: Annotated[Optional[str], Query(description="Pagination token")] = attr.ib(
+    token: Annotated[str | None, Query(description="Pagination token")] = attr.ib(
         default=None
     )
 
@@ -66,17 +66,17 @@ class CatalogCollectionItemsRequest(CatalogCollectionUri):
     """Parameters for /catalogs/{catalog_id}/collections/{collection_id}/items."""
 
     bbox: Annotated[
-        Optional[BBox],
+        BBox | None,
         Query(description="Bounding box to filter items [minx, miny, maxx, maxy]"),
     ] = attr.ib(default=None, converter=lambda x: _bbox_converter(x))
     datetime: Annotated[
-        Optional[str], Query(description="Datetime to filter items")
+        str | None, Query(description="Datetime to filter items")
     ] = attr.ib(default=None)
     limit: Annotated[
-        Optional[int],
+        int | None,
         Query(ge=1, le=10000, description="Maximum number of items to return"),
     ] = attr.ib(default=10)
-    token: Annotated[Optional[str], Query(description="Pagination token")] = attr.ib(
+    token: Annotated[str | None, Query(description="Pagination token")] = attr.ib(
         default=None
     )
 
@@ -86,10 +86,10 @@ class SubCatalogsRequest(CatalogsUri):
     """Parameters for /catalogs/{catalog_id}/catalogs."""
 
     limit: Annotated[
-        Optional[int],
+        int | None,
         Query(ge=1, le=1000, description="Maximum number of sub-catalogs to return"),
     ] = attr.ib(default=10)
-    token: Annotated[Optional[str], Query(description="Pagination token")] = attr.ib(
+    token: Annotated[str | None, Query(description="Pagination token")] = attr.ib(
         default=None
     )
 
@@ -99,14 +99,14 @@ class CatalogChildrenRequest(CatalogsUri):
     """Parameters for /catalogs/{catalog_id}/children."""
 
     limit: Annotated[
-        Optional[int],
+        int | None,
         Query(ge=1, le=1000, description="Maximum number of children to return"),
     ] = attr.ib(default=10)
-    token: Annotated[Optional[str], Query(description="Pagination token")] = attr.ib(
+    token: Annotated[str | None, Query(description="Pagination token")] = attr.ib(
         default=None
     )
     type: Annotated[
-        Optional[Literal["Catalog", "Collection"]],
+        Literal["Catalog", "Collection"] | None,
         Query(description="Filter by resource type"),
     ] = attr.ib(default=None)
 
@@ -127,7 +127,7 @@ class CreateCatalogCollectionRequest(APIRequest):
     """Create catalog collection with body."""
 
     catalog_id: Annotated[str, Path(description="Catalog ID")] = attr.ib()
-    collection: Annotated[Union[Collection, ObjectUri], Body()] = attr.ib(default=None)
+    collection: Annotated[Collection | ObjectUri, Body()] = attr.ib(default=None)
 
 
 @attr.s
@@ -135,7 +135,7 @@ class CreateSubCatalogRequest(APIRequest):
     """Create sub-catalog with body."""
 
     catalog_id: Annotated[str, Path(description="Catalog ID")] = attr.ib()
-    catalog: Annotated[Union[Catalog, ObjectUri], Body()] = attr.ib(default=None)
+    catalog: Annotated[Catalog | ObjectUri, Body()] = attr.ib(default=None)
 
 
 @attr.s
@@ -149,7 +149,7 @@ class UnlinkSubCatalogRequest(APIRequest):
 class Catalogs(StacBaseModel):
     """Catalogs endpoint response."""
 
-    catalogs: List[Catalog]
+    catalogs: list[Catalog]
     links: Links
     numberMatched: int | None = None
     numberReturned: int | None = None
@@ -161,7 +161,7 @@ class Children(StacBaseModel):
     Returns a mixed list of Catalogs and Collections as children.
     """
 
-    children: List[Catalog | Collection]
+    children: list[Catalog | Collection]
     links: Links
     numberMatched: int | None = None
     numberReturned: int | None = None

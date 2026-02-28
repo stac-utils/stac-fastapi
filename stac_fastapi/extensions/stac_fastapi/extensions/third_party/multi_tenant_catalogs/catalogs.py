@@ -1,6 +1,6 @@
 """Catalogs extension."""
 
-from typing import List, Type
+from typing import Type
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -64,7 +64,7 @@ class CatalogsExtension(ApiExtension):
     client: AsyncBaseCatalogsClient = attr.ib(kw_only=True)
     enable_transactions: bool = attr.ib(default=False, kw_only=True)
     settings: dict = attr.ib(default=attr.Factory(dict), kw_only=True)
-    conformance_classes: List[str] = attr.ib(factory=list, kw_only=True)
+    conformance_classes: list[str] = attr.ib(factory=list, kw_only=True)
     router: APIRouter = attr.ib(factory=APIRouter, kw_only=True)
     response_class: Type[Response] = attr.ib(default=JSONResponse, kw_only=True)
 

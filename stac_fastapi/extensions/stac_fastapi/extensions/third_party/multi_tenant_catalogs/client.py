@@ -2,7 +2,7 @@
 
 import abc
 from datetime import datetime
-from typing import List, Literal
+from typing import Literal
 
 import attr
 from fastapi import Request
@@ -249,7 +249,7 @@ class AsyncBaseCatalogsClient(abc.ABC):
         self,
         catalog_id: str,
         collection_id: str,
-        bbox: List[float] | None = None,
+        bbox: list[float] | None = None,
         datetime: str | datetime | None = None,
         limit: int | None = 10,
         token: str | None = None,
