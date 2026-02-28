@@ -383,7 +383,7 @@ class CatalogsExtension(ApiExtension):
 
     async def _get_catalog_conformance(
         self, catalog_id: str, request=None, **kwargs
-    ) -> dict:
+    ) -> dict | Response:
         """Merge client response with extension conformance classes."""
         result = await self.client.get_catalog_conformance(
             catalog_id=catalog_id, request=request
