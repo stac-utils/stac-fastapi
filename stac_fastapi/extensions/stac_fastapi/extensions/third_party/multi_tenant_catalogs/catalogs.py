@@ -384,16 +384,14 @@ class CatalogsExtension(ApiExtension):
     async def _get_catalog_conformance(
         self, catalog_id: str, request=None, **kwargs
     ) -> dict:
-        """Get conformance classes specific to this sub-catalog.
-
-        Merges client response with extension conformance classes.
-        """
+        """Merge client response with extension conformance classes."""
         result = await self.client.get_catalog_conformance(
             catalog_id=catalog_id, request=request
         )
         # Merge extension conformance classes with client response
-        if "conformsTo" in result:
-            result["conformsTo"].extend(self.conformance_classes)
-        else:
-            result["conformsTo"] = self.conformance_classes
+        if isinstance(result, dict):
+            if "conformsTo" in result:
+                result["conformsTo"].extend(self.conformance_classes)
+            else:
+                result["conformsTo"] = self.conformance_classes
         return result
