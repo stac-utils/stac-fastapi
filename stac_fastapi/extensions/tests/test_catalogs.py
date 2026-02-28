@@ -1,13 +1,16 @@
 """Tests for the Catalogs extension."""
 
+from collections.abc import Iterator
 from datetime import datetime
-from typing import Iterator, List, Optional, Union
 
 import pytest
+from fastapi import Request
+from stac_pydantic.api.collections import Collections
 from stac_pydantic.catalog import Catalog
 from stac_pydantic.collection import Collection
 from stac_pydantic.item import Item
 from stac_pydantic.item_collection import ItemCollection
+from starlette.responses import Response
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
@@ -49,7 +52,13 @@ class DummyCoreClient(BaseCoreClient):
 class DummyCatalogsClient(AsyncBaseCatalogsClient):
     """Dummy catalogs client for testing."""
 
-    async def get_catalogs(self, limit: int = None, token: str = None, **kwargs):
+    async def get_catalogs(
+        self,
+        limit: int | None = None,
+        token: str | None = None,
+        request: Request | None = None,
+        **kwargs,
+    ) -> Catalogs | Response:
         return Catalogs(
             catalogs=[
                 Catalog(
@@ -72,7 +81,9 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
             numberReturned=2,
         )
 
-    async def create_catalog(self, catalog: Catalog, **kwargs):
+    async def create_catalog(
+        self, catalog: Catalog, request: Request | None = None, **kwargs
+    ) -> Catalog | Response:
         return Catalog(
             type="Catalog",
             id=catalog.id,
@@ -81,7 +92,9 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
             links=[],
         )
 
-    async def get_catalog(self, catalog_id: str, **kwargs):
+    async def get_catalog(
+        self, catalog_id: str, request: Request | None = None, **kwargs
+    ) -> Catalog | Response:
         return Catalog(
             type="Catalog",
             id=catalog_id,
@@ -90,7 +103,13 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
             links=[],
         )
 
-    async def update_catalog(self, catalog_id: str, catalog: Catalog, **kwargs):
+    async def update_catalog(
+        self,
+        catalog_id: str,
+        catalog: Catalog,
+        request: Request | None = None,
+        **kwargs,
+    ) -> Catalog | Response:
         return Catalog(
             type="Catalog",
             id=catalog_id,
@@ -99,10 +118,14 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
             links=[],
         )
 
-    async def delete_catalog(self, catalog_id: str, **kwargs):
+    async def delete_catalog(
+        self, catalog_id: str, request: Request | None = None, **kwargs
+    ) -> None:
         return None
 
-    async def get_catalog_collections(self, catalog_id: str, **kwargs):
+    async def get_catalog_collections(
+        self, catalog_id: str, request: Request | None = None, **kwargs
+    ) -> Collections | Response:
         return {
             "collections": [
                 {
@@ -135,8 +158,13 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
         }
 
     async def get_sub_catalogs(
-        self, catalog_id: str, limit: int = None, token: str = None, **kwargs
-    ):
+        self,
+        catalog_id: str,
+        limit: int | None = None,
+        token: str | None = None,
+        request: Request | None = None,
+        **kwargs,
+    ) -> Catalogs | Response:
         return Catalogs(
             catalogs=[
                 Catalog(
@@ -153,8 +181,12 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
         )
 
     async def create_sub_catalog(
-        self, catalog_id: str, catalog: Union[Catalog, ObjectUri], **kwargs
-    ):
+        self,
+        catalog_id: str,
+        catalog: Catalog | ObjectUri,
+        request: Request | None = None,
+        **kwargs,
+    ) -> Catalog | Response:
         catalog_id_val = catalog.id
 
         description = None
@@ -172,8 +204,12 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
         )
 
     async def create_catalog_collection(
-        self, catalog_id: str, collection: Union[Collection, ObjectUri], **kwargs
-    ):
+        self,
+        catalog_id: str,
+        collection: Collection | ObjectUri,
+        request: Request | None = None,
+        **kwargs,
+    ) -> Collection | Response:
         collection_id_val = collection.id
 
         description = None
@@ -194,7 +230,13 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
             links=[],
         )
 
-    async def get_catalog_collection(self, catalog_id: str, collection_id: str, **kwargs):
+    async def get_catalog_collection(
+        self,
+        catalog_id: str,
+        collection_id: str,
+        request: Request | None = None,
+        **kwargs,
+    ) -> Collection | Response:
         return Collection(
             type="Collection",
             id=collection_id,
@@ -208,20 +250,25 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
         )
 
     async def unlink_catalog_collection(
-        self, catalog_id: str, collection_id: str, **kwargs
-    ):
+        self,
+        catalog_id: str,
+        collection_id: str,
+        request: Request | None = None,
+        **kwargs,
+    ) -> None:
         return None
 
     async def get_catalog_collection_items(
         self,
         catalog_id: str,
         collection_id: str,
-        bbox: Optional[List[float]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
-        limit: Optional[int] = 10,
-        token: Optional[str] = None,
+        bbox: list[float] | None = None,
+        datetime: str | datetime | None = None,
+        limit: int | None = 10,
+        token: str | None = None,
+        request: Request | None = None,
         **kwargs,
-    ):
+    ) -> ItemCollection | Response:
         features = [
             Item(
                 type="Feature",
@@ -254,8 +301,13 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
         )
 
     async def get_catalog_collection_item(
-        self, catalog_id: str, collection_id: str, item_id: str, **kwargs
-    ):
+        self,
+        catalog_id: str,
+        collection_id: str,
+        item_id: str,
+        request: Request | None = None,
+        **kwargs,
+    ) -> Item | Response:
         return Item(
             type="Feature",
             id=item_id,
@@ -270,11 +322,12 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
     async def get_catalog_children(
         self,
         catalog_id: str,
-        limit: int = None,
-        token: str = None,
-        type: str = None,
+        limit: int | None = None,
+        token: str | None = None,
+        type: str | None = None,
+        request: Request | None = None,
         **kwargs,
-    ) -> Children:
+    ) -> Children | Response:
         all_children = [
             Catalog(
                 id=f"{catalog_id}-child-1",
@@ -319,7 +372,9 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
             numberReturned=len(filtered_children),
         )
 
-    async def get_catalog_conformance(self, catalog_id: str, **kwargs):
+    async def get_catalog_conformance(
+        self, catalog_id: str, request: Request | None = None, **kwargs
+    ) -> dict | Response:
         return {
             "conformsTo": [
                 "https://api.stacspec.org/v1.0.0/core",
@@ -327,7 +382,9 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
             ]
         }
 
-    async def get_catalog_queryables(self, catalog_id: str, **kwargs):
+    async def get_catalog_queryables(
+        self, catalog_id: str, request: Request | None = None, **kwargs
+    ) -> dict | Response:
         return {
             "queryables": [
                 {"name": "datetime", "type": "string"},
@@ -335,7 +392,13 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
             ]
         }
 
-    async def unlink_sub_catalog(self, catalog_id: str, sub_catalog_id: str, **kwargs):
+    async def unlink_sub_catalog(
+        self,
+        catalog_id: str,
+        sub_catalog_id: str,
+        request: Request | None = None,
+        **kwargs,
+    ) -> None:
         return None
 
 
@@ -361,7 +424,11 @@ def client(
         settings=settings,
         client=core_client,
         extensions=[
-            CatalogsExtension(client=catalogs_client, enable_transactions=True),
+            CatalogsExtension(
+                client=catalogs_client,
+                enable_transactions=True,
+                settings=settings.model_dump(),
+            ),
         ],
     )
     with TestClient(api.app) as test_client:
@@ -378,7 +445,11 @@ def client_readonly(
         settings=settings,
         client=core_client,
         extensions=[
-            CatalogsExtension(client=catalogs_client, enable_transactions=False),
+            CatalogsExtension(
+                client=catalogs_client,
+                enable_transactions=False,
+                settings=settings.model_dump(),
+            ),
         ],
     )
     with TestClient(api.app) as test_client:
@@ -640,7 +711,8 @@ def test_get_catalog_collection_items_invalid_bbox_string(client: TestClient) ->
     response = client.get(
         "/catalogs/test-catalog-1/collections/test-collection/items", params=params
     )
-    # str2bbox raises HTTPException(400) internally on ValueError
+    # The _bbox_converter in CatalogCollectionItemsRequest triggers a 400 error
+    # on invalid strings
     assert response.status_code == 400
     assert "invalid bbox" in response.json()["detail"]
 
