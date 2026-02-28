@@ -1,12 +1,17 @@
 """Catalogs extension types."""
 
-from typing import List
+from typing import List, Literal, Optional, Union
 
+import attr
+from fastapi import Body, Path, Query
 from pydantic import BaseModel
 from stac_pydantic.catalog import Catalog
 from stac_pydantic.collection import Collection
 from stac_pydantic.links import Links
-from stac_pydantic.shared import StacBaseModel
+from stac_pydantic.shared import BBox, StacBaseModel
+from typing_extensions import Annotated
+
+from stac_fastapi.types.search import APIRequest, _bbox_converter
 
 
 class ObjectUri(BaseModel):
@@ -17,6 +22,124 @@ class ObjectUri(BaseModel):
     """
 
     id: str
+
+
+# --- Uri Request Models for create_async_endpoint factory ---
+
+
+@attr.s
+class CatalogsUri(APIRequest):
+    """Base for catalog-specific endpoints."""
+
+    catalog_id: Annotated[str, Path(description="Catalog ID")] = attr.ib()
+
+
+@attr.s
+class CatalogsGetRequest(APIRequest):
+    """Parameters for the root /catalogs endpoint."""
+
+    limit: Annotated[
+        Optional[int],
+        Query(ge=1, le=1000, description="Maximum number of catalogs to return"),
+    ] = attr.ib(default=10)
+    token: Annotated[Optional[str], Query(description="Pagination token")] = attr.ib(
+        default=None
+    )
+
+
+@attr.s
+class CatalogCollectionUri(CatalogsUri):
+    """Combines catalog_id and collection_id."""
+
+    collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
+
+
+@attr.s
+class CatalogCollectionItemUri(CatalogCollectionUri):
+    """Combines catalog_id, collection_id, and item_id."""
+
+    item_id: Annotated[str, Path(description="Item ID")] = attr.ib()
+
+
+@attr.s
+class CatalogCollectionItemsRequest(CatalogCollectionUri):
+    """Parameters for /catalogs/{catalog_id}/collections/{collection_id}/items."""
+
+    bbox: Annotated[
+        Optional[BBox],
+        Query(description="Bounding box to filter items [minx, miny, maxx, maxy]"),
+    ] = attr.ib(default=None, converter=lambda x: _bbox_converter(x) if x else None)
+    datetime: Annotated[
+        Optional[str], Query(description="Datetime to filter items")
+    ] = attr.ib(default=None)
+    limit: Annotated[
+        Optional[int],
+        Query(ge=1, le=10000, description="Maximum number of items to return"),
+    ] = attr.ib(default=10)
+    token: Annotated[Optional[str], Query(description="Pagination token")] = attr.ib(
+        default=None
+    )
+
+
+@attr.s
+class SubCatalogsRequest(CatalogsUri):
+    """Parameters for /catalogs/{catalog_id}/catalogs."""
+
+    limit: Annotated[
+        Optional[int],
+        Query(ge=1, le=1000, description="Maximum number of sub-catalogs to return"),
+    ] = attr.ib(default=10)
+    token: Annotated[Optional[str], Query(description="Pagination token")] = attr.ib(
+        default=None
+    )
+
+
+@attr.s
+class CatalogChildrenRequest(CatalogsUri):
+    """Parameters for /catalogs/{catalog_id}/children."""
+
+    limit: Annotated[
+        Optional[int],
+        Query(ge=1, le=1000, description="Maximum number of children to return"),
+    ] = attr.ib(default=10)
+    token: Annotated[Optional[str], Query(description="Pagination token")] = attr.ib(
+        default=None
+    )
+    type: Annotated[
+        Optional[Literal["Catalog", "Collection"]],
+        Query(description="Filter by resource type"),
+    ] = attr.ib(default=None)
+
+
+# --- Request Models with Body for Transaction Endpoints ---
+
+
+@attr.s
+class UpdateCatalogRequest(CatalogsUri):
+    """Update catalog with body."""
+
+    catalog: Annotated[Catalog, Body()] = attr.ib(default=None)
+
+
+@attr.s
+class CreateCatalogCollectionRequest(CatalogsUri):
+    """Create catalog collection with body."""
+
+    collection: Annotated[Union[Collection, ObjectUri], Body()] = attr.ib(default=None)
+
+
+@attr.s
+class CreateSubCatalogRequest(CatalogsUri):
+    """Create sub-catalog with body."""
+
+    catalog: Annotated[Union[Catalog, ObjectUri], Body()] = attr.ib(default=None)
+
+
+@attr.s
+class UnlinkSubCatalogRequest(CatalogsUri):
+    """Unlink sub-catalog request."""
+
+    sub_catalog_id: Annotated[str, Path(description="Sub-Catalog ID")] = attr.ib()
 
 
 class Catalogs(StacBaseModel):
