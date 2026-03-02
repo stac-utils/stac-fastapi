@@ -36,13 +36,13 @@ from .types import (
 
 CATALOGS_CONFORMANCE_CLASSES = [
     "https://api.stacspec.org/v1.0.0/core",
-    "https://api.stacspec.org/v1.0.0-beta.1/multi-tenant-catalogs",
+    "https://api.stacspec.org/v1.0.0-beta.2/multi-tenant-catalogs",
     "https://api.stacspec.org/v1.0.0-rc.2/children",
     "https://api.stacspec.org/v1.0.0-rc.2/children#type-filter",
 ]
 
 CATALOGS_TRANSACTION_CONFORMANCE_CLASS = (
-    "https://api.stacspec.org/v1.0.0-beta.1/multi-tenant-catalogs/transaction"
+    "https://api.stacspec.org/v1.0.0-beta.2/multi-tenant-catalogs/transaction"
 )
 
 
