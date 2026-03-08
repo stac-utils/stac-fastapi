@@ -61,6 +61,11 @@ class AsyncBaseCatalogsClient(abc.ABC):
     ) -> Catalog | Response:
         """Get a specific catalog by ID.
 
+        Note on Links: To support Directed Acyclic Graphs (DAGs) and poly-hierarchy,
+        implementations SHOULD dynamically generate `rel="parent"` links for EVERY parent
+        this catalog belongs to, and `rel="child"` links for all immediate sub-catalogs
+        and collections. Static linking is highly discouraged.
+
         Args:
             catalog_id: The ID of the catalog to retrieve.
             request: Optional FastAPI request object.
@@ -113,6 +118,12 @@ class AsyncBaseCatalogsClient(abc.ABC):
         **kwargs,
     ) -> Collections | Response:
         """Get collections linked from a specific catalog.
+
+        Note on Links: To preserve contextual breadcrumbs in UI clients
+        (e.g., STAC Browser), the `rel="parent"` link of the returned
+        Collections object, as well as the parent links of the individual
+        collections within it, SHOULD point exclusively back to the specific
+        `catalog_id` requested.
 
         Args:
             catalog_id: The ID of the catalog.
@@ -214,6 +225,11 @@ class AsyncBaseCatalogsClient(abc.ABC):
         **kwargs,
     ) -> Collection | Response:
         """Get a specific collection from a catalog.
+
+        Note on Links: To preserve contextual breadcrumb navigation, the
+        `rel="parent"` link of the returned Collection SHOULD point
+        exclusively back to the specific `catalog_id` requested, rather than
+        listing all of the collection's potential parents.
 
         Args:
             catalog_id: The ID of the catalog.
