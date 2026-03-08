@@ -378,7 +378,7 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
         return {
             "conformsTo": [
                 "https://api.stacspec.org/v1.0.0/core",
-                "https://api.stacspec.org/v1.0.0-beta.1/multi-tenant-catalogs",
+                "https://api.stacspec.org/v1.0.0-beta.3/multi-tenant-catalogs",
             ]
         }
 
@@ -831,7 +831,7 @@ def test_readonly_conformance_excludes_transaction_class(
     data = response.json()
     assert "conformsTo" in data
     transaction_class = (
-        "https://api.stacspec.org/v1.0.0-beta.2/multi-tenant-catalogs/transaction"
+        "https://api.stacspec.org/v1.0.0-beta.3/multi-tenant-catalogs/transaction"
     )
     assert transaction_class not in data["conformsTo"]
 
@@ -843,6 +843,6 @@ def test_enabled_conformance_includes_transaction_class(client: TestClient) -> N
     data = response.json()
     assert "conformsTo" in data
     transaction_class = (
-        "https://api.stacspec.org/v1.0.0-beta.2/multi-tenant-catalogs/transaction"
+        "https://api.stacspec.org/v1.0.0-beta.3/multi-tenant-catalogs/transaction"
     )
     assert transaction_class in data["conformsTo"]
