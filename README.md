@@ -10,16 +10,18 @@ Seguir los siguientes pasos:
 
 1. Crear un archivo .env réplica de env.sample y actualizar los valores de la variables de entorno.
     ```
-    PGUSER="" # Usuario de la base de datos
-    PGPASSWORD="" # Contraseña para el usuario de base de datos
-    PGDATABASE="" # Nombre de la base de datos
-    SECRET_KEY = "" # Llave secreta para validar el token
-    ALGORITHM = "" # Algoritmo de firma utilizado para generar y verificar tokens , generalmente se usa este: "HS256"
-    USER_USERNAME = "" # Usuario utilizado para la autenticacion
-    USER_PASSWORD = "" # Contraseña utilizado para la autenticacion
-    ACCESS_TOKEN_EXPIRE_MINUTES = # Tiempo en minutos para la expiración del token
+    PGUSER=# Usuario de la base de datos, string sin comillas ni espacios
+    PGPASSWORD=# Contraseña para el usuario de base de datos, string sin comillas ni espacios
+    PGDATABASE=# Nombre de la base de datos, string sin comillas ni espacios
+    SECRET_KEY=# Llave secreta para validar el token
+    ALGORITHM=# Algoritmo de firma utilizado para generar y verificar tokens , generalmente se usa este: "HS256"
+    USER_USERNAME=# Usuario utilizado para la autenticacion, string sin comillas ni espacios
+    USER_PASSWORD=# Contraseña utilizado para la autenticacion, string sin comillas ni espacios
+    ACCESS_TOKEN_EXPIRE_MINUTES=# Tiempo en minutos para la expiración del token
     ```
    Nota: Para generar la llave secreta es necesario ejecutar esto en CMD o terminal de linux, adicional de tener una version de Python mayor a 3.6 instalada:
+   **Nota importante**: el usuario y la contraseña utilizados para la autenticación deben ser los mismos que se usen en el archivo .env de stac-data-tools para poder usar la herramienta 
+   
    
    ```
    python -c "import secrets; print(secrets.token_hex(32))"
