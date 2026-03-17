@@ -1,4 +1,46 @@
-"""Catalogs extension clients."""
+"""Catalogs extension clients.
+
+Link Strategy for v1.0.0-beta.4
+================================
+
+The v1.0.0-beta.4 specification introduces a refined link strategy to support
+poly-hierarchy (multi-parenting) while maintaining clear contextual navigation
+for UI clients like STAC Browser.
+
+Key Principles:
+--------------
+1. **Single Parent Link**: Every resource MUST have exactly ONE rel="parent" link
+   that represents the contextual navigation path the user took to reach it.
+
+2. **Poly-Hierarchy via Related Links**: When a resource has multiple parents,
+   the API MAY include rel="related" links to expose alternative parents.
+   Implementations should filter these based on user permissions (RBAC).
+
+3. **Canonical Links**: Scoped endpoints SHOULD include rel="canonical" links
+   pointing to the global endpoint for the same resource.
+
+4. **Duplicate Links**: Scoped endpoints MAY include rel="duplicate" links
+   pointing to other scoped paths where the same resource exists.
+
+Scoped vs. Global Routes:
+------------------------
+- **Scoped Routes** (/catalogs/{id}/collections/{col_id}):
+  - rel="parent" points to the specific catalog in the path
+  - Maintains breadcrumb trail for UI navigation
+  - rel="canonical" points to global endpoint
+  - rel="related" exposes other parents
+
+- **Global Routes** (/collections/{col_id}):
+  - rel="parent" points to the Global Root (/)
+  - rel="related" MAY include all catalogs that claim this collection
+
+Dynamic Link Generation:
+-----------------------
+Implementations SHOULD NOT persist static rel="parent" or rel="child" links
+in the database. Instead, links should be dynamically generated at runtime
+based on the requested endpoint to properly support poly-hierarchy and
+maintain contextual navigation.
+"""
 
 import abc
 from datetime import datetime
@@ -61,10 +103,17 @@ class AsyncBaseCatalogsClient(abc.ABC):
     ) -> Catalog | Response:
         """Get a specific catalog by ID.
 
-        Note on Links: To support Directed Acyclic Graphs (DAGs) and poly-hierarchy,
-        implementations SHOULD dynamically generate `rel="parent"` links for EVERY parent
-        this catalog belongs to, and `rel="child"` links for all immediate sub-catalogs
-        and collections. Static linking is highly discouraged.
+        Link Strategy (v1.0.0-beta.4):
+        - rel="parent": MUST point to exactly ONE immediate parent catalog.
+          If top-level, points to the Global Root (/).
+        - rel="related": If the catalog has multiple parents (poly-hierarchy),
+          MAY include links to other parent catalogs (filtered by user permissions).
+        - rel="child": MUST point to all immediate sub-catalogs and collections.
+        - rel="root": MUST point to the Global Root (/).
+
+        Implementations SHOULD dynamically generate these links at runtime based
+        on the requested endpoint to support poly-hierarchy. Static linking is
+        highly discouraged.
 
         Args:
             catalog_id: The ID of the catalog to retrieve.
@@ -119,11 +168,12 @@ class AsyncBaseCatalogsClient(abc.ABC):
     ) -> Collections | Response:
         """Get collections linked from a specific catalog.
 
-        Note on Links: To preserve contextual breadcrumbs in UI clients
-        (e.g., STAC Browser), the `rel="parent"` link of the returned
-        Collections object, as well as the parent links of the individual
-        collections within it, SHOULD point exclusively back to the specific
-        `catalog_id` requested.
+        Link Strategy (v1.0.0-beta.4 - Scoped Route):
+        To preserve contextual breadcrumb navigation in UI clients (e.g., STAC Browser):
+        - rel="parent": MUST point exclusively to the specific catalog_id.
+        - rel="related": MAY include links to other parent catalogs (poly-hierarchy).
+        - rel="canonical": SHOULD point to the global /collections/{id} endpoint.
+        - rel="duplicate": MAY point to other scoped paths for this collection.
 
         Args:
             catalog_id: The ID of the catalog.
@@ -224,12 +274,16 @@ class AsyncBaseCatalogsClient(abc.ABC):
         request: Request | None = None,
         **kwargs,
     ) -> Collection | Response:
-        """Get a specific collection from a catalog.
+        """Get a specific collection from a catalog (Scoped Route).
 
-        Note on Links: To preserve contextual breadcrumb navigation, the
-        `rel="parent"` link of the returned Collection SHOULD point
-        exclusively back to the specific `catalog_id` requested, rather than
-        listing all of the collection's potential parents.
+        Link Strategy (v1.0.0-beta.4 - Scoped Route):
+        This endpoint provides contextual navigation within a specific catalog:
+        - rel="self": MUST point to /catalogs/{catalog_id}/collections/{collection_id}.
+        - rel="parent": MUST point exclusively to /catalogs/{catalog_id}.
+        - rel="related": MAY include links to other parent catalogs (poly-hierarchy).
+        - rel="canonical": SHOULD point to /collections/{collection_id} (global endpoint).
+        - rel="duplicate": MAY point to other scoped paths where this collection exists.
+        - rel="root": MUST point to the Global Root (/).
 
         Args:
             catalog_id: The ID of the catalog.
@@ -278,6 +332,14 @@ class AsyncBaseCatalogsClient(abc.ABC):
         Multiple filters are combined using AND logic. If both bbox and datetime
         are provided, only items matching both criteria are returned.
 
+        Link Strategy (v1.0.0-beta.4 - Scoped Route):
+        Links in the ItemCollection should maintain the scoped context:
+        - rel="collection": MUST point to
+          /catalogs/{catalog_id}/collections/{collection_id}.
+        - rel="parent": MUST point to
+          /catalogs/{catalog_id}/collections/{collection_id}.
+        - rel="root": MUST point to the Global Root (/).
+
         Args:
             catalog_id: The ID of the catalog.
             collection_id: The ID of the collection.
@@ -302,6 +364,16 @@ class AsyncBaseCatalogsClient(abc.ABC):
         **kwargs,
     ) -> Item | Response:
         """Get a specific item from a collection in a catalog.
+
+        Link Strategy (v1.0.0-beta.4 - Scoped Route):
+        Links in the Item should maintain the scoped context:
+        - rel="self": MUST point to
+          /catalogs/{catalog_id}/collections/{collection_id}/items/{item_id}.
+        - rel="collection": MUST point to
+          /catalogs/{catalog_id}/collections/{collection_id}.
+        - rel="parent": MUST point to
+          /catalogs/{catalog_id}/collections/{collection_id}.
+        - rel="root": MUST point to the Global Root (/).
 
         Args:
             catalog_id: The ID of the catalog.
