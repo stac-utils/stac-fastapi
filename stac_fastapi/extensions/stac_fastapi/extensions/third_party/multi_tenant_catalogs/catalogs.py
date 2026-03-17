@@ -36,22 +36,33 @@ from .types import (
 
 CATALOGS_CONFORMANCE_CLASSES = [
     "https://api.stacspec.org/v1.0.0/core",
-    "https://api.stacspec.org/v1.0.0-beta.3/multi-tenant-catalogs",
+    "https://api.stacspec.org/v1.0.0-beta.4/multi-tenant-catalogs",
     "https://api.stacspec.org/v1.0.0-rc.2/children",
     "https://api.stacspec.org/v1.0.0-rc.2/children#type-filter",
 ]
 
 CATALOGS_TRANSACTION_CONFORMANCE_CLASS = (
-    "https://api.stacspec.org/v1.0.0-beta.3/multi-tenant-catalogs/transaction"
+    "https://api.stacspec.org/v1.0.0-beta.4/multi-tenant-catalogs/transaction"
 )
 
 
 @attr.s
 class CatalogsExtension(ApiExtension):
-    """Catalogs Extension.
+    """Catalogs Extension (v1.0.0-beta.4).
 
     The Catalogs extension adds a /catalogs endpoint that returns a list of all catalogs
     in the database, similar to how /collections returns a list of collections.
+
+    This extension enables Multi-Tenant architecture with recursive catalog hierarchies
+    and poly-hierarchy support (collections/catalogs can have multiple parents).
+
+    Link Strategy (v1.0.0-beta.4):
+    - Single parent link for contextual navigation
+    - rel="related" for additional parents (poly-hierarchy)
+    - rel="canonical" for global endpoints
+    - rel="duplicate" for alternative scoped paths
+
+    See client.py module docstring for detailed link strategy documentation.
 
     Attributes:
         client: A client implementing the catalogs extension pattern.
