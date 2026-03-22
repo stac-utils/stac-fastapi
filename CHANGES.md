@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- add a third-party extensions section in the README and docs for the external `stac-fastapi-catalogs-extension` project
+
 ## [6.2.1] - 2026-02-10
 
 ### Fixed 

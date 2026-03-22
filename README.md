@@ -51,6 +51,10 @@ Other implementations include:
 - [stac-fastapi-duckdb](https://github.com/Healy-Hyperspatial/stac-fastapi-duckdb): [DuckDB](https://github.com/duckdb/duckdb) (experimental)
 - [stac-fastapi-sqlalchemy](https://github.com/stac-utils/stac-fastapi-sqlalchemy): [PostgreSQL](https://github.com/postgres/postgres) + [PostGIS](https://github.com/postgis/postgis) via [SQLAlchemy](https://www.sqlalchemy.org/) (abandoned in favor of stac-fastapi-pgstac)
 
+#### Third-Party Extensions
+
+- [stac-fastapi-catalogs-extension](https://github.com/StacLabs/stac-fastapi-catalogs-extension): Multi-tenant virtual catalogs extension for STAC FastAPI deployments. It adds a dedicated `/catalogs` registry, scoped catalog routes, and an optional catalog management system for maintaining catalog hierarchies within one API.
+
 ## Response Model Validation
 
 A common question when using this package is how request and response types are validated?
