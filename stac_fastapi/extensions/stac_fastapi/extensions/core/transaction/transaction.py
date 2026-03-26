@@ -1,10 +1,11 @@
 """Transaction extension."""
 
 from enum import Enum
-from typing import List, Optional, Type, Union
+from typing import List, Optional, Sequence, Type, Union
 
 import attr
 from fastapi import APIRouter, Body, FastAPI
+from fastapi.params import Depends
 from pydantic import TypeAdapter
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.shared import MimeTypes
@@ -183,6 +184,7 @@ class TransactionExtension(ApiExtension):
     schema_href: Optional[str] = attr.ib(default=None)
     router: APIRouter = attr.ib(factory=APIRouter)
     response_class: Type[Response] = attr.ib(default=JSONResponse)
+    route_dependencies: Optional[Sequence[Depends]] = attr.ib(default=None)
 
     def register_create_item(self):
         """Register create item endpoint (POST /collections/{collection_id}/items)."""
@@ -204,6 +206,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=create_async_endpoint(self.client.create_item, PostItem),
+            dependencies=self.route_dependencies,
         )
 
     def register_update_item(self):
@@ -226,6 +229,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["PUT"],
             endpoint=create_async_endpoint(self.client.update_item, PutItem),
+            dependencies=self.route_dependencies,
         )
 
     def register_patch_item(self):
@@ -267,6 +271,7 @@ class TransactionExtension(ApiExtension):
                 self.client.patch_item,
                 PatchItem,
             ),
+            dependencies=self.route_dependencies,
         )
 
     def register_delete_item(self):
@@ -289,6 +294,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["DELETE"],
             endpoint=create_async_endpoint(self.client.delete_item, ItemUri),
+            dependencies=self.route_dependencies,
         )
 
     def register_create_collection(self):
@@ -311,6 +317,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["POST"],
             endpoint=create_async_endpoint(self.client.create_collection, Collection),
+            dependencies=self.route_dependencies,
         )
 
     def register_update_collection(self):
@@ -332,6 +339,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["PUT"],
             endpoint=create_async_endpoint(self.client.update_collection, PutCollection),
+            dependencies=self.route_dependencies,
         )
 
     def register_patch_collection(self):
@@ -372,6 +380,7 @@ class TransactionExtension(ApiExtension):
                 self.client.patch_collection,
                 PatchCollection,
             ),
+            dependencies=self.route_dependencies,
         )
 
     def register_delete_collection(self):
@@ -393,6 +402,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_none=True,
             methods=["DELETE"],
             endpoint=create_async_endpoint(self.client.delete_collection, CollectionUri),
+            dependencies=self.route_dependencies,
         )
 
     def register(self, app: FastAPI) -> None:

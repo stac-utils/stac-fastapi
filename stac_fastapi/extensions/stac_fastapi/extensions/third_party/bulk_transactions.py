@@ -2,10 +2,11 @@
 
 import abc
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import attr
 from fastapi import APIRouter, FastAPI
+from fastapi.params import Depends
 from pydantic import BaseModel
 
 from stac_fastapi.api.models import create_request_model
@@ -113,6 +114,7 @@ class BulkTransactionExtension(ApiExtension):
     client: Union[AsyncBaseBulkTransactionsClient, BaseBulkTransactionsClient] = attr.ib()
     conformance_classes: List[str] = attr.ib(default=list())
     schema_href: Optional[str] = attr.ib(default=None)
+    route_dependencies: Optional[Sequence[Depends]] = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -136,5 +138,6 @@ class BulkTransactionExtension(ApiExtension):
             endpoint=create_async_endpoint(
                 self.client.bulk_item_insert, items_request_model
             ),
+            dependencies=self.route_dependencies,
         )
         app.include_router(router, tags=["Bulk Transaction Extension"])
