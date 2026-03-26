@@ -121,7 +121,7 @@ def test_post_aggregations(client: TestClient) -> None:
 
 
 def test_post_aggregate(client: TestClient) -> None:
-    response = client.post("/aggregate", content="{}")
+    response = client.post("/aggregate", json={})
     assert response.is_success, response.text
     assert response.json()["aggregations"] == []
     assert AggregationCollection(
