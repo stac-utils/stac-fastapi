@@ -54,11 +54,7 @@ valid_datetimes = [
 ]
 
 invalid_intervals = [
-    "/"
-    "../"
-    "/.."
-    "../.."
-    "/1984-04-12T23:20:50.52Z/1985-04-12T23:20:50.52Z",  # extra start /
+    "/..//..../../1984-04-12T23:20:50.52Z/1985-04-12T23:20:50.52Z",  # extra start /
     "1984-04-12T23:20:50.52Z/1985-04-12T23:20:50.52Z/",  # extra end /
     "1986-04-12T23:20:50.52Z/1985-04-12T23:20:50.52Z",  # start > end
 ]
@@ -89,39 +85,39 @@ def test_parse_valid_str_to_datetime(test_input):
 def test_str_to_interval_with_invalid_interval(test_input):
     with pytest.raises(HTTPException) as exc_info:
         str_to_interval(test_input)
-    assert (
-        exc_info.value.status_code == 400
-    ), "str_to_interval should return a 400 status code for invalid interval"
+    assert exc_info.value.status_code == 400, (
+        "str_to_interval should return a 400 status code for invalid interval"
+    )
 
 
 @pytest.mark.parametrize("test_input", invalid_datetimes)
 def test_str_to_interval_with_invalid_datetime(test_input):
     with pytest.raises(HTTPException) as exc_info:
         str_to_interval(test_input)
-    assert (
-        exc_info.value.status_code == 400
-    ), "str_to_interval should return a 400 status code for invalid datetime"
+    assert exc_info.value.status_code == 400, (
+        "str_to_interval should return a 400 status code for invalid datetime"
+    )
 
 
 @pytest.mark.parametrize("test_input", valid_intervals)
 def test_str_to_interval_with_valid_interval(test_input):
-    assert isinstance(
-        str_to_interval(test_input), tuple
-    ), "str_to_interval should return tuple for multi-value input"
+    assert isinstance(str_to_interval(test_input), tuple), (
+        "str_to_interval should return tuple for multi-value input"
+    )
 
 
 @pytest.mark.parametrize("test_input", valid_datetimes)
 def test_str_to_interval_with_valid_datetime(test_input):
-    assert isinstance(
-        str_to_interval(test_input), datetime
-    ), "str_to_interval should return single datetime for single-value input"
+    assert isinstance(str_to_interval(test_input), datetime), (
+        "str_to_interval should return single datetime for single-value input"
+    )
 
 
 def test_str_to_interval_with_none():
     """Test that str_to_interval returns None when provided with None."""
-    assert (
-        str_to_interval(None) is None
-    ), "str_to_interval should return None when input is None"
+    assert str_to_interval(None) is None, (
+        "str_to_interval should return None when input is None"
+    )
 
 
 def test_now_functions() -> None:

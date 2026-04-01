@@ -1,6 +1,5 @@
-"""stac_fastapi.types.search module.
+"""stac_fastapi.types.search module."""
 
-"""
 from datetime import datetime as dt
 from typing import Dict, List, Optional, Union, cast
 
