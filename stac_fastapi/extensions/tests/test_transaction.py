@@ -1,4 +1,3 @@
-import json
 from typing import Iterator, List, Union
 
 import pytest
@@ -99,7 +98,7 @@ class DummyTransactionsClient(BaseTransactionsClient):
 
 
 def test_create_item(client: TestClient, item: Item) -> None:
-    response = client.post("/collections/a-collection/items", content=json.dumps(item))
+    response = client.post("/collections/a-collection/items", json=item)
     assert response.is_success, response.text
     assert response.json()["type"] == "Feature"
 
@@ -107,17 +106,13 @@ def test_create_item(client: TestClient, item: Item) -> None:
 def test_create_item_collection(
     client: TestClient, item_collection: ItemCollection
 ) -> None:
-    response = client.post(
-        "/collections/a-collection/items", content=json.dumps(item_collection)
-    )
+    response = client.post("/collections/a-collection/items", json=item_collection)
     assert response.is_success, response.text
     assert response.json()["type"] == "FeatureCollection"
 
 
 def test_update_item(client: TestClient, item: Item) -> None:
-    response = client.put(
-        "/collections/a-collection/items/an-item", content=json.dumps(item)
-    )
+    response = client.put("/collections/a-collection/items/an-item", json=item)
     assert response.is_success, response.text
     assert response.json()["path_collection_id"] == "a-collection"
     assert response.json()["path_item_id"] == "an-item"
@@ -127,7 +122,7 @@ def test_update_item(client: TestClient, item: Item) -> None:
 def test_patch_operation_item(client: TestClient) -> None:
     response = client.patch(
         "/collections/a-collection/items/an-item",
-        content='[{"op": "add", "path": "/properties/foo", "value": "bar"}]',
+        json=[{"op": "add", "path": "/properties/foo", "value": "bar"}],
     )
     assert response.is_success, response.text
     assert response.json()["path_collection_id"] == "a-collection"
@@ -140,7 +135,7 @@ def test_patch_operation_item(client: TestClient) -> None:
 def test_patch_merge_item(client: TestClient) -> None:
     response = client.patch(
         "/collections/a-collection/items/an-item",
-        content=json.dumps({"properties": {"hello": "world", "foo": None}}),
+        json={"properties": {"hello": "world", "foo": None}},
     )
     assert response.is_success, response.text
     assert response.json()["path_collection_id"] == "a-collection"
@@ -159,13 +154,13 @@ def test_delete_item(client: TestClient) -> None:
 
 
 def test_create_collection(client: TestClient, collection: Collection) -> None:
-    response = client.post("/collections", content=json.dumps(collection))
+    response = client.post("/collections", json=collection)
     assert response.is_success, response.text
     assert response.json()["type"] == "Collection"
 
 
 def test_update_collection(client: TestClient, collection: Collection) -> None:
-    response = client.put("/collections/a-collection", content=json.dumps(collection))
+    response = client.put("/collections/a-collection", json=collection)
     assert response.is_success, response.text
     assert response.json()["path_collection_id"] == "a-collection"
     assert response.json()["type"] == "Collection"
@@ -174,7 +169,7 @@ def test_update_collection(client: TestClient, collection: Collection) -> None:
 def test_patch_operation_collection(client: TestClient) -> None:
     response = client.patch(
         "/collections/a-collection",
-        content='[{"op": "add", "path": "/properties/foo", "value": "bar"}]',
+        json=[{"op": "add", "path": "/properties/foo", "value": "bar"}],
     )
     assert response.is_success, response.text
     assert response.json()["path_collection_id"] == "a-collection"
@@ -186,7 +181,7 @@ def test_patch_operation_collection(client: TestClient) -> None:
 def test_patch_merge_collection(client: TestClient) -> None:
     response = client.patch(
         "/collections/a-collection",
-        content=json.dumps({"summaries": {"hello": "world", "foo": None}}),
+        json={"summaries": {"hello": "world", "foo": None}},
     )
     assert response.is_success, response.text
     assert response.json()["path_collection_id"] == "a-collection"
