@@ -1,7 +1,7 @@
 """Transaction extension."""
 
 from enum import Enum
-from typing import List, Optional, Type, Union
+from typing import Any, List, Optional, Type, Union
 
 import attr
 from fastapi import APIRouter, Body, FastAPI
@@ -108,7 +108,8 @@ _patch_item_schema = TypeAdapter(List[PatchOperation]).json_schema() | {
     ]
 }
 # ref: https://github.com/pydantic/pydantic/issues/889
-_patch_item_schema["items"]["anyOf"] = list(_patch_item_schema["$defs"].values())
+_patch_item_schema_dict: Any = _patch_item_schema
+_patch_item_schema_dict["items"]["anyOf"] = list(_patch_item_schema_dict["$defs"].values())
 
 _patch_collection_schema = TypeAdapter(List[PatchOperation]).json_schema() | {
     "examples": [
@@ -146,8 +147,9 @@ _patch_collection_schema = TypeAdapter(List[PatchOperation]).json_schema() | {
     ]
 }
 # ref: https://github.com/pydantic/pydantic/issues/889
-_patch_collection_schema["items"]["anyOf"] = list(
-    _patch_collection_schema["$defs"].values()
+_patch_collection_schema_dict: Any = _patch_collection_schema
+_patch_collection_schema_dict["items"]["anyOf"] = list(
+    _patch_collection_schema_dict["$defs"].values()
 )
 
 
