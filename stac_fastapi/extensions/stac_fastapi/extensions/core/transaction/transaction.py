@@ -109,7 +109,9 @@ _patch_item_schema = TypeAdapter(List[PatchOperation]).json_schema() | {
 }
 # ref: https://github.com/pydantic/pydantic/issues/889
 _patch_item_schema_dict: Any = _patch_item_schema
-_patch_item_schema_dict["items"]["anyOf"] = list(_patch_item_schema_dict["$defs"].values())
+_patch_item_schema_dict["items"]["anyOf"] = list(
+    _patch_item_schema_dict["$defs"].values()
+)
 
 _patch_collection_schema = TypeAdapter(List[PatchOperation]).json_schema() | {
     "examples": [
