@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changes
+
+- removed the third party extensions folder and moved the bulk transactions extension to core ([#899](https://github.com/stac-utils/stac-fastapi/pull/899))
+
 ### Fixed
 
 - fix mypy type errors in transaction extension for Python 3.14 compatibility (mypy 1.20.0) ([#895](https://github.com/stac-utils/stac-fastapi/pull/895))
