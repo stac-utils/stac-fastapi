@@ -51,6 +51,20 @@ Other implementations include:
 - [stac-fastapi-duckdb](https://github.com/Healy-Hyperspatial/stac-fastapi-duckdb): [DuckDB](https://github.com/duckdb/duckdb) (experimental)
 - [stac-fastapi-sqlalchemy](https://github.com/stac-utils/stac-fastapi-sqlalchemy): [PostgreSQL](https://github.com/postgres/postgres) + [PostGIS](https://github.com/postgis/postgis) via [SQLAlchemy](https://www.sqlalchemy.org/) (abandoned in favor of stac-fastapi-pgstac)
 
+#### STAC-FastAPI Extensions
+
+- [aggregation](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/aggregation)
+- [bulk-transactions](https://github.com/stac-utils/stac-fastapi/blob/main/stac_fastapi/extensions/stac_fastapi/extensions/third_party/bulk_transactions.py)
+- [collection-search](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/collection_search)
+- [fields](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/fields)
+- [filter](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/filter)
+- [free-text](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/free_text)
+- [multi-tenant catalogs](https://github.com/StacLabs/stac-fastapi-catalogs-extension)
+- [pagination](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/pagination)
+- [query](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/query)
+- [sort](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/sort)
+- [transaction](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/transaction)
+
 ## Response Model Validation
 
 A common question when using this package is how request and response types are validated?
