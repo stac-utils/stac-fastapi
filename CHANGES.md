@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Simply add a list of present stac-fastapi extensions to the Readme ([#898](https://github.com/stac-utils/stac-fastapi/pull/898))
+
 ### Fixed
 
 - fix mypy type errors in transaction extension for Python 3.14 compatibility (mypy 1.20.0) ([#895](https://github.com/stac-utils/stac-fastapi/pull/895))
