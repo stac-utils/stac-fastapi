@@ -4,7 +4,11 @@
 
 ### Added
 
-- add a third-party extensions section in the README and docs for the external `stac-fastapi-catalogs-extension` project
+- add a third-party extensions section in the README and docs for the external `stac-fastapi-catalogs-extension` project ([#891](https://github.com/stac-utils/stac-fastapi/pull/891))
+
+### Fixed
+
+- fix mypy type errors in transaction extension for Python 3.14 compatibility (mypy 1.20.0) ([#895](https://github.com/stac-utils/stac-fastapi/pull/895))
 
 ## [6.2.1] - 2026-02-10
 

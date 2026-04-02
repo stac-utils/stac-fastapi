@@ -1,5 +1,6 @@
 # encoding: utf-8
 """Filter Extension."""
+
 from enum import Enum
 from typing import List, Type, Union
 

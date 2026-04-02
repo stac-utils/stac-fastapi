@@ -1,7 +1,6 @@
 # noqa: E501
 """test freetext extension."""
 
-
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
