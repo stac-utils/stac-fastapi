@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from pydantic import BaseModel, ValidationError
 
 from stac_fastapi.api.models import create_get_request_model, create_post_request_model
-from stac_fastapi.extensions.core import FieldsExtension, FilterExtension, SortExtension
+from stac_fastapi.extensions import FieldsExtension, FilterExtension, SortExtension
 from stac_fastapi.types.search import (
     APIRequest,
     BaseSearchGetRequest,
