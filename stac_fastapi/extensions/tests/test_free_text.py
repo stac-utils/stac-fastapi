@@ -10,8 +10,8 @@ from stac_fastapi.api.models import (
     create_post_request_model,
     create_request_model,
 )
-from stac_fastapi.extensions.core import FreeTextAdvancedExtension, FreeTextExtension
-from stac_fastapi.extensions.core.free_text import FreeTextConformanceClasses
+from stac_fastapi.extensions import FreeTextAdvancedExtension, FreeTextExtension
+from stac_fastapi.extensions.free_text import FreeTextConformanceClasses
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseCoreClient
 
