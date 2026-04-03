@@ -2,9 +2,9 @@
 
 ## [Unreleased]
 
-### Breaking Changes
+### Changed
 
-- removed the third party and core extensions folders and moved all of the extensions to root ([#899](https://github.com/stac-utils/stac-fastapi/pull/899))
+- removed the third party and core extensions folders and moved all of the extensions to root. Ensured backwards compatibility and added a deprecation warning. ([#899](https://github.com/stac-utils/stac-fastapi/pull/899))
 
 ### Fixed
 

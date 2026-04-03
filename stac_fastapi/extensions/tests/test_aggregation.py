@@ -5,7 +5,6 @@ from fastapi import Depends, FastAPI
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.extensions import AggregationExtension
 from stac_fastapi.extensions.aggregation.client import BaseAggregationClient
 from stac_fastapi.extensions.aggregation.request import (
     AggregationExtensionGetRequest,
@@ -14,6 +13,7 @@ from stac_fastapi.extensions.aggregation.types import (
     Aggregation,
     AggregationCollection,
 )
+from stac_fastapi.extensions.core import AggregationExtension
 from stac_fastapi.types.config import ApiSettings
 from stac_fastapi.types.core import BaseCoreClient
 
