@@ -4,7 +4,7 @@
 
 ### Added
 
-- add tests for the bulk transactions extension which were previously missing 
+- add tests for the bulk transactions extension which were previously missing ([#907](https://github.com/stac-utils/stac-fastapi/pull/907))
 
 ### Fixed
 
