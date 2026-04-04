@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Multi-tenant catalogs extension for managing multiple catalogs with support for catalog hierarchies, collections, items, and catalog-specific conformance and queryable endpoints ([#880](https://github.com/stac-utils/stac-fastapi/pull/880))
+
 ### Fixed
 
 - fix mypy type errors in transaction extension for Python 3.14 compatibility (mypy 1.20.0) ([#895](https://github.com/stac-utils/stac-fastapi/pull/895))
