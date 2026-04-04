@@ -1,6 +1,11 @@
 """Catalogs extension module."""
 
-from .catalogs import CATALOGS_CONFORMANCE_CLASSES, CatalogsExtension
+from .catalogs import (
+    CATALOGS_CORE_CONFORMANCE,
+    CATALOGS_TRANSACTION_CONFORMANCE,
+    CatalogsExtension,
+    CatalogsTransactionExtension,
+)
 from .client import AsyncBaseCatalogsClient, BaseCatalogsClient
 from .types import (
     CatalogChildrenRequest,
@@ -22,12 +27,14 @@ from .types import (
 
 __all__ = [
     "CatalogsExtension",
+    "CatalogsTransactionExtension",
     "AsyncBaseCatalogsClient",
     "BaseCatalogsClient",
     "Catalogs",
     "Children",
     "ObjectUri",
-    "CATALOGS_CONFORMANCE_CLASSES",
+    "CATALOGS_CORE_CONFORMANCE",
+    "CATALOGS_TRANSACTION_CONFORMANCE",
     "CatalogsUri",
     "CatalogsGetRequest",
     "CatalogCollectionUri",
