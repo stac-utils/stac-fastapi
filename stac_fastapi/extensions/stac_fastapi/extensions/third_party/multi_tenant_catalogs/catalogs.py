@@ -386,8 +386,7 @@ class CatalogsExtension(ApiExtension):
             response_class=self.response_class,
             summary="Unlink Sub-Catalog",
             description=(
-                "Unlink a sub-catalog from its parent. "
-                "Does not delete the sub-catalog."
+                "Unlink a sub-catalog from its parent. Does not delete the sub-catalog."
             ),
             tags=["Catalogs"],
         )

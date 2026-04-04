@@ -72,9 +72,9 @@ class CatalogCollectionItemsRequest(CatalogCollectionUri):
         default=None,
         converter=lambda x: _bbox_converter(x) if x is not None else None,
     )
-    datetime: Annotated[
-        str | None, Query(description="Datetime to filter items")
-    ] = attr.ib(default=None)
+    datetime: Annotated[str | None, Query(description="Datetime to filter items")] = (
+        attr.ib(default=None)
+    )
     limit: Annotated[
         int | None,
         Query(ge=1, le=10000, description="Maximum number of items to return"),
