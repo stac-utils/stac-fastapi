@@ -1,4 +1,4 @@
-"""Catalogs extension."""
+"""Multi-Tenant Catalogs Extensions."""
 
 from typing import Type
 
@@ -21,6 +21,7 @@ from .types import (
     CatalogChildrenRequest,
     CatalogCollectionItemsRequest,
     CatalogCollectionItemUri,
+    CatalogCollectionsRequest,
     CatalogCollectionUri,
     Catalogs,
     CatalogsGetRequest,
@@ -34,57 +35,50 @@ from .types import (
     UpdateCatalogRequest,
 )
 
-CATALOGS_CONFORMANCE_CLASSES = [
+# Conformance Classes
+CATALOGS_CORE_CONFORMANCE = [
     "https://api.stacspec.org/v1.0.0/core",
     "https://api.stacspec.org/v1.0.0-beta.4/multi-tenant-catalogs",
     "https://api.stacspec.org/v1.0.0-rc.2/children",
     "https://api.stacspec.org/v1.0.0-rc.2/children#type-filter",
 ]
 
-CATALOGS_TRANSACTION_CONFORMANCE_CLASS = (
+CATALOGS_TRANSACTION_CONFORMANCE = [
     "https://api.stacspec.org/v1.0.0-beta.4/multi-tenant-catalogs/transaction"
-)
+]
 
 
 @attr.s
 class CatalogsExtension(ApiExtension):
-    """Catalogs Extension (v1.0.0-beta.4).
+    """Catalogs Extension (Core / Read-Only).
 
-    The Catalogs extension adds a /catalogs endpoint that returns a list of all catalogs
-    in the database, similar to how /collections returns a list of collections.
+    The Catalogs extension provides discovery endpoints for a Multi-Tenant STAC
+    architecture. It introduces a `/catalogs` registry to support recursive
+    catalog hierarchies and poly-hierarchy (where collections or catalogs can
+    have multiple parents).
 
-    This extension enables Multi-Tenant architecture with recursive catalog hierarchies
-    and poly-hierarchy support (collections/catalogs can have multiple parents).
+    This class strictly implements the read-only discovery operations. For
+    creating, updating, or managing the hierarchy, see `CatalogsTransactionExtension`.
 
-    Link Strategy (v1.0.0-beta.4):
-    - Single parent link for contextual navigation
-    - rel="related" for additional parents (poly-hierarchy)
-    - rel="canonical" for global endpoints
-    - rel="duplicate" for alternative scoped paths
-
-    See client.py module docstring for detailed link strategy documentation.
+    For normative rules regarding Link Strategy, Contextual Navigation, and
+    HATEOAS link generation (e.g., `rel="parent"`, `rel="canonical"`), please
+    refer to the Multi-Tenant Catalogs specification.
 
     Attributes:
         client: A client implementing the catalogs extension pattern.
         settings: Extension settings.
-        enable_transactions: Enable catalog transaction endpoints (POST, PUT, DELETE).
         conformance_classes: List of conformance classes for this extension.
         router: FastAPI router for the extension endpoints.
         response_class: Response class for the extension.
     """
 
     client: AsyncBaseCatalogsClient = attr.ib(kw_only=True)
-    enable_transactions: bool = attr.ib(default=False, kw_only=True)
     settings: dict = attr.ib(default=attr.Factory(dict), kw_only=True)
-    conformance_classes: list[str] = attr.ib(factory=list, kw_only=True)
+    conformance_classes: list[str] = attr.ib(
+        default=CATALOGS_CORE_CONFORMANCE, kw_only=True
+    )
     router: APIRouter = attr.ib(factory=APIRouter, kw_only=True)
     response_class: Type[Response] = attr.ib(default=JSONResponse, kw_only=True)
-
-    def __attrs_post_init__(self):
-        """Initialize conformance classes based on settings."""
-        self.conformance_classes = CATALOGS_CONFORMANCE_CLASSES.copy()
-        if self.enable_transactions:
-            self.conformance_classes.append(CATALOGS_TRANSACTION_CONFORMANCE_CLASS)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -93,13 +87,7 @@ class CatalogsExtension(ApiExtension):
             app: target FastAPI application.
         """
         self.router = APIRouter()
-        self.register_read_endpoints()
-        if self.enable_transactions:
-            self.register_transaction_endpoints()
-        app.include_router(self.router, tags=["Catalogs"])
 
-    def register_read_endpoints(self) -> None:
-        """Register all GET endpoints using the async factory."""
         # GET /catalogs
         self.router.add_api_route(
             name="Get All Catalogs",
@@ -136,7 +124,7 @@ class CatalogsExtension(ApiExtension):
             path="/catalogs/{catalog_id}/collections",
             methods=["GET"],
             endpoint=create_async_endpoint(
-                self.client.get_catalog_collections, CatalogsUri
+                self.client.get_catalog_collections, CatalogCollectionsRequest
             ),
             response_model=Collections
             if self.settings.get("enable_response_models", True)
@@ -260,15 +248,76 @@ class CatalogsExtension(ApiExtension):
             response_class=self.response_class,
             summary="Get Catalog Queryables",
             description=(
-                "Get queryable fields available for filtering in this "
-                "sub-catalog (Filter Extension)."
+                "Get queryable fields available for filtering "
+                "in this sub-catalog (Filter Extension)."
             ),
             tags=["Catalogs"],
             responses={HTTP_200_OK: {"description": "Queryable fields for the catalog"}},
         )
 
-    def register_transaction_endpoints(self) -> None:
-        """Register POST/PUT/DELETE endpoints."""
+        app.include_router(self.router, tags=["Catalogs"])
+
+    async def _get_catalog_conformance(
+        self, catalog_id: str, request=None, **kwargs
+    ) -> dict | Response:
+        """Merge client response with extension conformance classes.
+
+        Args:
+            catalog_id: ID of the catalog to fetch conformance for.
+            request: The incoming FastAPI request.
+
+        Returns:
+            Dictionary containing merged conformance classes.
+        """
+        result = await self.client.get_catalog_conformance(
+            catalog_id=catalog_id, request=request
+        )
+        if isinstance(result, dict):
+            conforms = result.get("conformsTo", [])
+            conforms.extend(self.conformance_classes)
+            result["conformsTo"] = list(set(conforms))
+        return result
+
+
+@attr.s
+class CatalogsTransactionExtension(ApiExtension):
+    """Catalogs Transaction Extension (Management / Write).
+
+    The Catalogs Transaction extension provides the `POST`, `PUT`, and `DELETE`
+    endpoints required to manage a Multi-Tenant STAC catalog registry and its
+    hierarchical relationships.
+
+    This extension follows a "Safety-First" policy: deletions via these endpoints
+    typically unlink resources (preserving data) rather than destroying them.
+
+    For normative rules regarding Adoption logic, Cycle Prevention, and structural
+    validation, please refer to the Multi-Tenant Catalogs specification.
+
+    Attributes:
+        client: An `AsyncBaseCatalogsClient` instance implementing the
+        transactional endpoints.
+        settings: Application settings dictionary.
+        conformance_classes: List of transactional conformance classes for this extension.
+        router: FastAPI router for the extension endpoints.
+        response_class: Response class for the extension (defaults to JSONResponse).
+    """
+
+    client: AsyncBaseCatalogsClient = attr.ib(kw_only=True)
+    settings: dict = attr.ib(default=attr.Factory(dict), kw_only=True)
+    conformance_classes: list[str] = attr.ib(
+        default=CATALOGS_TRANSACTION_CONFORMANCE, kw_only=True
+    )
+    router: APIRouter = attr.ib(factory=APIRouter, kw_only=True)
+    response_class: Type[Response] = attr.ib(default=JSONResponse, kw_only=True)
+
+    def register(self, app: FastAPI) -> None:
+        """Register the transactional extension with a FastAPI application.
+
+        Args:
+            app: target FastAPI application.
+        """
+        self.router = APIRouter()
+
         # POST /catalogs
         self.router.add_api_route(
             name="Create Catalog",
@@ -313,7 +362,7 @@ class CatalogsExtension(ApiExtension):
             endpoint=create_async_endpoint(self.client.delete_catalog, CatalogsUri),
             response_class=self.response_class,
             summary="Delete Catalog",
-            description="Delete a catalog.",
+            description="Delete a catalog (Unlinks children and preserves data).",
             tags=["Catalogs"],
         )
 
@@ -331,7 +380,9 @@ class CatalogsExtension(ApiExtension):
             else None,
             response_class=self.response_class,
             summary="Create Catalog Collection",
-            description="Create a new collection and link it to a specific catalog.",
+            description=(
+                "Create a new collection or link an existing one to this catalog."
+            ),
             tags=["Catalogs"],
         )
 
@@ -347,8 +398,7 @@ class CatalogsExtension(ApiExtension):
             response_class=self.response_class,
             summary="Unlink Collection from Catalog",
             description=(
-                "Removes the link between the catalog and collection. "
-                "The Collection data is NOT deleted."
+                "Removes the link between catalog and collection. Data is NOT deleted."
             ),
             tags=["Catalogs"],
         )
@@ -368,8 +418,7 @@ class CatalogsExtension(ApiExtension):
             response_class=self.response_class,
             summary="Create Catalog Sub-Catalog",
             description=(
-                "Create a new catalog or link an existing catalog as a "
-                "sub-catalog of a specific catalog."
+                "Create a new sub-catalog or link an existing catalog to this parent."
             ),
             tags=["Catalogs"],
         )
@@ -386,22 +435,9 @@ class CatalogsExtension(ApiExtension):
             response_class=self.response_class,
             summary="Unlink Sub-Catalog",
             description=(
-                "Unlink a sub-catalog from its parent. Does not delete the sub-catalog."
+                "Unlink a sub-catalog from its parent. Does not delete the catalog."
             ),
             tags=["Catalogs"],
         )
 
-    async def _get_catalog_conformance(
-        self, catalog_id: str, request=None, **kwargs
-    ) -> dict | Response:
-        """Merge client response with extension conformance classes."""
-        result = await self.client.get_catalog_conformance(
-            catalog_id=catalog_id, request=request
-        )
-        # Merge extension conformance classes with client response
-        if isinstance(result, dict):
-            if "conformsTo" in result:
-                result["conformsTo"].extend(self.conformance_classes)
-            else:
-                result["conformsTo"] = self.conformance_classes
-        return result
+        app.include_router(self.router, tags=["Catalogs"])

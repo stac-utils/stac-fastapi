@@ -6,6 +6,7 @@ from .multi_tenant_catalogs import (
     BaseCatalogsClient,
     Catalogs,
     CatalogsExtension,
+    CatalogsTransactionExtension,
     Children,
     ObjectUri,
 )
@@ -13,6 +14,7 @@ from .multi_tenant_catalogs import (
 __all__ = (
     "BulkTransactionExtension",
     "CatalogsExtension",
+    "CatalogsTransactionExtension",
     "AsyncBaseCatalogsClient",
     "BaseCatalogsClient",
     "Catalogs",

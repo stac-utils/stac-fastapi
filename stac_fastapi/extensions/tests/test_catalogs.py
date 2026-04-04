@@ -14,7 +14,10 @@ from starlette.responses import Response
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.extensions.third_party import CatalogsExtension
+from stac_fastapi.extensions.third_party import (
+    CatalogsExtension,
+    CatalogsTransactionExtension,
+)
 from stac_fastapi.extensions.third_party.multi_tenant_catalogs.client import (
     AsyncBaseCatalogsClient,
 )
@@ -124,7 +127,12 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
         return None
 
     async def get_catalog_collections(
-        self, catalog_id: str, request: Request | None = None, **kwargs
+        self,
+        catalog_id: str,
+        limit: int | None = None,
+        token: str | None = None,
+        request: Request | None = None,
+        **kwargs,
     ) -> Collections | Response:
         return {
             "collections": [
@@ -426,7 +434,10 @@ def client(
         extensions=[
             CatalogsExtension(
                 client=catalogs_client,
-                enable_transactions=True,
+                settings=settings.model_dump(),
+            ),
+            CatalogsTransactionExtension(
+                client=catalogs_client,
                 settings=settings.model_dump(),
             ),
         ],
@@ -447,7 +458,6 @@ def client_readonly(
         extensions=[
             CatalogsExtension(
                 client=catalogs_client,
-                enable_transactions=False,
                 settings=settings.model_dump(),
             ),
         ],
@@ -728,7 +738,7 @@ def test_landing_page_includes_catalogs_links(client: TestClient) -> None:
     assert len(data["links"]) > 0
 
 
-# --- READ-ONLY MODE TESTS (enable_transactions=False) ---
+# --- READ-ONLY MODE TESTS ---
 
 
 def test_readonly_get_catalogs(client_readonly: TestClient) -> None:
@@ -826,7 +836,7 @@ def test_readonly_conformance_excludes_transaction_class(
     client_readonly: TestClient,
 ) -> None:
     """Test that transaction conformance class is not present in read-only mode."""
-    response = client_readonly.get("/catalogs/test-catalog-1/conformance")
+    response = client_readonly.get("/")
     assert response.status_code == 200, response.text
     data = response.json()
     assert "conformsTo" in data
@@ -838,7 +848,7 @@ def test_readonly_conformance_excludes_transaction_class(
 
 def test_enabled_conformance_includes_transaction_class(client: TestClient) -> None:
     """Test that transaction conformance class is present when enabled."""
-    response = client.get("/catalogs/test-catalog-1/conformance")
+    response = client.get("/")
     assert response.status_code == 200, response.text
     data = response.json()
     assert "conformsTo" in data

@@ -62,6 +62,19 @@ class CatalogCollectionItemUri(CatalogCollectionUri):
 
 
 @attr.s
+class CatalogCollectionsRequest(CatalogsUri):
+    """Parameters for /catalogs/{catalog_id}/collections endpoint."""
+
+    limit: Annotated[
+        int | None,
+        Query(ge=1, le=1000, description="Maximum number of collections to return"),
+    ] = attr.ib(default=10)
+    token: Annotated[str | None, Query(description="Pagination token")] = attr.ib(
+        default=None
+    )
+
+
+@attr.s
 class CatalogCollectionItemsRequest(CatalogCollectionUri):
     """Parameters for /catalogs/{catalog_id}/collections/{collection_id}/items."""
 
