@@ -1,6 +1,5 @@
 """Fastapi app creation."""
 
-
 import inspect
 from typing import Awaitable, Callable, Dict, List, Optional, Tuple, Type, Union
 
