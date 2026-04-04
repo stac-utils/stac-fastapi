@@ -4,7 +4,7 @@
 
 ### Added
 
-- Add tests for the sort extension which were previously missing
+- Add tests for the sort extension which were previously missing ([#906](https://github.com/stac-utils/stac-fastapi/pull/906))
 
 ### Fixed
 

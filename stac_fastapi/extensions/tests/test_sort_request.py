@@ -55,7 +55,7 @@ def test_sort_extension_post_request_valid_data():
 def test_sort_extension_post_request_invalid_direction():
     """
     Test that pydantic validation catches invalid directions.
-    The PostSortModel usually restricts direction to 'asc' or 'desc'.
+    The PostSortModel restricts direction to 'asc' or 'desc'.
     """
     invalid_data = {"sortby": [{"field": "properties.created", "direction": "sideways"}]}
     with pytest.raises(ValidationError):
