@@ -127,7 +127,12 @@ class DummyCatalogsClient(AsyncBaseCatalogsClient):
         return None
 
     async def get_catalog_collections(
-        self, catalog_id: str, request: Request | None = None, **kwargs
+        self,
+        catalog_id: str,
+        limit: int | None = None,
+        token: str | None = None,
+        request: Request | None = None,
+        **kwargs,
     ) -> Collections | Response:
         return {
             "collections": [
