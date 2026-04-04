@@ -4,7 +4,7 @@
 
 ###
 
-- added tests for the fields extension, which were previously missing
+- added tests for the fields extension, which were previously missing ([#902](https://github.com/stac-utils/stac-fastapi/pull/902))
 
 ### Fixed
 
