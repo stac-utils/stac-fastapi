@@ -86,7 +86,7 @@ class CatalogsExtension(ApiExtension):
         Args:
             app: target FastAPI application.
         """
-        self.router = APIRouter()
+        self.router.prefix = app.state.router_prefix
 
         # GET /catalogs
         self.router.add_api_route(
@@ -316,7 +316,7 @@ class CatalogsTransactionExtension(ApiExtension):
         Args:
             app: target FastAPI application.
         """
-        self.router = APIRouter()
+        self.router.prefix = app.state.router_prefix
 
         # POST /catalogs
         self.router.add_api_route(
