@@ -47,8 +47,8 @@ The [**Fields** API extension](https://github.com/stac-api-extensions/fields) en
 from typing import Optional, Set
 
 import attr
-from stac_fastapi.extensions.core import FieldsExtension as FieldsExtensionBase
-from stac_fastapi.extensions.core.fields import request
+from stac_fastapi.extensions import FieldsExtension as FieldsExtensionBase
+from stac_fastapi.extensions.fields import request
 from pydantic import BaseModel, Field
 
 
