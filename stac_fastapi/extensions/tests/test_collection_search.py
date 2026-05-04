@@ -8,7 +8,7 @@ from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import create_request_model
-from stac_fastapi.extensions.core import (
+from stac_fastapi.extensions import (
     AggregationExtension,
     CollectionSearchExtension,
     CollectionSearchFilterExtension,
@@ -19,38 +19,38 @@ from stac_fastapi.extensions.core import (
     QueryExtension,
     SortExtension,
 )
-from stac_fastapi.extensions.core.collection_search import (
+from stac_fastapi.extensions.collection_search import (
     CollectionSearchConformanceClasses,
 )
-from stac_fastapi.extensions.core.collection_search.client import (
+from stac_fastapi.extensions.collection_search.client import (
     BaseCollectionSearchClient,
 )
-from stac_fastapi.extensions.core.collection_search.request import (
+from stac_fastapi.extensions.collection_search.request import (
     BaseCollectionSearchGetRequest,
     BaseCollectionSearchPostRequest,
 )
-from stac_fastapi.extensions.core.fields import FieldsConformanceClasses
-from stac_fastapi.extensions.core.fields.request import (
+from stac_fastapi.extensions.fields import FieldsConformanceClasses
+from stac_fastapi.extensions.fields.request import (
     FieldsExtensionGetRequest,
     FieldsExtensionPostRequest,
 )
-from stac_fastapi.extensions.core.filter import FilterConformanceClasses
-from stac_fastapi.extensions.core.filter.request import (
+from stac_fastapi.extensions.filter import FilterConformanceClasses
+from stac_fastapi.extensions.filter.request import (
     FilterExtensionGetRequest,
     FilterExtensionPostRequest,
 )
-from stac_fastapi.extensions.core.free_text import FreeTextConformanceClasses
-from stac_fastapi.extensions.core.free_text.request import (
+from stac_fastapi.extensions.free_text import FreeTextConformanceClasses
+from stac_fastapi.extensions.free_text.request import (
     FreeTextExtensionGetRequest,
     FreeTextExtensionPostRequest,
 )
-from stac_fastapi.extensions.core.query import QueryConformanceClasses
-from stac_fastapi.extensions.core.query.request import (
+from stac_fastapi.extensions.query import QueryConformanceClasses
+from stac_fastapi.extensions.query.request import (
     QueryExtensionGetRequest,
     QueryExtensionPostRequest,
 )
-from stac_fastapi.extensions.core.sort import SortConformanceClasses
-from stac_fastapi.extensions.core.sort.request import (
+from stac_fastapi.extensions.sort import SortConformanceClasses
+from stac_fastapi.extensions.sort.request import (
     SortExtensionGetRequest,
     SortExtensionPostRequest,
 )
