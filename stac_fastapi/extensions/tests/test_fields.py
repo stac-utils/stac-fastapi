@@ -3,11 +3,11 @@
 import pytest
 from fastapi import FastAPI
 
-from stac_fastapi.extensions.core.fields import (
+from stac_fastapi.extensions.fields import (
     FieldsConformanceClasses,
     FieldsExtension,
 )
-from stac_fastapi.extensions.core.fields.request import (
+from stac_fastapi.extensions.fields.request import (
     FieldsExtensionGetRequest,
     FieldsExtensionPostRequest,
 )

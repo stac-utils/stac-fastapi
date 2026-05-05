@@ -1,4 +1,4 @@
-from stac_fastapi.extensions.core.fields.request import (
+from stac_fastapi.extensions.fields.request import (
     FieldsExtensionGetRequest,
     FieldsExtensionPostRequest,
     PostFieldsExtension,
