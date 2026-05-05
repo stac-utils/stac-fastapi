@@ -2,9 +2,14 @@
 
 ## [Unreleased]
 
-###
+### Added
 
-- added tests for the fields extension, which were previously missing ([#902](https://github.com/stac-utils/stac-fastapi/pull/902))
+- Added tests for the fields extension, which were previously missing ([#902](https://github.com/stac-utils/stac-fastapi/pull/902))
+- Simply add a list of present stac-fastapi extensions to the Readme ([#898](https://github.com/stac-utils/stac-fastapi/pull/898))
+
+### Changed
+
+- removed the third party and core extensions folders and moved all of the extensions to root. Ensured backwards compatibility and added a deprecation warning. ([#899](https://github.com/stac-utils/stac-fastapi/pull/899))
 
 ### Fixed
 

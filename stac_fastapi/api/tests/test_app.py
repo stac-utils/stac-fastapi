@@ -17,7 +17,7 @@ from stac_fastapi.api.models import (
     create_get_request_model,
     create_post_request_model,
 )
-from stac_fastapi.extensions.core import (
+from stac_fastapi.extensions import (
     FieldsExtension,
     FilterExtension,
     SearchFilterExtension,
@@ -626,6 +626,10 @@ def test_client_datetime(TestCoreClientDatetime):
         item = client.get("/collections/test/items/test_item_datetime")
         assert "datetime" in item.json()["properties"]
 
+        items = client.get("/search?collections=test")
+        item = items.json()["features"][0]
+        assert "datetime" in item["properties"]
+
     test_app = app.StacApi(
         settings=ApiSettings(
             enable_direct_response=False,
@@ -636,3 +640,7 @@ def test_client_datetime(TestCoreClientDatetime):
     with TestClient(test_app.app) as client:
         item = client.get("/collections/test/items/test_item_datetime")
         assert "datetime" in item.json()["properties"]
+
+        items = client.get("/search?collections=test")
+        item = items.json()["features"][0]
+        assert "datetime" in item["properties"]

@@ -7,9 +7,9 @@ from stac_pydantic.item_collection import ItemCollection
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.extensions.core import TransactionExtension
-from stac_fastapi.extensions.core.transaction import BaseTransactionsClient
-from stac_fastapi.extensions.core.transaction.request import (
+from stac_fastapi.extensions import TransactionExtension
+from stac_fastapi.extensions.transaction import BaseTransactionsClient
+from stac_fastapi.extensions.transaction.request import (
     PartialCollection,
     PartialItem,
     PatchOperation,

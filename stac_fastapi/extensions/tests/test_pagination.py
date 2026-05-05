@@ -9,7 +9,7 @@ from stac_fastapi.api.models import (
     create_post_request_model,
     create_request_model,
 )
-from stac_fastapi.extensions.core import (
+from stac_fastapi.extensions import (
     OffsetPaginationExtension,
     PaginationExtension,
     TokenPaginationExtension,
