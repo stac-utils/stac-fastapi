@@ -2,7 +2,7 @@ import pytest
 from pydantic import ValidationError
 from stac_pydantic.api.extensions.sort import SortExtension as PostSortModel
 
-from stac_fastapi.extensions.core.sort.request import (
+from stac_fastapi.extensions.sort.request import (
     SortExtensionGetRequest,
     SortExtensionPostRequest,
 )

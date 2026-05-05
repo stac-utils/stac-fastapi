@@ -4,11 +4,11 @@ import pytest
 from fastapi import FastAPI
 
 # Adjust the import path based on your project structure
-from stac_fastapi.extensions.core.sort import (
+from stac_fastapi.extensions.sort import (
     SortConformanceClasses,
     SortExtension,
 )
-from stac_fastapi.extensions.core.sort.request import (
+from stac_fastapi.extensions.sort.request import (
     SortExtensionGetRequest,
     SortExtensionPostRequest,
 )
