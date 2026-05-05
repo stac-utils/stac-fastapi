@@ -5,6 +5,14 @@
 ### Added
 
 - Multi-tenant catalogs extension for managing multiple catalogs with support for catalog hierarchies, collections, items, and catalog-specific conformance and queryable endpoints ([#880](https://github.com/stac-utils/stac-fastapi/pull/880))
+- Add tests for the `bulk transactions` extension ([#907](https://github.com/stac-utils/stac-fastapi/pull/907))
+- Add tests for the `sort` extension ([#906](https://github.com/stac-utils/stac-fastapi/pull/906))
+- Add tests for the `fields` extension ([#902](https://github.com/stac-utils/stac-fastapi/pull/902))
+- Simply add a list of present stac-fastapi extensions to the Readme ([#898](https://github.com/stac-utils/stac-fastapi/pull/898))
+
+### Changed
+
+- removed the third party and core extensions folders and moved all of the extensions to root. Ensured backwards compatibility and added a deprecation warning. ([#899](https://github.com/stac-utils/stac-fastapi/pull/899))
 
 ### Fixed
 
