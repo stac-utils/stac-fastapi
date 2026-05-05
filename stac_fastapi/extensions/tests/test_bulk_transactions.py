@@ -7,7 +7,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.extensions.third_party.bulk_transactions import (
+from stac_fastapi.extensions.bulk_transactions import (
     AsyncBaseBulkTransactionsClient,
     BaseBulkTransactionsClient,
     BulkTransactionExtension,
