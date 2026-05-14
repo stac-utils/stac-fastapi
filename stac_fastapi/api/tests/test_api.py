@@ -39,9 +39,9 @@ class TestRouteDependencies:
         with TestClient(api.app) as client:
             for route in routes:
                 response = getattr(client, route["method"].lower())(route["path"])
-                assert (
-                    response.status_code == 401
-                ), "Unauthenticated requests should be rejected"
+                assert response.status_code == 401, (
+                    "Unauthenticated requests should be rejected"
+                )
                 assert response.json() == {"detail": "Not authenticated"}
 
                 path = route["path"].format(
@@ -54,9 +54,9 @@ class TestRouteDependencies:
                     content=route["payload"],
                     headers={"content-type": "application/json"},
                 )
-                assert (
-                    200 <= response.status_code < 300
-                ), "Authenticated requests should be accepted"
+                assert 200 <= response.status_code < 300, (
+                    "Authenticated requests should be accepted"
+                )
                 assert response.json() == "dummy response"
 
     @staticmethod
@@ -73,9 +73,9 @@ class TestRouteDependencies:
                     headers={"content-type": "application/json"},
                 )
 
-                assert (
-                    200 <= response.status_code < 300
-                ), "Unauthenticated requests should be accepted"
+                assert 200 <= response.status_code < 300, (
+                    "Unauthenticated requests should be accepted"
+                )
                 assert response.json() == "dummy response"
 
     def test_openapi_content_type(self):
@@ -448,19 +448,6 @@ class TestRouteDependencies:
 
 
 class DummyCoreClient(core.BaseCoreClient):
-<<<<<<< HEAD
-    def all_collections(self, *args, **kwargs): ...
-
-    def get_collection(self, *args, **kwargs): ...
-
-    def get_item(self, *args, **kwargs): ...
-
-    def get_search(self, *args, **kwargs): ...
-
-    def post_search(self, *args, **kwargs): ...
-
-    def item_collection(self, *args, **kwargs): ...
-=======
     def all_collections(self, *args, **kwargs):
         return "dummy response"
 
@@ -478,7 +465,6 @@ class DummyCoreClient(core.BaseCoreClient):
 
     def item_collection(self, *args, **kwargs):
         return "dummy response"
->>>>>>> 94418b3 (feat: add route_dependencies attribute to transaction extensions)
 
 
 class DummyTransactionsClient(BaseTransactionsClient):
