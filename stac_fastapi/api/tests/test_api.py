@@ -69,11 +69,12 @@ class TestRouteDependencies:
                 response = client.request(
                     method=route["method"].lower(),
                     url=path,
-                    content=route["payload"],
+                    content=route.get("payload"),
                     headers={"content-type": "application/json"},
                 )
+
                 assert 200 <= response.status_code < 300, (
-                    "Authenticated requests should be accepted"
+                    "Unauthenticated requests should be accepted"
                 )
                 assert response.json() == "dummy response"
 
@@ -85,6 +86,53 @@ class TestRouteDependencies:
                 response.headers["content-type"]
                 == "application/vnd.oai.openapi+json;version=3.0"
             )
+
+    def test_build_api_with_transaction_dependencies(self, collection, item):
+        settings = config.ApiSettings()
+        dependencies = [Depends(must_be_bob)]
+        api = self._build_api(
+            extensions=[
+                TransactionExtension(
+                    client=DummyTransactionsClient(),
+                    settings=settings,
+                    route_dependencies=dependencies,
+                )
+            ]
+        )
+        self._assert_dependency_applied(
+            api,
+            [
+                {"path": "/collections", "method": "POST", "payload": collection},
+                {
+                    "path": "/collections/{collectionId}",
+                    "method": "PUT",
+                    "payload": collection,
+                },
+                {
+                    "path": "/collections/{collectionId}",
+                    "method": "DELETE",
+                    "payload": collection,
+                },
+                {
+                    "path": "/collections/{collectionId}/items",
+                    "method": "POST",
+                    "payload": item,
+                },
+                {
+                    "path": "/collections/{collectionId}/items/{itemId}",
+                    "method": "PUT",
+                    "payload": item,
+                },
+                {
+                    "path": "/collections/{collectionId}/items/{itemId}",
+                    "method": "DELETE",
+                    "payload": item,
+                },
+            ],
+        )
+        self._assert_dependency_not_applied(
+            api, [{"path": "/collections/{collectionId}", "method": "GET"}]
+        )
 
     def test_build_api_with_route_dependencies(self, collection, item):
         routes = [
@@ -400,17 +448,23 @@ class TestRouteDependencies:
 
 
 class DummyCoreClient(core.BaseCoreClient):
-    def all_collections(self, *args, **kwargs): ...
+    def all_collections(self, *args, **kwargs):
+        return "dummy response"
 
-    def get_collection(self, *args, **kwargs): ...
+    def get_collection(self, *args, **kwargs):
+        return "dummy response"
 
-    def get_item(self, *args, **kwargs): ...
+    def get_item(self, *args, **kwargs):
+        return "dummy response"
 
-    def get_search(self, *args, **kwargs): ...
+    def get_search(self, *args, **kwargs):
+        return "dummy response"
 
-    def post_search(self, *args, **kwargs): ...
+    def post_search(self, *args, **kwargs):
+        return "dummy response"
 
-    def item_collection(self, *args, **kwargs): ...
+    def item_collection(self, *args, **kwargs):
+        return "dummy response"
 
 
 class DummyTransactionsClient(BaseTransactionsClient):

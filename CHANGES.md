@@ -8,6 +8,7 @@
 - Add tests for the `sort` extension ([#906](https://github.com/stac-utils/stac-fastapi/pull/906))
 - Add tests for the `fields` extension ([#902](https://github.com/stac-utils/stac-fastapi/pull/902))
 - Simply add a list of present stac-fastapi extensions to the Readme ([#898](https://github.com/stac-utils/stac-fastapi/pull/898))
+- Add `route_dependencies` argument to `transactions` and `bulk_transactions` extensions to make it easy to apply auth dependencies to all transactions routes ([#885](https://github.com/stac-utils/stac-fastapi/pull/885))
 
 ### Changed
 
