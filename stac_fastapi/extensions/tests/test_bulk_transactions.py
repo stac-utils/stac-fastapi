@@ -4,6 +4,7 @@ from typing import Iterator
 from unittest.mock import Mock
 
 import pytest
+from fastapi import Depends, HTTPException, security, status
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
@@ -63,15 +64,18 @@ def test_bulk_transaction_extension_customization():
     mock_client = Mock(spec=AsyncBaseBulkTransactionsClient)
     custom_conformance = ["https://example.com/bulk-spec"]
     custom_schema = "https://example.com/bulk-schema.json"
+    custom_dependencies = [Depends(must_be_bob)]
 
     ext = BulkTransactionExtension(
         client=mock_client,
         conformance_classes=custom_conformance,
         schema_href=custom_schema,
+        route_dependencies=custom_dependencies,
     )
 
     assert ext.conformance_classes == custom_conformance
     assert ext.schema_href == custom_schema
+    assert ext.route_dependencies == custom_dependencies
 
 
 # --- INTEGRATION TESTS ---
@@ -183,3 +187,53 @@ def test_bulk_item_invalid_method(client: TestClient, item: dict) -> None:
     response = client.post("/collections/a-collection/bulk_items", json=payload)
 
     assert response.status_code == 400
+
+
+def test_bulk_item_insert_with_route_dependencies(item: dict) -> None:
+    """Test route dependencies are applied to the bulk transactions route."""
+    settings = ApiSettings()
+    api = StacApi(
+        settings=settings,
+        client=DummyCoreClient(),
+        extensions=[
+            BulkTransactionExtension(
+                client=DummyBulkTransactionsClient(),
+                route_dependencies=[Depends(must_be_bob)],
+            ),
+        ],
+    )
+    payload = {
+        "items": {item["id"]: item},
+        "method": "insert",
+    }
+
+    with TestClient(api.app) as client:
+        unauthenticated_response = client.post(
+            "/collections/a-collection/bulk_items", json=payload
+        )
+        assert unauthenticated_response.status_code == 401
+        assert unauthenticated_response.json() == {"detail": "Not authenticated"}
+
+        authenticated_response = client.post(
+            "/collections/a-collection/bulk_items",
+            json=payload,
+            auth=("bob", "dobbs"),
+        )
+        assert authenticated_response.is_success, authenticated_response.text
+        assert (
+            authenticated_response.json() == "Successfully processed 1 items via insert."
+        )
+
+
+def must_be_bob(
+    credentials: security.HTTPBasicCredentials = Depends(security.HTTPBasic()),
+) -> bool:
+    """Require HTTP basic auth for user bob."""
+    if credentials.username == "bob":
+        return True
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="You're not Bob",
+        headers={"WWW-Authenticate": "Basic"},
+    )
