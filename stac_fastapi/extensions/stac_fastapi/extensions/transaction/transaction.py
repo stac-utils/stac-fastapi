@@ -1,7 +1,7 @@
 """Transaction extension."""
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Sequence, Type, Union
 
 import attr
 from fastapi import APIRouter, Body, FastAPI
