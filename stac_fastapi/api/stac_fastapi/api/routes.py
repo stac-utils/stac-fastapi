@@ -96,9 +96,24 @@ def add_route_dependencies(
     Returns:
         None
     """
-    for scope in scopes:
-        _scope = copy.deepcopy(scope)
-        for route in routes:
+    for route in routes:
+        # 1. Safely recurse into FastAPI >= 0.137 _IncludedRouters
+        if hasattr(route, "original_router"):
+            add_route_dependencies(route.original_router.routes, scopes, dependencies)
+            continue
+            
+        # 2. Recurse into Mounts or older Starlette sub-routers
+        if hasattr(route, "routes") and route.routes:
+            add_route_dependencies(route.routes, scopes, dependencies)
+            continue
+            
+        # 3. Skip anything that isn't a standard endpoint
+        if not hasattr(route, "path") or not hasattr(route, "methods") or not route.methods:
+            continue
+
+        for scope in scopes:
+            _scope = copy.deepcopy(scope)
+            
             if scope["path"] == "*":
                 # NOTE: ignore type, because BaseRoute has no "path" attribute
                 # but APIRoute does.

@@ -17,6 +17,7 @@
 ### Fixed
 
 - fix mypy type errors in transaction extension for Python 3.14 compatibility (mypy 1.20.0) ([#895](https://github.com/stac-utils/stac-fastapi/pull/895))
+- fix `add_route_dependencies` to support FastAPI >= 0.137 by recursively unwrapping `_IncludedRouter` objects
 
 ## [6.2.1] - 2026-02-10
 
