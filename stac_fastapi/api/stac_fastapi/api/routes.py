@@ -83,6 +83,45 @@ class Scope(TypedDict, total=False):
     type: Optional[str]
 
 
+def _is_endpoint_route(route: BaseRoute) -> bool:
+    """Check if route is a standard endpoint (not a mount or sub-router)."""
+    return (
+        hasattr(route, "path") and hasattr(route, "methods") and route.methods is not None
+    )
+
+
+def _apply_dependencies_to_route(
+    route: BaseRoute, scopes: List[Scope], dependencies: List[params.Depends]
+) -> None:
+    """Apply dependencies to a single route matching the given scopes."""
+    for scope in scopes:
+        _scope = copy.deepcopy(scope)
+
+        if scope["path"] == "*":
+            _scope["path"] = route.path  # type: ignore
+
+        if scope["method"] == "*":
+            _scope["method"] = list(route.methods)[0]  # type: ignore
+
+        match, _ = route.matches({"type": "http", **_scope})
+        if match != Match.FULL:
+            continue
+
+        if not hasattr(route, "dependant"):
+            continue
+
+        for depends in dependencies[::-1]:
+            route.dependant.dependencies.insert(
+                0,
+                get_parameterless_sub_dependant(
+                    depends=depends,
+                    path=route.path_format,  # type: ignore
+                ),
+            )
+
+        route.dependencies.extend(dependencies)  # type: ignore
+
+
 def add_route_dependencies(
     routes: List[BaseRoute], scopes: List[Scope], dependencies: List[params.Depends]
 ) -> None:
@@ -97,62 +136,18 @@ def add_route_dependencies(
         None
     """
     for route in routes:
-        # 1. Safely recurse into FastAPI >= 0.137 _IncludedRouters
         if hasattr(route, "original_router"):
             add_route_dependencies(route.original_router.routes, scopes, dependencies)
             continue
-            
-        # 2. Recurse into Mounts or older Starlette sub-routers
+
         if hasattr(route, "routes") and route.routes:
             add_route_dependencies(route.routes, scopes, dependencies)
             continue
-            
-        # 3. Skip anything that isn't a standard endpoint
-        if not hasattr(route, "path") or not hasattr(route, "methods") or not route.methods:
+
+        if not _is_endpoint_route(route):
             continue
 
-        for scope in scopes:
-            _scope = copy.deepcopy(scope)
-            
-            if scope["path"] == "*":
-                # NOTE: ignore type, because BaseRoute has no "path" attribute
-                # but APIRoute does.
-                _scope["path"] = route.path  # type: ignore
-
-            # NOTE: ignore type, because BaseRoute has no "method" attribute
-            # but APIRoute does.
-            if scope["method"] == "*":
-                _scope["method"] = list(route.methods)[0]  # type: ignore
-
-            match, _ = route.matches({"type": "http", **_scope})
-            if match != Match.FULL:
-                continue
-
-            # Ignore paths without dependants, e.g. /api, /api.html, /docs/oauth2-redirect
-            if not hasattr(route, "dependant"):
-                continue
-
-            # Mimicking how APIRoute handles dependencies:
-            # https://github.com/tiangolo/fastapi/blob/1760da0efa55585c19835d81afa8ca386036c325/fastapi/routing.py#L408-L412
-            for depends in dependencies[::-1]:
-                route.dependant.dependencies.insert(
-                    0,
-                    get_parameterless_sub_dependant(
-                        # NOTE: ignore type, because BaseRoute has no "path_format"
-                        # attribute but APIRoute does.
-                        depends=depends,
-                        path=route.path_format,  # type: ignore
-                    ),
-                )
-
-            # Register dependencies directly on route so that they aren't ignored if
-            # the routes are later associated with an app (e.g.
-            # app.include_router(router))
-            # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/applications.py#L337-L360
-            # https://github.com/tiangolo/fastapi/blob/58ab733f19846b4875c5b79bfb1f4d1cb7f4823f/fastapi/routing.py#L677-L678
-            # NOTE: ignore type, because BaseRoute has no "dependencies" attribute
-            # but APIRoute does.
-            route.dependencies.extend(dependencies)  # type: ignore
+        _apply_dependencies_to_route(route, scopes, dependencies)
 
 
 def add_direct_response(app: FastAPI) -> None:
