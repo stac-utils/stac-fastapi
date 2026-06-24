@@ -2342,16 +2342,16 @@ dev = [
 
 [[package]]
 name = "stac-pydantic"
-version = "3.5.2"
+version = "3.6.0a0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "geojson-pydantic" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/12/b2/fe3073c4d80a6ad44b59a9e3aa2dbc67d3677214a65f14b41e7d823f535e/stac_pydantic-3.5.2.tar.gz", hash = "sha256:72dd366674348f1f1fffa2e627db58b3582bd7fa275d15fd190f114c4552ee89", size = 16246, upload-time = "2026-05-29T10:29:29.946Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b0/6f/872a05e2c813f5aca89519fb046a8466e342c3e8c406008ac476886ba231/stac_pydantic-3.6.0a0.tar.gz", hash = "sha256:996fbae4b3a639a1ac2d193adf702f5242effff207f18e00013909f0cb5b1d48", size = 16241, upload-time = "2026-06-24T16:02:16.059Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/46/cd/b39611d513b1584635f717b8a0e9c23bb7f7f54101d216c3856d89782a3c/stac_pydantic-3.5.2-py3-none-any.whl", hash = "sha256:32082f3096ae5fb7ab33bb715af8cdd1b3e4caf65d0cd84adc3a6d05eccc84d4", size = 25595, upload-time = "2026-05-29T10:29:28.881Z" },
+    { url = "https://files.pythonhosted.org/packages/9a/6d/b9809a23cf3b75325f81c8539485b198a20eacf6bc432cf0fc11c6659fd5/stac_pydantic-3.6.0a0-py3-none-any.whl", hash = "sha256:9a1818daa8f9351ace9cecbb1b9a23242c8e8a22cfa9a216e0717a8c6615d6b7", size = 25486, upload-time = "2026-06-24T16:02:15.17Z" },
 ]
 
 [[package]]
