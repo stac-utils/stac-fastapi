@@ -1,5 +1,5 @@
 import asyncio
-from typing import List, Optional, Union
+from typing import Annotated
 
 import attr
 import pytest
@@ -8,7 +8,6 @@ from fastapi.testclient import TestClient
 from pydantic import ValidationError
 from stac_pydantic import api
 from starlette.requests import Request
-from typing_extensions import Annotated
 
 from stac_fastapi.api import app
 from stac_fastapi.api.models import (
@@ -167,15 +166,15 @@ def test_filter_extension(validate, TestCoreClient, item_dict):
 
         def get_search(
             self,
-            collections: Optional[List[str]] = None,
-            ids: Optional[List[str]] = None,
-            bbox: Optional[List[NumType]] = None,
-            intersects: Optional[str] = None,
-            datetime: Optional[str] = None,
-            limit: Optional[int] = 10,
-            filter_expr: Optional[str] = None,
-            filter_crs: Optional[str] = None,
-            filter_lang: Optional[str] = None,
+            collections: list[str] | None = None,
+            ids: list[str] | None = None,
+            bbox: list[NumType] | None = None,
+            intersects: str | None = None,
+            datetime: str | None = None,
+            limit: int | None = 10,
+            filter_expr: str | None = None,
+            filter_crs: str | None = None,
+            filter_lang: str | None = None,
             **kwargs,
         ) -> stac.ItemCollection:
             assert filter_expr == "TEST"
@@ -276,12 +275,12 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
 
         def get_search(
             self,
-            collections: Optional[List[str]] = None,
-            ids: Optional[List[str]] = None,
-            bbox: Optional[List[NumType]] = None,
-            intersects: Optional[str] = None,
-            datetime: Optional[str] = None,
-            limit: Optional[int] = 10,
+            collections: list[str] | None = None,
+            ids: list[str] | None = None,
+            bbox: list[NumType] | None = None,
+            intersects: str | None = None,
+            datetime: str | None = None,
+            limit: int | None = 10,
             **kwargs,
         ) -> stac.ItemCollection:
             resp = {"not": "a proper stac item"}
@@ -305,8 +304,8 @@ def test_fields_extension(validate, TestCoreClient, item_dict):
         def item_collection(
             self,
             collection_id: str,
-            bbox: Optional[List[Union[float, int]]] = None,
-            datetime: Optional[str] = None,
+            bbox: list[float | int] | None = None,
+            datetime: str | None = None,
             limit: int = 10,
             token: str = None,
             **kwargs,
@@ -456,12 +455,12 @@ def test_client_datetime_input_params():
 
         def get_search(
             self,
-            collections: Optional[List[str]] = None,
-            ids: Optional[List[str]] = None,
-            bbox: Optional[List[NumType]] = None,
-            intersects: Optional[str] = None,
-            datetime: Optional[str] = None,
-            limit: Optional[int] = 10,
+            collections: list[str] | None = None,
+            ids: list[str] | None = None,
+            bbox: list[NumType] | None = None,
+            intersects: str | None = None,
+            datetime: str | None = None,
+            limit: int | None = 10,
             **kwargs,
         ):
             assert isinstance(datetime, str)
@@ -479,8 +478,8 @@ def test_client_datetime_input_params():
         def item_collection(
             self,
             collection_id: str,
-            bbox: Optional[List[Union[float, int]]] = None,
-            datetime: Optional[str] = None,
+            bbox: list[float | int] | None = None,
+            datetime: str | None = None,
             limit: int = 10,
             token: str = None,
             **kwargs,

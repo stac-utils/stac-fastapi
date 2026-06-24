@@ -1,8 +1,6 @@
-# encoding: utf-8
 """Filter Extension."""
 
-from enum import Enum
-from typing import List, Type, Union
+from enum import StrEnum
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -18,7 +16,7 @@ from .client import AsyncBaseFiltersClient, BaseFiltersClient
 from .request import FilterExtensionGetRequest, FilterExtensionPostRequest
 
 
-class FilterConformanceClasses(str, Enum):
+class FilterConformanceClasses(StrEnum):
     """Conformance classes for the Filter extension.
 
     See
@@ -74,13 +72,13 @@ class FilterExtension(ApiExtension):
         conformance_classes: Conformance classes provided by the extension
     """
 
-    GET: Type[APIRequest] = FilterExtensionGetRequest
-    POST: Type[BaseModel] = FilterExtensionPostRequest
+    GET: type[APIRequest] = FilterExtensionGetRequest
+    POST: type[BaseModel] = FilterExtensionPostRequest
 
-    client: Union[AsyncBaseFiltersClient, BaseFiltersClient] = attr.ib(
+    client: AsyncBaseFiltersClient | BaseFiltersClient = attr.ib(
         factory=BaseFiltersClient
     )
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         default=[
             FilterConformanceClasses.FILTER,
             FilterConformanceClasses.SEARCH,
@@ -91,7 +89,7 @@ class FilterExtension(ApiExtension):
         ]
     )
     router: APIRouter = attr.ib(factory=APIRouter)
-    response_class: Type[Response] = attr.ib(default=JSONSchemaResponse)
+    response_class: type[Response] = attr.ib(default=JSONSchemaResponse)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -140,7 +138,7 @@ class FilterExtension(ApiExtension):
 class SearchFilterExtension(FilterExtension):
     """Item Search Filter Extension."""
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         default=[
             FilterConformanceClasses.FILTER,
             FilterConformanceClasses.SEARCH,
@@ -182,7 +180,7 @@ class SearchFilterExtension(FilterExtension):
 class ItemCollectionFilterExtension(FilterExtension):
     """Item Collection Filter Extension."""
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         default=[
             FilterConformanceClasses.FILTER,
             FilterConformanceClasses.ITEMS,
@@ -224,7 +222,7 @@ class ItemCollectionFilterExtension(FilterExtension):
 class CollectionSearchFilterExtension(FilterExtension):
     """Collection Search Filter Extension."""
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         default=[
             FilterConformanceClasses.FILTER,
             FilterConformanceClasses.COLLECTIONS,

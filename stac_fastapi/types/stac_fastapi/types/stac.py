@@ -1,11 +1,10 @@
 """STAC types."""
 
-from typing import Any, Dict, List, Literal, Union
+from typing import Any, Literal, NotRequired, TypedDict
 
 from stac_pydantic.shared import BBox
-from typing_extensions import NotRequired, TypedDict
 
-NumType = Union[float, int]
+NumType = float | int
 
 
 class Catalog(TypedDict):
@@ -13,34 +12,34 @@ class Catalog(TypedDict):
 
     type: str
     stac_version: str
-    stac_extensions: NotRequired[List[str]]
+    stac_extensions: NotRequired[list[str]]
     id: str
     title: NotRequired[str]
     description: str
-    links: List[Dict[str, Any]]
+    links: list[dict[str, Any]]
 
 
 class LandingPage(Catalog):
     """STAC Landing Page."""
 
-    conformsTo: List[str]
+    conformsTo: list[str]
 
 
 class Conformance(TypedDict):
     """STAC Conformance Classes."""
 
-    conformsTo: List[str]
+    conformsTo: list[str]
 
 
 class Collection(Catalog):
     """STAC Collection."""
 
-    keywords: List[str]
+    keywords: list[str]
     license: str
-    providers: List[Dict[str, Any]]
-    extent: Dict[str, Any]
-    summaries: Dict[str, Any]
-    assets: Dict[str, Any]
+    providers: list[dict[str, Any]]
+    extent: dict[str, Any]
+    summaries: dict[str, Any]
+    assets: dict[str, Any]
 
 
 class Item(TypedDict):
@@ -48,13 +47,13 @@ class Item(TypedDict):
 
     type: Literal["Feature"]
     stac_version: str
-    stac_extensions: NotRequired[List[str]]
+    stac_extensions: NotRequired[list[str]]
     id: str
-    geometry: Dict[str, Any]
+    geometry: dict[str, Any]
     bbox: BBox
-    properties: Dict[str, Any]
-    links: List[Dict[str, Any]]
-    assets: Dict[str, Any]
+    properties: dict[str, Any]
+    links: list[dict[str, Any]]
+    assets: dict[str, Any]
     collection: str
 
 
@@ -62,8 +61,8 @@ class ItemCollection(TypedDict):
     """STAC Item Collection."""
 
     type: Literal["FeatureCollection"]
-    features: List[Item]
-    links: List[Dict[str, Any]]
+    features: list[Item]
+    links: list[dict[str, Any]]
     numberMatched: NotRequired[int]
     numberReturned: NotRequired[int]
 
@@ -73,7 +72,7 @@ class Collections(TypedDict):
     https://github.com/radiantearth/stac-api-spec/tree/master/collections
     """
 
-    collections: List[Collection]
-    links: List[Dict[str, Any]]
+    collections: list[Collection]
+    links: list[dict[str, Any]]
     numberMatched: NotRequired[int]
     numberReturned: NotRequired[int]

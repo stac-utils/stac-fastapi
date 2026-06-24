@@ -1,7 +1,7 @@
 """Fastapi app creation."""
 
 import inspect
-from typing import Awaitable, Callable, Dict, List, Optional, Tuple, Type, Union
+from collections.abc import Awaitable, Callable
 
 import attr
 from brotli_asgi import BrotliMiddleware
@@ -78,9 +78,9 @@ class StacApi:
     """
 
     settings: ApiSettings = attr.ib()
-    client: Union[AsyncBaseCoreClient, BaseCoreClient] = attr.ib()
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
-    exceptions: Dict[Type[Exception], int] = attr.ib(
+    client: AsyncBaseCoreClient | BaseCoreClient = attr.ib()
+    extensions: list[ApiExtension] = attr.ib(default=attr.Factory(list))
+    exceptions: dict[type[Exception], int] = attr.ib(
         default=attr.Factory(lambda: DEFAULT_STATUS_CODES)
     )
     title: str = attr.ib(
@@ -115,14 +115,14 @@ class StacApi:
         converter=update_openapi,  # type: ignore
     )
     router: APIRouter = attr.ib(default=attr.Factory(APIRouter))
-    search_get_request_model: Type[APIRequest] = attr.ib(default=BaseSearchGetRequest)
-    search_post_request_model: Type[BaseModel] = attr.ib(default=BaseSearchPostRequest)
-    collections_get_request_model: Type[APIRequest] = attr.ib(default=EmptyRequest)
-    collection_get_request_model: Type[APIRequest] = attr.ib(default=CollectionUri)
-    items_get_request_model: Type[APIRequest] = attr.ib(default=ItemCollectionUri)
-    item_get_request_model: Type[APIRequest] = attr.ib(default=ItemUri)
-    response_class: Type[Response] = attr.ib(default=JSONResponse)
-    middlewares: List[Middleware] = attr.ib(
+    search_get_request_model: type[APIRequest] = attr.ib(default=BaseSearchGetRequest)
+    search_post_request_model: type[BaseModel] = attr.ib(default=BaseSearchPostRequest)
+    collections_get_request_model: type[APIRequest] = attr.ib(default=EmptyRequest)
+    collection_get_request_model: type[APIRequest] = attr.ib(default=CollectionUri)
+    items_get_request_model: type[APIRequest] = attr.ib(default=ItemCollectionUri)
+    item_get_request_model: type[APIRequest] = attr.ib(default=ItemUri)
+    response_class: type[Response] = attr.ib(default=JSONResponse)
+    middlewares: list[Middleware] = attr.ib(
         default=attr.Factory(
             lambda: [
                 Middleware(BrotliMiddleware),
@@ -138,12 +138,12 @@ class StacApi:
             ]
         )
     )
-    route_dependencies: List[Tuple[List[Scope], List[Depends]]] = attr.ib(default=[])
-    health_check: Union[Callable[[], Dict], Callable[[], Awaitable[Dict]]] = attr.ib(
+    route_dependencies: list[tuple[list[Scope], list[Depends]]] = attr.ib(default=[])
+    health_check: Callable[[], dict] | Callable[[], Awaitable[dict]] = attr.ib(
         default=lambda: {"status": "UP"}
     )
 
-    def get_extension(self, extension: Type[ApiExtension]) -> Optional[ApiExtension]:
+    def get_extension(self, extension: type[ApiExtension]) -> ApiExtension | None:
         """Get an extension.
 
         Args:
@@ -387,7 +387,7 @@ class StacApi:
         mgmt_router.add_api_route(
             name="Ping",
             path="/_mgmt/ping",
-            response_model=Dict,
+            response_model=dict,
             responses={
                 200: {
                     "content": {
@@ -423,7 +423,7 @@ class StacApi:
         self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
 
     def add_route_dependencies(
-        self, scopes: List[Scope], dependencies: List[Depends]
+        self, scopes: list[Scope], dependencies: list[Depends]
     ) -> None:
         """Add custom dependencies to routes.
 

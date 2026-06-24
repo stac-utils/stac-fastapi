@@ -1,9 +1,9 @@
 """Conformance Classes."""
 
-from enum import Enum
+from enum import StrEnum
 
 
-class STACConformanceClasses(str, Enum):
+class STACConformanceClasses(StrEnum):
     """Conformance classes for the STAC API spec."""
 
     CORE = "https://api.stacspec.org/v1.0.0/core"
@@ -12,7 +12,7 @@ class STACConformanceClasses(str, Enum):
     ITEM_SEARCH = "https://api.stacspec.org/v1.0.0/item-search"
 
 
-class OAFConformanceClasses(str, Enum):
+class OAFConformanceClasses(StrEnum):
     """Conformance classes for OGC API - Features."""
 
     CORE = "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core"

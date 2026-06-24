@@ -1,7 +1,7 @@
 """Base clients."""
 
 import abc
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 from urllib.parse import urljoin
 
 import attr
@@ -26,8 +26,8 @@ __all__ = [
     "AsyncBaseCoreClient",
 ]
 
-NumType = Union[float, int]
-StacType = Dict[str, Any]
+NumType = float | int
+StacType = dict[str, Any]
 
 api_settings = ApiSettings()
 
@@ -44,8 +44,8 @@ class LandingPageMixin(abc.ABC):
     def _landing_page(
         self,
         base_url: str,
-        conformance_classes: List[str],
-        extension_schemas: List[str],
+        conformance_classes: list[str],
+        extension_schemas: list[str],
     ) -> stac.LandingPage:
         landing_page = stac.LandingPage(
             type="Catalog",
@@ -108,12 +108,12 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
         extensions: list of registered api extensions.
     """
 
-    base_conformance_classes: List[str] = attr.ib(
+    base_conformance_classes: list[str] = attr.ib(
         factory=lambda: BASE_CONFORMANCE_CLASSES
     )
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
+    extensions: list[ApiExtension] = attr.ib(default=attr.Factory(list))
 
-    def conformance_classes(self) -> List[str]:
+    def conformance_classes(self) -> list[str]:
         """Generate conformance classes by adding extension conformance to base
         conformance classes."""
         base_conformance_classes = self.base_conformance_classes.copy()
@@ -238,12 +238,12 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     @abc.abstractmethod
     def get_search(
         self,
-        collections: Optional[List[str]] = None,
-        ids: Optional[List[str]] = None,
-        bbox: Optional[BBox] = None,
-        intersects: Optional[Geometry] = None,
-        datetime: Optional[str] = None,
-        limit: Optional[int] = 10,
+        collections: list[str] | None = None,
+        ids: list[str] | None = None,
+        bbox: BBox | None = None,
+        intersects: Geometry | None = None,
+        datetime: str | None = None,
+        limit: int | None = 10,
         **kwargs,
     ) -> stac.ItemCollection:
         """Cross catalog search (GET).
@@ -299,10 +299,10 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
     def item_collection(
         self,
         collection_id: str,
-        bbox: Optional[BBox] = None,
-        datetime: Optional[str] = None,
+        bbox: BBox | None = None,
+        datetime: str | None = None,
         limit: int = 10,
-        token: Optional[str] = None,
+        token: str | None = None,
         **kwargs,
     ) -> stac.ItemCollection:
         """Get all items from a specific collection.
@@ -328,12 +328,12 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
         extensions: list of registered api extensions.
     """
 
-    base_conformance_classes: List[str] = attr.ib(
+    base_conformance_classes: list[str] = attr.ib(
         factory=lambda: BASE_CONFORMANCE_CLASSES
     )
-    extensions: List[ApiExtension] = attr.ib(default=attr.Factory(list))
+    extensions: list[ApiExtension] = attr.ib(default=attr.Factory(list))
 
-    def conformance_classes(self) -> List[str]:
+    def conformance_classes(self) -> list[str]:
         """Generate conformance classes by adding extension conformance to base
         conformance classes."""
         conformance_classes = self.base_conformance_classes.copy()
@@ -449,12 +449,12 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     @abc.abstractmethod
     async def get_search(
         self,
-        collections: Optional[List[str]] = None,
-        ids: Optional[List[str]] = None,
-        bbox: Optional[BBox] = None,
-        intersects: Optional[Geometry] = None,
-        datetime: Optional[str] = None,
-        limit: Optional[int] = 10,
+        collections: list[str] | None = None,
+        ids: list[str] | None = None,
+        bbox: BBox | None = None,
+        intersects: Geometry | None = None,
+        datetime: str | None = None,
+        limit: int | None = 10,
         **kwargs,
     ) -> stac.ItemCollection:
         """Cross catalog search (GET).
@@ -510,10 +510,10 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
     async def item_collection(
         self,
         collection_id: str,
-        bbox: Optional[BBox] = None,
-        datetime: Optional[str] = None,
+        bbox: BBox | None = None,
+        datetime: str | None = None,
         limit: int = 10,
-        token: Optional[str] = None,
+        token: str | None = None,
         **kwargs,
     ) -> stac.ItemCollection:
         """Get all items from a specific collection.

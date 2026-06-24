@@ -1,7 +1,6 @@
 """Aggregation extensions clients."""
 
 import abc
-from typing import List, Optional, Union
 
 import attr
 from geojson_pydantic.geometries import Geometry
@@ -21,7 +20,7 @@ class BaseAggregationClient(abc.ABC):
     # AGGREGATION_COLLECTION = AggregationCollection
 
     def get_aggregations(
-        self, collection_id: Optional[str] = None, **kwargs
+        self, collection_id: str | None = None, **kwargs
     ) -> AggregationCollection:
         """Get the aggregations available for the given collection_id.
 
@@ -46,7 +45,7 @@ class BaseAggregationClient(abc.ABC):
         )
 
     def aggregate(
-        self, collection_id: Optional[str] = None, **kwargs
+        self, collection_id: str | None = None, **kwargs
     ) -> AggregationCollection:
         """Return the aggregation buckets for a given search result"""
         return AggregationCollection(
@@ -76,7 +75,7 @@ class AsyncBaseAggregationClient(abc.ABC):
     # AGGREGATION_COLLECTION = AggregationCollection
 
     async def get_aggregations(
-        self, collection_id: Optional[str] = None, **kwargs
+        self, collection_id: str | None = None, **kwargs
     ) -> AggregationCollection:
         """Get the aggregations available for the given collection_id.
 
@@ -102,14 +101,14 @@ class AsyncBaseAggregationClient(abc.ABC):
 
     async def aggregate(
         self,
-        collection_id: Optional[str] = None,
-        aggregations: Optional[Union[str, List[str]]] = None,
-        collections: Optional[List[str]] = None,
-        ids: Optional[List[str]] = None,
-        bbox: Optional[BBox] = None,
-        intersects: Optional[Geometry] = None,
-        datetime: Optional[DateTimeType] = None,
-        limit: Optional[int] = 10,
+        collection_id: str | None = None,
+        aggregations: str | list[str] | None = None,
+        collections: list[str] | None = None,
+        ids: list[str] | None = None,
+        bbox: BBox | None = None,
+        intersects: Geometry | None = None,
+        datetime: DateTimeType | None = None,
+        limit: int | None = 10,
         **kwargs,
     ) -> AggregationCollection:
         """Return the aggregation buckets for a given search result"""

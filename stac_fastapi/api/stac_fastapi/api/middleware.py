@@ -5,7 +5,6 @@ import re
 import typing
 import warnings
 from http.client import HTTP_PORT, HTTPS_PORT
-from typing import List, Optional, Tuple
 
 from starlette.middleware.cors import CORSMiddleware as _CORSMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
@@ -29,7 +28,7 @@ class CORSMiddleware(_CORSMiddleware):
         ),
         allow_headers: typing.Sequence[str] = ("Content-Type",),
         allow_credentials: bool = False,
-        allow_origin_regex: typing.Optional[str] = None,
+        allow_origin_regex: str | None = None,
         expose_headers: typing.Sequence[str] = (),
         max_age: int = 600,
         **kwargs: typing.Any,
@@ -91,7 +90,7 @@ class ProxyHeaderMiddleware:
 
         await self.app(scope, receive, send)
 
-    def _get_forwarded_url_parts(self, scope: Scope) -> Tuple[str, str, int]:
+    def _get_forwarded_url_parts(self, scope: Scope) -> tuple[str, str, int]:
         proto = scope.get("scheme", "http")
         # Assume default port based on protocol, can be overridden later
         port = 443 if proto == "https" else 80
@@ -107,7 +106,7 @@ class ProxyHeaderMiddleware:
             domain, port = scope["server"]
             port = int(port)
 
-        forwarded_port: Optional[str] = None
+        forwarded_port: str | None = None
         forwarding_occurred = any(
             key
             in [
@@ -144,8 +143,8 @@ class ProxyHeaderMiddleware:
         return (proto, domain, port)
 
     def _get_header_value_by_name(
-        self, scope: Scope, header_name: str, default_value: Optional[str] = None
-    ) -> Optional[str]:
+        self, scope: Scope, header_name: str, default_value: str | None = None
+    ) -> str | None:
         headers = scope["headers"]
         candidates = [
             value.decode() for key, value in headers if key.decode() == header_name
@@ -155,7 +154,7 @@ class ProxyHeaderMiddleware:
     @staticmethod
     def _replace_header_value_by_name(
         scope: Scope, header_name: str, new_value: str
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         return [
             (name, value)
             for name, value in scope["headers"]

@@ -1,8 +1,8 @@
 """Aggregation Extension types."""
 
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Literal, NotRequired
 
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import TypedDict
 
 from stac_fastapi.types.rfc3339 import DateTimeType
 
@@ -11,10 +11,10 @@ Bucket = TypedDict(
     {
         "key": str,
         "data_type": str,
-        "frequency": NotRequired[Dict],
+        "frequency": NotRequired[dict],
         # we can't use the `class Bucket` notation because `from` is a reserved key
-        "from": NotRequired[Union[int, float]],
-        "to": NotRequired[Optional[Union[int, float]]],
+        "from": NotRequired[int | float],
+        "to": NotRequired[int | float | None],
     },
 )
 
@@ -24,14 +24,14 @@ class Aggregation(TypedDict):
 
     name: str
     data_type: str
-    buckets: NotRequired[List[Bucket]]
+    buckets: NotRequired[list[Bucket]]
     overflow: NotRequired[int]
-    value: NotRequired[Union[str, int, DateTimeType]]
+    value: NotRequired[str | int | DateTimeType]
 
 
 class AggregationCollection(TypedDict):
     """STAC Item Aggregation Collection."""
 
     type: Literal["AggregationCollection"]
-    aggregations: List[Aggregation]
-    links: List[Dict[str, Any]]
+    aggregations: list[Aggregation]
+    links: list[dict[str, Any]]

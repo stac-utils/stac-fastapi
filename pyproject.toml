@@ -60,6 +60,7 @@ select = [
     "F",
     "I",
     "W",
+    "UP",
 ]
 
 [tool.ruff.lint.per-file-ignores]

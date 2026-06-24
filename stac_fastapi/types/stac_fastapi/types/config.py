@@ -1,10 +1,9 @@
 """stac_fastapi.types.config module."""
 
-from typing import Optional
+from typing import Self
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing_extensions import Self
 
 
 class ApiSettings(BaseSettings):
@@ -56,7 +55,7 @@ class ApiSettings(BaseSettings):
 class Settings:
     """Holds the global instance of settings."""
 
-    _instance: Optional[ApiSettings] = None
+    _instance: ApiSettings | None = None
 
     @classmethod
     def set(cls, base_settings: ApiSettings):

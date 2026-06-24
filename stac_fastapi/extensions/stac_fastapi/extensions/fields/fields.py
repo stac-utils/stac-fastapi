@@ -1,7 +1,6 @@
 """Fields extension."""
 
-from enum import Enum
-from typing import List, Optional, Type
+from enum import StrEnum
 
 import attr
 from fastapi import FastAPI
@@ -13,7 +12,7 @@ from stac_fastapi.types.search import APIRequest
 from .request import FieldsExtensionGetRequest, FieldsExtensionPostRequest
 
 
-class FieldsConformanceClasses(str, Enum):
+class FieldsConformanceClasses(StrEnum):
     """Conformance classes for the Fields extension.
 
     See https://github.com/stac-api-extensions/fields
@@ -44,15 +43,15 @@ class FieldsExtension(ApiExtension):
             the extension
     """
 
-    GET: Type[APIRequest] = FieldsExtensionGetRequest
-    POST: Type[BaseModel] = FieldsExtensionPostRequest
+    GET: type[APIRequest] = FieldsExtensionGetRequest
+    POST: type[BaseModel] = FieldsExtensionPostRequest
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         factory=lambda: [
             FieldsConformanceClasses.SEARCH,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
+    schema_href: str | None = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

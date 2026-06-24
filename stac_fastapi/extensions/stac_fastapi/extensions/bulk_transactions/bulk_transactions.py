@@ -1,8 +1,9 @@
 """Bulk transactions extension."""
 
 import abc
-from enum import Enum
-from typing import Any, Dict, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from enum import StrEnum
+from typing import Any
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -14,7 +15,7 @@ from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.extension import ApiExtension
 
 
-class BulkTransactionMethod(str, Enum):
+class BulkTransactionMethod(StrEnum):
     """Bulk Transaction Methods."""
 
     INSERT = "insert"
@@ -24,7 +25,7 @@ class BulkTransactionMethod(str, Enum):
 class Items(BaseModel):
     """A group of STAC Item objects, in the form of a dictionary from Item.id -> Item."""
 
-    items: Dict[str, Any]
+    items: dict[str, Any]
     method: BulkTransactionMethod = BulkTransactionMethod.INSERT
 
     def __iter__(self):
@@ -49,7 +50,7 @@ class BaseBulkTransactionsClient(abc.ABC):
     def bulk_item_insert(
         self,
         items: Items,
-        chunk_size: Optional[int] = None,
+        chunk_size: int | None = None,
         **kwargs,
     ) -> str:
         """Bulk creation of items.
@@ -111,10 +112,10 @@ class BulkTransactionExtension(ApiExtension):
         }
     """
 
-    client: Union[AsyncBaseBulkTransactionsClient, BaseBulkTransactionsClient] = attr.ib()
-    conformance_classes: List[str] = attr.ib(default=list())
-    schema_href: Optional[str] = attr.ib(default=None)
-    route_dependencies: Optional[Sequence[Depends]] = attr.ib(default=None)
+    client: AsyncBaseBulkTransactionsClient | BaseBulkTransactionsClient = attr.ib()
+    conformance_classes: list[str] = attr.ib(default=list())
+    schema_href: str | None = attr.ib(default=None)
+    route_dependencies: Sequence[Depends] | None = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

@@ -1,11 +1,10 @@
 """Filter extension request models."""
 
-from typing import Any, Dict, Literal, Optional
+from typing import Annotated, Any, Literal
 
 import attr
 from fastapi import Query
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
 
 from stac_fastapi.types.search import APIRequest
 
@@ -17,7 +16,7 @@ class FilterExtensionGetRequest(APIRequest):
     """Filter extension GET request model."""
 
     filter_expr: Annotated[
-        Optional[str],
+        str | None,
         Query(
             alias="filter",
             description="""A CQL2 filter expression for filtering items.\n
@@ -32,14 +31,14 @@ Remember to URL encode the CQL2-JSON if using GET""",
         ),
     ] = attr.ib(default=None)
     filter_crs: Annotated[
-        Optional[str],
+        str | None,
         Query(
             alias="filter-crs",
             description="The coordinate reference system (CRS) used by spatial literals in the 'filter' value. Default is `http://www.opengis.net/def/crs/OGC/1.3/CRS84`",  # noqa: E501
         ),
     ] = attr.ib(default=None)
     filter_lang: Annotated[
-        Optional[FilterLang],
+        FilterLang | None,
         Query(
             alias="filter-lang",
             description="The CQL filter encoding that the 'filter' value uses.",
@@ -50,7 +49,7 @@ Remember to URL encode the CQL2-JSON if using GET""",
 class FilterExtensionPostRequest(BaseModel):
     """Filter extension POST request model."""
 
-    filter_expr: Optional[Dict[str, Any]] = Field(
+    filter_expr: dict[str, Any] | None = Field(
         None,
         alias="filter",
         description="A CQL filter expression for filtering items.",
@@ -78,12 +77,12 @@ class FilterExtensionPostRequest(BaseModel):
             ],
         },
     )
-    filter_crs: Optional[str] = Field(
+    filter_crs: str | None = Field(
         None,
         alias="filter-crs",
         description="The coordinate reference system (CRS) used by spatial literals in the 'filter' value. Default is `http://www.opengis.net/def/crs/OGC/1.3/CRS84`",  # noqa: E501
     )
-    filter_lang: Optional[Literal["cql2-json"]] = Field(
+    filter_lang: Literal["cql2-json"] | None = Field(
         "cql2-json",
         alias="filter-lang",
         description="The CQL filter encoding that the 'filter' value uses.",

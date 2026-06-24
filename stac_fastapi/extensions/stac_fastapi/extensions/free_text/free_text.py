@@ -1,7 +1,6 @@
 """Free-text extension."""
 
-from enum import Enum
-from typing import List, Optional, Type
+from enum import StrEnum
 
 import attr
 from fastapi import FastAPI
@@ -18,7 +17,7 @@ from .request import (
 )
 
 
-class FreeTextConformanceClasses(str, Enum):
+class FreeTextConformanceClasses(StrEnum):
     """Conformance classes for the Free-Text extension.
 
     See https://github.com/stac-api-extensions/freetext-search
@@ -53,15 +52,15 @@ class FreeTextExtension(ApiExtension):
 
     """
 
-    GET: Type[APIRequest] = FreeTextExtensionGetRequest
-    POST: Type[BaseModel] = FreeTextExtensionPostRequest
+    GET: type[APIRequest] = FreeTextExtensionGetRequest
+    POST: type[BaseModel] = FreeTextExtensionPostRequest
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         default=[
             FreeTextConformanceClasses.SEARCH,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
+    schema_href: str | None = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -86,15 +85,15 @@ class FreeTextAdvancedExtension(ApiExtension):
 
     """
 
-    GET: Type[APIRequest] = FreeTextAdvancedExtensionGetRequest
-    POST: Type[BaseModel] = FreeTextAdvancedExtensionPostRequest
+    GET: type[APIRequest] = FreeTextAdvancedExtensionGetRequest
+    POST: type[BaseModel] = FreeTextAdvancedExtensionPostRequest
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         default=[
             FreeTextConformanceClasses.SEARCH_ADVANCED,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
+    schema_href: str | None = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

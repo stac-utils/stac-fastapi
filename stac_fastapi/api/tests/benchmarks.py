@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional, Union
 
 import pytest
 from stac_pydantic.api.utils import link_factory
@@ -53,12 +52,12 @@ class CoreClient(BaseCoreClient):
 
     def get_search(
         self,
-        collections: Optional[List[str]] = None,
-        ids: Optional[List[str]] = None,
-        bbox: Optional[List[NumType]] = None,
-        intersects: Optional[str] = None,
-        datetime: Optional[Union[str, datetime]] = None,
-        limit: Optional[int] = 10,
+        collections: list[str] | None = None,
+        ids: list[str] | None = None,
+        bbox: list[NumType] | None = None,
+        intersects: str | None = None,
+        datetime: str | datetime | None = None,
+        limit: int | None = 10,
         **kwargs,
     ) -> stac_types.ItemCollection:
         raise NotImplementedError
@@ -82,8 +81,8 @@ class CoreClient(BaseCoreClient):
     def item_collection(
         self,
         collection_id: str,
-        bbox: Optional[List[Union[float, int]]] = None,
-        datetime: Optional[Union[str, datetime]] = None,
+        bbox: list[float | int] | None = None,
+        datetime: str | datetime | None = None,
         limit: int = 10,
         token: str = None,
         **kwargs,

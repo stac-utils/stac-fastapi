@@ -1,12 +1,11 @@
 """Api request/response models."""
 
-from typing import List, Literal, Optional, Type, Union, cast
+from typing import Annotated, Literal, cast
 
 import attr
 from fastapi import Path, Query
 from pydantic import BaseModel, create_model
 from stac_pydantic.shared import BBox
-from typing_extensions import Annotated
 
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import (
@@ -29,14 +28,14 @@ except ImportError:  # pragma: nocover
 
 def create_request_model(
     model_name="SearchGetRequest",
-    base_model: Union[Type[BaseModel], Type[APIRequest]] = BaseSearchGetRequest,
-    extensions: Optional[List[ApiExtension]] = None,
-    mixins: Optional[Union[List[Type[BaseModel]], List[Type[APIRequest]]]] = None,
+    base_model: type[BaseModel] | type[APIRequest] = BaseSearchGetRequest,
+    extensions: list[ApiExtension] | None = None,
+    mixins: list[type[BaseModel]] | list[type[APIRequest]] | None = None,
     request_type: str = "GET",
-) -> Union[Type[BaseModel], Type[APIRequest]]:
+) -> type[BaseModel] | type[APIRequest]:
     """Create a pydantic model for validating request bodies."""
     fields = {}
-    extension_models: List[Union[Type[BaseModel], Type[APIRequest]]] = []
+    extension_models: list[type[BaseModel] | type[APIRequest]] = []
 
     # Check extensions for additional parameters to search
     for extension in extensions or []:
@@ -50,7 +49,7 @@ def create_request_model(
     # Handle GET requests
     if all([issubclass(m, APIRequest) for m in models]):
         get_model = attr.make_class(model_name, attrs={}, bases=tuple(models))
-        return cast(Type[APIRequest], get_model)
+        return cast(type[APIRequest], get_model)
 
     # Handle POST requests
     elif all([issubclass(m, BaseModel) for m in models]):
@@ -59,15 +58,15 @@ def create_request_model(
                 fields[k] = (field_info.annotation, field_info)
 
         post_model = create_model(model_name, **fields, __base__=base_model)  # type: ignore
-        return cast(Type[BaseModel], post_model)
+        return cast(type[BaseModel], post_model)
 
     raise TypeError("Mixed Request Model types. Check extension request types.")
 
 
 def create_get_request_model(
-    extensions: Optional[List[ApiExtension]],
-    base_model: Type[APIRequest] = BaseSearchGetRequest,
-) -> Type[APIRequest]:
+    extensions: list[ApiExtension] | None,
+    base_model: type[APIRequest] = BaseSearchGetRequest,
+) -> type[APIRequest]:
     """Wrap create_request_model to create the GET request model."""
     model = create_request_model(
         "SearchGetRequest",
@@ -75,13 +74,13 @@ def create_get_request_model(
         extensions=extensions,
         request_type="GET",
     )
-    return cast(Type[APIRequest], model)
+    return cast(type[APIRequest], model)
 
 
 def create_post_request_model(
-    extensions: Optional[List[ApiExtension]],
-    base_model: Type[BaseModel] = BaseSearchPostRequest,
-) -> Type[BaseModel]:
+    extensions: list[ApiExtension] | None,
+    base_model: type[BaseModel] = BaseSearchPostRequest,
+) -> type[BaseModel]:
     """Wrap create_request_model to create the POST request model."""
     model = create_request_model(
         "SearchPostRequest",
@@ -89,7 +88,7 @@ def create_post_request_model(
         extensions=extensions,
         request_type="POST",
     )
-    return cast(Type[BaseModel], model)
+    return cast(type[BaseModel], model)
 
 
 @attr.s
@@ -120,12 +119,12 @@ class ItemCollectionUri(APIRequest, DatetimeMixin):
 
     collection_id: Annotated[str, Path(description="Collection ID")] = attr.ib()
     limit: Annotated[
-        Optional[Limit],
+        Limit | None,
         Query(
             description="Limits the number of results that are included in each page of the response (capped to 10_000)."  # noqa: E501
         ),
     ] = attr.ib(default=10)
-    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)  # type: ignore [misc]
+    bbox: BBox | None = attr.ib(default=None, converter=_bbox_converter)  # type: ignore [misc]
     datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
 
 

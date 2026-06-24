@@ -1,7 +1,5 @@
 """Offset Pagination API extension."""
 
-from typing import List, Optional, Type
-
 import attr
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -22,11 +20,11 @@ class OffsetPaginationExtension(ApiExtension):
     request model for OpenAPI generation.
     """
 
-    GET: Type[APIRequest] = GETOffsetPagination
-    POST: Type[BaseModel] = POSTOffsetPagination
+    GET: type[APIRequest] = GETOffsetPagination
+    POST: type[BaseModel] = POSTOffsetPagination
 
-    conformance_classes: List[str] = attr.ib(factory=list)
-    schema_href: Optional[str] = attr.ib(default=None)
+    conformance_classes: list[str] = attr.ib(factory=list)
+    schema_href: str | None = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

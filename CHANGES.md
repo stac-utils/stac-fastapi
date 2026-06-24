@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Update type hints to use native python types instead of `typing` or `typing_extensions`
+
 ## [6.3.0] - 2026-06-22
 
 ### Added

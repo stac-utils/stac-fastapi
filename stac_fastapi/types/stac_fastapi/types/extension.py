@@ -1,7 +1,6 @@
 """Base api extension."""
 
 import abc
-from typing import List, Optional, Type, Union
 
 import attr
 from fastapi import FastAPI
@@ -14,20 +13,20 @@ from stac_fastapi.types.search import APIRequest
 class ApiExtension(abc.ABC):
     """Abstract base class for defining API extensions."""
 
-    GET: Optional[Type[APIRequest]] = None
-    POST: Optional[Type[BaseModel]] = None
+    GET: type[APIRequest] | None = None
+    POST: type[BaseModel] | None = None
 
     def get_request_model(
         self, verb: str = "GET"
-    ) -> Optional[Union[Type[BaseModel], Type[APIRequest]]]:
+    ) -> type[BaseModel] | type[APIRequest] | None:
         """Return the request model for the extension.method.
 
         The model can differ based on HTTP verb
         """
         return getattr(self, verb)
 
-    conformance_classes: List[str] = attr.ib(factory=list)
-    schema_href: Optional[str] = attr.ib(default=None)
+    conformance_classes: list[str] = attr.ib(factory=list)
+    schema_href: str | None = attr.ib(default=None)
 
     @abc.abstractmethod
     def register(self, app: FastAPI) -> None:

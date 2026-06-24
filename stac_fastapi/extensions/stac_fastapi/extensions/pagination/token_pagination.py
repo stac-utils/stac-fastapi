@@ -1,7 +1,5 @@
 """Token pagination API extension."""
 
-from typing import List, Optional, Type
-
 import attr
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -22,11 +20,11 @@ class TokenPaginationExtension(ApiExtension):
     request model for OpenAPI generation.
     """
 
-    GET: Type[APIRequest] = GETTokenPagination
-    POST: Type[BaseModel] = POSTTokenPagination
+    GET: type[APIRequest] = GETTokenPagination
+    POST: type[BaseModel] = POSTTokenPagination
 
-    conformance_classes: List[str] = attr.ib(factory=list)
-    schema_href: Optional[str] = attr.ib(default=None)
+    conformance_classes: list[str] = attr.ib(factory=list)
+    schema_href: str | None = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

@@ -3,7 +3,8 @@
 import copy
 import functools
 import inspect
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Type, TypedDict, Union
+from collections.abc import Awaitable, Callable
+from typing import Any, TypedDict
 
 from fastapi import Depends, FastAPI, params
 from fastapi.datastructures import DefaultPlaceholder
@@ -38,7 +39,7 @@ def sync_to_async(func):
 
 def create_async_endpoint(
     func: Callable,
-    request_model: Union[Type[APIRequest], Type[BaseModel], Dict],
+    request_model: type[APIRequest] | type[BaseModel] | dict,
 ) -> Callable[[Any, Any], Awaitable[Any]]:
     """Wrap a function in a coroutine which may be used to create a FastAPI endpoint.
 
@@ -52,7 +53,7 @@ def create_async_endpoint(
 
     if isinstance(request_model, dict):
 
-        async def _endpoint(request: Request, request_data: Dict[str, Any]):
+        async def _endpoint(request: Request, request_data: dict[str, Any]):
             """Endpoint."""
             return _wrap_response(await func(request_data, request=request))
 
@@ -80,7 +81,7 @@ class Scope(TypedDict, total=False):
     # https://github.com/encode/starlette/blob/6af5c515e0a896cbf3f86ee043b88f6c24200bcf/starlette/types.py#L3
     path: str
     method: str
-    type: Optional[str]
+    type: str | None
 
 
 def _is_endpoint_route(route: BaseRoute) -> bool:
@@ -91,7 +92,7 @@ def _is_endpoint_route(route: BaseRoute) -> bool:
 
 
 def _apply_dependencies_to_route(
-    route: BaseRoute, scopes: List[Scope], dependencies: List[params.Depends]
+    route: BaseRoute, scopes: list[Scope], dependencies: list[params.Depends]
 ) -> None:
     """Apply dependencies to a single route matching the given scopes."""
     for scope in scopes:
@@ -123,7 +124,7 @@ def _apply_dependencies_to_route(
 
 
 def add_route_dependencies(
-    routes: List[BaseRoute], scopes: List[Scope], dependencies: List[params.Depends]
+    routes: list[BaseRoute], scopes: list[Scope], dependencies: list[params.Depends]
 ) -> None:
     """Add dependencies to routes.
 
@@ -158,7 +159,7 @@ def add_direct_response(app: FastAPI) -> None:
     ref: https://gist.github.com/Zaczero/00f3a2679ebc0a25eb938ed82bc63553
     """
 
-    def wrap_endpoint(endpoint: Callable, cls: Type[Response]):
+    def wrap_endpoint(endpoint: Callable, cls: type[Response]):
         @functools.wraps(endpoint)
         async def wrapper(*args, **kwargs):
             content = await endpoint(*args, **kwargs)

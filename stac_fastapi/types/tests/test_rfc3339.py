@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from fastapi import HTTPException
@@ -129,6 +129,6 @@ def test_now_functions() -> None:
     now2 = now_in_utc()
 
     assert now1 < now2
-    assert now1.tzinfo == timezone.utc
+    assert now1.tzinfo == UTC
 
     rfc3339_str_to_datetime(now_to_rfc3339_str())

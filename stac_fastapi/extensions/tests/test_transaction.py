@@ -1,4 +1,4 @@
-from typing import Iterator, List, Union
+from collections.abc import Iterator
 
 import pytest
 from stac_pydantic import Collection
@@ -41,7 +41,7 @@ class DummyCoreClient(BaseCoreClient):
 class DummyTransactionsClient(BaseTransactionsClient):
     """Dummy client returning parts of the request, rather than proper STAC items."""
 
-    def create_item(self, item: Union[Item, ItemCollection], *args, **kwargs):
+    def create_item(self, item: Item | ItemCollection, *args, **kwargs):
         return {"created": True, "type": item.type}
 
     def update_item(self, collection_id: str, item_id: str, item: Item, **kwargs):
@@ -55,7 +55,7 @@ class DummyTransactionsClient(BaseTransactionsClient):
         self,
         collection_id: str,
         item_id: str,
-        patch: Union[PartialItem, List[PatchOperation]],
+        patch: PartialItem | list[PatchOperation],
         **kwargs,
     ):
         if isinstance(patch, PartialItem):
@@ -82,7 +82,7 @@ class DummyTransactionsClient(BaseTransactionsClient):
     def patch_collection(
         self,
         collection_id: str,
-        patch: Union[PartialCollection, List[PatchOperation]],
+        patch: PartialCollection | list[PatchOperation],
         **kwargs,
     ):
         if isinstance(patch, PartialCollection):

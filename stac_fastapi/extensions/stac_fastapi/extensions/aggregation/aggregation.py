@@ -1,7 +1,6 @@
 """Aggregation Extension."""
 
-from enum import Enum
-from typing import List, Type, Union
+from enum import StrEnum
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -16,7 +15,7 @@ from .client import AsyncBaseAggregationClient, BaseAggregationClient
 from .request import AggregationExtensionGetRequest, AggregationExtensionPostRequest
 
 
-class AggregationConformanceClasses(str, Enum):
+class AggregationConformanceClasses(StrEnum):
     """Conformance classes for the Aggregation extension.
 
     See
@@ -53,14 +52,14 @@ class AggregationExtension(ApiExtension):
         conformance_classes: Conformance classes provided by the extension
     """
 
-    GET: Type[APIRequest] = AggregationExtensionGetRequest
-    POST: Type[BaseModel] = AggregationExtensionPostRequest
+    GET: type[APIRequest] = AggregationExtensionGetRequest
+    POST: type[BaseModel] = AggregationExtensionPostRequest
 
-    client: Union[AsyncBaseAggregationClient, BaseAggregationClient] = attr.ib(
+    client: AsyncBaseAggregationClient | BaseAggregationClient = attr.ib(
         factory=BaseAggregationClient
     )
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         default=[AggregationConformanceClasses.AGGREGATION]
     )
     router: APIRouter = attr.ib(factory=APIRouter)
