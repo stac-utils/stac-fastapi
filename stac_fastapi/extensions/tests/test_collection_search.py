@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from urllib.parse import quote_plus
 
 import attr
@@ -91,7 +91,7 @@ class DummyPostClient(BaseCollectionSearchClient):
 
 def test_datetime_clean():
     # ref: https://github.com/stac-utils/stac-pydantic/issues/170
-    utcnow = datetime.now(timezone.utc)
+    utcnow = datetime.now(UTC)
     utcnow_str = utcnow.isoformat()
     search = BaseCollectionSearchPostRequest(datetime=utcnow_str)
     assert search.start_date == utcnow

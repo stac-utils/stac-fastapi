@@ -1,5 +1,5 @@
 import json
-from typing import Iterator
+from collections.abc import Iterator
 from urllib.parse import quote_plus, unquote_plus
 
 import pytest

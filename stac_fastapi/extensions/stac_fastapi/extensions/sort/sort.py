@@ -1,7 +1,6 @@
 """Sort extension."""
 
-from enum import Enum
-from typing import List, Optional, Type
+from enum import StrEnum
 
 import attr
 from fastapi import FastAPI
@@ -13,7 +12,7 @@ from stac_fastapi.types.search import APIRequest
 from .request import SortExtensionGetRequest, SortExtensionPostRequest
 
 
-class SortConformanceClasses(str, Enum):
+class SortConformanceClasses(StrEnum):
     """Conformance classes for the Sort extension.
 
     See https://github.com/stac-api-extensions/sort
@@ -34,15 +33,15 @@ class SortExtension(ApiExtension):
     https://github.com/stac-api-extensions/sort
     """
 
-    GET: Type[APIRequest] = SortExtensionGetRequest
-    POST: Type[BaseModel] = SortExtensionPostRequest
+    GET: type[APIRequest] = SortExtensionGetRequest
+    POST: type[BaseModel] = SortExtensionPostRequest
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         factory=lambda: [
             SortConformanceClasses.SEARCH,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
+    schema_href: str | None = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

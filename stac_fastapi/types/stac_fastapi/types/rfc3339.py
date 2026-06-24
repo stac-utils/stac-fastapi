@@ -1,8 +1,7 @@
 """rfc3339."""
 
 import re
-from datetime import datetime, timezone
-from typing import Optional, Tuple, Union
+from datetime import UTC, datetime
 
 import iso8601
 from fastapi import HTTPException
@@ -12,12 +11,9 @@ RFC33339_PATTERN = (
     r"(Z|([-+])(\d\d):(\d\d))$"
 )
 
-DateTimeType = Union[
-    datetime,
-    Tuple[datetime, datetime],
-    Tuple[datetime, None],
-    Tuple[None, datetime],
-]
+DateTimeType = (
+    datetime | tuple[datetime, datetime] | tuple[datetime, None] | tuple[None, datetime]
+)
 
 
 # Borrowed from pystac - https://github.com/stac-utils/pystac/blob/f5e4cf4a29b62e9ef675d4a4dac7977b09f53c8f/pystac/utils.py#L370-L394
@@ -38,7 +34,7 @@ def datetime_to_str(dt: datetime, timespec: str = "auto") -> str:
         str: The ISO8601 (RFC 3339) formatted string representing the datetime.
     """
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
 
     timestamp = dt.isoformat(timespec=timespec)
     zulu = "+00:00"
@@ -92,7 +88,7 @@ def parse_single_date(date_str: str) -> datetime:
     return rfc3339_str_to_datetime(date_str)
 
 
-def str_to_interval(interval: Optional[str]) -> Optional[DateTimeType]:
+def str_to_interval(interval: str | None) -> DateTimeType | None:
     """
     Extract a single datetime object or a tuple of datetime objects from an
     interval string defined by the OGC API. The interval can either be a
@@ -151,7 +147,7 @@ def str_to_interval(interval: Optional[str]) -> Optional[DateTimeType]:
 
 def now_in_utc() -> datetime:
     """Return a datetime value of now with the UTC timezone applied."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def now_to_rfc3339_str() -> str:

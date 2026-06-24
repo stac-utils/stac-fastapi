@@ -1,7 +1,7 @@
 """Transaction extension request models."""
 
 import json
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Literal
 
 from pydantic import ConfigDict, Field
 from stac_pydantic.shared import BBox, StacBaseModel
@@ -78,14 +78,14 @@ class PatchMoveCopy(StacBaseModel):
     from_: str = Field(alias="from")
 
 
-PatchOperation = Union[PatchAddReplaceTest, PatchMoveCopy, PatchRemove]
+PatchOperation = PatchAddReplaceTest | PatchMoveCopy | PatchRemove
 
 
 class BasePartial(StacBaseModel):
     """Base Partial Class."""
 
     @staticmethod
-    def merge_to_operations(data: Dict) -> List[PatchOperation]:
+    def merge_to_operations(data: dict) -> list[PatchOperation]:
         """Convert merge operation to list of RF6902 operations.
 
         Args:
@@ -94,7 +94,7 @@ class BasePartial(StacBaseModel):
         Returns:
             List: list of RF6902 operations.
         """
-        operations: List[PatchOperation] = []
+        operations: list[PatchOperation] = []
 
         for key, value in data.copy().items():
             if value is None:
@@ -114,7 +114,7 @@ class BasePartial(StacBaseModel):
 
         return operations
 
-    def operations(self) -> List[PatchOperation]:
+    def operations(self) -> list[PatchOperation]:
         """Equivalent RF6902 operations to merge of Partial.
 
         Returns:
@@ -126,31 +126,31 @@ class BasePartial(StacBaseModel):
 class PartialCollection(BasePartial):
     """Partial STAC Collection."""
 
-    type: Optional[str] = None
-    stac_version: Optional[str] = None
-    stac_extensions: Optional[List[str]] = None
-    id: Optional[str] = None
-    title: Optional[str] = None
-    description: Optional[str] = None
-    links: Optional[Dict[str, Any]] = None
-    keywords: Optional[List[str]] = None
-    license: Optional[str] = None
-    providers: Optional[List[Dict[str, Any]]] = None
-    extent: Optional[Dict[str, Any]] = None
-    summaries: Optional[Dict[str, Any]] = None
-    assets: Optional[Dict[str, Any]] = None
+    type: str | None = None
+    stac_version: str | None = None
+    stac_extensions: list[str] | None = None
+    id: str | None = None
+    title: str | None = None
+    description: str | None = None
+    links: dict[str, Any] | None = None
+    keywords: list[str] | None = None
+    license: str | None = None
+    providers: list[dict[str, Any]] | None = None
+    extent: dict[str, Any] | None = None
+    summaries: dict[str, Any] | None = None
+    assets: dict[str, Any] | None = None
 
 
 class PartialItem(BasePartial):
     """Partial STAC Item."""
 
-    type: Optional[Literal["Feature"]] = None
-    stac_version: Optional[str] = None
-    stac_extensions: Optional[List[str]] = None
-    id: Optional[str] = None
-    geometry: Optional[Dict[str, Any]] = None
-    bbox: Optional[BBox] = None
-    properties: Optional[Dict[str, Any]] = None
-    links: Optional[List[Dict[str, Any]]] = None
-    assets: Optional[Dict[str, Any]] = None
-    collection: Optional[str] = None
+    type: Literal["Feature"] | None = None
+    stac_version: str | None = None
+    stac_extensions: list[str] | None = None
+    id: str | None = None
+    geometry: dict[str, Any] | None = None
+    bbox: BBox | None = None
+    properties: dict[str, Any] | None = None
+    links: list[dict[str, Any]] | None = None
+    assets: dict[str, Any] | None = None
+    collection: str | None = None

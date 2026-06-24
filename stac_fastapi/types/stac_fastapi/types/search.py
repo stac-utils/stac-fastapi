@@ -1,7 +1,7 @@
 """stac_fastapi.types.search module."""
 
 from datetime import datetime as dt
-from typing import Dict, List, Optional, Union, cast
+from typing import Annotated, cast
 
 import attr
 from fastapi import HTTPException, Query
@@ -9,7 +9,6 @@ from pydantic import Field, PositiveInt
 from pydantic.functional_validators import AfterValidator
 from stac_pydantic.api import Search
 from stac_pydantic.shared import BBox
-from typing_extensions import Annotated
 
 from stac_fastapi.types.rfc3339 import DateTimeType, str_to_interval
 
@@ -22,7 +21,7 @@ def crop(v: PositiveInt) -> PositiveInt:
     return v
 
 
-def str2list(x: Optional[str]) -> Optional[List[str]]:
+def str2list(x: str | None) -> list[str] | None:
     """Convert string to list base on , delimiter."""
     if x:
         return x.split(",")
@@ -30,7 +29,7 @@ def str2list(x: Optional[str]) -> Optional[List[str]]:
     return None
 
 
-def str2bbox(x: str) -> Optional[BBox]:
+def str2bbox(x: str) -> BBox | None:
     """Convert string to BBox based on , delimiter."""
     if x:
         try:
@@ -50,7 +49,7 @@ def str2bbox(x: str) -> Optional[BBox]:
 
 def _collection_converter(
     val: Annotated[
-        Optional[str],
+        str | None,
         Query(
             description="Array of collection Ids to search for items.",
             openapi_examples={
@@ -60,7 +59,7 @@ def _collection_converter(
             },
         ),
     ] = None,
-) -> Optional[List[str]]:
+) -> list[str] | None:
     if val:
         return val.split(",")
     return None
@@ -68,7 +67,7 @@ def _collection_converter(
 
 def _ids_converter(
     val: Annotated[
-        Optional[str],
+        str | None,
         Query(
             description="Array of Item ids to return.",
             openapi_examples={
@@ -78,7 +77,7 @@ def _ids_converter(
             },
         ),
     ] = None,
-) -> Optional[List[str]]:
+) -> list[str] | None:
     if val:
         return val.split(",")
     return None
@@ -86,7 +85,7 @@ def _ids_converter(
 
 def _bbox_converter(
     val: Annotated[
-        Optional[str],
+        str | None,
         Query(
             description="Only return items intersecting this bounding box. Mutually exclusive with **intersects**.",  # noqa: E501
             openapi_examples={
@@ -95,7 +94,7 @@ def _bbox_converter(
             },
         ),
     ] = None,
-) -> Optional[BBox]:
+) -> BBox | None:
     if val:
         return str2bbox(val)
     return None
@@ -107,12 +106,12 @@ def _validate_datetime(instance, attribute, value):
 
 
 # Be careful: https://github.com/samuelcolvin/pydantic/issues/1423#issuecomment-642797287
-NumType = Union[float, int]
+NumType = float | int
 Limit = Annotated[PositiveInt, AfterValidator(crop)]
 
 
 DateTimeQueryType = Annotated[
-    Optional[str],
+    str | None,
     Query(
         description="""Only return items that have a temporal property that intersects this value.\n
 Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
@@ -131,7 +130,7 @@ Either a date-time or an interval, open or closed. Date and time expressions adh
 class APIRequest:
     """Generic API Request base class."""
 
-    def kwargs(self) -> Dict:
+    def kwargs(self) -> dict:
         """Transform api request params into format which matches the signature of the
         endpoint."""
         return self.__dict__
@@ -143,12 +142,12 @@ class DatetimeMixin:
 
     datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
 
-    def parse_datetime(self) -> Optional[DateTimeType]:
+    def parse_datetime(self) -> DateTimeType | None:
         """Return Datetime objects."""
         return str_to_interval(self.datetime)
 
     @property
-    def start_date(self) -> Optional[dt]:
+    def start_date(self) -> dt | None:
         """Start Date."""
         parsed = self.parse_datetime()
         if parsed is None:
@@ -157,7 +156,7 @@ class DatetimeMixin:
         return parsed[0] if isinstance(parsed, tuple) else parsed
 
     @property
-    def end_date(self) -> Optional[dt]:
+    def end_date(self) -> dt | None:
         """End Date."""
         parsed = self.parse_datetime()
         if parsed is None:
@@ -170,13 +169,11 @@ class DatetimeMixin:
 class BaseSearchGetRequest(APIRequest, DatetimeMixin):
     """Base arguments for GET Request."""
 
-    collections: Optional[List[str]] = attr.ib(
-        default=None, converter=_collection_converter
-    )
-    ids: Optional[List[str]] = attr.ib(default=None, converter=_ids_converter)
-    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)
+    collections: list[str] | None = attr.ib(default=None, converter=_collection_converter)
+    ids: list[str] | None = attr.ib(default=None, converter=_ids_converter)
+    bbox: BBox | None = attr.ib(default=None, converter=_bbox_converter)
     intersects: Annotated[
-        Optional[str],
+        str | None,
         Query(
             description="""Only return items intersecting this GeoJSON Geometry. Mutually exclusive with **bbox**. \n
 *Remember to URL encode the GeoJSON geometry when using GET request*.""",  # noqa: E501
@@ -223,7 +220,7 @@ class BaseSearchGetRequest(APIRequest, DatetimeMixin):
     ] = attr.ib(default=None)
     datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
     limit: Annotated[
-        Optional[Limit],
+        Limit | None,
         Query(
             description="Limits the number of results that are included in each page of the response (capped to 10_000)."  # noqa: E501
         ),
@@ -233,7 +230,7 @@ class BaseSearchGetRequest(APIRequest, DatetimeMixin):
 class BaseSearchPostRequest(Search):
     """Base arguments for POST Request."""
 
-    limit: Optional[Limit] = Field(
+    limit: Limit | None = Field(
         10,
         description="Limits the number of results that are included in each page of the response (capped to 10_000).",  # noqa: E501
     )

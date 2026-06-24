@@ -1,11 +1,10 @@
 """Request model for the Query extension."""
 
-from typing import Any, Dict, Optional
+from typing import Annotated, Any
 
 import attr
 from fastapi import Query
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
 
 from stac_fastapi.types.search import APIRequest
 
@@ -15,7 +14,7 @@ class QueryExtensionGetRequest(APIRequest):
     """Query Extension GET request model."""
 
     query: Annotated[
-        Optional[str],
+        str | None,
         Query(
             description="Allows additional filtering based on the properties of Item objects",  # noqa: E501
             openapi_examples={
@@ -29,7 +28,7 @@ class QueryExtensionGetRequest(APIRequest):
 class QueryExtensionPostRequest(BaseModel):
     """Query Extension POST request model."""
 
-    query: Optional[Dict[str, Dict[str, Any]]] = Field(
+    query: dict[str, dict[str, Any]] | None = Field(
         None,
         description="Allows additional filtering based on the properties of Item objects",  # noqa: E501
         json_schema_extra={

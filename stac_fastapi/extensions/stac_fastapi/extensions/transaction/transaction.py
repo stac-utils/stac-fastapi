@@ -1,7 +1,8 @@
 """Transaction extension."""
 
-from enum import Enum
-from typing import Any, Dict, List, Optional, Sequence, Type, Union
+from collections.abc import Sequence
+from enum import StrEnum
+from typing import Annotated, Any
 
 import attr
 from fastapi import APIRouter, Body, FastAPI
@@ -10,7 +11,6 @@ from pydantic import TypeAdapter
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.shared import MimeTypes
 from starlette.responses import Response
-from typing_extensions import Annotated
 
 from stac_fastapi.api.models import CollectionUri, ItemUri, JSONResponse
 from stac_fastapi.api.routes import create_async_endpoint
@@ -21,7 +21,7 @@ from .client import AsyncBaseTransactionsClient, BaseTransactionsClient
 from .request import PartialCollection, PartialItem, PatchOperation
 
 
-class TransactionConformanceClasses(str, Enum):
+class TransactionConformanceClasses(StrEnum):
     """Conformance classes for the Transaction extension.
 
     See https://github.com/stac-api-extensions/transaction
@@ -36,7 +36,7 @@ class TransactionConformanceClasses(str, Enum):
 class PostItem(CollectionUri):
     """Create Item."""
 
-    item: Annotated[Union[Item, ItemCollection], Body()] = attr.ib(default=None)
+    item: Annotated[Item | ItemCollection, Body()] = attr.ib(default=None)
 
 
 @attr.s
@@ -51,7 +51,7 @@ class PatchItem(ItemUri):
     """Patch Item."""
 
     patch: Annotated[
-        Union[PartialItem, List[PatchOperation]],
+        PartialItem | list[PatchOperation],
         Body(),
     ] = attr.ib(default=None)
 
@@ -68,12 +68,12 @@ class PatchCollection(CollectionUri):
     """Patch Collection."""
 
     patch: Annotated[
-        Union[PartialCollection, List[PatchOperation]],
+        PartialCollection | list[PatchOperation],
         Body(),
     ] = attr.ib(default=None)
 
 
-_patch_item_schema = TypeAdapter(List[PatchOperation]).json_schema() | {
+_patch_item_schema = TypeAdapter(list[PatchOperation]).json_schema() | {
     "examples": [
         [
             {
@@ -109,12 +109,12 @@ _patch_item_schema = TypeAdapter(List[PatchOperation]).json_schema() | {
     ]
 }
 # ref: https://github.com/pydantic/pydantic/issues/889
-_patch_item_schema_dict: Dict[str, Any] = _patch_item_schema
+_patch_item_schema_dict: dict[str, Any] = _patch_item_schema
 _patch_item_schema_dict["items"]["anyOf"] = list(
     _patch_item_schema_dict["$defs"].values()
 )
 
-_patch_collection_schema = TypeAdapter(List[PatchOperation]).json_schema() | {
+_patch_collection_schema = TypeAdapter(list[PatchOperation]).json_schema() | {
     "examples": [
         [
             {
@@ -150,7 +150,7 @@ _patch_collection_schema = TypeAdapter(List[PatchOperation]).json_schema() | {
     ]
 }
 # ref: https://github.com/pydantic/pydantic/issues/889
-_patch_collection_schema_dict: Dict[str, Any] = _patch_collection_schema
+_patch_collection_schema_dict: dict[str, Any] = _patch_collection_schema
 _patch_collection_schema_dict["items"]["anyOf"] = list(
     _patch_collection_schema_dict["$defs"].values()
 )
@@ -177,18 +177,18 @@ class TransactionExtension(ApiExtension):
 
     """
 
-    client: Union[AsyncBaseTransactionsClient, BaseTransactionsClient] = attr.ib()
+    client: AsyncBaseTransactionsClient | BaseTransactionsClient = attr.ib()
     settings: ApiSettings = attr.ib()
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         factory=lambda: [
             TransactionConformanceClasses.ITEMS,
             TransactionConformanceClasses.COLLECTIONS,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
+    schema_href: str | None = attr.ib(default=None)
     router: APIRouter = attr.ib(factory=APIRouter)
-    response_class: Type[Response] = attr.ib(default=JSONResponse)
-    route_dependencies: Optional[Sequence[Depends]] = attr.ib(default=None)
+    response_class: type[Response] = attr.ib(default=JSONResponse)
+    route_dependencies: Sequence[Depends] | None = attr.ib(default=None)
 
     def register_create_item(self):
         """Register create item endpoint (POST /collections/{collection_id}/items)."""

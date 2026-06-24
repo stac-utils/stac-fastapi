@@ -1,7 +1,6 @@
 """Query extension."""
 
-from enum import Enum
-from typing import List, Optional, Type
+from enum import StrEnum
 
 import attr
 from fastapi import FastAPI
@@ -13,7 +12,7 @@ from stac_fastapi.types.search import APIRequest
 from .request import QueryExtensionGetRequest, QueryExtensionPostRequest
 
 
-class QueryConformanceClasses(str, Enum):
+class QueryConformanceClasses(StrEnum):
     """Conformance classes for the Query extension.
 
     See https://github.com/stac-api-extensions/query
@@ -34,15 +33,15 @@ class QueryExtension(ApiExtension):
     https://github.com/stac-api-extensions/query
     """
 
-    GET: Type[APIRequest] = QueryExtensionGetRequest
-    POST: Type[BaseModel] = QueryExtensionPostRequest
+    GET: type[APIRequest] = QueryExtensionGetRequest
+    POST: type[BaseModel] = QueryExtensionPostRequest
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         factory=lambda: [
             QueryConformanceClasses.SEARCH,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
+    schema_href: str | None = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.

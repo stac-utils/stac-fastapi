@@ -1,13 +1,12 @@
 """Request models for the Collection-Search extension."""
 
 from datetime import datetime as dt
-from typing import List, Optional, Tuple, cast
+from typing import Annotated, cast
 
 import attr
 from fastapi import Query
 from pydantic import BaseModel, Field, PrivateAttr, ValidationInfo, field_validator
 from stac_pydantic.shared import BBox, SearchDatetime
-from typing_extensions import Annotated
 
 from stac_fastapi.types.search import (
     APIRequest,
@@ -23,10 +22,10 @@ from stac_fastapi.types.search import (
 class BaseCollectionSearchGetRequest(APIRequest, DatetimeMixin):
     """Basics additional Collection-Search parameters for the GET request."""
 
-    bbox: Optional[BBox] = attr.ib(default=None, converter=_bbox_converter)  # type: ignore
+    bbox: BBox | None = attr.ib(default=None, converter=_bbox_converter)  # type: ignore
     datetime: DateTimeQueryType = attr.ib(default=None, validator=_validate_datetime)
     limit: Annotated[
-        Optional[Limit],
+        Limit | None,
         Query(
             description="Limits the number of results that are included in each page of the response."  # noqa: E501
         ),
@@ -36,7 +35,7 @@ class BaseCollectionSearchGetRequest(APIRequest, DatetimeMixin):
 class BaseCollectionSearchPostRequest(BaseModel):
     """Collection-Search POST model."""
 
-    bbox: Optional[BBox] = Field(
+    bbox: BBox | None = Field(
         default=None,
         description="Only return items intersecting this bounding box. Mutually exclusive with **intersects**.",  # noqa: E501
         json_schema_extra={
@@ -48,7 +47,7 @@ class BaseCollectionSearchPostRequest(BaseModel):
             ],
         },
     )
-    datetime: Optional[str] = Field(
+    datetime: str | None = Field(
         default=None,
         description="""Only return items that have a temporal property that intersects this value.\n
 Either a date-time or an interval, open or closed. Date and time expressions adhere to RFC 3339. Open intervals are expressed using double-dots.""",  # noqa: E501
@@ -67,24 +66,24 @@ Either a date-time or an interval, open or closed. Date and time expressions adh
             ],
         },
     )
-    limit: Optional[Limit] = Field(
+    limit: Limit | None = Field(
         10,
         description="Limits the number of results that are included in each page of the response (capped to 10_000).",  # noqa: E501
     )
 
     # Private properties to store the parsed datetime values.
     # Not part of the model schema.
-    _start_date: Optional[dt] = PrivateAttr(default=None)
-    _end_date: Optional[dt] = PrivateAttr(default=None)
+    _start_date: dt | None = PrivateAttr(default=None)
+    _end_date: dt | None = PrivateAttr(default=None)
 
     # Properties to return the private values
     @property
-    def start_date(self) -> Optional[dt]:
+    def start_date(self) -> dt | None:
         """start date."""
         return self._start_date
 
     @property
-    def end_date(self) -> Optional[dt]:
+    def end_date(self) -> dt | None:
         """end date."""
         return self._end_date
 
@@ -95,10 +94,10 @@ Either a date-time or an interval, open or closed. Date and time expressions adh
         if v:
             # Validate order
             if len(v) == 4:
-                xmin, ymin, xmax, ymax = cast(Tuple[int, int, int, int], v)
+                xmin, ymin, xmax, ymax = cast(tuple[int, int, int, int], v)
             else:
                 xmin, ymin, min_elev, xmax, ymax, max_elev = cast(
-                    Tuple[int, int, int, int, int, int], v
+                    tuple[int, int, int, int, int, int], v
                 )
                 if max_elev < min_elev:
                     raise ValueError(
@@ -117,9 +116,7 @@ Either a date-time or an interval, open or closed. Date and time expressions adh
 
     @field_validator("datetime", mode="after")
     @classmethod
-    def validate_datetime(
-        cls, value: Optional[str], info: ValidationInfo
-    ) -> Optional[str]:
+    def validate_datetime(cls, value: str | None, info: ValidationInfo) -> str | None:
         """validate datetime."""
         # Split on "/" and replace no value or ".." with None
         if value is None:
@@ -139,7 +136,7 @@ Either a date-time or an interval, open or closed. Date and time expressions adh
 
         # Cast because pylance gets confused by the type adapter and annotated type
         dates = cast(
-            List[Optional[dt]],
+            list[dt | None],
             [
                 # Use the type adapter to validate the datetime strings,
                 # strict is necessary due to pydantic issues #8736 and #8762

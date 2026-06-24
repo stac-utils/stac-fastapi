@@ -1,7 +1,7 @@
 """Collection-Search extension."""
 
-from enum import Enum
-from typing import List, Optional, Type, Union, cast
+from enum import StrEnum
+from typing import cast
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -19,7 +19,7 @@ from .client import AsyncBaseCollectionSearchClient, BaseCollectionSearchClient
 from .request import BaseCollectionSearchGetRequest, BaseCollectionSearchPostRequest
 
 
-class CollectionSearchConformanceClasses(str, Enum):
+class CollectionSearchConformanceClasses(StrEnum):
     """Conformance classes for the Collection-Search extension.
 
     See
@@ -49,16 +49,16 @@ class CollectionSearchExtension(ApiExtension):
             the extension
     """
 
-    GET: Type[APIRequest] = attr.ib(default=BaseCollectionSearchGetRequest)
-    POST: Optional[Type[BaseModel]] = attr.ib(init=False)
+    GET: type[APIRequest] = attr.ib(default=BaseCollectionSearchGetRequest)
+    POST: type[BaseModel] | None = attr.ib(init=False)
 
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         default=[
             CollectionSearchConformanceClasses.COLLECTIONSEARCH.value,
             CollectionSearchConformanceClasses.BASIS.value,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
+    schema_href: str | None = attr.ib(default=None)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -74,9 +74,9 @@ class CollectionSearchExtension(ApiExtension):
     @classmethod
     def from_extensions(
         cls,
-        extensions: List[ApiExtension],
+        extensions: list[ApiExtension],
         *,
-        schema_href: Optional[str] = None,
+        schema_href: str | None = None,
     ) -> "CollectionSearchExtension":
         """Create CollectionSearchExtension object from extensions."""
 
@@ -88,7 +88,7 @@ class CollectionSearchExtension(ApiExtension):
             conformance_classes.extend(ext.conformance_classes)
 
         get_request_model = cast(
-            Type[APIRequest],
+            type[APIRequest],
             create_request_model(
                 model_name="CollectionsGetRequest",
                 base_model=BaseCollectionSearchGetRequest,
@@ -121,19 +121,19 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
             the extension
     """
 
-    client: Union[AsyncBaseCollectionSearchClient, BaseCollectionSearchClient] = attr.ib()
+    client: AsyncBaseCollectionSearchClient | BaseCollectionSearchClient = attr.ib()
     settings: ApiSettings = attr.ib()
-    conformance_classes: List[str] = attr.ib(
+    conformance_classes: list[str] = attr.ib(
         default=[
             CollectionSearchConformanceClasses.COLLECTIONSEARCH.value,
             CollectionSearchConformanceClasses.BASIS.value,
         ]
     )
-    schema_href: Optional[str] = attr.ib(default=None)
+    schema_href: str | None = attr.ib(default=None)
     router: APIRouter = attr.ib(factory=APIRouter)
 
-    GET: Type[APIRequest] = attr.ib(default=BaseCollectionSearchGetRequest)
-    POST: Type[BaseModel] = attr.ib(default=BaseCollectionSearchPostRequest)
+    GET: type[APIRequest] = attr.ib(default=BaseCollectionSearchGetRequest)
+    POST: type[BaseModel] = attr.ib(default=BaseCollectionSearchPostRequest)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -169,12 +169,12 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
     @classmethod
     def from_extensions(  # type: ignore [override]
         cls,
-        extensions: List[ApiExtension],
+        extensions: list[ApiExtension],
         *,
-        schema_href: Optional[str] = None,
-        client: Union[AsyncBaseCollectionSearchClient, BaseCollectionSearchClient],
+        schema_href: str | None = None,
+        client: AsyncBaseCollectionSearchClient | BaseCollectionSearchClient,
         settings: ApiSettings,
-        router: Optional[APIRouter] = None,
+        router: APIRouter | None = None,
     ) -> "CollectionSearchPostExtension":
         """Create CollectionSearchPostExtension object from extensions."""
         conformance_classes = [
@@ -185,7 +185,7 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
             conformance_classes.extend(ext.conformance_classes)
 
         get_request_model = cast(
-            Type[APIRequest],
+            type[APIRequest],
             create_request_model(
                 model_name="CollectionsGetRequest",
                 base_model=BaseCollectionSearchGetRequest,
@@ -195,7 +195,7 @@ class CollectionSearchPostExtension(CollectionSearchExtension):
         )
 
         post_request_model = cast(
-            Type[BaseModel],
+            type[BaseModel],
             create_request_model(
                 model_name="CollectionsPostRequest",
                 base_model=BaseCollectionSearchPostRequest,

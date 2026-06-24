@@ -1,18 +1,17 @@
 """Request model for the Free-text extension."""
 
-from typing import List, Optional
+from typing import Annotated
 
 import attr
 from fastapi import Query
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
 
 from stac_fastapi.types.search import APIRequest
 
 
 def _ft_converter(
     val: Annotated[
-        Optional[str],
+        str | None,
         Query(
             description="Parameter to perform free-text queries against STAC metadata",
             openapi_examples={
@@ -21,7 +20,7 @@ def _ft_converter(
             },
         ),
     ] = None,
-) -> Optional[List[str]]:
+) -> list[str] | None:
     if val:
         return val.split(",")
     return None
@@ -31,13 +30,13 @@ def _ft_converter(
 class FreeTextExtensionGetRequest(APIRequest):
     """Free-text Extension GET request model."""
 
-    q: Optional[List[str]] = attr.ib(default=None, converter=_ft_converter)
+    q: list[str] | None = attr.ib(default=None, converter=_ft_converter)
 
 
 class FreeTextExtensionPostRequest(BaseModel):
     """Free-text Extension POST request model."""
 
-    q: Optional[List[str]] = Field(
+    q: list[str] | None = Field(
         None,
         description="Parameter to perform free-text queries against STAC metadata",
     )
@@ -48,7 +47,7 @@ class FreeTextAdvancedExtensionGetRequest(APIRequest):
     """Free-text Extension GET request model."""
 
     q: Annotated[
-        Optional[str],
+        str | None,
         Query(
             description="Parameter to perform free-text queries against STAC metadata",
             openapi_examples={
@@ -62,7 +61,7 @@ class FreeTextAdvancedExtensionGetRequest(APIRequest):
 class FreeTextAdvancedExtensionPostRequest(BaseModel):
     """Free-text Extension POST request model."""
 
-    q: Optional[str] = Field(
+    q: str | None = Field(
         None,
         description="Parameter to perform free-text queries against STAC metadata",
     )

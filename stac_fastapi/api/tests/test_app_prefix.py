@@ -1,5 +1,4 @@
 import urllib
-from typing import Optional
 
 import pytest
 from fastapi import APIRouter
@@ -9,7 +8,7 @@ from stac_fastapi.api.app import StacApi
 from stac_fastapi.types.config import ApiSettings
 
 
-def get_link(landing_page, rel_type, method: Optional[str] = None):
+def get_link(landing_page, rel_type, method: str | None = None):
     return next(
         filter(
             lambda link: (

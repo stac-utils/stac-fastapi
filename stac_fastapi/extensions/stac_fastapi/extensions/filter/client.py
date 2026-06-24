@@ -1,7 +1,7 @@
 """Filter extensions clients."""
 
 import abc
-from typing import Any, Dict, Optional
+from typing import Any
 
 import attr
 
@@ -11,8 +11,8 @@ class AsyncBaseFiltersClient(abc.ABC):
     """Defines a pattern for implementing the STAC filter extension."""
 
     async def get_queryables(
-        self, collection_id: Optional[str] = None, **kwargs
-    ) -> Dict[str, Any]:
+        self, collection_id: str | None = None, **kwargs
+    ) -> dict[str, Any]:
         """Get the queryables available for the given collection_id.
 
         If collection_id is None, returns the intersection of all queryables over all
@@ -37,8 +37,8 @@ class BaseFiltersClient(abc.ABC):
     """Defines a pattern for implementing the STAC filter extension."""
 
     def get_queryables(
-        self, collection_id: Optional[str] = None, **kwargs
-    ) -> Dict[str, Any]:
+        self, collection_id: str | None = None, **kwargs
+    ) -> dict[str, Any]:
         """Get the queryables available for the given collection_id.
 
         If collection_id is None, returns the intersection of all queryables over all

@@ -1,11 +1,10 @@
 """Request models for the fields extension."""
 
-from typing import Dict, List, Optional, Set
+from typing import Annotated
 
 import attr
 from fastapi import Query
 from pydantic import BaseModel, Field
-from typing_extensions import Annotated
 
 from stac_fastapi.types.search import APIRequest, str2list
 
@@ -18,11 +17,11 @@ class PostFieldsExtension(BaseModel):
         exclude: set of fields to exclude.
     """
 
-    include: Optional[Set[str]] = set()
-    exclude: Optional[Set[str]] = set()
+    include: set[str] | None = set()
+    exclude: set[str] | None = set()
 
     @staticmethod
-    def _get_field_dict(fields: Optional[Set[str]]) -> Dict:
+    def _get_field_dict(fields: set[str] | None) -> dict:
         """Pydantic include/excludes notation.
 
         Internal method to create a dictionary for advanced include or exclude
@@ -46,7 +45,7 @@ class PostFieldsExtension(BaseModel):
 
 def _fields_converter(
     val: Annotated[
-        Optional[str],
+        str | None,
         Query(
             description="Include or exclude fields from items body.",
             openapi_examples={
@@ -55,7 +54,7 @@ def _fields_converter(
             },
         ),
     ] = None,
-) -> Optional[List[str]]:
+) -> list[str] | None:
     return str2list(val)
 
 
@@ -63,13 +62,13 @@ def _fields_converter(
 class FieldsExtensionGetRequest(APIRequest):
     """Additional fields for the GET request."""
 
-    fields: Optional[List[str]] = attr.ib(default=None, converter=_fields_converter)
+    fields: list[str] | None = attr.ib(default=None, converter=_fields_converter)
 
 
 class FieldsExtensionPostRequest(BaseModel):
     """Additional fields and schema for the POST request."""
 
-    fields: Optional[PostFieldsExtension] = Field(
+    fields: PostFieldsExtension | None = Field(
         PostFieldsExtension(),
         description="Include or exclude fields from items body.",
     )
