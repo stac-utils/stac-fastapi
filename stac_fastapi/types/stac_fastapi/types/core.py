@@ -2,7 +2,7 @@
 
 import abc
 from typing import Any
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 import attr
 from fastapi import Request
@@ -47,6 +47,7 @@ class LandingPageMixin(abc.ABC):
         conformance_classes: list[str],
         extension_schemas: list[str],
     ) -> stac.LandingPage:
+        path = urlsplit(base_url).path.rstrip("/")
         landing_page = stac.LandingPage(
             type="Catalog",
             id=self.landing_page_id,
@@ -71,26 +72,26 @@ class LandingPageMixin(abc.ABC):
                     "rel": Relations.data.value,
                     "type": MimeTypes.json.value,
                     "title": "Collections available for this Catalog",
-                    "href": urljoin(base_url, "collections"),
+                    "href": urljoin(base_url, f"{path}/collections"),
                 },
                 {
                     "rel": Relations.conformance.value,
                     "type": MimeTypes.json.value,
                     "title": "STAC/OGC conformance classes implemented by this server",
-                    "href": urljoin(base_url, "conformance"),
+                    "href": urljoin(base_url, f"{path}/conformance"),
                 },
                 {
                     "rel": Relations.search.value,
                     "type": MimeTypes.geojson.value,
                     "title": "STAC search [GET]",
-                    "href": urljoin(base_url, "search"),
+                    "href": urljoin(base_url, f"{path}/search"),
                     "method": "GET",
                 },
                 {
                     "rel": Relations.search.value,
                     "type": MimeTypes.geojson.value,
                     "title": "STAC search [POST]",
-                    "href": urljoin(base_url, "search"),
+                    "href": urljoin(base_url, f"{path}/search"),
                     "method": "POST",
                 },
             ],
@@ -155,6 +156,8 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
             extension_schemas=[],
         )
 
+        path = urlsplit(base_url).path.rstrip("/")
+
         # Add Queryables link
         if self.extension_is_enabled("FilterExtension") or self.extension_is_enabled(
             "SearchFilterExtension"
@@ -164,7 +167,7 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                     "rel": Relations.queryables.value,
                     "type": MimeTypes.jsonschema.value,
                     "title": "Queryables available for this Catalog",
-                    "href": urljoin(base_url, "queryables"),
+                    "href": urljoin(base_url, f"{path}/queryables"),
                 }
             )
 
@@ -176,13 +179,13 @@ class BaseCoreClient(LandingPageMixin, abc.ABC):
                         "rel": "aggregate",
                         "type": "application/json",
                         "title": "Aggregate",
-                        "href": urljoin(base_url, "aggregate"),
+                        "href": urljoin(base_url, f"{path}/aggregate"),
                     },
                     {
                         "rel": "aggregations",
                         "type": "application/json",
                         "title": "Aggregations",
-                        "href": urljoin(base_url, "aggregations"),
+                        "href": urljoin(base_url, f"{path}/aggregations"),
                     },
                 ]
             )
@@ -364,6 +367,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
             conformance_classes=self.conformance_classes(),
             extension_schemas=[],
         )
+        path = urlsplit(base_url).path.rstrip("/")
 
         # Add Queryables link
         if self.extension_is_enabled("FilterExtension") or self.extension_is_enabled(
@@ -374,7 +378,7 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                     "rel": Relations.queryables.value,
                     "type": MimeTypes.jsonschema.value,
                     "title": "Queryables available for this Catalog",
-                    "href": urljoin(base_url, "queryables"),
+                    "href": urljoin(base_url, f"{path}/queryables"),
                     "method": "GET",
                 }
             )
@@ -387,13 +391,13 @@ class AsyncBaseCoreClient(LandingPageMixin, abc.ABC):
                         "rel": "aggregate",
                         "type": "application/json",
                         "title": "Aggregate",
-                        "href": urljoin(base_url, "aggregate"),
+                        "href": urljoin(base_url, f"{path}/aggregate"),
                     },
                     {
                         "rel": "aggregations",
                         "type": "application/json",
                         "title": "Aggregations",
-                        "href": urljoin(base_url, "aggregations"),
+                        "href": urljoin(base_url, f"{path}/aggregations"),
                     },
                 ]
             )
