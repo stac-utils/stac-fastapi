@@ -5,6 +5,7 @@
 ### Fixed
 
 - Update type hints to use native python types instead of `typing` or `typing_extensions`
+- Possible issue with `urljoin` when joining URLs with a trailing slash
 
 ## [6.3.0] - 2026-06-22
 
