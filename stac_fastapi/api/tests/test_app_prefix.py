@@ -88,7 +88,7 @@ def test_api_prefix(TestCoreClient, prefix):
             assert resp.status_code == 200
 
 
-@pytest.mark.parametrize("prefix", ["", "/a_prefix"])
+@pytest.mark.parametrize("prefix", ["", "/stac", "/v1/stac"])
 def test_async_api_prefix(AsyncTestCoreClient, prefix):
     api_settings = ApiSettings(
         openapi_url=f"{prefix}/api",
@@ -104,7 +104,6 @@ def test_async_api_prefix(AsyncTestCoreClient, prefix):
     with TestClient(api.app, base_url="http://stac.io") as client:
         landing = client.get(f"{prefix}/")
         assert landing.status_code == 200, landing.json()
-
         service_doc = client.get(f"{prefix}/api.html")
         assert service_doc.status_code == 200, service_doc.text
 
@@ -152,9 +151,12 @@ def test_async_api_prefix(AsyncTestCoreClient, prefix):
 
 
 @pytest.mark.parametrize("prefix", ["", "/a_prefix"])
-def test_api_prefix_with_root_path(TestCoreClient, prefix):
+@pytest.mark.parametrize("root_path", ["", "/api/v1"])
+def test_api_prefix_with_root_path(TestCoreClient, root_path, prefix):
     api_settings = ApiSettings(
-        openapi_url=f"{prefix}/api", docs_url=f"{prefix}/api.html", root_path="/api/v1"
+        openapi_url=f"{prefix}/api",
+        docs_url=f"{prefix}/api.html",
+        root_path=root_path,
     )
 
     api = StacApi(
@@ -163,8 +165,8 @@ def test_api_prefix_with_root_path(TestCoreClient, prefix):
         router=APIRouter(prefix=prefix),
     )
 
-    prefix = "/api/v1" + prefix
-    with TestClient(api.app, base_url="http://stac.io", root_path="/api/v1") as client:
+    prefix = root_path + prefix
+    with TestClient(api.app, base_url="http://stac.io", root_path=root_path) as client:
         landing = client.get(f"{prefix}/")
         assert landing.status_code == 200, landing.json()
 

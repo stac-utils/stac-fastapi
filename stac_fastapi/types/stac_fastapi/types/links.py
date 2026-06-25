@@ -1,7 +1,7 @@
 """Link helpers."""
 
 from typing import Any
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 import attr
 from stac_pydantic.links import Relations
@@ -21,8 +21,10 @@ def filter_links(links: list[dict]) -> list[dict]:
 def resolve_links(links: list, base_url: str) -> list[dict]:
     """Convert relative links to absolute links."""
     filtered_links = filter_links(links)
+    path = urlsplit(base_url).path.rstrip("/")
     for link in filtered_links:
-        link.update({"href": urljoin(base_url, link["href"])})
+        href = link["href"].lstrip("/")
+        link.update({"href": urljoin(base_url, f"{path}/{href}")})
     return filtered_links
 
 
@@ -44,10 +46,11 @@ class CollectionLinks(BaseLinks):
 
     def self(self) -> dict[str, Any]:
         """Create the `self` link."""
+        path = urlsplit(self.base_url).path.rstrip("/")
         return dict(
             rel=Relations.self,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"collections/{self.collection_id}"),
+            href=urljoin(self.base_url, f"{path}/collections/{self.collection_id}"),
         )
 
     def parent(self) -> dict[str, Any]:
@@ -56,10 +59,11 @@ class CollectionLinks(BaseLinks):
 
     def items(self) -> dict[str, Any]:
         """Create the `items` link."""
+        path = urlsplit(self.base_url).path.rstrip("/")
         return dict(
             rel="items",
             type=MimeTypes.geojson,
-            href=urljoin(self.base_url, f"collections/{self.collection_id}/items"),
+            href=urljoin(self.base_url, f"{path}/collections/{self.collection_id}/items"),
         )
 
     def create_links(self) -> list[dict[str, Any]]:
@@ -75,29 +79,32 @@ class ItemLinks(BaseLinks):
 
     def self(self) -> dict[str, Any]:
         """Create the `self` link."""
+        path = urlsplit(self.base_url).path.rstrip("/")
         return dict(
             rel=Relations.self,
             type=MimeTypes.geojson,
             href=urljoin(
                 self.base_url,
-                f"collections/{self.collection_id}/items/{self.item_id}",
+                f"{path}/collections/{self.collection_id}/items/{self.item_id}",
             ),
         )
 
     def parent(self) -> dict[str, Any]:
         """Create the `parent` link."""
+        path = urlsplit(self.base_url).path.rstrip("/")
         return dict(
             rel=Relations.parent,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"collections/{self.collection_id}"),
+            href=urljoin(self.base_url, f"{path}/collections/{self.collection_id}"),
         )
 
     def collection(self) -> dict[str, Any]:
         """Create the `collection` link."""
+        path = urlsplit(self.base_url).path.rstrip("/")
         return dict(
             rel=Relations.collection,
             type=MimeTypes.json,
-            href=urljoin(self.base_url, f"collections/{self.collection_id}"),
+            href=urljoin(self.base_url, f"{path}/collections/{self.collection_id}"),
         )
 
     def create_links(self) -> list[dict[str, Any]]:
