@@ -19,12 +19,27 @@ def filter_links(links: list[dict]) -> list[dict]:
 
 
 def resolve_links(links: list, base_url: str) -> list[dict]:
-    """Convert relative links to absolute links."""
+    """Convert relative links to absolute links while preserving existing absolute URLs.
+
+    This function processes links and applies the base_url and proxy path to relative URLs
+    However, it explicitly preserves absolute URLs (starting with http:// or https://) to
+    prevent mangling of external links stored in STAC items (e.g., license URLs, external
+    documentation links).
+    """
     filtered_links = filter_links(links)
     path = urlsplit(base_url).path.rstrip("/")
     for link in filtered_links:
-        href = link["href"].lstrip("/")
-        link.update({"href": urljoin(base_url, f"{path}/{href}")})
+        href = str(link.get("href", ""))
+
+        # Do not mangle URLs that are already absolute
+        if href.startswith(("http://", "https://")):
+            continue
+
+        # Remove leading slash to prevent urljoin from replacing the entire path
+        href = href.lstrip("/")
+        # Construct the full path with proxy path preserved
+        full_path = f"{path}/{href}" if path else href
+        link.update({"href": urljoin(base_url, full_path)})
     return filtered_links
 
 
