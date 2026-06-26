@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [6.3.2] - 2026-06-27
+
 ### Fixed
 
 - Prevent resolve_links from mangling absolute URLs in STAC items. The function now checks if an href is already absolute (starts with http:// or https://) before applying the proxy path and base_url. This fixes a regression in v6.3.1 that affected any backend or custom implementation that returns STAC items containing external or absolute URLs (such as license links, external documentation, or custom asset endpoints). ([#940](https://github.com/stac-utils/stac-fastapi/pull/940))
@@ -741,7 +743,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.3.1..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.3.2..main>
+[6.3.2]: <https://github.com/stac-utils/stac-fastapi/compare/6.3.1..6.3.2>
 [6.3.1]: <https://github.com/stac-utils/stac-fastapi/compare/6.3.0..6.3.1>
 [6.3.0]: <https://github.com/stac-utils/stac-fastapi/compare/6.2.1..6.3.0>
 [6.2.1]: <https://github.com/stac-utils/stac-fastapi/compare/6.2.0..6.2.1>
