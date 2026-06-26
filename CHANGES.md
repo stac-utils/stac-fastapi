@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Prevent resolve_links from mangling absolute URLs in STAC items. The function now checks if an href is already absolute (starts with http:// or https://) before applying the proxy path and base_url. This fixes a regression in v6.3.1 that affected any backend or custom implementation that returns STAC items containing external or absolute URLs (such as license links, external documentation, or custom asset endpoints).
+- Prevent resolve_links from mangling absolute URLs in STAC items. The function now checks if an href is already absolute (starts with http:// or https://) before applying the proxy path and base_url. This fixes a regression in v6.3.1 that affected any backend or custom implementation that returns STAC items containing external or absolute URLs (such as license links, external documentation, or custom asset endpoints). ([#940](https://github.com/stac-utils/stac-fastapi/pull/940))
 
 ## [6.3.1] - 2026-06-25
 
