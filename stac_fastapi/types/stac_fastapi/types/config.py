@@ -1,9 +1,12 @@
 """stac_fastapi.types.config module."""
 
+import logging
 from typing import Self
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger(__name__)
 
 
 class ApiSettings(BaseSettings):
@@ -43,10 +46,28 @@ class ApiSettings(BaseSettings):
 
     @model_validator(mode="after")
     def check_incompatible_options(self) -> Self:
-        """Check for incompatible options."""
+        """Check for incompatible options and warn about default values."""
         if self.enable_response_models and self.enable_direct_response:
             raise ValueError(
                 "`enable_reponse_models` and `enable_direct_response` options are incompatible"  # noqa: E501
+            )
+
+        defaults_used = []
+        if self.stac_fastapi_title == "stac-fastapi":
+            defaults_used.append("stac_fastapi_title")
+        if self.stac_fastapi_description == "stac-fastapi":
+            defaults_used.append("stac_fastapi_description")
+        if self.stac_fastapi_landing_id == "stac-fastapi":
+            defaults_used.append("stac_fastapi_landing_id")
+        if self.stac_fastapi_version == "0.1":
+            defaults_used.append("stac_fastapi_version")
+
+        if defaults_used:
+            logger.warning(
+                "Using default values for %s. This may impact API discoverability. "
+                "Please configure these values via environment variables or settings. "
+                "See https://stac-utils.github.io/stac-fastapi/tips-and-tricks/#set-api-title-description-and-version",  # noqa: E501
+                ", ".join(defaults_used),
             )
 
         return self
