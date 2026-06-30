@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added sortables support to Sort extension for discovering available sort fields via dedicated endpoints (`/sortables`, `/collections/{id}/sortables`, `/collections-sortables`)
+
+### Changed
+
+- Updated Sort extension to v1.1.0 specification with granular conformance classes for item search, OGC API Features, and collection search endpoints. Add `SearchSortExtension`, `ItemCollectionSortExtension`, and `CollectionSearchSortExtension` classes for context-specific sorting capabilities.
+
 ## [6.3.2] - 2026-06-27
 
 ### Fixed
