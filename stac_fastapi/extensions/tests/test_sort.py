@@ -93,41 +93,38 @@ def test_sort_extension_defaults():
     assert ext.GET == SortExtensionGetRequest
     assert ext.POST == SortExtensionPostRequest
     assert SortConformanceClasses.ITEM_SEARCH_SORT in ext.conformance_classes
-    assert SortConformanceClasses.ITEM_SEARCH_SORTABLES in ext.conformance_classes
+    # Sortables conformance classes are removed when no client is provided
+    assert SortConformanceClasses.ITEM_SEARCH_SORTABLES not in ext.conformance_classes
     assert SortConformanceClasses.FEATURES_SORT in ext.conformance_classes
-    assert SortConformanceClasses.FEATURES_SORTABLES in ext.conformance_classes
+    assert SortConformanceClasses.FEATURES_SORTABLES not in ext.conformance_classes
     assert SortConformanceClasses.COLLECTION_SEARCH_SORT in ext.conformance_classes
-    assert SortConformanceClasses.COLLECTION_SEARCH_SORTABLES in ext.conformance_classes
+    assert (
+        SortConformanceClasses.COLLECTION_SEARCH_SORTABLES not in ext.conformance_classes
+    )
 
 
 def test_search_sort_extension():
     """Test SearchSortExtension for item search endpoints."""
     ext = SearchSortExtension()
 
-    assert ext.conformance_classes == [
-        SortConformanceClasses.ITEM_SEARCH_SORT,
-        SortConformanceClasses.ITEM_SEARCH_SORTABLES,
-    ]
+    # Sortables conformance class is removed when no client is provided
+    assert ext.conformance_classes == [SortConformanceClasses.ITEM_SEARCH_SORT]
 
 
 def test_item_collection_sort_extension():
     """Test ItemCollectionSortExtension for collection item endpoints."""
     ext = ItemCollectionSortExtension()
 
-    assert ext.conformance_classes == [
-        SortConformanceClasses.FEATURES_SORT,
-        SortConformanceClasses.FEATURES_SORTABLES,
-    ]
+    # Sortables conformance class is removed when no client is provided
+    assert ext.conformance_classes == [SortConformanceClasses.FEATURES_SORT]
 
 
 def test_collection_search_sort_extension():
     """Test CollectionSearchSortExtension for collection search endpoints."""
     ext = CollectionSearchSortExtension()
 
-    assert ext.conformance_classes == [
-        SortConformanceClasses.COLLECTION_SEARCH_SORT,
-        SortConformanceClasses.COLLECTION_SEARCH_SORTABLES,
-    ]
+    # Sortables conformance class is removed when no client is provided
+    assert ext.conformance_classes == [SortConformanceClasses.COLLECTION_SEARCH_SORT]
 
 
 def test_sort_extension_register():
@@ -171,7 +168,7 @@ def test_collection_search_sort_extension_has_router():
 
 def test_sort_extension_v1_1_0_compliance():
     """Test that SortExtension conforms to v1.1.0 spec with granular conformance."""
-    ext = SortExtension()
+    ext = SortExtension(client=DummySortablesClient())
 
     conformance_classes = ext.conformance_classes
 
@@ -189,7 +186,7 @@ def test_sort_extension_v1_1_0_compliance():
 
 def test_search_sort_extension_v1_1_0_compliance():
     """Test SearchSortExtension conforms to v1.1.0 spec for item search."""
-    ext = SearchSortExtension()
+    ext = SearchSortExtension(client=DummySortablesClient())
 
     conformance_classes = ext.conformance_classes
 
@@ -203,7 +200,7 @@ def test_search_sort_extension_v1_1_0_compliance():
 
 def test_item_collection_sort_extension_v1_1_0_compliance():
     """Test ItemCollectionSortExtension conforms to v1.1.0 spec for OGC API Features."""
-    ext = ItemCollectionSortExtension()
+    ext = ItemCollectionSortExtension(client=DummySortablesClient())
 
     conformance_classes = ext.conformance_classes
 
@@ -217,7 +214,7 @@ def test_item_collection_sort_extension_v1_1_0_compliance():
 
 def test_collection_search_sort_extension_v1_1_0_compliance():
     """Test CollectionSearchSortExtension conforms to v1.1.0 spec for collections."""
-    ext = CollectionSearchSortExtension()
+    ext = CollectionSearchSortExtension(client=DummySortablesClient())
 
     conformance_classes = ext.conformance_classes
 
@@ -297,6 +294,16 @@ def test_sort_extension_graceful_degradation_without_client():
     ext.register(app)
 
     assert ext.client is None
+    # Verify sortables conformance classes are removed when no client
+    assert SortConformanceClasses.ITEM_SEARCH_SORTABLES not in ext.conformance_classes
+    assert SortConformanceClasses.FEATURES_SORTABLES not in ext.conformance_classes
+    assert (
+        SortConformanceClasses.COLLECTION_SEARCH_SORTABLES not in ext.conformance_classes
+    )
+    # Verify sort conformance classes are still present
+    assert SortConformanceClasses.ITEM_SEARCH_SORT in ext.conformance_classes
+    assert SortConformanceClasses.FEATURES_SORT in ext.conformance_classes
+    assert SortConformanceClasses.COLLECTION_SEARCH_SORT in ext.conformance_classes
 
 
 def test_sort_extension_router_attribute():

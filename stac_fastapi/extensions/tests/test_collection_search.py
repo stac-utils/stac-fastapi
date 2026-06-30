@@ -435,10 +435,7 @@ def test_collection_search_extension_post_models():
             ),
             QueryExtension(conformance_classes=[QueryConformanceClasses.COLLECTIONS]),
             SortExtension(
-                conformance_classes=[
-                    SortConformanceClasses.COLLECTION_SEARCH_SORT,
-                    SortConformanceClasses.COLLECTION_SEARCH_SORTABLES,
-                ]
+                conformance_classes=[SortConformanceClasses.COLLECTION_SEARCH_SORT]
             ),
         ],
         # with FreeTextAdvancedExtension
@@ -450,10 +447,7 @@ def test_collection_search_extension_post_models():
             ),
             QueryExtension(conformance_classes=[QueryConformanceClasses.COLLECTIONS]),
             SortExtension(
-                conformance_classes=[
-                    SortConformanceClasses.COLLECTION_SEARCH_SORT,
-                    SortConformanceClasses.COLLECTION_SEARCH_SORTABLES,
-                ]
+                conformance_classes=[SortConformanceClasses.COLLECTION_SEARCH_SORT]
             ),
         ],
     ],
@@ -487,7 +481,6 @@ def test_from_extensions_methods(extensions):
         FreeTextConformanceClasses.COLLECTIONS,
         QueryConformanceClasses.COLLECTIONS,
         SortConformanceClasses.COLLECTION_SEARCH_SORT,
-        SortConformanceClasses.COLLECTION_SEARCH_SORTABLES,
     ]:
         assert conf in ext.conformance_classes
 
@@ -517,7 +510,6 @@ def test_from_extensions_methods(extensions):
         FreeTextConformanceClasses.COLLECTIONS,
         QueryConformanceClasses.COLLECTIONS,
         SortConformanceClasses.COLLECTION_SEARCH_SORT,
-        SortConformanceClasses.COLLECTION_SEARCH_SORTABLES,
     ]:
         assert conf in ext.conformance_classes
 

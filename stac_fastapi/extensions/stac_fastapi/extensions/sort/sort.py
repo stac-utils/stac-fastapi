@@ -7,7 +7,11 @@ import attr
 from fastapi import APIRouter, FastAPI
 from pydantic import BaseModel, Field
 
-from stac_fastapi.api.models import CollectionUri, EmptyRequest
+from stac_fastapi.api.models import (
+    CollectionUri,
+    EmptyRequest,
+    JSONSchemaResponse,
+)
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import APIRequest
@@ -42,7 +46,7 @@ class SortablesSchema(BaseModel):
     id_url: str = Field(alias="$id")
     type: str = "object"
     title: Optional[str] = "Sortables"
-    properties: dict[str, Any]
+    properties: dict[str, Any] = Field(default_factory=dict)
     additionalProperties: bool = True
 
     model_config = {
@@ -95,7 +99,9 @@ class SortExtension(ApiExtension):
     GET: type[APIRequest] = SortExtensionGetRequest
     POST: type[BaseModel] = SortExtensionPostRequest
     client: SortablesClient | None = attr.ib(default=None)
-    router: APIRouter = attr.ib(factory=APIRouter)
+    router: APIRouter = attr.ib(
+        factory=lambda: APIRouter(default_response_class=JSONSchemaResponse)
+    )
 
     conformance_classes: list[str] = attr.ib(
         factory=lambda: [
@@ -108,6 +114,21 @@ class SortExtension(ApiExtension):
         ]
     )
 
+    def __attrs_post_init__(self):
+        """Dynamically remove sortables conformance URIs if no client is provided.
+
+        Only removes sortables classes if the conformance_classes are the default
+        factory values. If the user explicitly provided conformance_classes,
+        we respect their choice.
+        """
+        if self.client is None:
+            # Check if any sortables conformance classes are present
+            # If so, remove them since we can't serve sortables without a client
+            # This applies to both the base class and subclasses
+            self.conformance_classes = [
+                c for c in self.conformance_classes if "sortables" not in c
+            ]
+
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
 
@@ -117,7 +138,7 @@ class SortExtension(ApiExtension):
         Returns:
             None
         """
-        if not self.client:
+        if self.client is None:
             return
 
         self.router.prefix = app.state.router_prefix
@@ -179,7 +200,7 @@ class SearchSortExtension(SortExtension):
         Returns:
             None
         """
-        if not self.client:
+        if self.client is None:
             return
 
         self.router.prefix = app.state.router_prefix
@@ -219,7 +240,7 @@ class ItemCollectionSortExtension(SortExtension):
         Returns:
             None
         """
-        if not self.client:
+        if self.client is None:
             return
 
         self.router.prefix = app.state.router_prefix
@@ -261,7 +282,7 @@ class CollectionSearchSortExtension(SortExtension):
         Returns:
             None
         """
-        if not self.client:
+        if self.client is None:
             return
 
         self.router.prefix = app.state.router_prefix
