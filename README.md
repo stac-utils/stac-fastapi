@@ -33,7 +33,7 @@ The project contains several namespace packages:
 | [**stac_fastapi.extensions**](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions) | Abstract base classes for [STAC API extensions](https://github.com/radiantearth/stac-api-spec/blob/master/extensions.md) and third-party extensions. | [![stac-fastapi.extensions](https://img.shields.io/pypi/v/stac-fastapi.extensions?color=%2334D058&label=pypi)](https://pypi.org/project/stac-fastapi.extensions) |
 | [**stac_fastapi.types**](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/types) | Shared types and abstract base classes used by the library. | [![stac-fastapi.types](https://img.shields.io/pypi/v/stac-fastapi.types?color=%2334D058&label=pypi)](https://pypi.org/project/stac-fastapi.types) |
 
-#### Backends
+## Backends
 
 In addition to the packages in this repository, a server implemention will also require the selection of a backend to
 connect with a database for STAC metadata storage. There are several different backend options, and each has their own
@@ -51,7 +51,7 @@ Other implementations include:
 - [stac-fastapi-duckdb](https://github.com/Healy-Hyperspatial/stac-fastapi-duckdb): [DuckDB](https://github.com/duckdb/duckdb) (experimental)
 - [stac-fastapi-sqlalchemy](https://github.com/stac-utils/stac-fastapi-sqlalchemy): [PostgreSQL](https://github.com/postgres/postgres) + [PostGIS](https://github.com/postgis/postgis) via [SQLAlchemy](https://www.sqlalchemy.org/) (abandoned in favor of stac-fastapi-pgstac)
 
-#### STAC-FastAPI Extensions
+## STAC-FastAPI Extensions
 
 - [aggregation](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/aggregation)
 - [bulk-transactions](https://github.com/stac-utils/stac-fastapi/blob/main/stac_fastapi/extensions/stac_fastapi/extensions/third_party/bulk_transactions.py)
@@ -64,6 +64,40 @@ Other implementations include:
 - [query](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/query)
 - [sort](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/sort)
 - [transaction](https://github.com/stac-utils/stac-fastapi/tree/main/stac_fastapi/extensions/stac_fastapi/extensions/core/transaction)
+
+
+## Creating Custom Extensions  
+
+If you need to add deployment-specific routes (e.g., custom analytics, map tiles, or proprietary workflows) to your STAC API, you can build custom extensions without forking or modifying the core repository. 
+
+The framework is designed to seamlessly mount external routes alongside the standard endpoints and include them in the OpenAPI schema.
+
+### 1. Define the Extension
+
+Create a class that inherits from `stac_fastapi.types.extension.ApiExtension` and bind your FastAPI routes inside the `register()` method:
+
+```python
+from fastapi import APIRouter
+from stac_fastapi.types.extension import ApiExtension
+
+class MyCustomExtension(ApiExtension):
+    """Example of a custom out-of-tree extension."""
+
+    def register(self, app):
+        router = APIRouter()
+
+        @router.get("/api/custom-route")
+        async def my_route():
+            return {"message": "Hello from my custom extension!"}
+
+        app.include_router(router)
+```
+
+### 2. Inject it into your Backend
+
+Modern `stac-fastapi` backends (such as `pgstac` and `elasticsearch-opensearch`) utilize a factory pattern (`instantiate_api`) that accepts custom extensions. Depending on the backend's implementation, you can typically inject your custom class into the application during startup via an `extra_map` or an `extensions` array.
+
+For a comprehensive, real-world example of wiring routes, models, and dependencies in a standalone extension, see the [Multi-Tenant Catalogs extension](https://github.com/StacLabs/stac-fastapi-catalogs-extension).
 
 ## Response Model Validation
 

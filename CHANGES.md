@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added 
+
+- Advice on creating custom extensions ([#944](https://github.com/stac-utils/stac-fastapi/pull/944))
+
 ## [6.3.2] - 2026-06-27
 
 ### Fixed
