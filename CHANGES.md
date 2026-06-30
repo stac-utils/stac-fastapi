@@ -2,10 +2,15 @@
 
 ## [Unreleased]
 
-### Added 
+### Added
 
 - Advice on creating custom extensions ([#944](https://github.com/stac-utils/stac-fastapi/pull/944))
 - Log warning when default API title, description, landing ID, or version are used to encourage proper API configuration ([#943](https://github.com/stac-utils/stac-fastapi/issues/943))
+- Added sortables support to Sort extension for discovering available sort fields via dedicated endpoints (`/sortables`, `/collections/{id}/sortables`, `/collections-sortables`) ([#945](https://github.com/stac-utils/stac-fastapi/issues/945))
+
+### Changed
+
+- Updated Sort extension to v1.1.0 specification with granular conformance classes for item search, OGC API Features, and collection search endpoints. Add `SearchSortExtension`, `ItemCollectionSortExtension`, and `CollectionSearchSortExtension` classes for context-specific sorting capabilities. ([#945](https://github.com/stac-utils/stac-fastapi/issues/945))
 
 ## [6.3.2] - 2026-06-27
 
