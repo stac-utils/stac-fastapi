@@ -18,8 +18,12 @@ extra:
 # Layout
 nav:
   - Home: "index.md"
-  - Tips and Tricks: tips-and-tricks.md
-  - API:
+  - Get started: "get-started.md"
+  - Development - Contributing:
+    - How to start: "contributing.md"
+    - Tips and Tricks: tips-and-tricks.md
+    - Performance Benchmarks: benchmarks.html
+  - API Reference:
       - packages: api/stac_fastapi/index.md
       - stac_fastapi.api:
           - module: api/stac_fastapi/api/index.md
@@ -88,8 +92,6 @@ nav:
   - Migration Guides:
     - v2.5 -> v3.0: migrations/v3.0.0.md
     - v3.0 -> v4.0: migrations/v4.0.0.md
-  - Performance Benchmarks: benchmarks.html
-  - Development - Contributing: "contributing.md"
   - Release Notes: "release-notes.md"
 
 plugins:
@@ -138,6 +140,7 @@ extra_css:
 markdown_extensions:
   - admonition
   - attr_list
+  - md_in_html
   - codehilite:
       guess_lang: false
   - def_list
@@ -147,7 +150,9 @@ markdown_extensions:
   - pymdownx.caret:
       insert: false
   - pymdownx.details
-  - pymdownx.emoji
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.escapeall:
       hardbreak: true
       nbsp: true
@@ -156,6 +161,8 @@ markdown_extensions:
       repo_url_shortener: true
   - pymdownx.smartsymbols
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
