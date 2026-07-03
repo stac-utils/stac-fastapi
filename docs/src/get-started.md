@@ -96,7 +96,7 @@ Your API is now running on [localhost:8080](http://localhost:8080) !
 You can make the API a bit more _yours_ by changing the description settings in `.env` file:
 
 - `STAC_FASTAPI_VERSION` (string) is the version number of your API instance (this is not the STAC version).
-- `STAC FASTAPI_TITLE` (string) should be a self-explanatory title for your API.
+- `STAC_FASTAPI_TITLE` (string) should be a self-explanatory title for your API.
 - `STAC_FASTAPI_DESCRIPTION` (string) should be a good description for your API. It can contain CommonMark.
 - `STAC_FASTAPI_LANDING_ID` (string) is a unique identifier for your Landing page.
 
