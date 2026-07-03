@@ -73,7 +73,7 @@ PGDATABASE=database
 ```
 
 !!! note
-	If you're using the Docker database, make sure these settings:
+	If you're using the Docker database, make sure to also have these settings:
 
 	```env
     PGUSER=username
