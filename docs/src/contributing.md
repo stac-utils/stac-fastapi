@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-We recommand using [`uv`](https://docs.astral.sh/uv) as project manager for development.
+We recommend using [`uv`](https://docs.astral.sh/uv) as the project manager for development.
 
 See https://docs.astral.sh/uv/getting-started/installation/ for installation.
 
@@ -74,16 +74,6 @@ class MyCustomExtension(ApiExtension):
 
 Modern `stac-fastapi` backends (such as `pgstac` and `elasticsearch-opensearch`) utilize a factory pattern (`instantiate_api`) that accepts custom extensions. Depending on the backend's implementation, you can typically inject your custom class into the application during startup via an `extra_map` or an `extensions` array.
 
-```python
-# Example with pgstac – adjust for your chosen backend
-from stac_fastapi.pgstac import instantiate_api
-
-app = instantiate_api(
-    database_url="postgresql://...",
-    extensions=[MyCustomExtension()]   # or via an `extra_map`
-)
-```
-
 For a comprehensive, real-world example of wiring routes, models, and dependencies in a standalone extension, see the [Multi-Tenant Catalogs extension](https://github.com/StacLabs/stac-fastapi-catalogs-extension).
 
 ## Response Validation
@@ -102,7 +92,7 @@ Contributions are welcome! Feel free to [open an issue](https://github.com/stac-
 
 ### Setting up pre‑commit locally
 
-This repo is set to use `pre-commit` to run *ruff*, *pydocstring* and mypy when committing new code.
+This repo is set to use `pre-commit` to run *ruff*, *pydocstring* and *mypy* when committing new code.
 
 ```bash
 # Install the Git hook
@@ -132,4 +122,3 @@ This is a checklist for releasing a new version of **stac-fastapi**.
 8. Once the PR is merged, create a new (annotated, signed) tag on the appropriate commit. Name the tag `X.Y.Z`, and include `vX.Y.Z` as its annotation message.
 9. Push your tag to Github, which will kick off the [publishing workflow](.github/workflows/publish.yml).
 10. Create a [new release](https://github.com/stac-utils/stac-fastapi/releases/new) targeting the new tag, and use the "Generate release notes" feature to populate the description. Publish the release and mark it as the latest.
-11. Publicize the release via the appropriate social channels, including [Gitter](https://matrix.to/#/#SpatioTemporal-Asset-Catalog_python:gitter.im).

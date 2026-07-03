@@ -100,6 +100,9 @@ You can make the API a bit more _yours_ by changing the description settings in 
 - `STAC_FASTAPI_DESCRIPTION` (string) should be a good description for your API. It can contain CommonMark.
 - `STAC_FASTAPI_LANDING_ID` (string) is a unique identifier for your Landing page.
 
+!!! tip
+	These changes are highly recommended, many tools of the [STAC ecosystem](https://stacspec.org/en/about/tools-resources/) like [STAC Browser](https://radiantearth.github.io/stac-browser/) rely on these for proper display.
+
 ## Load data
 
 Once you're all setup, you may want to actually offer some data. This depends on which backend you've choose to use.
