@@ -97,7 +97,7 @@ You can make the API a bit more _yours_ by changing the description settings in 
 
 - `STAC_FASTAPI_VERSION` (string) is the version number of your API instance (this is not the STAC version).
 - `STAC FASTAPI_TITLE` (string) should be a self-explanatory title for your API.
-- `STAC FASTAPI_DESCRIPTION` (string) should be a good description for your API. It can contain CommonMark.
+- `STAC_FASTAPI_DESCRIPTION` (string) should be a good description for your API. It can contain CommonMark.
 - `STAC_FASTAPI_LANDING_ID` (string) is a unique identifier for your Landing page.
 
 ## Load data
