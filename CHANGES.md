@@ -17,6 +17,7 @@
 
 ### Added 
 
+- Optional Prometheus metrics (`stac-fastapi-api[metrics]`) with STAC operation labels at `/_mgmt/metrics`
 - Advice on creating custom extensions ([#944](https://github.com/stac-utils/stac-fastapi/pull/944))
 - Log warning when default API title, description, landing ID, or version are used to encourage proper API configuration ([#943](https://github.com/stac-utils/stac-fastapi/issues/943))
 - Added sortables support to Sort extension for discovering available sort fields via dedicated endpoints (`/sortables`, `/collections/{id}/sortables`, `/collections-sortables`) ([#945](https://github.com/stac-utils/stac-fastapi/issues/945))

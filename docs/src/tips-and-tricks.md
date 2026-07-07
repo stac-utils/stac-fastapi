@@ -181,3 +181,24 @@ api = StacApi(
     ]
 )
 ```
+
+## Prometheus metrics
+
+Install the optional dependency to expose metrics at `{router_prefix}/_mgmt/metrics` with low-cardinality STAC `operation` labels (`search`, `get_item`, …):
+
+```bash
+pip install "stac-fastapi-api[metrics]"
+```
+
+`/_mgmt/*` routes (ping, health, metrics) are excluded from instrumentation.
+
+Unmatched `/catalogs*` paths fall back to `operation="catalog"`. Backends with extra routes (for example multi-tenant catalogs) should register explicit labels with `register_operations` before or at app construction:
+
+```python
+from stac_fastapi.api.metrics import register_operations
+
+register_operations({
+    ("GET", "/viewer"): "viewer",
+    ("GET", "/catalogs/{catalog_id}/collections"): "list_collections",
+})
+```

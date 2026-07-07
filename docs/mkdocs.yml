@@ -30,6 +30,7 @@ nav:
           - app: api/stac_fastapi/api/app.md
           - config: api/stac_fastapi/api/config.md
           - errors: api/stac_fastapi/api/errors.md
+          - metrics: api/stac_fastapi/api/metrics.md
           - middleware: api/stac_fastapi/api/middleware.md
           - models: api/stac_fastapi/api/models.md
           - openapi: api/stac_fastapi/api/openapi.md
