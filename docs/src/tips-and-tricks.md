@@ -29,16 +29,6 @@ api = StacApi(
 )
 ```
 
-## Set API title, description and version
-
-For the landing page, you can set the API title, description and version using environment variables.
-
-- `STAC_FASTAPI_VERSION` (string) is the version number of your API instance (this is not the STAC version).
-- `STAC FASTAPI_TITLE` (string) should be a self-explanatory title for your API.
-- `STAC FASTAPI_DESCRIPTION` (string) should be a good description for your API. It can contain CommonMark.
-- `STAC_FASTAPI_LANDING_ID` (string) is a unique identifier for your Landing page.
-
-
 ## Default `includes` in Fields extension (POST request)
 
 The [**Fields** API extension](https://github.com/stac-api-extensions/fields) enables to filter in/out STAC Items keys (e.g `geometry`). The default behavior is to not filter out anything, but this can be overridden by providing a custom `FieldsExtensionPostRequest` class:

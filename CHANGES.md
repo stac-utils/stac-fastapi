@@ -12,6 +12,10 @@
 
 - Updated Sort extension to v1.1.0 specification with granular conformance classes for item search, OGC API Features, and collection search endpoints. Add `SearchSortExtension`, `ItemCollectionSortExtension`, and `CollectionSearchSortExtension` classes for context-specific sorting capabilities. ([#945](https://github.com/stac-utils/stac-fastapi/issues/945))
 
+### Changed
+
+- Rework of introduction documentatation([#947](https://github.com/stac-utils/stac-fastapi/pull/947))
+
 ## [6.3.2] - 2026-06-27
 
 ### Fixed
