@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- add back `SortConformanceClasses.{COLLECTIONS|ITEMS|SEARCH}` enum values to avoid breaking change and add deprecation warning for them
+
 ## [6.4.0] - 2026-07-21
 
 ### Added 
