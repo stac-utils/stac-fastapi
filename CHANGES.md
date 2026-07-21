@@ -2,14 +2,15 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Update `starlette` requirement to `>=1.0.1`
+- Rework of introduction documentation ([#947](https://github.com/stac-utils/stac-fastapi/pull/947))
+
 ### Added 
 
 - Advice on creating custom extensions ([#944](https://github.com/stac-utils/stac-fastapi/pull/944))
 - Log warning when default API title, description, landing ID, or version are used to encourage proper API configuration ([#943](https://github.com/stac-utils/stac-fastapi/issues/943))
-
-### Changed
-
-- Rework of introduction documentatation([#947](https://github.com/stac-utils/stac-fastapi/pull/947))
 
 ## [6.3.2] - 2026-06-27
 
