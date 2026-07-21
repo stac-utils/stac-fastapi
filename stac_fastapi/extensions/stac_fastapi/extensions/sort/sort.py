@@ -1,7 +1,7 @@
 """Sort extension."""
 
 from enum import StrEnum
-from typing import Any, Optional, Protocol
+from typing import Any, Protocol
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -45,7 +45,7 @@ class SortablesSchema(BaseModel):
     )
     id_url: str = Field(alias="$id")
     type: str = "object"
-    title: Optional[str] = "Sortables"
+    title: str | None = "Sortables"
     properties: dict[str, Any] = Field(default_factory=dict)
     additionalProperties: bool = True
 
