@@ -1,5 +1,6 @@
 """Sort extension module."""
 
+from .client import AsyncBaseSortablesClient, BaseSortablesClient
 from .sort import (
     CollectionSearchSortExtension,
     ItemCollectionSortExtension,
@@ -14,4 +15,6 @@ __all__ = [
     "ItemCollectionSortExtension",
     "CollectionSearchSortExtension",
     "SortConformanceClasses",
+    "AsyncBaseSortablesClient",
+    "BaseSortablesClient",
 ]

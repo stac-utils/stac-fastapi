@@ -1,7 +1,7 @@
 """Sort extension."""
 
 from enum import StrEnum
-from typing import Any, Protocol
+from typing import Any
 
 import attr
 from fastapi import APIRouter, FastAPI
@@ -16,25 +16,8 @@ from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import APIRequest
 
+from .client import AsyncBaseSortablesClient, BaseSortablesClient
 from .request import SortExtensionGetRequest, SortExtensionPostRequest
-
-
-class SortablesClient(Protocol):
-    """Protocol for sortables client methods."""
-
-    def get_sortables(self, **kwargs: Any) -> dict[str, Any]:
-        """Get sortables for item search."""
-        ...
-
-    def get_collection_sortables(
-        self, collection_id: str, **kwargs: Any
-    ) -> dict[str, Any]:
-        """Get sortables for a specific collection."""
-        ...
-
-    def get_collections_sortables(self, **kwargs: Any) -> dict[str, Any]:
-        """Get sortables for collection search."""
-        ...
 
 
 class SortablesSchema(BaseModel):
@@ -98,7 +81,7 @@ class SortExtension(ApiExtension):
 
     GET: type[APIRequest] = SortExtensionGetRequest
     POST: type[BaseModel] = SortExtensionPostRequest
-    client: SortablesClient | None = attr.ib(default=None)
+    client: AsyncBaseSortablesClient | BaseSortablesClient | None = attr.ib(default=None)
     router: APIRouter = attr.ib(
         factory=lambda: APIRouter(default_response_class=JSONSchemaResponse)
     )
