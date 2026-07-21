@@ -4,13 +4,16 @@ import abc
 from typing import Any
 
 import attr
+from starlette.requests import Request
 
 
 @attr.s
 class AsyncBaseSortablesClient(abc.ABC):
     """Defines a pattern for implementing the STAC sort extension sortables endpoints."""
 
-    async def get_sortables(self, **kwargs: Any) -> dict[str, Any]:
+    async def get_sortables(
+        self, request: Request | None = None, **kwargs: Any
+    ) -> dict[str, Any]:
         """Get the sortables available for item search.
 
         This base implementation returns a blank sortables schema.
@@ -24,7 +27,7 @@ class AsyncBaseSortablesClient(abc.ABC):
         }
 
     async def get_collection_sortables(
-        self, collection_id: str, **kwargs: Any
+        self, collection_id: str, request: Request | None = None, **kwargs: Any
     ) -> dict[str, Any]:
         """Get the sortables available for a specific collection.
 
@@ -38,7 +41,9 @@ class AsyncBaseSortablesClient(abc.ABC):
             "properties": {},
         }
 
-    async def get_collections_sortables(self, **kwargs: Any) -> dict[str, Any]:
+    async def get_collections_sortables(
+        self, request: Request | None = None, **kwargs: Any
+    ) -> dict[str, Any]:
         """Get the sortables available for collection search.
 
         This base implementation returns a blank sortables schema.
@@ -56,7 +61,9 @@ class AsyncBaseSortablesClient(abc.ABC):
 class BaseSortablesClient(abc.ABC):
     """Defines a pattern for implementing the STAC sort extension sortables endpoints."""
 
-    def get_sortables(self, **kwargs: Any) -> dict[str, Any]:
+    def get_sortables(
+        self, request: Request | None = None, **kwargs: Any
+    ) -> dict[str, Any]:
         """Get the sortables available for item search.
 
         This base implementation returns a blank sortables schema.
@@ -70,7 +77,7 @@ class BaseSortablesClient(abc.ABC):
         }
 
     def get_collection_sortables(
-        self, collection_id: str, **kwargs: Any
+        self, collection_id: str, request: Request | None = None, **kwargs: Any
     ) -> dict[str, Any]:
         """Get the sortables available for a specific collection.
 
@@ -84,7 +91,9 @@ class BaseSortablesClient(abc.ABC):
             "properties": {},
         }
 
-    def get_collections_sortables(self, **kwargs: Any) -> dict[str, Any]:
+    def get_collections_sortables(
+        self, request: Request | None = None, **kwargs: Any
+    ) -> dict[str, Any]:
         """Get the sortables available for collection search.
 
         This base implementation returns a blank sortables schema.

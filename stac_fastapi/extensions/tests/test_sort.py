@@ -3,10 +3,11 @@
 from typing import Any
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from starlette.testclient import TestClient
 
 from stac_fastapi.extensions.sort import (
+    BaseSortablesClient,
     CollectionSearchSortExtension,
     ItemCollectionSortExtension,
     SearchSortExtension,
@@ -19,10 +20,12 @@ from stac_fastapi.extensions.sort.request import (
 )
 
 
-class DummySortablesClient:
+class DummySortablesClient(BaseSortablesClient):
     """Dummy client for testing sortables endpoints."""
 
-    def get_sortables(self, **kwargs: Any) -> dict[str, Any]:
+    def get_sortables(
+        self, request: Request | None = None, **kwargs: Any
+    ) -> dict[str, Any]:
         """Get sortables for item search."""
         return {
             "$id": "https://example.com/sortables",
@@ -34,7 +37,7 @@ class DummySortablesClient:
         }
 
     def get_collection_sortables(
-        self, collection_id: str, **kwargs: Any
+        self, collection_id: str, request: Request | None = None, **kwargs: Any
     ) -> dict[str, Any]:
         """Get sortables for a specific collection."""
         return {
@@ -46,7 +49,9 @@ class DummySortablesClient:
             "additionalProperties": True,
         }
 
-    def get_collections_sortables(self, **kwargs: Any) -> dict[str, Any]:
+    def get_collections_sortables(
+        self, request: Request | None = None, **kwargs: Any
+    ) -> dict[str, Any]:
         """Get sortables for collection search."""
         return {
             "$id": "https://example.com/collections-sortables",

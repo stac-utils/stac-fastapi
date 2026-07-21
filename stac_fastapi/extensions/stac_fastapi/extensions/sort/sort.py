@@ -70,6 +70,15 @@ class SortConformanceClasses(StrEnum):
     )
 
 
+SORTABLES_CONFORMANCE_URIS: frozenset[str] = frozenset(
+    {
+        SortConformanceClasses.ITEM_SEARCH_SORTABLES.value,
+        SortConformanceClasses.FEATURES_SORTABLES.value,
+        SortConformanceClasses.COLLECTION_SEARCH_SORTABLES.value,
+    }
+)
+
+
 @attr.s
 class SortExtension(ApiExtension):
     """Sort Extension.
@@ -98,18 +107,14 @@ class SortExtension(ApiExtension):
     )
 
     def __attrs_post_init__(self):
-        """Dynamically remove sortables conformance URIs if no client is provided.
+        """Remove sortables conformance classes when no client is provided.
 
-        Only removes sortables classes if the conformance_classes are the default
-        factory values. If the user explicitly provided conformance_classes,
-        we respect their choice.
+        Without a client the sortables endpoints cannot be served, so the
+        associated conformance URIs are removed from the advertised list.
         """
         if self.client is None:
-            # Check if any sortables conformance classes are present
-            # If so, remove them since we can't serve sortables without a client
-            # This applies to both the base class and subclasses
             self.conformance_classes = [
-                c for c in self.conformance_classes if "sortables" not in c
+                c for c in self.conformance_classes if c not in SORTABLES_CONFORMANCE_URIS
             ]
 
     def register(self, app: FastAPI) -> None:
