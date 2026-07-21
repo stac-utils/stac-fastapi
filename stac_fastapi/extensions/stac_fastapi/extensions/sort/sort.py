@@ -52,6 +52,8 @@ class SortablesSchema(BaseModel):
 
 
 class _DeprecatedMemberMeta(EnumMeta):
+    """TODO: Remove this metaclass in 7.0.0."""
+
     def __getattr__(cls, name: str):
         match name:
             case "COLLECTIONS":
