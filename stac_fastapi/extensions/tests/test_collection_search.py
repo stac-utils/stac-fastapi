@@ -175,7 +175,8 @@ def test_collection_search_extension_models():
                     FilterConformanceClasses.COLLECTIONS,
                     FreeTextConformanceClasses.COLLECTIONS,
                     QueryConformanceClasses.COLLECTIONS,
-                    SortConformanceClasses.COLLECTIONS,
+                    SortConformanceClasses.COLLECTION_SEARCH_SORT,
+                    SortConformanceClasses.COLLECTION_SEARCH_SORTABLES,
                 ],
             )
         ],
@@ -196,7 +197,8 @@ def test_collection_search_extension_models():
         )
         assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter" in conforms
         assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#query" in conforms
-        assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort" in conforms
+        assert "https://api.stacspec.org/v1.1.0/collection-search#sort" in conforms
+        assert "https://api.stacspec.org/v1.1.0/collection-search#sortables" in conforms
         assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#fields" in conforms
 
         response = client.get("/collections")
@@ -338,7 +340,8 @@ def test_collection_search_extension_post_models():
                     FilterConformanceClasses.COLLECTIONS,
                     FreeTextConformanceClasses.COLLECTIONS,
                     QueryConformanceClasses.COLLECTIONS,
-                    SortConformanceClasses.COLLECTIONS,
+                    SortConformanceClasses.COLLECTION_SEARCH_SORT,
+                    SortConformanceClasses.COLLECTION_SEARCH_SORTABLES,
                 ],
             )
         ],
@@ -360,7 +363,8 @@ def test_collection_search_extension_post_models():
         )
         assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter" in conforms
         assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#query" in conforms
-        assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort" in conforms
+        assert "https://api.stacspec.org/v1.1.0/collection-search#sort" in conforms
+        assert "https://api.stacspec.org/v1.1.0/collection-search#sortables" in conforms
         assert "https://api.stacspec.org/v1.0.0-rc.1/collection-search#fields" in conforms
 
         response = client.post("/collections", json={})
@@ -430,7 +434,9 @@ def test_collection_search_extension_post_models():
                 conformance_classes=[FreeTextConformanceClasses.COLLECTIONS]
             ),
             QueryExtension(conformance_classes=[QueryConformanceClasses.COLLECTIONS]),
-            SortExtension(conformance_classes=[SortConformanceClasses.COLLECTIONS]),
+            SortExtension(
+                conformance_classes=[SortConformanceClasses.COLLECTION_SEARCH_SORT]
+            ),
         ],
         # with FreeTextAdvancedExtension
         [
@@ -440,7 +446,9 @@ def test_collection_search_extension_post_models():
                 conformance_classes=[FreeTextConformanceClasses.COLLECTIONS]
             ),
             QueryExtension(conformance_classes=[QueryConformanceClasses.COLLECTIONS]),
-            SortExtension(conformance_classes=[SortConformanceClasses.COLLECTIONS]),
+            SortExtension(
+                conformance_classes=[SortConformanceClasses.COLLECTION_SEARCH_SORT]
+            ),
         ],
     ],
 )
@@ -472,7 +480,7 @@ def test_from_extensions_methods(extensions):
         FilterConformanceClasses.CQL2_TEXT,
         FreeTextConformanceClasses.COLLECTIONS,
         QueryConformanceClasses.COLLECTIONS,
-        SortConformanceClasses.COLLECTIONS,
+        SortConformanceClasses.COLLECTION_SEARCH_SORT,
     ]:
         assert conf in ext.conformance_classes
 
@@ -501,7 +509,7 @@ def test_from_extensions_methods(extensions):
         FilterConformanceClasses.CQL2_TEXT,
         FreeTextConformanceClasses.COLLECTIONS,
         QueryConformanceClasses.COLLECTIONS,
-        SortConformanceClasses.COLLECTIONS,
+        SortConformanceClasses.COLLECTION_SEARCH_SORT,
     ]:
         assert conf in ext.conformance_classes
 
