@@ -61,11 +61,8 @@ jobs:
 
       - name: Install stac-fastapi-pgstac dependencies
         run: |
-          uv pip install -r ./stac-fastapi-pgstac/pyproject.toml \
-                         -e ./stac-fastapi-pgstac \
-                         "psycopg[binary,pool]" \
-                         --all-extras \
-                         --group dev
+          cd stac-fastapi-pgstac
+          uv pip install -e . --all-extras --group dev
 
       - name: Force-install local stac-fastapi subpackages
         run: |
@@ -81,7 +78,7 @@ jobs:
       - name: Run PgSTAC downstream tests
         run: |
           cd stac-fastapi-pgstac
-          pytest -svvv
+          uv run pytest -svvv
         env:
           PGUSER: username
           PGPASSWORD: password
@@ -103,6 +100,7 @@ jobs:
         env:
           discovery.type: single-node
           "plugins.security.disabled": "true"
+          OPENSEARCH_INITIAL_ADMIN_PASSWORD: "StrongPassword123!"
           OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
           action.destructive_requires_name: "false"
         options: >-
