@@ -54,12 +54,12 @@ jobs:
       - name: Verify local link
         run: |
           cd stac-fastapi-pgstac
-          uv run python -c "import stac_fastapi.types; print('Using types from:', stac_fastapi.types.__file__)"
+          uv run --no-sync python -c "import stac_fastapi.types; print('Using types from:', stac_fastapi.types.__file__)"
 
       - name: Run PgSTAC downstream tests
         run: |
           cd stac-fastapi-pgstac
-          uv run pytest -svvv
+          uv run --no-sync pytest -svvv
 
   downstream-sfeos:
     name: Test SFEOS (${{ matrix.backend }})
@@ -92,7 +92,6 @@ jobs:
         env:
           discovery.type: single-node
           DISABLE_SECURITY_PLUGIN: "true"
-          "plugins.security.disabled": "true"
           DISABLE_INSTALL_DEMO_CONFIG: "true"
           OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
           action.destructive_requires_name: "false"
@@ -152,12 +151,12 @@ jobs:
       - name: Verify local link
         run: |
           cd sfeos
-          uv run python -c "import stac_fastapi.types; print('Using types from:', stac_fastapi.types.__file__)"
+          uv run --no-sync python -c "import stac_fastapi.types; print('Using types from:', stac_fastapi.types.__file__)"
 
       - name: Run SFEOS downstream tests
         run: |
           cd sfeos
-          uv run pytest -svvv --timeout=300
+          uv run --no-sync pytest -svvv --timeout=300
         env:
           ENVIRONMENT: testing
           ES_PORT: ${{ matrix.port }}
