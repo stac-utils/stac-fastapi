@@ -54,12 +54,12 @@ jobs:
       - name: Verify local link
         run: |
           cd stac-fastapi-pgstac
-          uv run --no-sync python -c "import stac_fastapi.types; print('Using types from:', stac_fastapi.types.__file__)"
+          .venv/bin/python -c "import stac_fastapi.types; print('Using types from:', stac_fastapi.types.__file__)"
 
       - name: Run PgSTAC downstream tests
         run: |
           cd stac-fastapi-pgstac
-          uv run --no-sync pytest -svvv
+          .venv/bin/pytest -svvv
 
   downstream-sfeos:
     name: Test SFEOS (${{ matrix.backend }})
@@ -134,6 +134,7 @@ jobs:
       - name: Install SFEOS dependencies
         run: |
           cd sfeos
+          uv venv
           uv pip install -e "./stac_fastapi/core"
           uv pip install -e "./stac_fastapi/sfeos_helpers"
           uv pip install -e "./stac_fastapi/elasticsearch[catalogs,dev,server,validator]"
@@ -151,12 +152,12 @@ jobs:
       - name: Verify local link
         run: |
           cd sfeos
-          uv run --no-sync python -c "import stac_fastapi.types; print('Using types from:', stac_fastapi.types.__file__)"
+          .venv/bin/python -c "import stac_fastapi.types; print('Using types from:', stac_fastapi.types.__file__)"
 
       - name: Run SFEOS downstream tests
         run: |
           cd sfeos
-          uv run --no-sync pytest -svvv --timeout=300
+          .venv/bin/pytest -svvv --timeout=300
         env:
           ENVIRONMENT: testing
           ES_PORT: ${{ matrix.port }}
