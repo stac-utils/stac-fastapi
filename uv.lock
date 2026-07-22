@@ -2221,7 +2221,7 @@ docs = [
     { name = "mkdocs", specifier = ">=1.4.3" },
     { name = "mkdocs-jupyter", specifier = ">=0.24.5" },
     { name = "mkdocs-material", extras = ["imaging"], specifier = ">=9.7.6" },
-    { name = "mkdocstrings", extras = ["python"], specifier = ">=1.0.4" },
+    { name = "mkdocstrings", extras = ["python"], specifier = ">=1.0.6" },
 ]
 
 [[package]]

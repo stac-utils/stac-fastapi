@@ -45,7 +45,7 @@ docs = [
     "mkdocs-jupyter>=0.24.5",
     "mkdocs-material[imaging]>=9.7.6",
     "griffe-inherited-docstrings>=1.0.0",
-    "mkdocstrings[python]>=1.0.4",
+    "mkdocstrings[python]>=1.0.6",
 ]
 
 [tool.ruff]
