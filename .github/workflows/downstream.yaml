@@ -61,7 +61,7 @@ jobs:
 
       - name: Install stac-fastapi-pgstac dependencies
         run: |
-          uv pip install -e "./stac-fastapi-pgstac[dev,test]"
+          uv pip install -e "./stac-fastapi-pgstac[dev,test]" pytest pytest-asyncio
 
       - name: Force-install local stac-fastapi subpackages
         run: |
@@ -132,7 +132,8 @@ jobs:
       - name: Install stac-fastapi-opensearch dependencies
         run: |
           uv pip install -e "./stac-fastapi-elasticsearch-opensearch/stac_fastapi/core" \
-                         -e "./stac-fastapi-elasticsearch-opensearch/stac_fastapi/opensearch[dev,test]"
+                         -e "./stac-fastapi-elasticsearch-opensearch/stac_fastapi/opensearch[dev,test]" \
+                         pytest pytest-asyncio
 
       - name: Force-install local stac-fastapi subpackages
         run: |
