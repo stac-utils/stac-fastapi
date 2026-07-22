@@ -97,3 +97,14 @@ def test_metrics_disabled_by_default(TestCoreClient):
 
     with TestClient(test_app.app) as client:
         assert client.get("/_mgmt/metrics").status_code == 404
+
+
+def test_instrument_app_requires_metrics_extra(monkeypatch):
+    from fastapi import FastAPI
+
+    import stac_fastapi.api.metrics as metrics
+
+    monkeypatch.setattr(metrics, "Instrumentator", None)
+
+    with pytest.raises(ImportError, match=r"stac-fastapi-api\[metrics\]"):
+        metrics.instrument_app(FastAPI())

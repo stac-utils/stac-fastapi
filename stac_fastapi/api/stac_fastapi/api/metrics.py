@@ -2,14 +2,37 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from prometheus_client import REGISTRY, Counter, Histogram
-from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_fastapi_instrumentator.metrics import Info
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from fastapi import FastAPI
+
+try:
+    from prometheus_client import REGISTRY, Counter, Histogram
+    from prometheus_fastapi_instrumentator import Instrumentator
+    from prometheus_fastapi_instrumentator.metrics import Info
+
+    REQUESTS: Any = Counter(
+        "http_requests_total",
+        "Total HTTP requests by STAC operation.",
+        labelnames=("operation", "method", "status"),
+        registry=REGISTRY,
+    )
+    LATENCY: Any = Histogram(
+        "http_request_duration_seconds",
+        "HTTP request latency by STAC operation.",
+        labelnames=("operation", "method"),
+        buckets=(0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, float("inf")),
+        registry=REGISTRY,
+    )
+except ImportError:  # pragma: no cover
+    REGISTRY = None  # type: ignore
+    Counter = None  # type: ignore
+    Histogram = None  # type: ignore
+    Instrumentator = None  # type: ignore
+    Info = None  # type: ignore
+    REQUESTS = None
+    LATENCY = None
 
 OPERATIONS: dict[tuple[str, str], str] = {
     ("GET", "/"): "landing",
@@ -69,21 +92,6 @@ def resolve_operation(method: str, route: str | None, router_prefix: str = "") -
     return "unknown"
 
 
-REQUESTS = Counter(
-    "http_requests_total",
-    "Total HTTP requests by STAC operation.",
-    labelnames=("operation", "method", "status"),
-    registry=REGISTRY,
-)
-LATENCY = Histogram(
-    "http_request_duration_seconds",
-    "HTTP request latency by STAC operation.",
-    labelnames=("operation", "method"),
-    buckets=(0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, float("inf")),
-    registry=REGISTRY,
-)
-
-
 def record_stac_metrics(info: Info) -> None:
     """Record request count and latency using STAC operation labels."""
     route = info.request.scope.get("route")
@@ -106,7 +114,17 @@ def instrument_app(app: FastAPI, endpoint: str | None = None) -> None:
 
     Must be called during app construction (e.g. from ``StacApi``), before any
     requests. Adding middleware after the app has started is not supported.
+
+    Raises:
+        ImportError: If ``stac-fastapi-api[metrics]`` is not installed.
     """
+    if Instrumentator is None:
+        raise ImportError(
+            "Prometheus metrics require the optional dependency "
+            "`stac-fastapi-api[metrics]`. Install with: "
+            "pip install 'stac-fastapi-api[metrics]'"
+        )
+
     endpoint = endpoint or metrics_endpoint(app)
 
     (
