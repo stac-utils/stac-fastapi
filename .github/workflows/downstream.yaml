@@ -27,6 +27,9 @@ jobs:
           POSTGRES_USER: username
           POSTGRES_PASSWORD: password
           POSTGRES_DB: postgis
+          PGUSER: username
+          PGPASSWORD: password
+          PGDATABASE: postgis
         options: >-
           --health-cmd "pg_isready -U username -d postgis"
           --health-interval 10s
