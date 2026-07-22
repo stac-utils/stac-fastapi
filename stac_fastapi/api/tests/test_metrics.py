@@ -1,11 +1,10 @@
 import pytest
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter
 from fastapi.testclient import TestClient
 
 from stac_fastapi.api import app
 from stac_fastapi.api.metrics import (
     OPERATIONS,
-    instrument_app,
     metrics_endpoint,
     register_operations,
     resolve_operation,
@@ -60,6 +59,7 @@ def test_metrics_operation_labels(TestCoreClient):
     test_app = app.StacApi(
         settings=ApiSettings(),
         client=TestCoreClient(),
+        add_metrics=True,
     )
 
     with TestClient(test_app.app) as client:
@@ -79,6 +79,7 @@ def test_metrics_router_prefix(TestCoreClient):
         settings=ApiSettings(),
         client=TestCoreClient(),
         router=APIRouter(prefix="/api"),
+        add_metrics=True,
     )
 
     with TestClient(test_app.app) as client:
@@ -88,9 +89,11 @@ def test_metrics_router_prefix(TestCoreClient):
         assert "http_requests_total" in resp.text
 
 
-def test_instrument_app_rejects_post_startup():
-    fastapi_app = FastAPI()
-    fastapi_app.middleware_stack = object()
+def test_metrics_disabled_by_default(TestCoreClient):
+    test_app = app.StacApi(
+        settings=ApiSettings(),
+        client=TestCoreClient(),
+    )
 
-    with pytest.raises(RuntimeError, match="after the application has started"):
-        instrument_app(fastapi_app)
+    with TestClient(test_app.app) as client:
+        assert client.get("/_mgmt/metrics").status_code == 404

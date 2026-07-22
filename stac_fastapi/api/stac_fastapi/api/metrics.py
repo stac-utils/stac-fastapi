@@ -69,31 +69,18 @@ def resolve_operation(method: str, route: str | None, router_prefix: str = "") -
     return "unknown"
 
 
-def _metric_or_none(factory):
-    try:
-        return factory()
-    except ValueError as exc:
-        if "Duplicated timeseries in CollectorRegistry" not in str(exc):
-            raise
-        return None
-
-
-REQUESTS = _metric_or_none(
-    lambda: Counter(
-        "http_requests_total",
-        "Total HTTP requests by STAC operation.",
-        labelnames=("operation", "method", "status"),
-        registry=REGISTRY,
-    )
+REQUESTS = Counter(
+    "http_requests_total",
+    "Total HTTP requests by STAC operation.",
+    labelnames=("operation", "method", "status"),
+    registry=REGISTRY,
 )
-LATENCY = _metric_or_none(
-    lambda: Histogram(
-        "http_request_duration_seconds",
-        "HTTP request latency by STAC operation.",
-        labelnames=("operation", "method"),
-        buckets=(0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, float("inf")),
-        registry=REGISTRY,
-    )
+LATENCY = Histogram(
+    "http_request_duration_seconds",
+    "HTTP request latency by STAC operation.",
+    labelnames=("operation", "method"),
+    buckets=(0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, float("inf")),
+    registry=REGISTRY,
 )
 
 
@@ -104,10 +91,8 @@ def record_stac_metrics(info: Info) -> None:
     router_prefix = getattr(info.request.app.state, "router_prefix", "") or ""
     operation = resolve_operation(info.method, route_path, router_prefix)
 
-    if REQUESTS is not None:
-        REQUESTS.labels(operation, info.method, info.modified_status).inc()
-    if LATENCY is not None:
-        LATENCY.labels(operation, info.method).observe(info.modified_duration)
+    REQUESTS.labels(operation, info.method, info.modified_status).inc()
+    LATENCY.labels(operation, info.method).observe(info.modified_duration)
 
 
 def metrics_endpoint(app: FastAPI) -> str:
@@ -122,16 +107,6 @@ def instrument_app(app: FastAPI, endpoint: str | None = None) -> None:
     Must be called during app construction (e.g. from ``StacApi``), before any
     requests. Adding middleware after the app has started is not supported.
     """
-    if getattr(app.state, "stac_metrics_instrumented", False):
-        return
-
-    if app.middleware_stack is not None:
-        raise RuntimeError(
-            "Cannot instrument metrics after the application has started. "
-            "Call instrument_app during app construction (before any requests), "
-            "not after startup."
-        )
-
     endpoint = endpoint or metrics_endpoint(app)
 
     (
@@ -144,4 +119,3 @@ def instrument_app(app: FastAPI, endpoint: str | None = None) -> None:
         .instrument(app)
         .expose(app, endpoint=endpoint, include_in_schema=False)
     )
-    app.state.stac_metrics_instrumented = True

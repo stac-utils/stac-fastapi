@@ -37,7 +37,7 @@ dependencies = [
 
 [project.optional-dependencies]
 metrics = [
-    "prometheus-fastapi-instrumentator>=8,<9",
+    "prometheus-fastapi-instrumentator>=8",
 ]
 
 [dependency-groups]

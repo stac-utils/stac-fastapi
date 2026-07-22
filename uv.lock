@@ -2232,7 +2232,7 @@ requires-dist = [
 dev = [
     { name = "httpx2" },
     { name = "pre-commit" },
-    { name = "prometheus-fastapi-instrumentator", specifier = ">=8,<9" },
+    { name = "prometheus-fastapi-instrumentator", specifier = ">=8" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-benchmark" },
@@ -2273,7 +2273,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "brotli-asgi" },
-    { name = "prometheus-fastapi-instrumentator", marker = "extra == 'metrics'", specifier = ">=8,<9" },
+    { name = "prometheus-fastapi-instrumentator", marker = "extra == 'metrics'", specifier = ">=8" },
     { name = "stac-fastapi-types", editable = "stac_fastapi/types" },
 ]
 provides-extras = ["metrics"]

@@ -41,16 +41,6 @@ from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 
 
-def add_metrics(app: FastAPI) -> None:
-    """Expose Prometheus metrics when the optional metrics extra is installed."""
-    try:
-        from stac_fastapi.api.metrics import instrument_app
-    except ImportError:
-        return
-
-    instrument_app(app)
-
-
 @attr.s
 class StacApi:
     """StacApi factory.
@@ -84,6 +74,10 @@ class StacApi:
         health_check:
             A Callable which return application's `health` information.
             Defaults to `def health: return {"status": "UP"}`
+        add_metrics:
+            When ``True``, instrument the app and expose Prometheus metrics at
+            ``{router_prefix}/_mgmt/metrics``. Requires
+            ``stac-fastapi-api[metrics]`` to be installed.
 
     """
 
@@ -152,6 +146,7 @@ class StacApi:
     health_check: Callable[[], dict] | Callable[[], Awaitable[dict]] = attr.ib(
         default=lambda: {"status": "UP"}
     )
+    add_metrics: bool = attr.ib(default=False)
 
     def get_extension(self, extension: type[ApiExtension]) -> ApiExtension | None:
         """Get an extension.
@@ -487,7 +482,10 @@ class StacApi:
         for middleware in self.middlewares:
             self.app.user_middleware.insert(0, middleware)
 
-        add_metrics(self.app)
+        if self.add_metrics:
+            from stac_fastapi.api.metrics import instrument_app
+
+            instrument_app(self.app)
 
         # customize route dependencies
         for scopes, dependencies in self.route_dependencies:

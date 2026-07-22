@@ -184,10 +184,22 @@ api = StacApi(
 
 ## Prometheus metrics
 
-Install the optional dependency to expose metrics at `{router_prefix}/_mgmt/metrics` with low-cardinality STAC `operation` labels (`search`, `get_item`, …):
+Install the optional dependency and enable metrics on `StacApi` to expose
+`{router_prefix}/_mgmt/metrics` with low-cardinality STAC `operation` labels
+(`search`, `get_item`, …):
 
 ```bash
 pip install "stac-fastapi-api[metrics]"
+```
+
+```python
+from stac_fastapi.api.app import StacApi
+
+api = StacApi(
+    settings=settings,
+    client=client,
+    add_metrics=True,
+)
 ```
 
 `/_mgmt/*` routes (ping, health, metrics) are excluded from instrumentation.

@@ -38,7 +38,7 @@ dev = [
     "pre-commit",
     "httpx2",
     "requests",
-    "prometheus-fastapi-instrumentator>=8,<9",
+    "prometheus-fastapi-instrumentator>=8",
 ]
 docs = [
     "black>=23.10.1",
