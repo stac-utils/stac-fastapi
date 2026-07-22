@@ -59,8 +59,7 @@ jobs:
       - name: Run PgSTAC downstream tests
         run: |
           cd stac-fastapi-pgstac
-          uv run pytest -svvv -o asyncio_mode=auto -o asyncio_default_fixture_loop_scope=session
-
+          uv run pytest -svvv
 
   downstream-sfeos:
     name: Test SFEOS (${{ matrix.backend }})
@@ -92,16 +91,19 @@ jobs:
         image: opensearchproject/opensearch:3.5.0
         env:
           discovery.type: single-node
-          DISABLE_SECURITY_PLUGIN: true
+          DISABLE_SECURITY_PLUGIN: "true"
+          "plugins.security.disabled": "true"
+          DISABLE_INSTALL_DEMO_CONFIG: "true"
           OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
-          action.destructive_requires_name: false
+          action.destructive_requires_name: "false"
+          http.port: 9202
         ports:
           - 9202:9202
         options: >-
-          --health-cmd="curl -f http://localhost:9202/_cluster/health || exit 1"
+          --health-cmd="curl -f http://127.0.0.1:9202/_cluster/health || exit 1"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=10
+          --health-retries=30
 
       redis:
         image: redis:7-alpine
