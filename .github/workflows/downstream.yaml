@@ -63,6 +63,7 @@ jobs:
         run: |
           uv pip install -r ./stac-fastapi-pgstac/pyproject.toml \
                          -e ./stac-fastapi-pgstac \
+                         "psycopg[binary,pool]" \
                          --all-extras \
                          --group dev
 
@@ -96,18 +97,29 @@ jobs:
 
     services:
       opensearch:
-        image: opensearchproject/opensearch:2.11.0
+        image: opensearchproject/opensearch:3.5.0
         ports:
           - 9200:9200
         env:
           discovery.type: single-node
           "plugins.security.disabled": "true"
           OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+          action.destructive_requires_name: "false"
         options: >-
           --health-cmd "sh -c 'curl -f http://localhost:9200/_cluster/health || exit 1'"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
 
     steps:
       - name: Check out stac-fastapi
@@ -135,9 +147,9 @@ jobs:
       - name: Install stac-fastapi-opensearch dependencies
         run: |
           uv pip install -e "./stac-fastapi-elasticsearch-opensearch/stac_fastapi/core" \
+                         -e "./stac-fastapi-elasticsearch-opensearch/stac_fastapi/elasticsearch" \
                          -e "./stac-fastapi-elasticsearch-opensearch/stac_fastapi/opensearch[dev,test]" \
-                         -e "./stac-fastapi-elasticsearch-opensearch/stac_fastapi/elasticsearch[dev,test]" \
-                         pytest pytest-asyncio
+                         pytest pytest-asyncio redis
 
       - name: Force-install local stac-fastapi subpackages
         run: |
@@ -153,15 +165,19 @@ jobs:
       - name: Run OpenSearch downstream tests
         run: |
           cd stac-fastapi-elasticsearch-opensearch
-          pytest -svvv
+          uv run pytest -svvv
         env:
+          BACKEND: opensearch
+          ES_HOST: localhost
+          ES_PORT: 9200
+          ES_USE_SSL: "false"
+          ES_VERIFY_CERTS: "false"
           OPENSEARCH_HOST: localhost
           OPENSEARCH_PORT: 9200
           OPENSEARCH_SCHEME: http
           OPENSEARCH_USE_SSL: "false"
           OPENSEARCH_VERIFY_CERTS: "false"
-          ES_HOST: localhost
-          ES_PORT: 9200
-          ES_SCHEME: http
-          ES_USE_SSL: "false"
-          ES_VERIFY_CERTS: "false"
+          REDIS_ENABLE: "true"
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          DATABASE_REFRESH: "true"
