@@ -49,7 +49,7 @@ docs = [
 ]
 
 [tool.ruff]
-target-version = "py39" # minimum supported version
+target-version = "py311" # minimum supported version
 line-length = 90
 
 [tool.ruff.lint]

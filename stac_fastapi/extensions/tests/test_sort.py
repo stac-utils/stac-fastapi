@@ -90,6 +90,42 @@ def test_sort_conformance_classes():
         == "https://api.stacspec.org/v1.1.0/collection-search#sortables"
     )
 
+    with pytest.warns(DeprecationWarning):
+        assert (
+            SortConformanceClasses.COLLECTIONS
+            == "https://api.stacspec.org/v1.1.0/collection-search#sort"
+        )
+
+    with pytest.warns(DeprecationWarning):
+        assert (
+            SortConformanceClasses["COLLECTIONS"]
+            == "https://api.stacspec.org/v1.1.0/collection-search#sort"
+        )
+
+    with pytest.warns(DeprecationWarning):
+        assert (
+            SortConformanceClasses.ITEMS
+            == "https://api.stacspec.org/v1.1.0/ogcapi-features#sort"
+        )
+
+    with pytest.warns(DeprecationWarning):
+        assert (
+            SortConformanceClasses["ITEMS"]
+            == "https://api.stacspec.org/v1.1.0/ogcapi-features#sort"
+        )
+
+    with pytest.warns(DeprecationWarning):
+        assert (
+            SortConformanceClasses.SEARCH
+            == "https://api.stacspec.org/v1.1.0/item-search#sort"
+        )
+
+    with pytest.warns(DeprecationWarning):
+        assert (
+            SortConformanceClasses["SEARCH"]
+            == "https://api.stacspec.org/v1.1.0/item-search#sort"
+        )
+
 
 def test_sort_extension_defaults():
     """Test the default instantiation of the SortExtension."""
