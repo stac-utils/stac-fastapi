@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOWNSTREAM_PY_VERSION: '3.13'
+  DOWNSTREAM_PY_VERSION: '3.11'
 
 jobs:
   downstream-pgstac:
@@ -62,7 +62,7 @@ jobs:
       - name: Install stac-fastapi-pgstac dependencies
         run: |
           cd stac-fastapi-pgstac
-          uv pip install -e . --all-extras --group dev
+          uv pip install -r pyproject.toml --group dev -e .
 
       - name: Force-install local stac-fastapi subpackages
         run: |
@@ -163,7 +163,7 @@ jobs:
       - name: Run OpenSearch downstream tests
         run: |
           cd stac-fastapi-elasticsearch-opensearch
-          uv run pytest -svvv
+          uv run pytest -svvv -o asyncio_mode=auto -o asyncio_default_fixture_loop_scope=session
         env:
           BACKEND: opensearch
           ES_HOST: localhost
