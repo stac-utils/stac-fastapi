@@ -74,6 +74,10 @@ class StacApi:
         health_check:
             A Callable which return application's `health` information.
             Defaults to `def health: return {"status": "UP"}`
+        add_metrics:
+            When ``True``, instrument the app and expose Prometheus metrics at
+            ``{router_prefix}/_mgmt/metrics``. Requires
+            ``stac-fastapi-api[metrics]`` to be installed.
 
     """
 
@@ -142,6 +146,7 @@ class StacApi:
     health_check: Callable[[], dict] | Callable[[], Awaitable[dict]] = attr.ib(
         default=lambda: {"status": "UP"}
     )
+    add_metrics: bool = attr.ib(default=False)
 
     def get_extension(self, extension: type[ApiExtension]) -> ApiExtension | None:
         """Get an extension.
@@ -476,6 +481,14 @@ class StacApi:
 
         for middleware in self.middlewares:
             self.app.user_middleware.insert(0, middleware)
+
+        if self.add_metrics:
+            from stac_fastapi.api.metrics import instrument_app
+
+            instrument_app(
+                self.app,
+                endpoint=f"{self.app.state.router_prefix}/_mgmt/metrics",
+            )
 
         # customize route dependencies
         for scopes, dependencies in self.route_dependencies:

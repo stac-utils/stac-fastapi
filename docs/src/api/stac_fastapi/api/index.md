@@ -7,6 +7,7 @@ Api submodule.
 * [stac_fastapi.api.app](app.md)
 * [stac_fastapi.api.config](config.md)
 * [stac_fastapi.api.errors](errors.md)
+* [stac_fastapi.api.metrics](metrics.md)
 * [stac_fastapi.api.middleware](middleware.md)
 * [stac_fastapi.api.models](models.md)
 * [stac_fastapi.api.openapi](openapi.md)
