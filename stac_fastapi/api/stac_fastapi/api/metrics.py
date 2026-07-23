@@ -103,13 +103,7 @@ def record_stac_metrics(info: Info) -> None:
     LATENCY.labels(operation, info.method).observe(info.modified_duration)
 
 
-def metrics_endpoint(app: FastAPI) -> str:
-    """Return the Prometheus scrape path under ``/_mgmt``."""
-    prefix = getattr(app.state, "router_prefix", "") or ""
-    return f"{prefix}/_mgmt/metrics".replace("//", "/")
-
-
-def instrument_app(app: FastAPI, endpoint: str | None = None) -> None:
+def instrument_app(app: FastAPI, endpoint: str) -> None:
     """Instrument a FastAPI app and expose Prometheus metrics.
 
     Must be called during app construction (e.g. from ``StacApi``), before any
@@ -124,8 +118,6 @@ def instrument_app(app: FastAPI, endpoint: str | None = None) -> None:
             "`stac-fastapi-api[metrics]`. Install with: "
             "pip install 'stac-fastapi-api[metrics]'"
         )
-
-    endpoint = endpoint or metrics_endpoint(app)
 
     (
         Instrumentator(

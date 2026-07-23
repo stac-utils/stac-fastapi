@@ -485,7 +485,10 @@ class StacApi:
         if self.add_metrics:
             from stac_fastapi.api.metrics import instrument_app
 
-            instrument_app(self.app)
+            instrument_app(
+                self.app,
+                endpoint=f"{self.app.state.router_prefix}/_mgmt/metrics",
+            )
 
         # customize route dependencies
         for scopes, dependencies in self.route_dependencies:

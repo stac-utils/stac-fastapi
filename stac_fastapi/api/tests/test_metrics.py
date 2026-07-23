@@ -5,16 +5,10 @@ from fastapi.testclient import TestClient
 from stac_fastapi.api import app
 from stac_fastapi.api.metrics import (
     OPERATIONS,
-    metrics_endpoint,
     register_operations,
     resolve_operation,
 )
 from stac_fastapi.types.config import ApiSettings
-
-
-class _App:
-    def __init__(self, router_prefix: str = ""):
-        self.state = type("S", (), {"router_prefix": router_prefix})()
 
 
 @pytest.mark.parametrize(
@@ -32,14 +26,6 @@ class _App:
 )
 def test_resolve_operation(method, route, router_prefix, expected):
     assert resolve_operation(method, route, router_prefix) == expected
-
-
-@pytest.mark.parametrize(
-    ("router_prefix", "expected"),
-    [("", "/_mgmt/metrics"), ("/api", "/api/_mgmt/metrics")],
-)
-def test_metrics_endpoint(router_prefix, expected):
-    assert metrics_endpoint(_App(router_prefix)) == expected
 
 
 def test_register_operations():
@@ -107,4 +93,4 @@ def test_instrument_app_requires_metrics_extra(monkeypatch):
     monkeypatch.setattr(metrics, "Instrumentator", None)
 
     with pytest.raises(ImportError, match=r"stac-fastapi-api\[metrics\]"):
-        metrics.instrument_app(FastAPI())
+        metrics.instrument_app(FastAPI(), endpoint="/_mgmt/metrics")
