@@ -1,0 +1,165 @@
+name: Downstream Integration Tests
+
+on:
+  workflow_dispatch:
+
+env:
+  DOWNSTREAM_PY_VERSION: '3.11'
+
+jobs:
+  downstream-pgstac:
+    name: Test stac-fastapi-pgstac
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out stac-fastapi
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+
+      - name: Check out stac-fastapi-pgstac
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+        with:
+          repository: stac-utils/stac-fastapi-pgstac
+          path: stac-fastapi-pgstac
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          version: "0.9.*"
+          enable-cache: true
+          python-version: ${{ env.DOWNSTREAM_PY_VERSION }}
+
+      - name: install lib postgres
+        uses: nyurik/action-setup-postgis@228cfe4dd41aad01801a0bdc767040e5024fff1d # v2
+
+      - name: Install stac-fastapi-pgstac dependencies
+        run: |
+          cd stac-fastapi-pgstac
+          uv sync
+
+      - name: Force-install local stac-fastapi subpackages
+        run: |
+          cd stac-fastapi-pgstac
+          uv pip install --no-deps \
+            -e ../stac_fastapi/types \
+            -e ../stac_fastapi/api \
+            -e ../stac_fastapi/extensions
+
+      - name: Verify local link
+        run: |
+          cd stac-fastapi-pgstac
+          .venv/bin/python -c "import stac_fastapi.types; print('Using types from:', stac_fastapi.types.__file__)"
+
+      - name: Run PgSTAC downstream tests
+        run: |
+          cd stac-fastapi-pgstac
+          .venv/bin/pytest -svvv
+
+  downstream-sfeos:
+    name: Test SFEOS (${{ matrix.backend }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: ["elasticsearch", "opensearch"]
+        include:
+          - backend: "elasticsearch"
+            port: "9200"
+          - backend: "opensearch"
+            port: "9202"
+
+    services:
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:9.3.2
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: false
+          ES_JAVA_OPTS: -Xms512m -Xmx1g
+          action.destructive_requires_name: false
+        ports:
+          - 9200:9200
+
+      opensearch:
+        image: opensearchproject/opensearch:3.5.0
+        env:
+          discovery.type: single-node
+          DISABLE_SECURITY_PLUGIN: "true"
+          DISABLE_INSTALL_DEMO_CONFIG: "true"
+          OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+          action.destructive_requires_name: "false"
+          http.port: 9202
+        ports:
+          - 9202:9202
+        options: >-
+          --health-cmd="curl -f http://127.0.0.1:9202/_cluster/health || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=30
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out stac-fastapi
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6/v7
+
+      - name: Check out stac-fastapi-elasticsearch-opensearch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6/v7
+        with:
+          repository: stac-utils/stac-fastapi-elasticsearch-opensearch
+          path: sfeos
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          version: "0.9.*"
+          enable-cache: true
+          python-version: ${{ env.DOWNSTREAM_PY_VERSION }}
+
+      - name: Install SFEOS dependencies
+        run: |
+          cd sfeos
+          uv venv
+          uv pip install -e "./stac_fastapi/core"
+          uv pip install -e "./stac_fastapi/sfeos_helpers"
+          uv pip install -e "./stac_fastapi/elasticsearch[catalogs,dev,server,validator]"
+          uv pip install -e "./stac_fastapi/opensearch[catalogs,dev,server,validator]"
+          uv pip install pytest-timeout "pytest-asyncio<0.23.0"
+
+      - name: Force-install local stac-fastapi subpackages
+        run: |
+          cd sfeos
+          uv pip install --no-deps \
+            -e ../stac_fastapi/types \
+            -e ../stac_fastapi/api \
+            -e ../stac_fastapi/extensions
+
+      - name: Verify local link
+        run: |
+          cd sfeos
+          .venv/bin/python -c "import stac_fastapi.types; print('Using types from:', stac_fastapi.types.__file__)"
+
+      - name: Run SFEOS downstream tests
+        run: |
+          cd sfeos
+          .venv/bin/pytest -svvv --timeout=300
+        env:
+          ENVIRONMENT: testing
+          ES_PORT: ${{ matrix.port }}
+          ES_HOST: localhost
+          ES_USE_SSL: false
+          DATABASE_REFRESH: true
+          ES_VERIFY_CERTS: false
+          REDIS_ENABLE: true
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          BACKEND: ${{ matrix.backend }}

@@ -7,7 +7,11 @@
 
 ### Fixed
 
-- add back `SortConformanceClasses.{COLLECTIONS|ITEMS|SEARCH}` enum values to avoid breaking change and add deprecation warning for them
+- add back `SortConformanceClasses.{COLLECTIONS|ITEMS|SEARCH}` enum values to avoid breaking change and add deprecation warning for them ([#954](https://github.com/stac-utils/stac-fastapi/issues/954))
+
+### Added
+
+- GitHub Actions workflow for downstream integration testing (`stac-fastapi-pgstac` and `stac-fastapi-opensearch`) to catch breaking changes on pull requests. ([#957](https://github.com/stac-utils/stac-fastapi/issues/957))
 
 ## [6.4.0] - 2026-07-21
 
