@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+
+## [6.4.1] - 2026-07-22
+
 ### Fixed
 
 - add back `SortConformanceClasses.{COLLECTIONS|ITEMS|SEARCH}` enum values to avoid breaking change and add deprecation warning for them ([#954](https://github.com/stac-utils/stac-fastapi/issues/954))
@@ -765,7 +768,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.4.0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/6.4.1..main>
+[6.4.1]: <https://github.com/stac-utils/stac-fastapi/compare/6.4.0..6.4.1>
 [6.4.0]: <https://github.com/stac-utils/stac-fastapi/compare/6.3.2..6.4.0>
 [6.3.2]: <https://github.com/stac-utils/stac-fastapi/compare/6.3.1..6.3.2>
 [6.3.1]: <https://github.com/stac-utils/stac-fastapi/compare/6.3.0..6.3.1>
