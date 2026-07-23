@@ -1,12 +1,6 @@
 name: Downstream Integration Tests
 
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
-    tags:
-      - "*"
   workflow_dispatch:
 
 env:
