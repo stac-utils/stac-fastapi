@@ -79,3 +79,40 @@ stac = StacApi(
     ]
 )
 ```
+
+## Custom Sortables client
+
+The Sort extension v1.1.0 adds `sortables` endpoints so clients can discover which fields are available for sorting. The base `SortExtension` mounts `/sortables`, `/collections/{collection_id}/sortables`, and `/collections-sortables`, but only when a `BaseSortablesClient` (or `AsyncBaseSortablesClient`) is provided.
+
+```python
+from typing import Any
+
+from stac_fastapi.api.app import StacApi
+from stac_fastapi.extensions.sort import BaseSortablesClient, SortExtension
+
+
+class MySortablesClient(BaseSortablesClient):
+    def get_sortables(self, **kwargs: Any) -> dict[str, Any]:
+        return {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://example.com/sortables",
+            "type": "object",
+            "title": "Sortables",
+            "properties": {
+                "datetime": {"type": "string", "format": "date-time"},
+            },
+            "additionalProperties": True,
+        }
+
+    # get_collection_sortables and get_collections_sortables can be
+    # overridden in the same way.
+
+
+stac = StacApi(
+    extensions=[
+        SortExtension(client=MySortablesClient()),
+    ]
+)
+```
+
+Use `SearchSortExtension`, `ItemCollectionSortExtension`, or `CollectionSearchSortExtension` if you only need sortables for a particular set of endpoints.
