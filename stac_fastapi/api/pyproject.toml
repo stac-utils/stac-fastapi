@@ -35,6 +35,11 @@ dependencies = [
     "stac-fastapi.types~=6.4",
 ]
 
+[project.optional-dependencies]
+metrics = [
+    "prometheus-fastapi-instrumentator>=8",
+]
+
 [dependency-groups]
 dev = [
     "httpx",
