@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [6.5.0] - 2026-08-03
+
 ### Added
 
 - Optional Prometheus metrics (`stac-fastapi-api[metrics]`) with STAC operation labels at `/_mgmt/metrics`, enabled via `StacApi(add_metrics=True)` ([#958](https://github.com/stac-utils/stac-fastapi/pull/958))
