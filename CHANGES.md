@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Removed `app_host`, `app_port`, and `reload` attributes from `ApiSettings`.
+
 ## [6.5.0] - 2026-08-03
 
 ### Added
