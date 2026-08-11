@@ -27,7 +27,6 @@ DEFAULT_STATUS_CODES = {
     ConflictError: status.HTTP_409_CONFLICT,
     ForeignKeyError: status.HTTP_424_FAILED_DEPENDENCY,
     DatabaseError: status.HTTP_424_FAILED_DEPENDENCY,
-    Exception: status.HTTP_500_INTERNAL_SERVER_ERROR,
     InvalidQueryParameter: status.HTTP_400_BAD_REQUEST,
     ResponseValidationError: status.HTTP_500_INTERNAL_SERVER_ERROR,
 }
