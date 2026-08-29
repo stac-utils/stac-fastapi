@@ -4,7 +4,6 @@
 
 ### Changed
 
-- Removed `app_host`, `app_port`, and `reload` attributes from `ApiSettings`.
 - Removed explicit error handler for uncaught exceptions, improving security by preventing sensitive information from being exposed in error responses. ([#966](https://github.com/stac-utils/stac-fastapi/pull/966))
 
 ## [6.5.0] - 2026-08-03
