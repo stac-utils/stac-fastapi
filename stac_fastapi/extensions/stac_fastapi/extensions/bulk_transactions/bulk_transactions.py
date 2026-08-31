@@ -32,13 +32,20 @@ class BulkTransaction(TypedDict):
     errors: list[TransactionError]
 
 
+class TransactionErrorModel(BaseModel):
+    """Transaction Error."""
+
+    id: str
+    msg: str
+
+
 class BulkTransactionModel(BaseModel):
     """Bulk Transaction Model."""
 
     received: int
     success: int
     skipped: int
-    errors: list[TransactionError]
+    errors: list[TransactionErrorModel]
 
 
 class BulkTransactionMethod(StrEnum):
