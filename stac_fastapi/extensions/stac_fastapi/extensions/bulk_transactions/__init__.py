@@ -3,8 +3,10 @@
 from .bulk_transactions import (
     AsyncBaseBulkTransactionsClient,
     BaseBulkTransactionsClient,
+    BulkTransaction,
     BulkTransactionExtension,
     BulkTransactionMethod,
+    BulkTransactionModel,
     Items,
 )
 
@@ -13,5 +15,7 @@ __all__ = [
     "BaseBulkTransactionsClient",
     "BulkTransactionExtension",
     "BulkTransactionMethod",
+    "BulkTransaction",
+    "BulkTransactionModel",
     "Items",
 ]
