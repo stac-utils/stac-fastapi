@@ -4,6 +4,7 @@ from typing import Annotated, Literal, cast
 
 import attr
 from fastapi import Path, Query
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, create_model
 from stac_pydantic.shared import BBox
 
@@ -18,12 +19,6 @@ from stac_fastapi.types.search import (
     _bbox_converter,
     _validate_datetime,
 )
-
-try:
-    import orjson  # noqa
-    from fastapi.responses import ORJSONResponse as JSONResponse
-except ImportError:  # pragma: nocover
-    from starlette.responses import JSONResponse  # type: ignore [assignment]
 
 
 def create_request_model(
