@@ -7,6 +7,7 @@ import attr
 from brotli_asgi import BrotliMiddleware
 from fastapi import APIRouter, FastAPI
 from fastapi.params import Depends
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from stac_pydantic import api
 from stac_pydantic.shared import MimeTypes
@@ -25,7 +26,6 @@ from stac_fastapi.api.models import (
     HealthCheck,
     ItemCollectionUri,
     ItemUri,
-    JSONResponse,
 )
 from stac_fastapi.api.openapi import update_openapi
 from stac_fastapi.api.routes import (
