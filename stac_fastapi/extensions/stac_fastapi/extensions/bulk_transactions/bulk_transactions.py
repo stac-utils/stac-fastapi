@@ -3,16 +3,49 @@
 import abc
 from collections.abc import Sequence
 from enum import StrEnum
-from typing import Any
+from typing import Any, TypedDict
 
 import attr
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Response
 from fastapi.params import Depends
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from stac_fastapi.api.models import create_request_model
 from stac_fastapi.api.routes import create_async_endpoint
 from stac_fastapi.types.extension import ApiExtension
+
+
+class TransactionError(TypedDict):
+    """Transaction Error."""
+
+    id: str
+    msg: str
+
+
+class BulkTransaction(TypedDict):
+    """Bulk Transaction Response."""
+
+    received: int
+    success: int
+    skipped: int
+    errors: list[TransactionError]
+
+
+class TransactionErrorModel(BaseModel):
+    """Transaction Error."""
+
+    id: str
+    msg: str
+
+
+class BulkTransactionModel(BaseModel):
+    """Bulk Transaction Model."""
+
+    received: int
+    success: int
+    skipped: int
+    errors: list[TransactionErrorModel]
 
 
 class BulkTransactionMethod(StrEnum):
@@ -52,7 +85,7 @@ class BaseBulkTransactionsClient(abc.ABC):
         items: Items,
         chunk_size: int | None = None,
         **kwargs,
-    ) -> str:
+    ) -> BulkTransaction | Response:
         """Bulk creation of items.
 
         Args:
@@ -74,7 +107,7 @@ class AsyncBaseBulkTransactionsClient(abc.ABC):
         self,
         items: Items,
         **kwargs,
-    ) -> str:
+    ) -> BulkTransaction | Response:
         """Bulk creation of items.
 
         Args:
@@ -116,6 +149,7 @@ class BulkTransactionExtension(ApiExtension):
     conformance_classes: list[str] = attr.ib(default=list())
     schema_href: str | None = attr.ib(default=None)
     route_dependencies: Sequence[Depends] | None = attr.ib(default=None)
+    enable_response_models: bool = attr.ib(default=True)
 
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
@@ -132,9 +166,17 @@ class BulkTransactionExtension(ApiExtension):
         router.add_api_route(
             name="Bulk Create Item",
             path="/collections/{collection_id}/bulk_items",
-            response_model=str,
-            response_model_exclude_unset=True,
-            response_model_exclude_none=True,
+            response_model=BulkTransactionModel,
+            responses={
+                200: {
+                    "content": {
+                        "application/json": {},
+                    },
+                    "model": BulkTransactionModel,
+                },
+            },
+            response_class=JSONResponse,
+            response_model_exclude_unset=False,
             methods=["POST"],
             endpoint=create_async_endpoint(
                 self.client.bulk_item_insert, items_request_model
