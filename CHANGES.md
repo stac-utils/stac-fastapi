@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Changed output from `string` to `dict` object (`BulkTransaction`) for bulk transaction `bulk_item_insert` methods. 
+
 ## [6.6.0] - 2026-08-31
 
 ### Changed

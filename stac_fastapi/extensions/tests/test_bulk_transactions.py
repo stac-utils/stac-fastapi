@@ -4,13 +4,14 @@ from collections.abc import Iterator
 from unittest.mock import Mock
 
 import pytest
-from fastapi import Depends, HTTPException, security, status
+from fastapi import Depends, HTTPException, Response, security, status
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.extensions.bulk_transactions import (
     AsyncBaseBulkTransactionsClient,
     BaseBulkTransactionsClient,
+    BulkTransaction,
     BulkTransactionExtension,
     BulkTransactionMethod,
     Items,
@@ -106,11 +107,35 @@ class DummyCoreClient(BaseCoreClient):
 class DummyBulkTransactionsClient(AsyncBaseBulkTransactionsClient):
     """Dummy client returning a success message to verify routing and parsing."""
 
-    async def bulk_item_insert(self, items: Items, **kwargs) -> str:
+    async def bulk_item_insert(
+        self, items: Items, **kwargs
+    ) -> BulkTransaction | Response:
         """Mock bulk insert that just returns a string confirming the count."""
         count = len(list(items))
-        method = items.method.value
-        return f"Successfully processed {count} items via {method}."
+        return {
+            "received": count,
+            "success": count,
+            "skipped": 0,
+            "errors": [],
+        }
+
+
+class DummyBulkTransactionsClientWithError(AsyncBaseBulkTransactionsClient):
+    """Dummy client returning a success message to verify routing and parsing."""
+
+    async def bulk_item_insert(
+        self, items: Items, **kwargs
+    ) -> BulkTransaction | Response:
+        """Mock bulk insert that just returns a string confirming the count."""
+        count = len(list(items)) - 1
+        return {
+            "received": count,
+            "success": count,
+            "skipped": 0,
+            "errors": [
+                {"id": "test_item", "msg": "Item already exists"},
+            ],
+        }
 
 
 @pytest.fixture
@@ -134,6 +159,21 @@ def client(
         client=core_client,
         extensions=[
             BulkTransactionExtension(client=bulk_transactions_client),
+        ],
+    )
+    with TestClient(api.app) as client:
+        yield client
+
+
+@pytest.fixture
+def client_with_error(core_client: DummyCoreClient) -> Iterator[TestClient]:
+    """Fixture to set up the TestClient with the BulkTransactionExtension."""
+    settings = ApiSettings()
+    api = StacApi(
+        settings=settings,
+        client=core_client,
+        extensions=[
+            BulkTransactionExtension(client=DummyBulkTransactionsClientWithError()),
         ],
     )
     with TestClient(api.app) as client:
@@ -167,7 +207,12 @@ def test_bulk_item_insert(client: TestClient, item: dict) -> None:
     response = client.post("/collections/a-collection/bulk_items", json=payload)
 
     assert response.is_success, response.text
-    assert response.json() == "Successfully processed 2 items via insert."
+    assert response.json() == {
+        "received": 2,
+        "success": 2,
+        "skipped": 0,
+        "errors": [],
+    }
 
 
 def test_bulk_item_upsert(client: TestClient, item: dict) -> None:
@@ -177,7 +222,12 @@ def test_bulk_item_upsert(client: TestClient, item: dict) -> None:
     response = client.post("/collections/a-collection/bulk_items", json=payload)
 
     assert response.is_success, response.text
-    assert response.json() == "Successfully processed 1 items via upsert."
+    assert response.json() == {
+        "received": 1,
+        "success": 1,
+        "skipped": 0,
+        "errors": [],
+    }
 
 
 def test_bulk_item_invalid_method(client: TestClient, item: dict) -> None:
@@ -220,9 +270,32 @@ def test_bulk_item_insert_with_route_dependencies(item: dict) -> None:
             auth=("bob", "dobbs"),
         )
         assert authenticated_response.is_success, authenticated_response.text
-        assert (
-            authenticated_response.json() == "Successfully processed 1 items via insert."
-        )
+        assert authenticated_response.json() == {
+            "received": 1,
+            "success": 1,
+            "skipped": 0,
+            "errors": [],
+        }
+
+
+def test_bulk_item_insert_with_error(client_with_error: TestClient, item: dict) -> None:
+    """Test the bulk insert endpoint processes items correctly."""
+    payload = {
+        "items": {item["id"]: item, "test_item_2": {**item, "id": "test_item_2"}},
+        "method": "insert",
+    }
+
+    response = client_with_error.post(
+        "/collections/a-collection/bulk_items", json=payload
+    )
+
+    assert response.is_success, response.text
+    assert response.json() == {
+        "received": 1,
+        "success": 1,
+        "skipped": 0,
+        "errors": [{"id": "test_item", "msg": "Item already exists"}],
+    }
 
 
 def must_be_bob(
