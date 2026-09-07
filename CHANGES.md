@@ -5,6 +5,7 @@
 ### Changed
 
 - Changed output from `string` to `dict` object (`BulkTransaction`) for bulk transaction `bulk_item_insert` methods. 
+- Removed `app_host`, `app_port`, and `reload` attributes from `ApiSettings`.
 
 ## [6.6.0] - 2026-08-31
 
