@@ -9,7 +9,7 @@
 
 ### Removed
 
-- Removed deprecated `stac_fastapi.extensions.third_party` namespace. Import `BulkTransactionExtension` directly from `stac_fastapi.extensions` instead.
+- Removed deprecated `stac_fastapi.extensions.third_party` namespace. Import `BulkTransactionExtension` directly from `stac_fastapi.extensions` instead. ([#980](https://github.com/stac-utils/stac-fastapi/pull/980)
 
 ## [6.6.0] - 2026-08-31
 
