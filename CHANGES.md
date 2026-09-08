@@ -11,6 +11,10 @@
 - Removed `app_host`, `app_port`, and `reload` attributes from `ApiSettings`. ([#973](https://github.com/stac-utils/stac-fastapi/pull/973))
 - Removed deprecated `stac_fastapi.extensions.core` namespace. Import extensions directly from `stac_fastapi.extensions` instead. ([#978](https://github.com/stac-utils/stac-fastapi/pull/978))
 
+### Removed
+
+- Removed deprecated `SortConformanceClasses` enum aliases (`COLLECTIONS`, `ITEMS`, `SEARCH`). Use `COLLECTION_SEARCH_SORT`, `FEATURES_SORT`, and `ITEM_SEARCH_SORT` instead. ([#979](https://github.com/stac-utils/stac-fastapi/pull/979))
+
 ## [6.6.0] - 2026-08-31
 
 ### Changed
