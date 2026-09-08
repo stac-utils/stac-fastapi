@@ -6,7 +6,10 @@
 
 - Changed output from `string` to `dict` object (`BulkTransaction`) for bulk transaction `bulk_item_insert` methods. 
 - Removed `app_host`, `app_port`, and `reload` attributes from `ApiSettings`.
-- Removed deprecated `SortConformanceClasses` enum aliases (`COLLECTIONS`, `ITEMS`, `SEARCH`). Use `COLLECTION_SEARCH_SORT`, `FEATURES_SORT`, and `ITEM_SEARCH_SORT` instead.
+
+### Removed
+
+- Removed deprecated `SortConformanceClasses` enum aliases (`COLLECTIONS`, `ITEMS`, `SEARCH`). Use `COLLECTION_SEARCH_SORT`, `FEATURES_SORT`, and `ITEM_SEARCH_SORT` instead. ([#979](https://github.com/stac-utils/stac-fastapi/pull/979))
 
 ## [6.6.0] - 2026-08-31
 
