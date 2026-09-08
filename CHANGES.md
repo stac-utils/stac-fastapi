@@ -9,6 +9,7 @@
 
 ### Removed
 
+- Removed deprecated `stac_fastapi.extensions.third_party` namespace. Import `BulkTransactionExtension` directly from `stac_fastapi.extensions` instead. ([#980](https://github.com/stac-utils/stac-fastapi/pull/980)
 - Removed deprecated `SortConformanceClasses` enum aliases (`COLLECTIONS`, `ITEMS`, `SEARCH`). Use `COLLECTION_SEARCH_SORT`, `FEATURES_SORT`, and `ITEM_SEARCH_SORT` instead. ([#979](https://github.com/stac-utils/stac-fastapi/pull/979))
 
 ## [6.6.0] - 2026-08-31
