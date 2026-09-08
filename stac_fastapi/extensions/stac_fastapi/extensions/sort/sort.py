@@ -1,7 +1,6 @@
 """Sort extension."""
 
-import warnings
-from enum import EnumMeta, StrEnum
+from enum import StrEnum
 from typing import Any
 
 import attr
@@ -51,69 +50,7 @@ class SortablesSchema(BaseModel):
     }
 
 
-class _DeprecatedMemberMeta(EnumMeta):
-    """TODO: Remove this metaclass in 7.0.0."""
-
-    def __getattr__(cls, name: str):
-        match name:
-            case "COLLECTIONS":
-                warnings.warn(
-                    "'COLLECTIONS' will be removed in a future version, "
-                    "use 'COLLECTION_SEARCH_SORT' instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
-                return cls.COLLECTION_SEARCH_SORT
-            case "ITEMS":
-                warnings.warn(
-                    "'ITEMS' will be removed in a future version, "
-                    "use 'FEATURES_SORT' instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
-                return cls.FEATURES_SORT
-            case "SEARCH":
-                warnings.warn(
-                    "'SEARCH' will be removed in a future version, "
-                    "use 'ITEM_SEARCH_SORT' instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
-                return cls.ITEM_SEARCH_SORT
-
-        raise AttributeError(f"'{cls.__name__}' has no attribute '{name}'")
-
-    def __getitem__(cls, name: str):
-        match name:
-            case "COLLECTIONS":
-                warnings.warn(
-                    "'COLLECTIONS' will be removed in a future version, "
-                    "use 'COLLECTION_SEARCH_SORT' instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
-                return cls.COLLECTION_SEARCH_SORT
-            case "ITEMS":
-                warnings.warn(
-                    "'ITEMS' will be removed in a future version, "
-                    "use 'FEATURES_SORT' instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
-                return cls.FEATURES_SORT
-            case "SEARCH":
-                warnings.warn(
-                    "'SEARCH' will be removed in a future version, "
-                    "use 'ITEM_SEARCH_SORT' instead.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
-                return cls.ITEM_SEARCH_SORT
-
-        return super().__getitem__(name)
-
-
-class SortConformanceClasses(StrEnum, metaclass=_DeprecatedMemberMeta):
+class SortConformanceClasses(StrEnum):
     """Conformance classes for the Sort v1.1.0 extension.
 
     See https://github.com/stac-api-extensions/sort

@@ -6,7 +6,17 @@
 
 ### Changed
 
-- Changed output from `string` to `dict` object (`BulkTransaction`) for bulk transaction `bulk_item_insert` methods. 
+- Changed output from `string` to `dict` object (`BulkTransaction`) for bulk transaction `bulk_item_insert` methods. ([#975](https://github.com/stac-utils/stac-fastapi/pull/975))
+
+### Removed
+
+- Removed `app_host`, `app_port`, and `reload` attributes from `ApiSettings`. ([#973](https://github.com/stac-utils/stac-fastapi/pull/973))
+- Removed deprecated `stac_fastapi.extensions.core` namespace. Import extensions directly from `stac_fastapi.extensions` instead. ([#978](https://github.com/stac-utils/stac-fastapi/pull/978))
+
+### Removed
+
+- Removed deprecated `stac_fastapi.extensions.third_party` namespace. Import `BulkTransactionExtension` directly from `stac_fastapi.extensions` instead. ([#980](https://github.com/stac-utils/stac-fastapi/pull/980)
+- Removed deprecated `SortConformanceClasses` enum aliases (`COLLECTIONS`, `ITEMS`, `SEARCH`). Use `COLLECTION_SEARCH_SORT`, `FEATURES_SORT`, and `ITEM_SEARCH_SORT` instead. ([#979](https://github.com/stac-utils/stac-fastapi/pull/979))
 
 ## [6.6.0] - 2026-08-31
 
