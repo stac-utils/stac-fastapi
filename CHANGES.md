@@ -10,6 +10,7 @@
 
 - Removed `app_host`, `app_port`, and `reload` attributes from `ApiSettings`. ([#973](https://github.com/stac-utils/stac-fastapi/pull/973))
 - Removed deprecated `stac_fastapi.extensions.core` namespace. Import extensions directly from `stac_fastapi.extensions` instead. ([#978](https://github.com/stac-utils/stac-fastapi/pull/978))
+- Removed `CORSMiddleware` subclass from `stac_fastapi.api.middleware`. Use `starlette.middleware.cors.CORSMiddleware` instead.
 
 ### Removed
 

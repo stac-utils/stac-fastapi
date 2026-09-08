@@ -18,7 +18,8 @@ By default the `StacApi` class will enable 3 Middlewares (`BrotliMiddleware`, `C
 from starlette.middleware import Middleware
 
 from stac_fastapi.api.app import StacApi
-from stac_fastapi.api.middleware import CORSMiddleware
+from starlette.middleware.cors import CORSMiddleware
+
 
 api = StacApi(
     ...
