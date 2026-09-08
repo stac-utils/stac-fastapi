@@ -6,6 +6,7 @@
 
 - Changed output from `string` to `dict` object (`BulkTransaction`) for bulk transaction `bulk_item_insert` methods. 
 - Removed `app_host`, `app_port`, and `reload` attributes from `ApiSettings`.
+- Removed deprecated `stac_fastapi.extensions.core` namespace. Import extensions directly from `stac_fastapi.extensions` instead.
 
 ## [6.6.0] - 2026-08-31
 
