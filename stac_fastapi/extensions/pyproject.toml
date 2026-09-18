@@ -32,8 +32,8 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-    "stac-fastapi.types~=6.6",
-    "stac-fastapi.api~=6.6",
+    "stac-fastapi.types~=7.0",
+    "stac-fastapi.api~=7.0",
 ]
 
 [dependency-groups]
