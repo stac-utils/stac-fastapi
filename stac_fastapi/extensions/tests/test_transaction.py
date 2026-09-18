@@ -99,8 +99,11 @@ class DummyTransactionsClient(BaseTransactionsClient):
 
 def test_create_item(client: TestClient, item: Item) -> None:
     response = client.post("/collections/a-collection/items", json=item)
-    assert response.is_success, response.text
+    assert response.status_code == 201, response.text
     assert response.json()["type"] == "Feature"
+    assert response.headers["location"].endswith(
+        "/collections/a-collection/items/test_item"
+    )
 
 
 def test_create_item_collection(
@@ -109,6 +112,7 @@ def test_create_item_collection(
     response = client.post("/collections/a-collection/items", json=item_collection)
     assert response.is_success, response.text
     assert response.json()["type"] == "FeatureCollection"
+    assert "location" not in response.headers
 
 
 def test_update_item(client: TestClient, item: Item) -> None:
@@ -155,8 +159,9 @@ def test_delete_item(client: TestClient) -> None:
 
 def test_create_collection(client: TestClient, collection: Collection) -> None:
     response = client.post("/collections", json=collection)
-    assert response.is_success, response.text
+    assert response.status_code == 201, response.text
     assert response.json()["type"] == "Collection"
+    assert response.headers["location"].endswith("/collections/test_collection")
 
 
 def test_update_collection(client: TestClient, collection: Collection) -> None:
