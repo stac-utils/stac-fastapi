@@ -21,7 +21,7 @@ class BaseTransactionsClient(abc.ABC):
         collection_id: str,
         item: Item | ItemCollection,
         **kwargs,
-    ) -> stac.Item | Response | None | None:
+    ) -> stac.Item | stac.ItemCollection | Response | None:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
@@ -31,7 +31,7 @@ class BaseTransactionsClient(abc.ABC):
             collection_id: the id of the collection from the resource path
 
         Returns:
-            The item that was created or None if item collection.
+            The item or item collection that was created, or a Response.
         """
         ...
 
@@ -195,7 +195,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
         collection_id: str,
         item: Item | ItemCollection,
         **kwargs,
-    ) -> stac.Item | Response | None | None:
+    ) -> stac.Item | stac.ItemCollection | Response | None:
         """Create a new item.
 
         Called with `POST /collections/{collection_id}/items`.
@@ -205,7 +205,7 @@ class AsyncBaseTransactionsClient(abc.ABC):
             collection_id: the id of the collection from the resource path
 
         Returns:
-            The item that was created or None if item collection.
+            The item or item collection that was created, or a Response.
         """
         ...
 
