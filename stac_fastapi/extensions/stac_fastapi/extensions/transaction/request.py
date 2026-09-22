@@ -132,7 +132,7 @@ class PartialCollection(BasePartial):
     id: str | None = None
     title: str | None = None
     description: str | None = None
-    links: dict[str, Any] | None = None
+    links: list[dict[str, Any]] | None = None
     keywords: list[str] | None = None
     license: str | None = None
     providers: list[dict[str, Any]] | None = None

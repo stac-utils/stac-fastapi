@@ -135,6 +135,31 @@ def test_create_item_response_location(response_client: TestClient, item: Item) 
     )
 
 
+def test_create_item_collection_with_response_models(
+    core_client: DummyCoreClient, item: Item, item_collection: ItemCollection
+) -> None:
+    class EchoTransactionsClient(DummyTransactionsClient):
+        def create_item(self, item: Item | ItemCollection, *args, **kwargs):
+            return item.model_dump(mode="json")
+
+    settings = ApiSettings(enable_response_models=True)
+    api = StacApi(
+        settings=settings,
+        client=core_client,
+        extensions=[
+            TransactionExtension(client=EchoTransactionsClient(), settings=settings),
+        ],
+    )
+    with TestClient(api.app) as client:
+        response = client.post("/collections/a-collection/items", json=item_collection)
+        assert response.status_code == 201, response.text
+        assert response.json()["type"] == "FeatureCollection"
+
+        response = client.post("/collections/a-collection/items", json=item)
+        assert response.status_code == 201, response.text
+        assert response.json()["type"] == "Feature"
+
+
 def test_update_item(client: TestClient, item: Item) -> None:
     response = client.put("/collections/a-collection/items/an-item", json=item)
     assert response.is_success, response.text
@@ -223,6 +248,13 @@ def test_patch_merge_collection(client: TestClient) -> None:
         {"op": "add", "path": "/summaries/hello", "value": "world"},
         {"op": "remove", "path": "/summaries/foo"},
     ]
+
+
+def test_patch_merge_collection_links(client: TestClient) -> None:
+    links = [{"rel": "self", "href": "https://example.com/collections/a-collection"}]
+    response = client.patch("/collections/a-collection", json={"links": links})
+    assert response.is_success, response.text
+    assert response.json()["patch"] == [{"op": "add", "path": "/links", "value": links}]
 
 
 def test_delete_collection(client: TestClient, collection: Collection) -> None:

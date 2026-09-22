@@ -240,13 +240,15 @@ class TransactionExtension(ApiExtension):
             name="Create Item",
             path="/collections/{collection_id}/items",
             status_code=201,
-            response_model=Item if self.settings.enable_response_models else None,
+            response_model=(Item | ItemCollection)
+            if self.settings.enable_response_models
+            else None,
             responses={
                 201: {
                     "content": {
                         MimeTypes.geojson.value: {},
                     },
-                    "model": Item,
+                    "model": Item | ItemCollection,
                 }
             },
             response_class=self.response_class,
