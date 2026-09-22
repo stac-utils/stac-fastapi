@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Type `PartialCollection.links` as a list so `PATCH /collections/{collection_id}` merge patches carrying a `links` array are no longer rejected with 400.
+- Declare `ItemCollection` as a valid response of `POST /collections/{collection_id}/items` (route response model and `create_item` client return type) so a successful ItemCollection create returns 201 instead of 500 when `enable_response_models` is on.
+
 ## [7.0.0] - 2026-09-09
 
 ### Changed
