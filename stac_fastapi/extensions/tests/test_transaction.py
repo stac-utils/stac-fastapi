@@ -4,6 +4,7 @@ import pytest
 from stac_pydantic import Collection
 from stac_pydantic.item import Item
 from stac_pydantic.item_collection import ItemCollection
+from starlette.responses import Response
 from starlette.testclient import TestClient
 
 from stac_fastapi.api.app import StacApi
@@ -97,10 +98,23 @@ class DummyTransactionsClient(BaseTransactionsClient):
         return {"path_collection_id": collection_id}
 
 
+class ResponseTransactionsClient(DummyTransactionsClient):
+    """Client returning raw `Response` objects."""
+
+    def create_item(self, item: Item | ItemCollection, *args, **kwargs):
+        return Response(status_code=201)
+
+    def create_collection(self, collection: Collection, **kwargs):
+        return Response(status_code=201, headers={"Location": "/custom-location"})
+
+
 def test_create_item(client: TestClient, item: Item) -> None:
     response = client.post("/collections/a-collection/items", json=item)
-    assert response.is_success, response.text
+    assert response.status_code == 201, response.text
     assert response.json()["type"] == "Feature"
+    assert response.headers["location"].endswith(
+        "/collections/a-collection/items/test_item"
+    )
 
 
 def test_create_item_collection(
@@ -109,6 +123,16 @@ def test_create_item_collection(
     response = client.post("/collections/a-collection/items", json=item_collection)
     assert response.is_success, response.text
     assert response.json()["type"] == "FeatureCollection"
+    assert "location" not in response.headers
+
+
+def test_create_item_response_location(response_client: TestClient, item: Item) -> None:
+    """A `Location` header is added when the client returns a `Response`."""
+    response = response_client.post("/collections/a-collection/items", json=item)
+    assert response.status_code == 201, response.text
+    assert response.headers["location"].endswith(
+        "/collections/a-collection/items/test_item"
+    )
 
 
 def test_create_item_collection_with_response_models(
@@ -180,8 +204,18 @@ def test_delete_item(client: TestClient) -> None:
 
 def test_create_collection(client: TestClient, collection: Collection) -> None:
     response = client.post("/collections", json=collection)
-    assert response.is_success, response.text
+    assert response.status_code == 201, response.text
     assert response.json()["type"] == "Collection"
+    assert response.headers["location"].endswith("/collections/test_collection")
+
+
+def test_create_collection_response_location(
+    response_client: TestClient, collection: Collection
+) -> None:
+    """A `Location` header set by the client is preserved."""
+    response = response_client.post("/collections", json=collection)
+    assert response.status_code == 201, response.text
+    assert response.headers["location"] == "/custom-location"
 
 
 def test_update_collection(client: TestClient, collection: Collection) -> None:
@@ -253,6 +287,20 @@ def core_client() -> DummyCoreClient:
 @pytest.fixture
 def transactions_client() -> DummyTransactionsClient:
     return DummyTransactionsClient()
+
+
+@pytest.fixture
+def response_client(core_client: DummyCoreClient) -> Iterator[TestClient]:
+    settings = ApiSettings()
+    api = StacApi(
+        settings=settings,
+        client=core_client,
+        extensions=[
+            TransactionExtension(client=ResponseTransactionsClient(), settings=settings),
+        ],
+    )
+    with TestClient(api.app) as client:
+        yield client
 
 
 @pytest.fixture

@@ -10,7 +10,9 @@ from fastapi.params import Depends
 from pydantic import TypeAdapter
 from stac_pydantic import Collection, Item, ItemCollection
 from stac_pydantic.shared import MimeTypes
+from starlette.requests import Request
 from starlette.responses import Response
+from starlette.routing import NoMatchFound
 
 from stac_fastapi.api.models import CollectionUri, ItemUri, JSONResponse
 from stac_fastapi.api.routes import create_async_endpoint
@@ -156,6 +158,15 @@ _patch_collection_schema_dict["items"]["anyOf"] = list(
 )
 
 
+def _location_url(request: Request, route_name: str, **path_params: str) -> str:
+    """Build the canonical URL of a resource for the `Location` header."""
+    try:
+        return str(request.url_for(route_name, **path_params))
+    except NoMatchFound:
+        *_, resource_id = path_params.values()
+        return f"{request.base_url}{request.url.path.lstrip('/')}/{resource_id}"
+
+
 @attr.s
 class TransactionExtension(ApiExtension):
     """Transaction Extension.
@@ -192,6 +203,39 @@ class TransactionExtension(ApiExtension):
 
     def register_create_item(self):
         """Register create item endpoint (POST /collections/{collection_id}/items)."""
+        endpoint = create_async_endpoint(self.client.create_item, PostItem)
+
+        async def create_item(
+            request: Request,
+            response: Response,
+            request_data=Depends(PostItem),
+        ):
+            """Create item endpoint with Location header.
+
+            The Transaction extension requires a `Location` header with the URI
+            of the newly created Item for single-Item payloads.
+            """
+            item = await endpoint(request, request_data)
+            if request_data.item.type == "Feature":
+                item_id = (
+                    item.get("id")
+                    if isinstance(item, dict)
+                    else getattr(item, "id", None)
+                ) or request_data.item.id
+                target = item if isinstance(item, Response) else response
+                if (
+                    item_id
+                    and (target.status_code or 200) < 400
+                    and "location" not in target.headers
+                ):
+                    target.headers["Location"] = _location_url(
+                        request,
+                        "Get Item",
+                        collection_id=request_data.collection_id,
+                        item_id=item_id,
+                    )
+            return item
+
         self.router.add_api_route(
             name="Create Item",
             path="/collections/{collection_id}/items",
@@ -211,7 +255,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=create_async_endpoint(self.client.create_item, PostItem),
+            endpoint=create_item,
             dependencies=self.route_dependencies,
         )
 
@@ -305,6 +349,31 @@ class TransactionExtension(ApiExtension):
 
     def register_create_collection(self):
         """Register create collection endpoint (POST /collections)."""
+        endpoint = create_async_endpoint(self.client.create_collection, Collection)
+
+        async def create_collection(
+            request: Request,
+            response: Response,
+            request_data: Collection,
+        ):
+            """Create collection endpoint with Location header."""
+            collection = await endpoint(request, request_data)
+            collection_id = (
+                collection.get("id")
+                if isinstance(collection, dict)
+                else getattr(collection, "id", None)
+            ) or request_data.id
+            target = collection if isinstance(collection, Response) else response
+            if (
+                collection_id
+                and (target.status_code or 200) < 400
+                and "location" not in target.headers
+            ):
+                target.headers["Location"] = _location_url(
+                    request, "Get Collection", collection_id=collection_id
+                )
+            return collection
+
         self.router.add_api_route(
             name="Create Collection",
             path="/collections",
@@ -322,7 +391,7 @@ class TransactionExtension(ApiExtension):
             response_model_exclude_unset=True,
             response_model_exclude_none=True,
             methods=["POST"],
-            endpoint=create_async_endpoint(self.client.create_collection, Collection),
+            endpoint=create_collection,
             dependencies=self.route_dependencies,
         )
 
