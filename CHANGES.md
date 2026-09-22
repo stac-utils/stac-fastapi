@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Return a `Location` header with the URI of the newly created resource for `POST /collections/{collection_id}/items` (single `Item`) and `POST /collections` in the Transaction extension, as required by the spec. `ItemCollection` payloads still return 201 without a `Location` header. ([#982](https://github.com/stac-utils/stac-fastapi/pull/982))
+- Return a `Location` header with the URI of the newly created resource for `POST /collections/{collection_id}/items` (single `Item`) and `POST /collections` in the Transaction extension, as required by the spec. `ItemCollection` payloads still return 201 without a `Location` header. The header is also added when a client returns a `Response` object directly, unless it already sets `Location` or returns an error status. ([#982](https://github.com/stac-utils/stac-fastapi/pull/982))
 
 ## [7.0.0] - 2026-09-09
 

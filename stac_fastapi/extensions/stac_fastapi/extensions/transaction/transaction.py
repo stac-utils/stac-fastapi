@@ -216,14 +216,19 @@ class TransactionExtension(ApiExtension):
             of the newly created Item for single-Item payloads.
             """
             item = await endpoint(request, request_data)
-            if request_data.item.type == "Feature" and not isinstance(item, Response):
+            if request_data.item.type == "Feature":
                 item_id = (
                     item.get("id")
                     if isinstance(item, dict)
                     else getattr(item, "id", None)
                 ) or request_data.item.id
-                if item_id:
-                    response.headers["Location"] = _location_url(
+                target = item if isinstance(item, Response) else response
+                if (
+                    item_id
+                    and (target.status_code or 200) < 400
+                    and "location" not in target.headers
+                ):
+                    target.headers["Location"] = _location_url(
                         request,
                         "Get Item",
                         collection_id=request_data.collection_id,
@@ -351,16 +356,20 @@ class TransactionExtension(ApiExtension):
         ):
             """Create collection endpoint with Location header."""
             collection = await endpoint(request, request_data)
-            if not isinstance(collection, Response):
-                collection_id = (
-                    collection.get("id")
-                    if isinstance(collection, dict)
-                    else getattr(collection, "id", None)
-                ) or request_data.id
-                if collection_id:
-                    response.headers["Location"] = _location_url(
-                        request, "Get Collection", collection_id=collection_id
-                    )
+            collection_id = (
+                collection.get("id")
+                if isinstance(collection, dict)
+                else getattr(collection, "id", None)
+            ) or request_data.id
+            target = collection if isinstance(collection, Response) else response
+            if (
+                collection_id
+                and (target.status_code or 200) < 400
+                and "location" not in target.headers
+            ):
+                target.headers["Location"] = _location_url(
+                    request, "Get Collection", collection_id=collection_id
+                )
             return collection
 
         self.router.add_api_route(
