@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790095664215,
+  "lastUpdate": 1790132321807,
   "repoUrl": "https://github.com/stac-utils/stac-fastapi",
   "entries": {
     "STAC FastAPI Benchmarks": [
@@ -32100,6 +32100,156 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.00004070930708331988",
             "extra": "mean: 1.6065364456526972 msec\nrounds: 92"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2721c75d5d07ba92e2e826ba8bfa8b8998970ec6",
+          "message": "ci(deps): bump the all group with 2 updates (#984)\n\nBumps the all group with 2 updates: [astral-sh/setup-uv](https://github.com/astral-sh/setup-uv) and [benchmark-action/github-action-benchmark](https://github.com/benchmark-action/github-action-benchmark).\n\n\nUpdates `astral-sh/setup-uv` from 10.0.1 to 10.1.0\n- [Release notes](https://github.com/astral-sh/setup-uv/releases)\n- [Commits](https://github.com/astral-sh/setup-uv/compare/20cfd1bf945f4377ade1205e4dbc17946fc9a30d...bec219d24cd3e171d82865faccec33120bb574f4)\n\nUpdates `benchmark-action/github-action-benchmark` from 1.22.1 to 1.22.2\n- [Release notes](https://github.com/benchmark-action/github-action-benchmark/releases)\n- [Changelog](https://github.com/benchmark-action/github-action-benchmark/blob/master/CHANGELOG.md)\n- [Commits](https://github.com/benchmark-action/github-action-benchmark/compare/52576c92bccf6ac60c8223ec7eb2565637cae9ba...4322e5726e6334590d251fc4f92bec0efafc45dc)\n\n---\nupdated-dependencies:\n- dependency-name: astral-sh/setup-uv\n  dependency-version: 10.1.0\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n  dependency-group: all\n- dependency-name: benchmark-action/github-action-benchmark\n  dependency-version: 1.22.2\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n  dependency-group: all\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-09-23T10:57:51+08:00",
+          "tree_id": "91a3f789cafc18860c28fee1954f5cf006c33865",
+          "url": "https://github.com/stac-utils/stac-fastapi/commit/2721c75d5d07ba92e2e826ba8bfa8b8998970ec6"
+        },
+        "date": 1790132319810,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "Items With Model validation (1)",
+            "value": 770.0569247544012,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00007180372487356145",
+            "extra": "mean: 1.2986052950811862 msec\nrounds: 61"
+          },
+          {
+            "name": "Items With Model validation (10)",
+            "value": 543.0458331825095,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00008475640949629837",
+            "extra": "mean: 1.8414651929829193 msec\nrounds: 57"
+          },
+          {
+            "name": "Items With Model validation (50)",
+            "value": 228.7173389984651,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0035444544284226067",
+            "extra": "mean: 4.37220896491241 msec\nrounds: 57"
+          },
+          {
+            "name": "Items With Model validation (100)",
+            "value": 129.89114475318036,
+            "unit": "iter/sec",
+            "range": "stddev: 0.005325115964501698",
+            "extra": "mean: 7.698754229167844 msec\nrounds: 48"
+          },
+          {
+            "name": "Items With Model validation (200)",
+            "value": 78.11679197302466,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0058159472407107275",
+            "extra": "mean: 12.801344944443194 msec\nrounds: 18"
+          },
+          {
+            "name": "Items With Model validation (250)",
+            "value": 60.90927652088017,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0078052649848164265",
+            "extra": "mean: 16.417860416667278 msec\nrounds: 36"
+          },
+          {
+            "name": "Items With Model validation (1000)",
+            "value": 15.632184617183551,
+            "unit": "iter/sec",
+            "range": "stddev: 0.014093222012576831",
+            "extra": "mean: 63.970585333335826 msec\nrounds: 15"
+          },
+          {
+            "name": "Items Limit: (1)",
+            "value": 730.4213094744288,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000027221793967509257",
+            "extra": "mean: 1.3690728720928822 msec\nrounds: 86"
+          },
+          {
+            "name": "Items Limit: (10)",
+            "value": 588.3469266546139,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00008139421758015368",
+            "extra": "mean: 1.699677443181487 msec\nrounds: 88"
+          },
+          {
+            "name": "Items Limit: (50)",
+            "value": 257.640174229444,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00006591122997043118",
+            "extra": "mean: 3.8813822533338302 msec\nrounds: 75"
+          },
+          {
+            "name": "Items Limit: (100)",
+            "value": 160.48155307343305,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00018751247107017476",
+            "extra": "mean: 6.231245777777466 msec\nrounds: 63"
+          },
+          {
+            "name": "Items Limit: (200)",
+            "value": 83.54978638711961,
+            "unit": "iter/sec",
+            "range": "stddev: 0.004748794802461702",
+            "extra": "mean: 11.968911510636302 msec\nrounds: 47"
+          },
+          {
+            "name": "Items Limit: (250)",
+            "value": 69.19244860842605,
+            "unit": "iter/sec",
+            "range": "stddev: 0.004149648328110769",
+            "extra": "mean: 14.452444162790085 msec\nrounds: 43"
+          },
+          {
+            "name": "Items Limit: (1000)",
+            "value": 18.7095456082987,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00783939287174875",
+            "extra": "mean: 53.448652411763845 msec\nrounds: 17"
+          },
+          {
+            "name": "Collection With Model validation",
+            "value": 862.75863347,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0000837960360209029",
+            "extra": "mean: 1.1590727246368056 msec\nrounds: 69"
+          },
+          {
+            "name": "Collection",
+            "value": 874.7331900378963,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00008067897689765914",
+            "extra": "mean: 1.143205735633144 msec\nrounds: 87"
+          },
+          {
+            "name": "Collections With Model validation",
+            "value": 668.9420968588323,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00007920256820826865",
+            "extra": "mean: 1.494897696969176 msec\nrounds: 66"
+          },
+          {
+            "name": "Collections",
+            "value": 576.1432101067415,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00014870754281332333",
+            "extra": "mean: 1.7356795714293516 msec\nrounds: 84"
           }
         ]
       }
