@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Deprecated
+
+- Deprecated `BulkTransactionExtension` (`POST /collections/{collection_id}/bulk_items`). Use `TransactionExtension` instead, which supports `ItemCollection` payloads on `POST /collections/{collection_id}/items`.
+
 ### Fixed
 
 - Return a `Location` header with the URI of the newly created resource for `POST /collections/{collection_id}/items` (single `Item`) and `POST /collections` in the Transaction extension, as required by the spec. `ItemCollection` payloads still return 201 without a `Location` header.
