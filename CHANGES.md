@@ -4,7 +4,7 @@
 
 ### Deprecated
 
-- Deprecated `BulkTransactionExtension` (`POST /collections/{collection_id}/bulk_items`). Use `TransactionExtension` instead, which supports `ItemCollection` payloads on `POST /collections/{collection_id}/items`.
+- Deprecated `BulkTransactionExtension` (`POST /collections/{collection_id}/bulk_items`). Use `TransactionExtension` instead, which supports `ItemCollection` payloads on `POST /collections/{collection_id}/items`. ([#987](https://github.com/stac-utils/stac-fastapi/pull/987))
 
 ### Fixed
 
