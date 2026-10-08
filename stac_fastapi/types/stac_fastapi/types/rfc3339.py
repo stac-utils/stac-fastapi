@@ -69,9 +69,10 @@ def rfc3339_str_to_datetime(s: str) -> datetime:
     # Parse with pyiso8601
     try:
         return iso8601.parse_date(s)
-    except iso8601.ParseError:
-        # pyiso8601 forwards the Python-version-dependent datetime error message
-        raise ValueError("Invalid RFC3339 datetime.") from None
+    except iso8601.ParseError as e:
+        # pyiso8601 forwards the Python-version-dependent datetime error message,
+        # so the public message is fixed and the original error stays in the chain
+        raise ValueError("Invalid RFC3339 datetime.") from e
 
 
 def parse_single_date(date_str: str) -> datetime:
