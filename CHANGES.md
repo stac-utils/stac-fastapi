@@ -7,6 +7,7 @@
 - Return a `Location` header with the URI of the newly created resource for `POST /collections/{collection_id}/items` (single `Item`) and `POST /collections` in the Transaction extension, as required by the spec. `ItemCollection` payloads still return 201 without a `Location` header. The header is also added when a client returns a `Response` object directly, unless it already sets `Location` or returns an error status. ([#982](https://github.com/stac-utils/stac-fastapi/pull/982))
 - Type `PartialCollection.links` as a list so `PATCH /collections/{collection_id}` merge patches carrying a `links` array are no longer rejected with 400.
 - Declare `ItemCollection` as a valid response of `POST /collections/{collection_id}/items` (route response model and `create_item` client return type) so a successful ItemCollection create returns 201 instead of 500 when `enable_response_models` is on.
+- Return a stable `Invalid RFC3339 datetime.` error detail from `str_to_interval` for out-of-range datetime values instead of the Python-version-dependent message. ([#991](https://github.com/stac-utils/stac-fastapi/pull/991))
 
 ## [7.0.0] - 2026-09-09
 

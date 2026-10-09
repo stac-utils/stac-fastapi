@@ -103,6 +103,20 @@ def test_str_to_interval_with_invalid_datetime(test_input):
     )
 
 
+@pytest.mark.parametrize(
+    "test_input",
+    [
+        "2020-13-01T00:00:00Z",  # month out of range
+        "2020-01-01T25:00:00Z",  # hour out of range
+        "2020-01-01T00:00:00Z/2020-01-32T00:00:00Z",  # day out of range in interval
+    ],
+)
+def test_str_to_interval_out_of_range_detail_is_stable(test_input):
+    with pytest.raises(HTTPException) as exc_info:
+        str_to_interval(test_input)
+    assert exc_info.value.detail == "Invalid RFC3339 datetime."
+
+
 @pytest.mark.parametrize("test_input", valid_intervals)
 def test_str_to_interval_with_valid_interval(test_input):
     assert isinstance(str_to_interval(test_input), tuple), (
