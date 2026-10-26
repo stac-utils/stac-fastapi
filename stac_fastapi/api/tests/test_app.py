@@ -4,7 +4,7 @@ from typing import Annotated
 import attr
 import fastapi.routing
 import pytest
-from fastapi import Depends, HTTPException, Path, Query
+from fastapi import Depends, FastAPI, HTTPException, Path, Query
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 from stac_pydantic import api
@@ -17,6 +17,7 @@ from stac_fastapi.api.models import (
     create_get_request_model,
     create_post_request_model,
 )
+from stac_fastapi.api.routes import add_direct_response
 from stac_fastapi.extensions import (
     FieldsExtension,
     FilterExtension,
@@ -135,14 +136,8 @@ def test_client_response_by_pass(TestCoreClient, item_dict):
     assert item.headers["content-type"] == "application/geo+json"
 
 
-def test_client_response_by_pass_skips_serialization(
-    TestCoreClient, item_dict, monkeypatch
-):
+def test_client_response_by_pass_skips_serialization(TestCoreClient, monkeypatch):
     """Check `enable_direct_response` bypasses FastAPI response serialization."""
-
-    class ItemClient(TestCoreClient):
-        def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
-            return item_dict
 
     def fail_serialize_response(*args, **kwargs):
         raise AssertionError("FastAPI serialization should have been bypassed")
@@ -154,7 +149,7 @@ def test_client_response_by_pass_skips_serialization(
             enable_response_models=False,
             enable_direct_response=True,
         ),
-        client=ItemClient(),
+        client=TestCoreClient(),
     )
 
     with TestClient(test_app.app) as client:
@@ -164,26 +159,26 @@ def test_client_response_by_pass_skips_serialization(
     assert item.headers["content-type"] == "application/geo+json"
 
 
-def test_client_response_by_pass_keeps_route_dependencies(TestCoreClient):
-    """Check `enable_direct_response` keeps the routes dependencies."""
+def test_add_direct_response_keeps_route_dependencies():
+    """Check `add_direct_response` keeps the dependencies of the wrapped routes."""
 
     def deny():
         raise HTTPException(status_code=401)
 
-    test_app = app.StacApi(
-        settings=ApiSettings(
-            enable_response_models=False,
-            enable_direct_response=True,
-        ),
-        client=TestCoreClient(),
-        route_dependencies=[
-            ([{"path": "/collections/{collection_id}", "method": "GET"}], [Depends(deny)])
-        ],
-    )
+    async def endpoint():
+        return {"hello": "world"}
 
-    with TestClient(test_app.app) as client:
-        assert client.get("/collections/test").status_code == 401
-        assert client.get("/collections").status_code == 200
+    test_app = FastAPI()
+    test_app.add_api_route("/denied", endpoint, dependencies=[Depends(deny)])
+    test_app.add_api_route("/allowed", endpoint)
+    add_direct_response(test_app)
+
+    with TestClient(test_app) as client:
+        assert client.get("/denied").status_code == 401
+        allowed = client.get("/allowed")
+
+    assert allowed.status_code == 200, allowed.text
+    assert allowed.json() == {"hello": "world"}
 
 
 def test_client_openapi(TestCoreClient):
