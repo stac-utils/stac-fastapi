@@ -167,15 +167,33 @@ def add_direct_response(app: FastAPI) -> None:
 
         return wrapper
 
-    for route in app.routes:
-        if not isinstance(route, APIRoute):
-            continue
+    def wrap_routes(routes: list[BaseRoute]) -> None:
+        for route in routes:
+            # Since FastAPI 0.137, `include_router` keeps the included router
+            # instead of copying its routes into `app.routes`.
+            if hasattr(route, "original_router"):
+                wrap_routes(route.original_router.routes)
+                continue
 
-        response_class = route.response_class
-        if isinstance(response_class, DefaultPlaceholder):
-            response_class = response_class.value
+            if not isinstance(route, APIRoute):
+                continue
 
-        if issubclass(response_class, Response):
-            route.endpoint = wrap_endpoint(route.endpoint, response_class)
-            route.dependant = get_dependant(path=route.path_format, call=route.endpoint)
-            route.app = request_response(route.get_route_handler())
+            response_class = route.response_class
+            if isinstance(response_class, DefaultPlaceholder):
+                response_class = response_class.value
+
+            if issubclass(response_class, Response):
+                route.endpoint = wrap_endpoint(route.endpoint, response_class)
+                route.dependant = get_dependant(
+                    path=route.path_format, call=route.endpoint
+                )
+                for depends in route.dependencies[::-1]:
+                    route.dependant.dependencies.insert(
+                        0,
+                        get_parameterless_sub_dependant(
+                            depends=depends, path=route.path_format
+                        ),
+                    )
+                route.app = request_response(route.get_route_handler())
+
+    wrap_routes(app.routes)

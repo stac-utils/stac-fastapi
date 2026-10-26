@@ -2,8 +2,9 @@ import asyncio
 from typing import Annotated
 
 import attr
+import fastapi.routing
 import pytest
-from fastapi import Path, Query
+from fastapi import Depends, HTTPException, Path, Query
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 from stac_pydantic import api
@@ -132,6 +133,57 @@ def test_client_response_by_pass(TestCoreClient, item_dict):
     assert item.json()
     assert item.status_code == 200
     assert item.headers["content-type"] == "application/geo+json"
+
+
+def test_client_response_by_pass_skips_serialization(
+    TestCoreClient, item_dict, monkeypatch
+):
+    """Check `enable_direct_response` bypasses FastAPI response serialization."""
+
+    class ItemClient(TestCoreClient):
+        def get_item(self, item_id: str, collection_id: str, **kwargs) -> stac.Item:
+            return item_dict
+
+    def fail_serialize_response(*args, **kwargs):
+        raise AssertionError("FastAPI serialization should have been bypassed")
+
+    monkeypatch.setattr(fastapi.routing, "serialize_response", fail_serialize_response)
+
+    test_app = app.StacApi(
+        settings=ApiSettings(
+            enable_response_models=False,
+            enable_direct_response=True,
+        ),
+        client=ItemClient(),
+    )
+
+    with TestClient(test_app.app) as client:
+        item = client.get("/collections/test/items/test")
+
+    assert item.status_code == 200, item.text
+    assert item.headers["content-type"] == "application/geo+json"
+
+
+def test_client_response_by_pass_keeps_route_dependencies(TestCoreClient):
+    """Check `enable_direct_response` keeps the routes dependencies."""
+
+    def deny():
+        raise HTTPException(status_code=401)
+
+    test_app = app.StacApi(
+        settings=ApiSettings(
+            enable_response_models=False,
+            enable_direct_response=True,
+        ),
+        client=TestCoreClient(),
+        route_dependencies=[
+            ([{"path": "/collections/{collection_id}", "method": "GET"}], [Depends(deny)])
+        ],
+    )
+
+    with TestClient(test_app.app) as client:
+        assert client.get("/collections/test").status_code == 401
+        assert client.get("/collections").status_code == 200
 
 
 def test_client_openapi(TestCoreClient):
