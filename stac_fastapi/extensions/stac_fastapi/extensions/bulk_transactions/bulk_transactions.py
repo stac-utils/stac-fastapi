@@ -1,6 +1,7 @@
 """Bulk transactions extension."""
 
 import abc
+import warnings
 from collections.abc import Sequence
 from enum import StrEnum
 from typing import Any, TypedDict
@@ -123,6 +124,10 @@ class AsyncBaseBulkTransactionsClient(abc.ABC):
 class BulkTransactionExtension(ApiExtension):
     """Bulk Transaction Extension.
 
+    Deprecated: this extension is deprecated and will be removed in a future
+    release. Use `TransactionExtension` instead, which supports `ItemCollection`
+    payloads on `POST /collections/{collection_id}/items`.
+
     Bulk Transaction extension adds the `POST
     /collections/{collection_id}/bulk_items` endpoint to the application for
     efficient bulk insertion of items. The input to this is an object with an
@@ -151,6 +156,17 @@ class BulkTransactionExtension(ApiExtension):
     route_dependencies: Sequence[Depends] | None = attr.ib(default=None)
     enable_response_models: bool = attr.ib(default=True)
 
+    def __attrs_post_init__(self):
+        """Warn about the extension's deprecation."""
+        warnings.warn(
+            "BulkTransactionExtension is deprecated and will be removed in a "
+            "future release. Use TransactionExtension instead, which supports "
+            "ItemCollection payloads on "
+            "POST /collections/{collection_id}/items.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
     def register(self, app: FastAPI) -> None:
         """Register the extension with a FastAPI application.
 
@@ -166,6 +182,7 @@ class BulkTransactionExtension(ApiExtension):
         router.add_api_route(
             name="Bulk Create Item",
             path="/collections/{collection_id}/bulk_items",
+            deprecated=True,
             response_model=BulkTransactionModel,
             responses={
                 200: {

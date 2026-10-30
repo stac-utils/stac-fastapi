@@ -50,10 +50,17 @@ def test_base_client_chunks():
     assert chunks_large == [[1, 2, 3, 4, 5, 6, 7]]
 
 
+def test_bulk_transaction_extension_deprecated():
+    """BulkTransactionExtension emits a DeprecationWarning."""
+    with pytest.warns(DeprecationWarning, match="deprecated"):
+        BulkTransactionExtension(client=Mock(spec=AsyncBaseBulkTransactionsClient))
+
+
 def test_bulk_transaction_extension_defaults():
     """Test the default instantiation of the BulkTransactionExtension."""
     mock_client = Mock(spec=AsyncBaseBulkTransactionsClient)
-    ext = BulkTransactionExtension(client=mock_client)
+    with pytest.warns(DeprecationWarning, match="deprecated"):
+        ext = BulkTransactionExtension(client=mock_client)
 
     assert ext.client == mock_client
     assert ext.schema_href is None
@@ -67,12 +74,13 @@ def test_bulk_transaction_extension_customization():
     custom_schema = "https://example.com/bulk-schema.json"
     custom_dependencies = [Depends(must_be_bob)]
 
-    ext = BulkTransactionExtension(
-        client=mock_client,
-        conformance_classes=custom_conformance,
-        schema_href=custom_schema,
-        route_dependencies=custom_dependencies,
-    )
+    with pytest.warns(DeprecationWarning, match="deprecated"):
+        ext = BulkTransactionExtension(
+            client=mock_client,
+            conformance_classes=custom_conformance,
+            schema_href=custom_schema,
+            route_dependencies=custom_dependencies,
+        )
 
     assert ext.conformance_classes == custom_conformance
     assert ext.schema_href == custom_schema
@@ -154,13 +162,14 @@ def client(
 ) -> Iterator[TestClient]:
     """Fixture to set up the TestClient with the BulkTransactionExtension."""
     settings = ApiSettings()
-    api = StacApi(
-        settings=settings,
-        client=core_client,
-        extensions=[
-            BulkTransactionExtension(client=bulk_transactions_client),
-        ],
-    )
+    with pytest.warns(DeprecationWarning, match="deprecated"):
+        api = StacApi(
+            settings=settings,
+            client=core_client,
+            extensions=[
+                BulkTransactionExtension(client=bulk_transactions_client),
+            ],
+        )
     with TestClient(api.app) as client:
         yield client
 
@@ -169,13 +178,14 @@ def client(
 def client_with_error(core_client: DummyCoreClient) -> Iterator[TestClient]:
     """Fixture to set up the TestClient with the BulkTransactionExtension."""
     settings = ApiSettings()
-    api = StacApi(
-        settings=settings,
-        client=core_client,
-        extensions=[
-            BulkTransactionExtension(client=DummyBulkTransactionsClientWithError()),
-        ],
-    )
+    with pytest.warns(DeprecationWarning, match="deprecated"):
+        api = StacApi(
+            settings=settings,
+            client=core_client,
+            extensions=[
+                BulkTransactionExtension(client=DummyBulkTransactionsClientWithError()),
+            ],
+        )
     with TestClient(api.app) as client:
         yield client
 
@@ -242,16 +252,17 @@ def test_bulk_item_invalid_method(client: TestClient, item: dict) -> None:
 def test_bulk_item_insert_with_route_dependencies(item: dict) -> None:
     """Test route dependencies are applied to the bulk transactions route."""
     settings = ApiSettings()
-    api = StacApi(
-        settings=settings,
-        client=DummyCoreClient(),
-        extensions=[
-            BulkTransactionExtension(
-                client=DummyBulkTransactionsClient(),
-                route_dependencies=[Depends(must_be_bob)],
-            ),
-        ],
-    )
+    with pytest.warns(DeprecationWarning, match="deprecated"):
+        api = StacApi(
+            settings=settings,
+            client=DummyCoreClient(),
+            extensions=[
+                BulkTransactionExtension(
+                    client=DummyBulkTransactionsClient(),
+                    route_dependencies=[Depends(must_be_bob)],
+                ),
+            ],
+        )
     payload = {
         "items": {item["id"]: item},
         "method": "insert",
