@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793466450946,
+  "lastUpdate": 1793466597565,
   "repoUrl": "https://github.com/stac-utils/stac-fastapi",
   "entries": {
     "STAC FastAPI Benchmarks": [
@@ -34650,6 +34650,156 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.00005816660851194721",
             "extra": "mean: 739.0043197675294 usec\nrounds: 172"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "676d386ff7c7690be2c530c93de65dc2f203345c",
+          "message": "chore(deps): bump the all group across 1 directory with 7 updates (#1012)\n\nBumps the all group with 7 updates in the / directory:\n\n| Package | From | To |\n| --- | --- | --- |\n| [pre-commit](https://github.com/pre-commit/pre-commit) | `4.6.2` | `4.7.0` |\n| [httpx2](https://github.com/pydantic/httpx2) | `2.13.1` | `2.16.0` |\n| [griffe-inherited-docstrings](https://github.com/mkdocstrings/griffe-inherited-docstrings) | `1.1.3` | `1.1.4` |\n| [fastapi](https://github.com/fastapi/fastapi) | `0.142.2` | `0.161.1` |\n| [starlette](https://github.com/Kludex/starlette) | `1.7.0` | `1.9.0` |\n| [pydantic-settings](https://github.com/pydantic/pydantic-settings) | `2.15.0` | `2.16.1` |\n| [stac-pydantic](https://github.com/stac-utils/stac-pydantic) | `3.6.0` | `3.7.1` |\n\n\n\nUpdates `pre-commit` from 4.6.2 to 4.7.0\n- [Release notes](https://github.com/pre-commit/pre-commit/releases)\n- [Changelog](https://github.com/pre-commit/pre-commit/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/pre-commit/pre-commit/compare/v4.6.2...v4.7.0)\n\nUpdates `httpx2` from 2.13.1 to 2.16.0\n- [Release notes](https://github.com/pydantic/httpx2/releases)\n- [Changelog](https://github.com/pydantic/httpx2/blob/main/src/httpx2/CHANGELOG.md)\n- [Commits](https://github.com/pydantic/httpx2/compare/v2.13.1...v2.16.0)\n\nUpdates `griffe-inherited-docstrings` from 1.1.3 to 1.1.4\n- [Release notes](https://github.com/mkdocstrings/griffe-inherited-docstrings/releases)\n- [Changelog](https://github.com/mkdocstrings/griffe-inherited-docstrings/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/mkdocstrings/griffe-inherited-docstrings/compare/1.1.3...1.1.4)\n\nUpdates `fastapi` from 0.142.2 to 0.161.1\n- [Release notes](https://github.com/fastapi/fastapi/releases)\n- [Commits](https://github.com/fastapi/fastapi/compare/0.142.2...0.161.1)\n\nUpdates `starlette` from 1.7.0 to 1.9.0\n- [Release notes](https://github.com/Kludex/starlette/releases)\n- [Changelog](https://github.com/Kludex/starlette/blob/main/docs/release-notes.md)\n- [Commits](https://github.com/Kludex/starlette/compare/1.7.0...1.9.0)\n\nUpdates `pydantic-settings` from 2.15.0 to 2.16.1\n- [Release notes](https://github.com/pydantic/pydantic-settings/releases)\n- [Commits](https://github.com/pydantic/pydantic-settings/compare/v2.15.0...v2.16.1)\n\nUpdates `stac-pydantic` from 3.6.0 to 3.7.1\n- [Release notes](https://github.com/stac-utils/stac-pydantic/releases)\n- [Changelog](https://github.com/stac-utils/stac-pydantic/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/stac-utils/stac-pydantic/compare/3.6.0...3.7.1)\n\n---\nupdated-dependencies:\n- dependency-name: pre-commit\n  dependency-version: 4.7.0\n  dependency-type: direct:development\n  update-type: version-update:semver-minor\n  dependency-group: all\n- dependency-name: httpx2\n  dependency-version: 2.16.0\n  dependency-type: direct:development\n  update-type: version-update:semver-minor\n  dependency-group: all\n- dependency-name: griffe-inherited-docstrings\n  dependency-version: 1.1.4\n  dependency-type: direct:development\n  update-type: version-update:semver-patch\n  dependency-group: all\n- dependency-name: fastapi\n  dependency-version: 0.161.1\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n  dependency-group: all\n- dependency-name: starlette\n  dependency-version: 1.9.0\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n  dependency-group: all\n- dependency-name: pydantic-settings\n  dependency-version: 2.16.1\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n  dependency-group: all\n- dependency-name: stac-pydantic\n  dependency-version: 3.7.1\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n  dependency-group: all\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>\nCo-authored-by: Jonathan Healy <jonathan.d.healy@gmail.com>\nCo-authored-by: Vincent Sarago <vincent.sarago@gmail.com>",
+          "timestamp": "2026-10-31T18:08:57+01:00",
+          "tree_id": "f54682f537869021b57f51406a56cfe6dc276fbb",
+          "url": "https://github.com/stac-utils/stac-fastapi/commit/676d386ff7c7690be2c530c93de65dc2f203345c"
+        },
+        "date": 1793466596115,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "Items With Model validation (1)",
+            "value": 592.2552762396131,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00022634863719048578",
+            "extra": "mean: 1.6884611081040377 msec\nrounds: 74"
+          },
+          {
+            "name": "Items With Model validation (10)",
+            "value": 428.3253974969651,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0037562921261004357",
+            "extra": "mean: 2.3346736052631236 msec\nrounds: 76"
+          },
+          {
+            "name": "Items With Model validation (50)",
+            "value": 249.57843594627874,
+            "unit": "iter/sec",
+            "range": "stddev: 0.003526579514888669",
+            "extra": "mean: 4.006756417911234 msec\nrounds: 67"
+          },
+          {
+            "name": "Items With Model validation (100)",
+            "value": 147.39940211899057,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0053468469046687745",
+            "extra": "mean: 6.7842880339008005 msec\nrounds: 59"
+          },
+          {
+            "name": "Items With Model validation (200)",
+            "value": 78.76619281465085,
+            "unit": "iter/sec",
+            "range": "stddev: 0.009489464089608941",
+            "extra": "mean: 12.695802148939153 msec\nrounds: 47"
+          },
+          {
+            "name": "Items With Model validation (250)",
+            "value": 62.477555559372966,
+            "unit": "iter/sec",
+            "range": "stddev: 0.011280862216732985",
+            "extra": "mean: 16.005747840913706 msec\nrounds: 44"
+          },
+          {
+            "name": "Items With Model validation (1000)",
+            "value": 16.86716368969587,
+            "unit": "iter/sec",
+            "range": "stddev: 0.01854363444417601",
+            "extra": "mean: 59.286790499987774 msec\nrounds: 10"
+          },
+          {
+            "name": "Items Limit: (1)",
+            "value": 603.0085694696752,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0002258660992681368",
+            "extra": "mean: 1.6583512252229928 msec\nrounds: 111"
+          },
+          {
+            "name": "Items Limit: (10)",
+            "value": 464.0804473997432,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00020356971506625546",
+            "extra": "mean: 2.1547988190474956 msec\nrounds: 105"
+          },
+          {
+            "name": "Items Limit: (50)",
+            "value": 274.3469457460341,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00013801328768186315",
+            "extra": "mean: 3.6450196202501584 msec\nrounds: 79"
+          },
+          {
+            "name": "Items Limit: (100)",
+            "value": 170.74263222957237,
+            "unit": "iter/sec",
+            "range": "stddev: 0.004401849410814737",
+            "extra": "mean: 5.856768089737822 msec\nrounds: 78"
+          },
+          {
+            "name": "Items Limit: (200)",
+            "value": 107.90521793021158,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0008543201274908112",
+            "extra": "mean: 9.267392431816935 msec\nrounds: 44"
+          },
+          {
+            "name": "Items Limit: (250)",
+            "value": 84.07262080458793,
+            "unit": "iter/sec",
+            "range": "stddev: 0.004472330517944394",
+            "extra": "mean: 11.894478730766878 msec\nrounds: 52"
+          },
+          {
+            "name": "Items Limit: (1000)",
+            "value": 22.574906328809842,
+            "unit": "iter/sec",
+            "range": "stddev: 0.010841450564273348",
+            "extra": "mean: 44.29697228571935 msec\nrounds: 21"
+          },
+          {
+            "name": "Collection With Model validation",
+            "value": 677.2755507322993,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00031782973897205124",
+            "extra": "mean: 1.4765039117664254 msec\nrounds: 68"
+          },
+          {
+            "name": "Collection",
+            "value": 790.2998972118146,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0001741630037025808",
+            "extra": "mean: 1.2653424396586779 msec\nrounds: 116"
+          },
+          {
+            "name": "Collections With Model validation",
+            "value": 568.3990788498713,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00029707678528768645",
+            "extra": "mean: 1.7593272705920862 msec\nrounds: 85"
+          },
+          {
+            "name": "Collections",
+            "value": 434.5154557767264,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00471832011036444",
+            "extra": "mean: 2.301414107842104 msec\nrounds: 102"
           }
         ]
       }
