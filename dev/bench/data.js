@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793376165103,
+  "lastUpdate": 1793466450946,
   "repoUrl": "https://github.com/stac-utils/stac-fastapi",
   "entries": {
     "STAC FastAPI Benchmarks": [
@@ -34500,6 +34500,156 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.00007012971522670068",
             "extra": "mean: 1.192945333333173 msec\nrounds: 123"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "raphaelauv@gmail.com",
+            "name": "raphaelauv",
+            "username": "raphaelauv"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "705b875a7fb25f74647ba0e6bd78a24cf73c8993",
+          "message": "fix: enable_direct_response (#1008)\n\n* fix: wrap included routers endpoints with enable_direct_response\n\nSince FastAPI 0.137, `include_router` keeps the included router as a\nsingle `_IncludedRouter` entry in `app.routes` instead of copying its\n`APIRoute`s, so `add_direct_response` found no route to wrap and all\nresponses still went through FastAPI serialization.\n\nRecurse into `original_router.routes`, like `add_route_dependencies`\nalready does, and keep route-level dependencies when rebuilding the\ndependant of a wrapped endpoint.\n\nFixes #1007\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* test: tighten direct response tests\n\nDrop the unneeded client override from the serialization test, and test\ndependencies on a bare FastAPI app calling `add_direct_response`, since\nStacApi routes all live in included routers where FastAPI rebuilds the\ndependant itself and the previous test passed without the fix.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* docs: link changelog entry to PR #1008\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: raphaelauv <raphaelauv@users.noreply.github.com>\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>\nCo-authored-by: Jonathan Healy <jonathan.d.healy@gmail.com>",
+          "timestamp": "2026-10-31T18:06:28+01:00",
+          "tree_id": "8abc9af38ba70be26ba979c8577b16c5166eb70f",
+          "url": "https://github.com/stac-utils/stac-fastapi/commit/705b875a7fb25f74647ba0e6bd78a24cf73c8993"
+        },
+        "date": 1793466449844,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "Items With Model validation (1)",
+            "value": 1593.8531160000919,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00006032477257963045",
+            "extra": "mean: 627.4103867924692 usec\nrounds: 106"
+          },
+          {
+            "name": "Items With Model validation (10)",
+            "value": 1086.1124663927658,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00009843134709163062",
+            "extra": "mean: 920.7149636365324 usec\nrounds: 110"
+          },
+          {
+            "name": "Items With Model validation (50)",
+            "value": 436.1785195066071,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0022410089559713204",
+            "extra": "mean: 2.29263926415077 msec\nrounds: 106"
+          },
+          {
+            "name": "Items With Model validation (100)",
+            "value": 213.89739665784464,
+            "unit": "iter/sec",
+            "range": "stddev: 0.004942302860719201",
+            "extra": "mean: 4.675138714285634 msec\nrounds: 63"
+          },
+          {
+            "name": "Items With Model validation (200)",
+            "value": 117.14204225260436,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00840147912918701",
+            "extra": "mean: 8.53664475000023 msec\nrounds: 24"
+          },
+          {
+            "name": "Items With Model validation (250)",
+            "value": 96.19564655378709,
+            "unit": "iter/sec",
+            "range": "stddev: 0.008440508266417646",
+            "extra": "mean: 10.39548083333332 msec\nrounds: 60"
+          },
+          {
+            "name": "Items With Model validation (1000)",
+            "value": 24.730624784640757,
+            "unit": "iter/sec",
+            "range": "stddev: 0.015050961831305273",
+            "extra": "mean: 40.43569496153861 msec\nrounds: 26"
+          },
+          {
+            "name": "Items Limit: (1)",
+            "value": 1827.0614778952404,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00006142115974156891",
+            "extra": "mean: 547.3269575756102 usec\nrounds: 165"
+          },
+          {
+            "name": "Items Limit: (10)",
+            "value": 1301.563899230367,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000035508866583900436",
+            "extra": "mean: 768.3064969697715 usec\nrounds: 165"
+          },
+          {
+            "name": "Items Limit: (50)",
+            "value": 542.7777335125675,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00005938295394883232",
+            "extra": "mean: 1.842374766423328 msec\nrounds: 137"
+          },
+          {
+            "name": "Items Limit: (100)",
+            "value": 286.7493028097784,
+            "unit": "iter/sec",
+            "range": "stddev: 0.002801898792262638",
+            "extra": "mean: 3.487366805084693 msec\nrounds: 118"
+          },
+          {
+            "name": "Items Limit: (200)",
+            "value": 174.36933647254665,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00012235550384740552",
+            "extra": "mean: 5.734953290697667 msec\nrounds: 86"
+          },
+          {
+            "name": "Items Limit: (250)",
+            "value": 134.89549420113664,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0027935871138248126",
+            "extra": "mean: 7.413146050000341 msec\nrounds: 80"
+          },
+          {
+            "name": "Items Limit: (1000)",
+            "value": 36.45499882899046,
+            "unit": "iter/sec",
+            "range": "stddev: 0.005822921139591624",
+            "extra": "mean: 27.43108029411759 msec\nrounds: 17"
+          },
+          {
+            "name": "Collection With Model validation",
+            "value": 2121.372912998172,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0000257612487932985",
+            "extra": "mean: 471.3928389830731 usec\nrounds: 118"
+          },
+          {
+            "name": "Collection",
+            "value": 2145.543281911228,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000042923834011110474",
+            "extra": "mean: 466.0824176472498 usec\nrounds: 170"
+          },
+          {
+            "name": "Collections With Model validation",
+            "value": 1320.2217224369904,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00003127583927697551",
+            "extra": "mean: 757.4485277776715 usec\nrounds: 108"
+          },
+          {
+            "name": "Collections",
+            "value": 1353.1720630734237,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00005816660851194721",
+            "extra": "mean: 739.0043197675294 usec\nrounds: 172"
           }
         ]
       }
