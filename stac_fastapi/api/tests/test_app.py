@@ -2,8 +2,9 @@ import asyncio
 from typing import Annotated
 
 import attr
+import fastapi.routing
 import pytest
-from fastapi import Path, Query
+from fastapi import Depends, FastAPI, HTTPException, Path, Query
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
 from stac_pydantic import api
@@ -16,6 +17,7 @@ from stac_fastapi.api.models import (
     create_get_request_model,
     create_post_request_model,
 )
+from stac_fastapi.api.routes import add_direct_response
 from stac_fastapi.extensions import (
     FieldsExtension,
     FilterExtension,
@@ -132,6 +134,51 @@ def test_client_response_by_pass(TestCoreClient, item_dict):
     assert item.json()
     assert item.status_code == 200
     assert item.headers["content-type"] == "application/geo+json"
+
+
+def test_client_response_by_pass_skips_serialization(TestCoreClient, monkeypatch):
+    """Check `enable_direct_response` bypasses FastAPI response serialization."""
+
+    def fail_serialize_response(*args, **kwargs):
+        raise AssertionError("FastAPI serialization should have been bypassed")
+
+    monkeypatch.setattr(fastapi.routing, "serialize_response", fail_serialize_response)
+
+    test_app = app.StacApi(
+        settings=ApiSettings(
+            enable_response_models=False,
+            enable_direct_response=True,
+        ),
+        client=TestCoreClient(),
+    )
+
+    with TestClient(test_app.app) as client:
+        item = client.get("/collections/test/items/test")
+
+    assert item.status_code == 200, item.text
+    assert item.headers["content-type"] == "application/geo+json"
+
+
+def test_add_direct_response_keeps_route_dependencies():
+    """Check `add_direct_response` keeps the dependencies of the wrapped routes."""
+
+    def deny():
+        raise HTTPException(status_code=401)
+
+    async def endpoint():
+        return {"hello": "world"}
+
+    test_app = FastAPI()
+    test_app.add_api_route("/denied", endpoint, dependencies=[Depends(deny)])
+    test_app.add_api_route("/allowed", endpoint)
+    add_direct_response(test_app)
+
+    with TestClient(test_app) as client:
+        assert client.get("/denied").status_code == 401
+        allowed = client.get("/allowed")
+
+    assert allowed.status_code == 200, allowed.text
+    assert allowed.json() == {"hello": "world"}
 
 
 def test_client_openapi(TestCoreClient):
