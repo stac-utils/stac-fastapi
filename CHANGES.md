@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [7.1.0] - 2026-10-31
+
 ### Fixed
 
 - Return a `Location` header with the URI of the newly created resource for `POST /collections/{collection_id}/items` (single `Item`) and `POST /collections` in the Transaction extension, as required by the spec. `ItemCollection` payloads still return 201 without a `Location` header. The header is also added when a client returns a `Response` object directly, unless it already sets `Location` or returns an error status. ([#982](https://github.com/stac-utils/stac-fastapi/pull/982))
@@ -805,7 +807,8 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/7.0.0..main>
+[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/7.1.0..main>
+[7.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/7.0.0..7.1.0>
 [7.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/6.6.0..7.0.0>
 [6.6.0]: <https://github.com/stac-utils/stac-fastapi/compare/6.5.0..6.6.0>
 [6.5.0]: <https://github.com/stac-utils/stac-fastapi/compare/6.4.1..6.5.0>
