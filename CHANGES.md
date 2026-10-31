@@ -8,6 +8,7 @@
 - Type `PartialCollection.links` as a list so `PATCH /collections/{collection_id}` merge patches carrying a `links` array are no longer rejected with 400.
 - Declare `ItemCollection` as a valid response of `POST /collections/{collection_id}/items` (route response model and `create_item` client return type) so a successful ItemCollection create returns 201 instead of 500 when `enable_response_models` is on.
 - Return a stable `Invalid RFC3339 datetime.` error detail from `str_to_interval` for out-of-range datetime values instead of the Python-version-dependent message. ([#991](https://github.com/stac-utils/stac-fastapi/pull/991))
+- Make `enable_direct_response` wrap endpoints of included routers again. Since FastAPI 0.137, `include_router` no longer copies routes into `app.routes`, so no endpoint was wrapped and responses still went through FastAPI serialization. Route-level dependencies are now also kept when the endpoints are wrapped. ([#1008](https://github.com/stac-utils/stac-fastapi/pull/1008))
 
 ## [7.0.0] - 2026-09-09
 
