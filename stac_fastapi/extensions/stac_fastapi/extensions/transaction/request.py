@@ -140,6 +140,8 @@ class PartialCollection(BasePartial):
     summaries: dict[str, Any] | None = None
     assets: dict[str, Any] | None = None
 
+    model_config = ConfigDict(extra="allow")
+
 
 class PartialItem(BasePartial):
     """Partial STAC Item."""

@@ -108,6 +108,90 @@ class ResponseTransactionsClient(DummyTransactionsClient):
         return Response(status_code=201, headers={"Location": "/custom-location"})
 
 
+@pytest.fixture
+def client(
+    core_client: DummyCoreClient, transactions_client: DummyTransactionsClient
+) -> Iterator[TestClient]:
+    settings = ApiSettings()
+    api = StacApi(
+        settings=settings,
+        client=core_client,
+        extensions=[
+            TransactionExtension(client=transactions_client, settings=settings),
+        ],
+    )
+    with TestClient(api.app) as client:
+        yield client
+
+
+@pytest.fixture
+def core_client() -> DummyCoreClient:
+    return DummyCoreClient()
+
+
+@pytest.fixture
+def transactions_client() -> DummyTransactionsClient:
+    return DummyTransactionsClient()
+
+
+@pytest.fixture
+def response_client(core_client: DummyCoreClient) -> Iterator[TestClient]:
+    settings = ApiSettings()
+    api = StacApi(
+        settings=settings,
+        client=core_client,
+        extensions=[
+            TransactionExtension(client=ResponseTransactionsClient(), settings=settings),
+        ],
+    )
+    with TestClient(api.app) as client:
+        yield client
+
+
+@pytest.fixture
+def item_collection(item: Item) -> ItemCollection:
+    return {
+        "type": "FeatureCollection",
+        "features": [item],
+        "links": [],
+        "context": None,
+    }
+
+
+@pytest.fixture
+def item() -> Item:
+    return {
+        "type": "Feature",
+        "stac_version": "1.0.0",
+        "stac_extensions": [],
+        "id": "test_item",
+        "geometry": {"type": "Point", "coordinates": [-105, 40]},
+        "bbox": [-105, 40, -105, 40],
+        "properties": {"datetime": "2020-06-13T13:00:00Z"},
+        "links": [],
+        "assets": {},
+        "collection": "test_collection",
+    }
+
+
+@pytest.fixture
+def collection() -> Collection:
+    return {
+        "type": "Collection",
+        "stac_version": "1.0.0",
+        "stac_extensions": [],
+        "id": "test_collection",
+        "description": "A test collection",
+        "extent": {
+            "spatial": {"bbox": [[-180, -90, 180, 90]]},
+            "temporal": {"interval": [["2000-01-01T00:00:00Z", "2024-01-01T00:00:00Z"]]},
+        },
+        "links": [],
+        "assets": {},
+        "license": "proprietary",
+    }
+
+
 def test_create_item(client: TestClient, item: Item) -> None:
     response = client.post("/collections/a-collection/items", json=item)
     assert response.status_code == 201, response.text
@@ -257,91 +341,26 @@ def test_patch_merge_collection_links(client: TestClient) -> None:
     assert response.json()["patch"] == [{"op": "add", "path": "/links", "value": links}]
 
 
+def test_patch_merge_collection_extra_fields(client: TestClient) -> None:
+    response = client.patch(
+        "/collections/a-collection",
+        json={
+            "title": "A title",
+            "sci:doi": "10.1000/xyz123",
+            "renders": {"visual": {"assets": ["visual"]}, "old": None},
+        },
+    )
+    assert response.is_success, response.text
+    assert response.json()["path_collection_id"] == "a-collection"
+    assert response.json()["patch"] == [
+        {"op": "add", "path": "/title", "value": "A title"},
+        {"op": "add", "path": "/sci:doi", "value": "10.1000/xyz123"},
+        {"op": "add", "path": "/renders/visual/assets", "value": ["visual"]},
+        {"op": "remove", "path": "/renders/old"},
+    ]
+
+
 def test_delete_collection(client: TestClient, collection: Collection) -> None:
     response = client.delete("/collections/a-collection")
     assert response.is_success, response.text
     assert response.json()["path_collection_id"] == "a-collection"
-
-
-@pytest.fixture
-def client(
-    core_client: DummyCoreClient, transactions_client: DummyTransactionsClient
-) -> Iterator[TestClient]:
-    settings = ApiSettings()
-    api = StacApi(
-        settings=settings,
-        client=core_client,
-        extensions=[
-            TransactionExtension(client=transactions_client, settings=settings),
-        ],
-    )
-    with TestClient(api.app) as client:
-        yield client
-
-
-@pytest.fixture
-def core_client() -> DummyCoreClient:
-    return DummyCoreClient()
-
-
-@pytest.fixture
-def transactions_client() -> DummyTransactionsClient:
-    return DummyTransactionsClient()
-
-
-@pytest.fixture
-def response_client(core_client: DummyCoreClient) -> Iterator[TestClient]:
-    settings = ApiSettings()
-    api = StacApi(
-        settings=settings,
-        client=core_client,
-        extensions=[
-            TransactionExtension(client=ResponseTransactionsClient(), settings=settings),
-        ],
-    )
-    with TestClient(api.app) as client:
-        yield client
-
-
-@pytest.fixture
-def item_collection(item: Item) -> ItemCollection:
-    return {
-        "type": "FeatureCollection",
-        "features": [item],
-        "links": [],
-        "context": None,
-    }
-
-
-@pytest.fixture
-def item() -> Item:
-    return {
-        "type": "Feature",
-        "stac_version": "1.0.0",
-        "stac_extensions": [],
-        "id": "test_item",
-        "geometry": {"type": "Point", "coordinates": [-105, 40]},
-        "bbox": [-105, 40, -105, 40],
-        "properties": {"datetime": "2020-06-13T13:00:00Z"},
-        "links": [],
-        "assets": {},
-        "collection": "test_collection",
-    }
-
-
-@pytest.fixture
-def collection() -> Collection:
-    return {
-        "type": "Collection",
-        "stac_version": "1.0.0",
-        "stac_extensions": [],
-        "id": "test_collection",
-        "description": "A test collection",
-        "extent": {
-            "spatial": {"bbox": [[-180, -90, 180, 90]]},
-            "temporal": {"interval": [["2000-01-01T00:00:00Z", "2024-01-01T00:00:00Z"]]},
-        },
-        "links": [],
-        "assets": {},
-        "license": "proprietary",
-    }

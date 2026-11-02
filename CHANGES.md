@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed `PATCH /collections/{collection_id}` to correctly handle merge patches with extra fields, such as `title`, `sci:doi`, and nested objects, without rejecting them with 400.
+
 ## [7.1.0] - 2026-10-31
 
 ### Fixed
