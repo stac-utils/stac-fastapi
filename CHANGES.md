@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Deprecated
+
+- Deprecated `BulkTransactionExtension` (`POST /collections/{collection_id}/bulk_items`). Use `TransactionExtension` instead, which supports `ItemCollection` payloads on `POST /collections/{collection_id}/items`. ([#987](https://github.com/stac-utils/stac-fastapi/pull/987))
+
 ### Fixed
 
 - Fixed `PATCH /collections/{collection_id}` to correctly handle merge patches with extra fields, such as `title`, `sci:doi`, and nested objects, without rejecting them with 400.
