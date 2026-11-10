@@ -2,7 +2,6 @@
   "packages": {
     ".": {
       "release-type": "python",
-      "skip-changelog": true,
       "package-name": "stac-fastapi",
       "changelog-path": "CHANGES.md",
       "include-v-in-tag": false,

@@ -1,7 +1,5 @@
 # Changelog
 
-## [Unreleased]
-
 ## [7.1.1] - 2026-11-02
 
 ### Fixed
@@ -813,7 +811,6 @@ Full changelog: https://stac-utils.github.io/stac-fastapi/migrations/v3.0.0/#cha
 
 * First PyPi release!
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi/compare/7.1.1..main>
 [7.1.1]: <https://github.com/stac-utils/stac-fastapi/compare/7.1.0..7.1.1>
 [7.1.0]: <https://github.com/stac-utils/stac-fastapi/compare/7.0.0..7.1.0>
 [7.0.0]: <https://github.com/stac-utils/stac-fastapi/compare/6.6.0..7.0.0>

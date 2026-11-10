@@ -102,12 +102,21 @@ uv run pre-commit install
 uv run pre-commit run --all-files
 ```
 
+## Commit messages and releases
+
+Releases are automated with [release-please](https://github.com/googleapis/release-please), which reads the [Conventional Commit](https://www.conventionalcommits.org/) messages merged to `main`. Use them for your commits and your PR title, e.g. `fix: handle empty collections` or `feat: add a filter option`:
+
+- `fix:`, `perf:`, `deps:`, `revert:` and `docs:` lead to a patch release, `feat:` to a minor one, and a breaking change (`feat!:` or a `BREAKING CHANGE:` footer) to a major one.
+- `chore:`, `ci:`, `test:`, `build:`, `refactor:` and `style:` don't trigger a release on their own.
+- release-please keeps a release PR open with the next version; merging it tags the release and publishes it.
+- release-please also writes CHANGES.md from these messages, so don't edit it in your PR. Maintainers can adjust the wording in the release PR just before merging it.
+
 ## Release Process
 
 This is a checklist for releasing a new version of **stac-fastapi**.
 
 1. Merge pull requests with Conventional Commit titles (`fix:`, `feat:`, `feat!:` for breaking changes). [release-please](https://github.com/googleapis/release-please) then opens or updates a `chore(main): release X.Y.Z` PR that bumps the three `version.py` files, `VERSION` and `uv.lock`. To force a version, add a `Release-As: X.Y.Z` footer to a commit merged to `main`.
-2. Just before merging that PR, push a commit to it that updates [CHANGES.md](./CHANGES.md): add the header and update the links at the bottom of the file. (release-please rewrites the branch whenever new commits land on `main`.)
+2. release-please writes the [CHANGES.md](./CHANGES.md) entry from the commit messages. If its wording needs adjusting, push a commit to that PR just before merging it (release-please rewrites the branch whenever new commits land on `main`).
 3. Audit CHANGES.md for completeness and accuracy. Also, ensure that the changes in this version are appropriate for the version number change (i.e. if you're making breaking changes, you should be increasing the `MAJOR` version number).
 4. (optional) If you have permissions, run `scripts/publish --test` to test your PyPI publish. If successful, the published packages will be available on <http://test.pypy.org>.
 5. Get approval and merge the release PR. release-please tags `X.Y.Z` and creates the GitHub release, which kicks off the [publishing workflow](.github/workflows/publish.yml).
