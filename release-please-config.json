@@ -1,0 +1,30 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "python",
+      "package-name": "stac-fastapi",
+      "changelog-path": "CHANGES.md",
+      "include-v-in-tag": false,
+      "include-v-in-release-name": false,
+      "include-component-in-tag": false,
+      "extra-files": [
+        {
+          "type": "toml",
+          "path": "pyproject.toml",
+          "jsonpath": "$.tool.bumpversion.current_version"
+        },
+        {
+          "type": "toml",
+          "path": "uv.lock",
+          "jsonpath": "$.package[?(@.name.value=='stac-fastapi')].version"
+        },
+        {
+          "type": "generic",
+          "path": "VERSION"
+        },
+        { "type": "generic", "path": "stac_fastapi/api/pyproject.toml" },
+        { "type": "generic", "path": "stac_fastapi/extensions/pyproject.toml" }
+      ]
+    }
+  }
+}

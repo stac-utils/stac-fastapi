@@ -132,3 +132,8 @@ replace = '__version__ = "{new_version}"'
 filename = "stac_fastapi/types/stac_fastapi/types/version.py"
 search = '__version__ = "{current_version}"'
 replace = '__version__ = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = ".release-please-manifest.json"
+search = '".": "{current_version}"'
+replace = '".": "{new_version}"'
