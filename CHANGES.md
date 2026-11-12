@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Core endpoints are now organized under three OpenAPI tags: `Core`, `Collections`, and `Search`.
+
+### Added
+
+- Optional `include_health_probes_in_openapi_schema` flag to `StacAPI` to control whether health probe endpoints appear in the OpenAPI schema.
+
 ## [7.1.1] - 2026-11-02
 
 ### Fixed

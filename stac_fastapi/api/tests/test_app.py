@@ -181,7 +181,7 @@ def test_add_direct_response_keeps_route_dependencies():
     assert allowed.json() == {"hello": "world"}
 
 
-def test_client_openapi(TestCoreClient):
+def test_client_openapi_response_models(TestCoreClient):
     """Test if response models are all documented with OpenAPI."""
 
     test_app = app.StacApi(
@@ -192,6 +192,28 @@ def test_client_openapi(TestCoreClient):
     components = ["LandingPage", "Collection", "Collections", "Item", "ItemCollection"]
     for component in components:
         assert component in test_app.app.openapi_schema["components"]["schemas"]
+
+
+@pytest.mark.parametrize(
+    "include_health_probes_in_openapi_schema",
+    [True, False],
+)
+def test_client_openapi_health_probes_included_in_openapi_schema(
+    include_health_probes_in_openapi_schema: bool, TestCoreClient
+):
+    """Test if health probes are added to OpenAPI documentation based on settings."""
+
+    test_app = app.StacApi(
+        settings=ApiSettings(),
+        client=TestCoreClient(),
+        include_health_probes_in_openapi_schema=include_health_probes_in_openapi_schema,
+    )
+
+    schema = test_app.app.openapi()
+
+    any_health_paths = any([True for path in schema["paths"] if "mgmt" in path])
+
+    assert any_health_paths == include_health_probes_in_openapi_schema
 
 
 @pytest.mark.parametrize("validate", [True, False])

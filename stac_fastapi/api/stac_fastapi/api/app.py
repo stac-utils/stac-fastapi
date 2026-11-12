@@ -40,6 +40,11 @@ from stac_fastapi.types.core import AsyncBaseCoreClient, BaseCoreClient
 from stac_fastapi.types.extension import ApiExtension
 from stac_fastapi.types.search import BaseSearchGetRequest, BaseSearchPostRequest
 
+_CORE_ENDPOINT_TAGS: list[str] = ["Core"]
+_COLLECTIONS_ENDPOINT_TAGS: list[str] = ["Collections"]
+_SEARCH_ENDPOINT_TAGS: list[str] = ["Search"]
+_LIVENESS_ENDPOINT_TAGS: list[str] = ["Liveliness/Readiness"]
+
 
 @attr.s
 class StacApi:
@@ -147,6 +152,7 @@ class StacApi:
         default=lambda: {"status": "UP"}
     )
     add_metrics: bool = attr.ib(default=False)
+    include_health_probes_in_openapi_schema: bool = attr.ib(default=True)
 
     def get_extension(self, extension: type[ApiExtension]) -> ApiExtension | None:
         """Get an extension.
@@ -183,6 +189,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=create_async_endpoint(self.client.landing_page, EmptyRequest),
+            tags=_CORE_ENDPOINT_TAGS,
         )
 
     def register_conformance_classes(self) -> None:
@@ -206,6 +213,7 @@ class StacApi:
             response_model_exclude_none=True,
             methods=["GET"],
             endpoint=create_async_endpoint(self.client.conformance, EmptyRequest),
+            tags=_CORE_ENDPOINT_TAGS,
         )
 
     def register_get_item(self) -> None:
@@ -229,6 +237,7 @@ class StacApi:
             endpoint=create_async_endpoint(
                 self.client.get_item, self.item_get_request_model
             ),
+            tags=_COLLECTIONS_ENDPOINT_TAGS,
         )
 
     def register_post_search(self) -> None:
@@ -254,6 +263,7 @@ class StacApi:
             endpoint=create_async_endpoint(
                 self.client.post_search, self.search_post_request_model
             ),
+            tags=_SEARCH_ENDPOINT_TAGS,
         )
 
     def register_get_search(self) -> None:
@@ -279,6 +289,7 @@ class StacApi:
             endpoint=create_async_endpoint(
                 self.client.get_search, self.search_get_request_model
             ),
+            tags=_SEARCH_ENDPOINT_TAGS,
         )
 
     def register_get_collections(self) -> None:
@@ -304,6 +315,7 @@ class StacApi:
             endpoint=create_async_endpoint(
                 self.client.all_collections, self.collections_get_request_model
             ),
+            tags=_COLLECTIONS_ENDPOINT_TAGS,
         )
 
     def register_get_collection(self) -> None:
@@ -329,6 +341,7 @@ class StacApi:
             endpoint=create_async_endpoint(
                 self.client.get_collection, self.collection_get_request_model
             ),
+            tags=_COLLECTIONS_ENDPOINT_TAGS,
         )
 
     def register_get_item_collection(self) -> None:
@@ -354,6 +367,7 @@ class StacApi:
             endpoint=create_async_endpoint(
                 self.client.item_collection, self.items_get_request_model
             ),
+            tags=_COLLECTIONS_ENDPOINT_TAGS,
         )
 
     def register_core(self) -> None:
@@ -364,26 +378,34 @@ class StacApi:
             GET /collections
             GET /collections/{collection_id}
             GET /collections/{collection_id}/items
-            GET /collection/{collection_id}/items/{item_id}
+            GET /collections/{collection_id}/items/{item_id}
             GET /search
             POST /search
 
         Injects application logic (StacApi.client) into the API layer.
 
         """
+        # core endpoints
         self.register_landing_page()
         self.register_conformance_classes()
+
+        # collection endpoints
         self.register_get_item()
-        self.register_post_search()
-        self.register_get_search()
         self.register_get_collections()
         self.register_get_collection()
         self.register_get_item_collection()
 
+        # search endpoints
+        self.register_post_search()
+        self.register_get_search()
+
     def add_health_check(self) -> None:
         """Add a health check."""
 
-        mgmt_router = APIRouter(prefix=self.app.state.router_prefix)
+        mgmt_router = APIRouter(
+            prefix=self.app.state.router_prefix,
+            include_in_schema=self.include_health_probes_in_openapi_schema,
+        )
 
         async def ping():
             """Liveliness probe."""
@@ -425,7 +447,7 @@ class StacApi:
             if inspect.iscoroutinefunction(self.health_check)
             else sync_to_async(self.health_check),
         )
-        self.app.include_router(mgmt_router, tags=["Liveliness/Readiness"])
+        self.app.include_router(mgmt_router, tags=_LIVENESS_ENDPOINT_TAGS)
 
     def add_route_dependencies(
         self, scopes: list[Scope], dependencies: list[Depends]
