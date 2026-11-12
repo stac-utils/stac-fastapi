@@ -210,8 +210,9 @@ def test_client_openapi_health_probes_included_in_openapi_schema(
     )
 
     schema = test_app.app.openapi()
+    health_paths = ["/_mgmt/ping", "/_mgmt/health"]
 
-    any_health_paths = any([True for path in schema["paths"] if "mgmt" in path])
+    any_health_paths = any([True for path in schema["paths"] if path in health_paths])
 
     assert any_health_paths == include_health_probes_in_openapi_schema
 
